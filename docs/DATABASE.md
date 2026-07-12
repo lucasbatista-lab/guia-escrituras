@@ -1,49 +1,35 @@
-# Database — Guia Escrituras
+# Database — Amém Chat
 
-Migrations em `supabase/migrations/`. **Não aplicadas remotamente nesta execução.**
+Migrations em `supabase/migrations/`.
+
+## Estado remoto confirmado (inspeção read-only)
+
+- Aplicadas: `001`, `002`, `003`
+- **Não aplicada:** `004_production_hardening` (preparada localmente)
+- 20 tabelas públicas; RLS habilitado; `supabase db lint` limpo
 
 ## Arquivos
 
-1. `20260712000001_foundation_schema.sql` — schema, índices, triggers `updated_at`, RLS  
-2. `20260712000002_seed_catalog.sql` — tradições, personas, planos, entitlements  
-3. `20260712000003_daily_report_fn.sql` — função de agregados do relatório diário  
+1. `20260712000001_foundation_schema.sql` — schema + RLS (não alterar)  
+2. `20260712000002_seed_catalog.sql` — catálogo (não alterar)  
+3. `20260712000003_daily_report_fn.sql` — agregados (não alterar)  
+4. `20260712000004_production_hardening.sql` — hardening (aplicar manualmente depois)
 
-## Tabelas
+## Migration 004 (resumo)
 
-| Tabela | Notas |
-|--------|--------|
-| `profiles` | 1:1 com `auth.users`; sem flag de admin |
-| `spiritual_profiles` | tradição, estilo, profundidade, santos, onboarding |
-| `traditions` / `tradition_policies` | catálogo extensível |
-| `personas` / `persona_policies` | Jesus/Paulo ativos; Pedro inativo; Maria condicionada |
-| `plans` / `plan_entitlements` | preços em **centavos** |
-| `subscriptions` | status de pagamento não mutável pelo usuário |
-| `conversations` / `messages` | mensagens sem update/delete para o usuário |
-| `conversation_summaries` | memória estendida |
-| `usage_events` | append-only |
-| `usage_monthly` | agregados mensais |
-| `referral_codes` / `referral_attributions` / `referral_rewards` | fluxo de indicação |
-| `custom_content_orders` | plano Particular |
-| `daily_reports` | só agregados; leitura admin |
-| `admin_roles` | controle separado de admin |
+- Remove insert autenticado em `usage_events`; unique `(user_id, request_id)`
+- Messages: authenticated só `role=user` + ownership da conversation
+- Summaries: sem insert/update autenticado
+- `handle_new_user` / `compute_daily_report_aggregates`: `search_path`, revoke EXECUTE amplo
+- Unique parcial Stripe ids; remove plano `free` se existir
 
-## Índices
+## Persistência na aplicação
 
-Criados para `user_id`, `subscription_id`, `conversation_id`, `created_at`, `referral_code` (e correlatos).
+Repositórios em `src/lib/database/repositories/`:
 
-## RLS (resumo)
+- Memory: apenas quando mocks permitidos e sem env público Supabase
+- Supabase: quando `NEXT_PUBLIC_SUPABASE_*` presente
 
-- Usuário acessa apenas os próprios dados  
-- Catálogos públicos (`plans`, `personas` ativas) legíveis  
-- Sem políticas de write em campos de billing para `authenticated`  
-- `is_admin()` consulta `admin_roles`  
+## Admin
 
-## Como aplicar (quando for o momento)
-
-```bash
-# Exemplo com Supabase CLI local — NÃO executar nesta fundação se remoto
-supabase db push
-# ou aplicar SQL manualmente no SQL Editor após revisão
-```
-
-Nunca commitar service role keys. O fluxo normal do usuário usa apenas a anon/publishable key.
+Inserir em `admin_roles` via dashboard/SQL — ver `DEPLOYMENT.md`.

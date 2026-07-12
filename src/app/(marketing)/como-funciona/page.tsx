@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { Button } from "@/components/ui/button";
 
@@ -13,12 +14,12 @@ const steps = [
     body: "Escolha tradição, estilo de resposta e profundidade preferida.",
   },
   {
-    title: "Traga sua situação",
-    body: "Escreva com calma. A mensagem é validada e limitada em tamanho por segurança.",
+    title: "Assine um plano",
+    body: "Não há plano gratuito. Essencial, Caminho, Profundo ou Particular (sob solicitação).",
   },
   {
-    title: "Política teológica composta",
-    body: "Regras gerais + tradição + persona + preferências moldam a resposta.",
+    title: "Traga sua situação",
+    body: "Escreva com calma. A mensagem é validada e limitada em tamanho por segurança.",
   },
   {
     title: "Reflexão com referências",
@@ -33,9 +34,8 @@ export default function ComoFuncionaPage() {
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <h1 className="font-display text-4xl text-ink">Como funciona</h1>
         <p className="mt-4 text-ink-soft leading-relaxed">
-          Guia Escrituras é uma plataforma de orientação e reflexão baseada
-          nas Escrituras. A pergunta central — “Como Jesus responderia à sua
-          situação?” — é respondida como interpretação ancorada nos
+          {brand.name} — {brand.description} A pergunta central — “
+          {brand.tagline}” — é respondida como interpretação ancorada nos
           Evangelhos, nunca como pretensa voz divina.
         </p>
         <ol className="mt-12 space-y-8">

@@ -1,18 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseAnonKey, hasSupabaseEnv } from "@/lib/utils";
+import { allowsMocks } from "@/config/runtime";
+import {
+  getSupabasePublishableKey,
+  getSupabaseUrl,
+  hasSupabasePublicEnv,
+} from "@/lib/supabase/keys";
 
-const PUBLIC_PREFIXES = [
-  "/",
-  "/planos",
-  "/como-funciona",
-  "/mensagens-personalizadas",
-  "/entrar",
-  "/cadastro",
-  "/recuperar-senha",
-  "/auth",
-  "/api/health",
-];
+const AUTH_PAGES = ["/entrar", "/cadastro", "/recuperar-senha"];
 
 const PLATFORM_PREFIXES = [
   "/inicio",
@@ -31,17 +26,29 @@ function matchesPrefix(pathname: string, prefixes: string[]): boolean {
   );
 }
 
+function isPublicApi(pathname: string): boolean {
+  return (
+    pathname === "/api/health" ||
+    pathname.startsWith("/api/health/")
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
 
-  if (!hasSupabaseEnv()) {
-    // Foundation mode: allow browsing without Supabase; API routes handle demos.
+  if (!hasSupabasePublicEnv()) {
+    if (!allowsMocks() && matchesPrefix(pathname, [...PLATFORM_PREFIXES, ...ADMIN_PREFIXES])) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
     return supabaseResponse;
   }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    getSupabaseAnonKey(),
+    getSupabaseUrl(),
+    getSupabasePublishableKey(),
     {
       cookies: {
         getAll() {
@@ -62,11 +69,6 @@ export async function updateSession(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
-  const pathname = request.nextUrl.pathname;
-
-  const isPublic =
-    matchesPrefix(pathname, PUBLIC_PREFIXES) ||
-    pathname.startsWith("/api/");
 
   if (!user && matchesPrefix(pathname, PLATFORM_PREFIXES)) {
     const url = request.nextUrl.clone();
@@ -82,13 +84,31 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Admin role is checked in layouts/API via admin_roles — not only middleware.
-  if (user && pathname === "/entrar") {
+  // Logged-in users leaving auth pages → platform (avoid loops with onboarding)
+  if (user && AUTH_PAGES.includes(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/inicio";
     return NextResponse.redirect(url);
   }
 
-  void isPublic;
+  // Onboarding gate for chat routes (not for onboarding itself or conta)
+  if (
+    user &&
+    (pathname === "/conversar" || pathname.startsWith("/conversar/"))
+  ) {
+    const { data: spiritual } = await supabase
+      .from("spiritual_profiles")
+      .select("onboarding_completed")
+      .eq("user_id", user.sub as string)
+      .maybeSingle();
+
+    if (!spiritual?.onboarding_completed) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  void isPublicApi;
   return supabaseResponse;
 }

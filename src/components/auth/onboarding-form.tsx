@@ -27,7 +27,7 @@ export function OnboardingForm() {
 
     try {
       if (!hasSupabaseEnv()) {
-        router.push("/conversar");
+        setError("Onboarding requer Supabase configurado.");
         return;
       }
 
@@ -38,7 +38,7 @@ export function OnboardingForm() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        router.push("/entrar");
+        router.push("/entrar?next=/onboarding");
         return;
       }
 
@@ -60,7 +60,7 @@ export function OnboardingForm() {
         return;
       }
 
-      router.push("/conversar");
+      router.push("/inicio");
       router.refresh();
     } catch {
       setError("Algo deu errado. Tente novamente.");
@@ -148,8 +148,12 @@ export function OnboardingForm() {
         </p>
       )}
 
-      <Button type="submit" className="w-full bg-ink hover:bg-ink/90" disabled={loading}>
-        {loading ? "Salvando…" : "Concluir e conversar"}
+      <Button
+        type="submit"
+        className="w-full bg-ink hover:bg-ink/90"
+        disabled={loading || !hasSupabaseEnv()}
+      >
+        {loading ? "Salvando…" : "Concluir onboarding"}
       </Button>
     </form>
   );

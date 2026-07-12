@@ -1,6 +1,14 @@
-import { createAiProvider, resolveChatModel } from "@/lib/ai";
+import "server-only";
+
+import {
+  createAiProvider,
+  resolveChatModel,
+  isOpenAiConfigured,
+} from "@/lib/ai/gateway";
 import type { ChatRequestInput, ChatResponsePayload } from "@/lib/ai/chat-schema";
 import type { AuthUserContext } from "@/lib/auth";
+import { requiresRealOpenAiForChat } from "@/config/runtime";
+import { getRepositories } from "@/lib/database/repositories";
 import { resolveEntitlements } from "@/lib/entitlements";
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
@@ -13,13 +21,13 @@ import {
   getUsdBrlPlanningRate,
   usageLevelLabel,
 } from "@/lib/usage";
+import { currentYearMonth } from "@/lib/utils";
 
-/** In-memory demo store when Supabase is absent. */
-const demoConversations = new Map<
-  string,
-  Array<{ role: "user" | "assistant"; content: string }>
->();
-const demoUsage = new Map<string, { usedBrlCents: number; requestsToday: number }>();
+function startOfUtcDayIso(date = new Date()): string {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  ).toISOString();
+}
 
 export async function runChatTurn(input: {
   requestId: string;
@@ -27,6 +35,25 @@ export async function runChatTurn(input: {
   body: ChatRequestInput;
 }): Promise<ChatResponsePayload> {
   const { requestId, auth, body } = input;
+
+  if (!auth.spiritualProfile.onboardingCompleted) {
+    throw new AppError(
+      "onboarding_required",
+      "onboarding_required",
+      403,
+      "Conclua o onboarding antes de conversar.",
+    );
+  }
+
+  if (!auth.planKey) {
+    throw new AppError(
+      "subscription_required",
+      "subscription_required",
+      402,
+      "É necessária uma assinatura ativa para conversar. Não há plano gratuito.",
+    );
+  }
+
   const entitlements = resolveEntitlements({ planKey: auth.planKey });
 
   if (!entitlements.has("chat_standard")) {
@@ -47,23 +74,57 @@ export async function runChatTurn(input: {
     );
   }
 
-  if (!auth.spiritualProfile.onboardingCompleted && !auth.demoMode) {
+  if (requiresRealOpenAiForChat() && !isOpenAiConfigured()) {
     throw new AppError(
-      "onboarding_required",
-      "onboarding_required",
-      403,
-      "Conclua o onboarding antes de conversar.",
+      "openai_unavailable",
+      "openai_unavailable",
+      503,
+      "O chat está temporariamente indisponível. Tente novamente mais tarde.",
     );
   }
 
+  const repos = getRepositories();
+
+  // Idempotency: if this request_id already produced an assistant message, return it.
+  const existingAssistant = await repos.messages.findByRequestId(
+    auth.userId,
+    requestId,
+    "assistant",
+  );
+  if (existingAssistant) {
+    const yearMonth = currentYearMonth();
+    const monthly = await repos.usage.getMonthly(auth.userId, yearMonth);
+    const budgetConfig = getBudgetConfig(auth.planKey);
+    const budget = evaluateMonthlyBudget({
+      usedBrlCents: monthly.usedBrlCents,
+      config: budgetConfig,
+    });
+    return {
+      answer: existingAssistant.content,
+      biblicalReferences: existingAssistant.biblicalReferences,
+      interpretationNotice:
+        "Resposta recuperada de uma solicitação anterior (idempotente).",
+      usage: {
+        level:
+          budget.level === "blocked" ? "near_limit" : budget.level,
+        label: usageLevelLabel(
+          budget.level === "blocked" ? "near_limit" : budget.level,
+        ),
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      requestId,
+      conversationId: existingAssistant.conversationId,
+      provider: "openai",
+    };
+  }
+
   const budgetConfig = getBudgetConfig(auth.planKey);
-  const usageState = demoUsage.get(auth.userId) ?? {
-    usedBrlCents: 0,
-    requestsToday: 0,
-  };
+  const yearMonth = currentYearMonth();
+  const monthly = await repos.usage.getMonthly(auth.userId, yearMonth);
 
   const budget = evaluateMonthlyBudget({
-    usedBrlCents: usageState.usedBrlCents,
+    usedBrlCents: monthly.usedBrlCents,
     config: budgetConfig,
   });
   if (budget.blocked) {
@@ -75,8 +136,12 @@ export async function runChatTurn(input: {
     );
   }
 
+  const requestsToday = await repos.usage.countRequestsSince(
+    auth.userId,
+    startOfUtcDayIso(),
+  );
   const burst = evaluateDailyBurst({
-    requestsToday: usageState.requestsToday,
+    requestsToday,
     dailyBurstLimit: budgetConfig.dailyBurstLimit,
   });
   if (burst.blocked) {
@@ -88,9 +153,44 @@ export async function runChatTurn(input: {
     );
   }
 
-  const conversationId = body.conversationId ?? crypto.randomUUID();
-  const history = demoConversations.get(conversationId) ?? [];
-  const recent = history.slice(-8);
+  let conversation =
+    body.conversationId != null
+      ? await repos.conversations.getByIdForUser(
+          body.conversationId,
+          auth.userId,
+        )
+      : null;
+
+  if (body.conversationId && !conversation) {
+    throw new AppError(
+      "conversation_not_found",
+      "conversation_not_found",
+      404,
+      "Conversa não encontrada.",
+    );
+  }
+
+  if (!conversation) {
+    conversation = await repos.conversations.create({
+      userId: auth.userId,
+      personaKey: body.personaKey,
+      title: body.message.slice(0, 80),
+    });
+  }
+
+  await repos.messages.insertUserMessage({
+    conversationId: conversation.id,
+    userId: auth.userId,
+    content: body.message,
+    requestId,
+  });
+
+  const recent = await repos.messages.listRecent(
+    conversation.id,
+    auth.userId,
+    8,
+  );
+  const summary = await repos.summaries.get(conversation.id, auth.userId);
 
   const policy = theologyPolicyResolver.resolve({
     traditionKey: auth.spiritualProfile.traditionKey,
@@ -98,21 +198,37 @@ export async function runChatTurn(input: {
     userPrefs: auth.spiritualProfile,
   });
 
-  const model = auth.demoMode
+  const useMockModel = auth.demoMode || !isOpenAiConfigured();
+  const model = useMockModel
     ? "mock"
     : resolveChatModel({ preferDeep: Boolean(body.preferDeep) });
 
   const provider = createAiProvider();
-  const result = await provider.generate({
-    messages: [
-      ...recent,
-      { role: "user", content: body.message },
-    ],
-    theologyPolicy: policy,
-    model,
-    conversationSummary: null,
-    requestId,
-  });
+  let result;
+  try {
+    result = await provider.generate({
+      messages: recent.map((m) => ({
+        role: m.role === "system" ? "system" : m.role,
+        content: m.content,
+      })),
+      theologyPolicy: policy,
+      model,
+      conversationSummary: summary?.summary ?? null,
+      requestId,
+    });
+  } catch (error) {
+    logger.error("ai_generate_failed", {
+      requestId,
+      userId: auth.userId,
+      err: error instanceof Error ? error.message : "unknown",
+    });
+    throw new AppError(
+      "ai_failed",
+      "ai_failed",
+      503,
+      "Não foi possível gerar a reflexão agora. Tente novamente.",
+    );
+  }
 
   const costs = calculateTokenCost({
     model: result.model,
@@ -121,23 +237,69 @@ export async function runChatTurn(input: {
     usdBrlPlanningRate: getUsdBrlPlanningRate(),
   });
 
-  history.push({ role: "user", content: body.message });
-  history.push({ role: "assistant", content: result.answer });
-  demoConversations.set(conversationId, history);
+  let persistWarning: string | undefined;
 
-  usageState.usedBrlCents += costs.estimatedCostBrlCents;
-  usageState.requestsToday += 1;
-  demoUsage.set(auth.userId, usageState);
+  try {
+    await repos.messages.insertAssistantMessage({
+      conversationId: conversation.id,
+      userId: auth.userId,
+      content: result.answer,
+      biblicalReferences: result.biblicalReferences,
+      requestId,
+    });
+  } catch (error) {
+    logger.error("assistant_persist_failed", {
+      requestId,
+      userId: auth.userId,
+      err: error instanceof Error ? error.message : "unknown",
+    });
+    persistWarning =
+      "A resposta foi gerada, mas a persistência ficou incompleta.";
+  }
+
+  const usageInsert = await repos.usage.insertEvent({
+    userId: auth.userId,
+    conversationId: conversation.id,
+    requestId,
+    featureType: body.preferDeep ? "chat_deep" : "chat_standard",
+    model: result.model,
+    inputTokens: result.inputTokens,
+    outputTokens: result.outputTokens,
+    estimatedCostUsdMicros: costs.estimatedCostUsdMicros,
+    estimatedCostBrlCents: costs.estimatedCostBrlCents,
+    latencyMs: result.latencyMs,
+    success: true,
+  });
+
+  let updatedMonthly = monthly;
+  if (usageInsert.inserted) {
+    try {
+      updatedMonthly = await repos.usage.incrementMonthly({
+        userId: auth.userId,
+        yearMonth,
+        addBrlCents: costs.estimatedCostBrlCents,
+      });
+    } catch (error) {
+      logger.error("usage_monthly_failed", {
+        requestId,
+        userId: auth.userId,
+        err: error instanceof Error ? error.message : "unknown",
+      });
+      persistWarning =
+        persistWarning ??
+        "Uso registrado parcialmente; totais mensais podem atrasar.";
+    }
+  }
 
   const updatedBudget = evaluateMonthlyBudget({
-    usedBrlCents: usageState.usedBrlCents,
+    usedBrlCents: updatedMonthly.usedBrlCents,
     config: budgetConfig,
   });
 
   logger.info("chat_turn_completed", {
     requestId,
     userId: auth.userId,
-    conversationId,
+    conversationId: conversation.id,
     provider: result.provider,
     model: result.model,
     inputTokens: result.inputTokens,
@@ -145,24 +307,33 @@ export async function runChatTurn(input: {
     estimatedCostBrlCents: costs.estimatedCostBrlCents,
     latencyMs: result.latencyMs,
     success: true,
+    usageInserted: usageInsert.inserted,
     featureType: body.preferDeep ? "chat_deep" : "chat_standard",
+    persistWarning: persistWarning ?? null,
   });
 
   return {
     answer: result.answer,
     biblicalReferences: result.biblicalReferences,
-    interpretationNotice: result.interpretationNotice,
+    interpretationNotice: persistWarning
+      ? `${result.interpretationNotice} (${persistWarning})`
+      : result.interpretationNotice,
     followUpQuestion: result.followUpQuestion,
     usage: {
-      level: updatedBudget.level === "blocked" ? "near_limit" : updatedBudget.level,
+      level:
+        updatedBudget.level === "blocked"
+          ? "near_limit"
+          : updatedBudget.level,
       label: usageLevelLabel(
-        updatedBudget.level === "blocked" ? "near_limit" : updatedBudget.level,
+        updatedBudget.level === "blocked"
+          ? "near_limit"
+          : updatedBudget.level,
       ),
       inputTokens: result.inputTokens,
       outputTokens: result.outputTokens,
     },
     requestId,
-    conversationId,
+    conversationId: conversation.id,
     provider: result.provider,
   };
 }

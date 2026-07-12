@@ -1,9 +1,11 @@
-# Guia Escrituras
+# Amém Chat
 
-Plataforma web de orientação e reflexão baseada nas Escrituras.
+Repositório interno: **guia-escrituras**.
 
 > **Como Jesus responderia à sua situação?**  
-> Experiência de inteligência artificial — não afirma ser Jesus, Deus ou revelação sobrenatural.
+> Seu guIA cristão, baseado nas Escrituras.
+
+Experiência de inteligência artificial — não afirma ser Jesus, Deus ou revelação sobrenatural.
 
 ## Desenvolvimento
 
@@ -24,6 +26,7 @@ pnpm build
 - [Architecture](docs/ARCHITECTURE.md)
 - [Database](docs/DATABASE.md)
 - [AI & Theology](docs/AI_AND_THEOLOGY.md)
+- [Deployment](docs/DEPLOYMENT.md)
 - [Next steps](docs/NEXT_STEPS.md)
 
 ## Stack

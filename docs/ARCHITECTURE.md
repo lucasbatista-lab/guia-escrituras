@@ -1,76 +1,60 @@
-# Architecture — Guia Escrituras
+# Architecture — Amém Chat (repo guia-escrituras)
 
 ## Visão geral
 
-Plataforma web de orientação e reflexão baseada nas Escrituras. O conceito central — *“Como Jesus responderia à sua situação?”* — é respondido como **interpretação ancorada nos Evangelhos**, nunca como pretensa identidade divina.
+Produto público: **Amém Chat** — *Como Jesus responderia à sua situação?*  
+Descrição: *Seu guIA cristão, baseado nas Escrituras.*  
+Repositório interno: `guia-escrituras`.
 
-Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgres (`@supabase/ssr`), OpenAI Responses API (via gateway), Zod, Vitest.
+Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgres (`@supabase/ssr`), OpenAI Responses API (gateway), Zod, Vitest.
 
 ## Fluxo de autenticação
 
-1. Cadastro / login / recuperação de senha usam Supabase Auth com cookies SSR.
-2. `proxy.ts` renova a sessão e protege rotas de plataforma (`/inicio`, `/conversar`, …) e admin.
-3. Sem env de Supabase, a fundação opera em **modo demonstração** (navegação e chat mock).
-4. Onboarding grava `spiritual_profiles` e é exigido antes do chat (exceto demo).
-5. Admin é validado por `admin_roles` (tabela separada), **não** por campo editável em `profiles`.
+1. Cadastro / login / recuperação usam Supabase Auth com cookies SSR (sem localStorage).
+2. `proxy.ts` renova sessão e protege rotas platform/admin.
+3. Onboarding grava `spiritual_profiles`; `/conversar` exige `onboarding_completed`.
+4. Admin somente via `admin_roles` (nunca campo em `profiles`).
+5. Sem Supabase público: em development (mocks) há contexto demo; em production/preview sem `DEMO_MODE`, platform falha de forma segura.
 
-## Fluxo do chat
+## Fluxo do chat (persistido)
 
-`POST /api/chat`:
+1. Autenticar  
+2. Validar onboarding  
+3. Validar assinatura ativa + entitlements (**sem plano gratuito**)  
+4. Validar orçamento mensal e burst diário  
+5. Criar/localizar conversation  
+6. Salvar mensagem do usuário (`role=user`)  
+7. Gerar resposta via `AiProvider`  
+8. Salvar assistant via backend confiável (secret key)  
+9. Registrar `usage_events` (dedupe `user_id + request_id`)  
+10. Atualizar `usage_monthly`  
+11. Retornar JSON  
 
-1. Autentica usuário  
-2. Valida body (Zod) + safety de input  
-3. Carrega perfil espiritual, plano e entitlements  
-4. Verifica orçamento mensal e burst diário  
-5. Recupera resumo / últimas mensagens (demo: memória em processo)  
-6. Compõe `TheologyPolicy`  
-7. Chama `AiProvider`  
-8. Persiste pergunta/resposta (demo: in-memory)  
-9. Registra usage (tokens, custo estimado, latência)  
-10. Retorna JSON estruturado  
+## Gateway de IA
 
-**Streaming:** adiado de propósito nesta fatia para não fragilizar a arquitetura. Próximo passo documentado em `NEXT_STEPS.md`.
+- `OpenAiResponsesProvider` quando há `OPENAI_API_KEY`
+- `MockAiProvider` apenas se `allowsMocks()` (development, ou preview com `DEMO_MODE=true`)
+- Em production sem OpenAI: chat indisponível (503), sem fingir resposta
 
-## Por que existe um gateway de IA
+## Entitlements e planos
 
-- Isola o provedor (`OpenAiResponsesProvider` vs `MockAiProvider`)
-- Mantém a chave só no servidor
-- Padroniza entrada/saída (`answer`, referências, aviso de interpretação, usage)
-- Permite trocar modelo via env (`OPENAI_MODEL_DEFAULT`, `OPENAI_MODEL_DEEP`) sem tocar na UI
+Únicos planos: Essencial (R$38), Caminho (R$58), Profundo (R$188), Particular (R$988 — Solicitar acesso).  
+Sem free / trial recorrente / chat anônimo real.
 
-## Por que planos usam entitlements
+## RLS e secret key
 
-Benefícios não são ifs espalhados na UI. Cada plano libera chaves (`chat_deep`, `extended_memory`, …). A UI lê `PLAN_DEFINITIONS` / resolução de entitlements. Isso facilita A/B, overrides e o plano Particular (“Solicitar acesso”) sem checkout.
+- Fluxo normal do usuário: publishable/anon + cookies
+- Secret key (`SUPABASE_SECRET_KEY`) só em módulos `server-only` para writes administrativas (assistant, usage, summaries) após migration 004
+- Nunca logar chaves
 
-## Como o RLS protege dados
+## Runtime
 
-- RLS ativo em tabelas com dados de usuário
-- Políticas “own row” via `auth.uid()`
-- `subscriptions` / status de pagamento: usuários só leem; escrita via service role
-- `usage_events`: append-only para usuários comuns
-- Admin separado em `admin_roles`
-- Service role **nunca** no cliente
-
-## Como custos são registrados
-
-Cálculo **determinístico** a partir de tokens × taxas de planejamento × `USD_BRL_PLANNING_RATE`. A IA não calcula custo. Campos: `input_tokens`, `output_tokens`, `model`, `estimated_cost_usd_micros`, `estimated_cost_brl_cents`, `feature_type`, `request_id`, `latency_ms`, `success`.
-
-## Como a tradição altera a resposta
-
-`TheologyPolicyResolver` compõe:
-
-1. Regras gerais da plataforma  
-2. Política da tradição (`ecumenical` | `evangelical` | `catholic`)  
-3. Política da persona  
-4. Preferências do usuário  
-
-Ex.: tradição evangélica bloqueia conteúdo de santos mesmo se o flag do usuário estiver ligado.
+| Ambiente | Mocks |
+|----------|-------|
+| development | permitidos |
+| preview | só com `DEMO_MODE=true` |
+| production | proibidos |
 
 ## O que ainda é mock
 
-- `MockAiProvider` sem `OPENAI_API_KEY`
-- Fonte bíblica mock (trechos fictícios rotulados “demonstração”)
-- Persistência de chat em memória no modo demo
-- Métricas do admin e relatório diário com agregados mock
-- Stripe / checkout real
-- Pagamento de recompensas de indicação
+Métricas admin, relatório diário ilustrativo, trechos bíblicos de demonstração, Stripe, pagamento de indicações.

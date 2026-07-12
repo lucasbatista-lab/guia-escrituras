@@ -25,17 +25,21 @@ export function SignUpForm() {
 
     try {
       if (!hasSupabaseEnv()) {
-        router.push("/onboarding");
+        setError(
+          "Cadastro indisponível: configure o Supabase neste ambiente.",
+        );
         return;
       }
 
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
+      const origin = window.location.origin;
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { display_name: displayName },
+          emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
         },
       });
 
@@ -45,7 +49,7 @@ export function SignUpForm() {
       }
 
       setMessage(
-        "Conta criada. Se a confirmação por e-mail estiver ativa, verifique sua caixa de entrada.",
+        "Conta criada. Se a confirmação por e-mail estiver ativa, verifique sua caixa de entrada e depois conclua o onboarding.",
       );
       router.push("/onboarding");
       router.refresh();
@@ -60,8 +64,8 @@ export function SignUpForm() {
     <form onSubmit={onSubmit} className="space-y-4">
       {!hasSupabaseEnv() && (
         <p className="rounded-md bg-sand-200/70 px-3 py-2 text-xs text-ink-soft">
-          Modo fundação: sem Supabase, o cadastro segue para o onboarding em
-          demonstração.
+          Supabase ainda não configurado. O cadastro real exige as variáveis
+          públicas do projeto.
         </p>
       )}
       <div className="space-y-2">
@@ -106,7 +110,11 @@ export function SignUpForm() {
           {message}
         </p>
       )}
-      <Button type="submit" className="w-full bg-ink hover:bg-ink/90" disabled={loading}>
+      <Button
+        type="submit"
+        className="w-full bg-ink hover:bg-ink/90"
+        disabled={loading || !hasSupabaseEnv()}
+      >
         {loading ? "Criando…" : "Criar conta"}
       </Button>
       <p className="text-center text-sm text-ink-soft">

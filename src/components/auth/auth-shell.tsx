@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { brand } from "@/config/brand";
 
 export function AuthShell({
   title,
@@ -13,7 +14,7 @@ export function AuthShell({
     <div className="flex min-h-screen flex-col">
       <header className="mx-auto w-full max-w-md px-4 pt-8 sm:px-0">
         <Link href="/" className="font-display text-xl text-ink">
-          Guia Escrituras
+          {brand.name}
         </Link>
       </header>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-0">

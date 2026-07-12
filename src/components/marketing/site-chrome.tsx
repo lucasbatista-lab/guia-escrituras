@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { brand } from "@/config/brand";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -17,10 +18,10 @@ export function SiteHeader({ className }: { className?: string }) {
     >
       <Link href="/" className="group">
         <span className="font-display text-xl tracking-tight text-ink sm:text-2xl">
-          Guia Escrituras
+          {brand.name}
         </span>
         <span className="mt-0.5 block text-[11px] uppercase tracking-[0.18em] text-ink-soft/80 transition group-hover:text-wine">
-          Reflexão com as Escrituras
+          {brand.description}
         </span>
       </Link>
       <nav className="hidden items-center gap-6 md:flex" aria-label="Principal">
@@ -57,10 +58,10 @@ export function SiteFooter() {
     <footer className="mx-auto mt-20 w-full max-w-6xl border-t border-border/70 px-4 py-10 sm:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-display text-lg text-ink">Guia Escrituras</p>
+          <p className="font-display text-lg text-ink">{brand.name}</p>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-ink-soft">
-            Experiência de inteligência artificial com reflexões baseadas nas
-            Escrituras. Não afirma ser Jesus, Deus ou uma manifestação
+            {brand.description} Experiência de inteligência artificial baseada
+            nas Escrituras — não afirma ser Jesus, Deus ou uma manifestação
             sobrenatural.
           </p>
         </div>
@@ -71,6 +72,14 @@ export function SiteFooter() {
           <Link href="/como-funciona" className="hover:text-ink">
             Como funciona
           </Link>
+          <a
+            href={`https://instagram.com/${brand.socialHandles.instagram}`}
+            className="hover:text-ink"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            @{brand.socialHandles.instagram}
+          </a>
           <Link href="/cadastro" className="hover:text-ink">
             Cadastro
           </Link>

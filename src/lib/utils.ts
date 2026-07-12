@@ -5,22 +5,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function hasSupabaseEnv(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
-  );
-}
-
-export function getSupabaseAnonKey(): string {
-  return (
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    ""
-  );
-}
+export {
+  getSupabaseAnonKey,
+  getSupabasePublishableKey,
+  getSupabaseUrl,
+  hasSupabaseEnv,
+  hasSupabasePublicEnv,
+} from "@/lib/supabase/keys";
 
 export function createRequestId(): string {
   return crypto.randomUUID();
+}
+
+export function currentYearMonth(date = new Date()): string {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
 }

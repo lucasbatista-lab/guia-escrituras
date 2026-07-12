@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
 import { PlanCards } from "@/components/marketing/plan-cards";
@@ -51,15 +52,15 @@ export default function HomePage() {
         <section className="mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14 lg:pt-10">
           <div className="animate-fade-up">
             <p className="font-display text-4xl leading-[1.1] tracking-tight text-ink sm:text-5xl lg:text-[3.4rem]">
-              Guia Escrituras
+              {brand.name}
             </p>
             <h1 className="mt-5 max-w-xl text-balance font-display text-2xl leading-snug text-ink-soft sm:text-3xl">
-              Como Jesus responderia à sua situação?
+              {brand.tagline}
             </h1>
             <p className="mt-5 max-w-lg text-base leading-relaxed text-ink-soft sm:text-lg">
-              Reflexões e orientações baseadas nas Escrituras, com a tradição
-              que você escolher — apresentadas com clareza como inteligência
-              artificial, nunca como voz divina.
+              {brand.description} Reflexões com a tradição que você escolher —
+              apresentadas com clareza como inteligência artificial, nunca
+              como voz divina.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-ink hover:bg-ink/90">

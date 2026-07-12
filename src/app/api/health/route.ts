@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
-import { hasSupabaseEnv } from "@/lib/utils";
+import { brand } from "@/config/brand";
+import { getAppRuntime, allowsMocks } from "@/config/runtime";
+import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
+import { isOpenAiConfigured } from "@/lib/ai/gateway";
 
 export async function GET() {
   return NextResponse.json({
     status: "ok",
-    service: "guia-escrituras",
+    service: brand.name,
+    runtime: getAppRuntime(),
     timestamp: new Date().toISOString(),
     checks: {
-      supabaseConfigured: hasSupabaseEnv(),
-      openaiConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),
+      supabaseConfigured: hasSupabasePublicEnv(),
+      openaiConfigured: isOpenAiConfigured(),
+      mocksAllowed: allowsMocks(),
     },
-    // Never expose keys, connection strings, or secrets
   });
 }

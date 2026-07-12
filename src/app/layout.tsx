@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Source_Sans_3, Source_Serif_4 } from "next/font/google";
+import { brand } from "@/config/brand";
 import "./globals.css";
 
 const display = Fraunces({
@@ -21,16 +22,13 @@ const chat = Source_Serif_4({
   weight: ["400", "600"],
 });
 
-const appUrl = process.env.APP_URL || "http://localhost:3000";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
+  metadataBase: new URL(brand.canonicalUrl),
   title: {
-    default: "Guia Escrituras",
-    template: "%s · Guia Escrituras",
+    default: brand.name,
+    template: `%s · ${brand.name}`,
   },
-  description:
-    "Reflexões e orientações baseadas nas Escrituras — uma experiência de inteligência artificial. Como Jesus responderia à sua situação?",
+  description: `${brand.description} ${brand.tagline}`,
 };
 
 export default function RootLayout({

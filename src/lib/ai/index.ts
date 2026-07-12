@@ -10,5 +10,6 @@ export {
   createAiProvider,
   getDeepModel,
   getDefaultModel,
+  isOpenAiConfigured,
   resolveChatModel,
 } from "./gateway";

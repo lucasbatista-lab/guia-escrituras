@@ -1,13 +1,39 @@
+import { allowsMocks, requiresRealOpenAiForChat } from "@/config/runtime";
 import { MockAiProvider } from "./mock-provider";
 import { OpenAiResponsesProvider } from "./openai-provider";
 import type { AiProvider } from "./types";
+import { AppError } from "@/lib/safety";
+
+export function isOpenAiConfigured(): boolean {
+  return Boolean(process.env.OPENAI_API_KEY?.trim());
+}
 
 export function createAiProvider(): AiProvider {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
-    return new MockAiProvider();
+
+  if (apiKey) {
+    return new OpenAiResponsesProvider(apiKey);
   }
-  return new OpenAiResponsesProvider(apiKey);
+
+  if (requiresRealOpenAiForChat()) {
+    throw new AppError(
+      "openai_unavailable",
+      "openai_unavailable",
+      503,
+      "O chat está temporariamente indisponível.",
+    );
+  }
+
+  if (!allowsMocks()) {
+    throw new AppError(
+      "openai_unavailable",
+      "openai_unavailable",
+      503,
+      "O chat está temporariamente indisponível.",
+    );
+  }
+
+  return new MockAiProvider();
 }
 
 export function getDefaultModel(): string {

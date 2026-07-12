@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getAuthUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { allowsMocks } from "@/config/runtime";
+import { getAuthUserContext } from "@/lib/auth";
 
 const links = [
   { href: "/admin", label: "Visão geral" },
@@ -22,7 +23,10 @@ export default async function AdminLayout({
     redirect("/entrar?next=/admin");
   }
 
-  if (!auth.isAdmin && !auth.demoMode) {
+  const allowed =
+    auth.isAdmin || (auth.demoMode && allowsMocks());
+
+  if (!allowed) {
     redirect("/inicio");
   }
 
@@ -33,7 +37,7 @@ export default async function AdminLayout({
           <div>
             <p className="font-display text-lg text-ink">Admin</p>
             <p className="text-xs text-ink-soft">
-              Sem conteúdo privado de conversas
+              Sem conteúdo privado de conversas · via admin_roles
             </p>
           </div>
           <nav className="flex flex-wrap gap-2 text-sm">
@@ -46,7 +50,10 @@ export default async function AdminLayout({
                 {link.label}
               </Link>
             ))}
-            <Link href="/inicio" className="rounded-md px-2 py-1 text-ink-soft hover:text-ink">
+            <Link
+              href="/inicio"
+              className="rounded-md px-2 py-1 text-ink-soft hover:text-ink"
+            >
               Voltar
             </Link>
           </nav>

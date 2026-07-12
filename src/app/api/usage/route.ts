@@ -14,6 +14,16 @@ export async function GET() {
     );
   }
 
+  if (!auth.planKey) {
+    return NextResponse.json({
+      requestId,
+      planKey: null,
+      level: "normal",
+      label: "Sem assinatura",
+      note: "Não há plano gratuito. Assine para conversar.",
+    });
+  }
+
   const config = getBudgetConfig(auth.planKey);
 
   return NextResponse.json({
@@ -22,7 +32,6 @@ export async function GET() {
     level: "normal",
     label: usageLevelLabel("normal"),
     dailyBurstLimit: config.dailyBurstLimit,
-    // Friendly — no raw message quotas
     note: "Uso apresentado em linguagem amigável na conta do usuário.",
   });
 }
