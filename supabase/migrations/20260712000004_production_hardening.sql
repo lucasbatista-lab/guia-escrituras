@@ -26,6 +26,9 @@ comment on index public.usage_events_user_request_id_uidx is
 -- -----------------------------------------------------------------------------
 drop policy if exists "messages_insert_own" on public.messages;
 
+drop policy if exists "messages_insert_own_user_role"
+  on public.messages;
+
 -- Authenticated users may insert only their own user-role messages into
 -- conversations they own. Assistant/system rows require service role.
 create policy "messages_insert_own_user_role"
