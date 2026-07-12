@@ -1,3 +1,5 @@
+import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
+
 export type AppRuntime = "development" | "preview" | "production";
 
 export function getAppRuntime(): AppRuntime {
@@ -48,11 +50,7 @@ export class ConfigError extends Error {
 
 export function assertSupabaseConfiguredForRuntime(): void {
   if (!requiresRealSupabase()) return;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-  if (!url || !key) {
+  if (!hasSupabasePublicEnv()) {
     throw new ConfigError(
       "Serviço temporariamente indisponível. Configure o Supabase.",
       "supabase_not_configured",

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { signUpAction } from "@/lib/auth/sign-up-action";
 import { hasSupabaseEnv } from "@/lib/utils";
 
 export function SignUpForm() {
@@ -31,30 +32,32 @@ export function SignUpForm() {
         return;
       }
 
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
-      const origin = window.location.origin;
-      const { error: signUpError } = await supabase.auth.signUp({
+      const result = await signUpAction({
+        displayName,
         email,
         password,
-        options: {
-          data: { display_name: displayName },
-          emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
-        },
       });
 
-      if (signUpError) {
-        setError("Não foi possível criar a conta. Tente outro e-mail.");
+      if (!result.ok) {
+        setError(result.message);
         return;
       }
 
-      setMessage(
-        "Conta criada. Se a confirmação por e-mail estiver ativa, verifique sua caixa de entrada e depois conclua o onboarding.",
-      );
-      router.push("/onboarding");
-      router.refresh();
+      if (result.needsEmailConfirmation) {
+        setMessage(
+          "Conta criada. Verifique seu e-mail para confirmar e, em seguida, conclua o onboarding.",
+        );
+        return;
+      }
+
+      if (result.redirectTo) {
+        router.push(result.redirectTo);
+        router.refresh();
+      }
     } catch {
-      setError("Algo deu errado. Tente novamente.");
+      setError(
+        "Não foi possível criar a conta agora. Tente novamente em instantes.",
+      );
     } finally {
       setLoading(false);
     }

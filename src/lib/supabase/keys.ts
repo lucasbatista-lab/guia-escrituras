@@ -4,8 +4,40 @@
  * Never include secret/service role here — this module is client-safe.
  */
 
+/**
+ * Normalize common NEXT_PUBLIC_SUPABASE_URL mistakes that break browser Auth.
+ * Observed in production: `tps://...` (missing `ht` from `https`).
+ */
+export function normalizeSupabaseUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+
+  if (trimmed.startsWith("tps://")) {
+    return `https://${trimmed.slice("tps://".length)}`;
+  }
+
+  if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
+    return trimmed.replace(/\/$/, "");
+  }
+
+  // Host-only values (e.g. xyz.supabase.co)
+  return `https://${trimmed.replace(/\/$/, "")}`;
+}
+
+export function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 export function getSupabaseUrl(): string {
-  return process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
+  const normalized = normalizeSupabaseUrl(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  );
+  return isValidHttpUrl(normalized) ? normalized : "";
 }
 
 /** Prefer publishable; fall back to legacy anon. */
