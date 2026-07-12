@@ -1,0 +1,119 @@
+import type { EntitlementKey, PlanDefinition, PlanKey } from "./types";
+
+export const PLAN_DEFINITIONS: PlanDefinition[] = [
+  {
+    key: "essencial",
+    name: "Essencial",
+    tagline: "Um ponto de partida acolhedor para reflexão diária.",
+    priceMonthlyCents: 3800,
+    currency: "BRL",
+    ctaType: "checkout",
+    ctaLabel: "Começar com Essencial",
+    entitlements: ["chat_standard", "short_memory"],
+    displayBenefits: [
+      "Conversas com orientação baseada nas Escrituras",
+      "Memória da conversa em andamento",
+      "Uma tradição espiritual no perfil",
+      "Experiência mobile-first",
+    ],
+  },
+  {
+    key: "caminho",
+    name: "Caminho",
+    tagline: "Para quem deseja acompanhar a jornada com mais regularidade.",
+    priceMonthlyCents: 5800,
+    currency: "BRL",
+    ctaType: "checkout",
+    ctaLabel: "Escolher Caminho",
+    highlighted: true,
+    entitlements: [
+      "chat_standard",
+      "chat_frequent",
+      "short_memory",
+      "reading_journeys",
+      "fair_use_extended",
+    ],
+    displayBenefits: [
+      "Tudo do Essencial",
+      "Uso mais frequente ao longo do mês",
+      "Jornadas de leitura guiadas",
+      "Franquia flexível ampliada",
+    ],
+  },
+  {
+    key: "profundo",
+    name: "Profundo",
+    tagline: "Mais profundidade, memória e perspectivas mentoras.",
+    priceMonthlyCents: 18800,
+    currency: "BRL",
+    ctaType: "checkout",
+    ctaLabel: "Escolher Profundo",
+    entitlements: [
+      "chat_standard",
+      "chat_frequent",
+      "chat_deep",
+      "short_memory",
+      "extended_memory",
+      "multiple_personas",
+      "reading_journeys",
+      "voice_responses",
+      "priority_support",
+      "fair_use_extended",
+    ],
+    displayBenefits: [
+      "Tudo do Caminho",
+      "Conversas profundas com maior contexto",
+      "Memória estendida entre sessões",
+      "Múltiplas perspectivas mentoras",
+      "Respostas em áudio",
+      "Suporte prioritário",
+    ],
+  },
+  {
+    key: "particular",
+    name: "Particular",
+    tagline: "Acompanhamento sob medida, com acesso sob solicitação.",
+    priceMonthlyCents: 98800,
+    currency: "BRL",
+    ctaType: "request_access",
+    ctaLabel: "Solicitar acesso",
+    entitlements: [
+      "chat_standard",
+      "chat_frequent",
+      "chat_deep",
+      "short_memory",
+      "extended_memory",
+      "multiple_personas",
+      "reading_journeys",
+      "voice_responses",
+      "priority_support",
+      "human_concierge",
+      "custom_content",
+      "whatsapp_access",
+      "fair_use_extended",
+    ],
+    displayBenefits: [
+      "Tudo do Profundo",
+      "Concierge humano",
+      "Conteúdo personalizado",
+      "Acesso via WhatsApp",
+      "Acompanhamento sob medida",
+    ],
+  },
+];
+
+export function getPlanByKey(key: PlanKey): PlanDefinition | undefined {
+  return PLAN_DEFINITIONS.find((plan) => plan.key === key);
+}
+
+export function getPlanEntitlements(key: PlanKey): EntitlementKey[] {
+  return getPlanByKey(key)?.entitlements ?? [];
+}
+
+export function formatPriceBRL(cents: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+}
