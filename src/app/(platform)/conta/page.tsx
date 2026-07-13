@@ -1,14 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ManageSubscriptionButton } from "@/components/account/manage-subscription-button";
+import { SubscriptionManagementPanel } from "@/components/account/subscription-management-panel";
 import { getAuthUserContext } from "@/lib/auth";
-import {
-  subscriptionStatusLabel,
-  type SubscriptionStatus,
-  userHasBillingCustomer,
-} from "@/lib/billing";
 import { getRepositories } from "@/lib/database/repositories";
 import { getPlanByKey } from "@/lib/entitlements";
+import { getAccountBillingView } from "@/lib/stripe/subscription-management";
 import {
   evaluateMonthlyBudget,
   getBudgetConfig,
@@ -24,7 +20,7 @@ export default async function ContaPage() {
 
   const plan = auth.planKey ? getPlanByKey(auth.planKey) : null;
   const budgetConfig = auth.planKey ? getBudgetConfig(auth.planKey) : null;
-  const hasPortal = await userHasBillingCustomer(auth.userId);
+  const billing = plan ? await getAccountBillingView(auth.userId) : null;
 
   let level: "normal" | "elevated" | "near_limit" | "blocked" = "normal";
   if (budgetConfig) {
@@ -43,14 +39,6 @@ export default async function ContaPage() {
     }
   }
 
-  const statusLabel =
-    auth.subscriptionStatus &&
-    ["trialing", "active", "past_due", "canceled", "incomplete", "unpaid"].includes(
-      auth.subscriptionStatus,
-    )
-      ? subscriptionStatusLabel(auth.subscriptionStatus as SubscriptionStatus)
-      : auth.subscriptionStatus;
-
   return (
     <div className="space-y-8">
       <div>
@@ -61,44 +49,63 @@ export default async function ContaPage() {
       </div>
 
       <section className="rounded-2xl border border-border/70 bg-card/60 p-6">
-        <h2 className="font-display text-xl text-ink">Plano</h2>
-        <p className="mt-2 text-sm text-ink-soft">
-          {plan?.name ?? "Sem assinatura ativa"}
-        </p>
-        {plan ? (
+        <h2 className="font-display text-xl text-ink">Assinatura</h2>
+        {plan && billing ? (
           <>
             <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-ink-soft">Status</dt>
-                <dd className="text-ink">{statusLabel ?? "—"}</dd>
+                <dt className="text-ink-soft">Plano atual</dt>
+                <dd className="text-ink">{billing.planName}</dd>
               </div>
               <div>
-                <dt className="text-ink-soft">Validade</dt>
+                <dt className="text-ink-soft">Valor mensal</dt>
+                <dd className="text-ink">{billing.priceMonthlyLabel}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-soft">Status</dt>
+                <dd className="text-ink">{billing.statusLabel}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-soft">
+                  {billing.cancelAtPeriodEnd ? "Acesso até" : "Próxima cobrança"}
+                </dt>
                 <dd className="text-ink">
-                  {auth.subscriptionPeriodEnd
-                    ? new Date(auth.subscriptionPeriodEnd).toLocaleDateString("pt-BR")
-                    : "Não informada"}
+                  {billing.cancelAtPeriodEnd
+                    ? (billing.accessUntilLabel ?? "Não informada")
+                    : (billing.nextChargeLabel ?? "Não informada")}
                 </dd>
               </div>
+              {billing.cardLabel ? (
+                <div>
+                  <dt className="text-ink-soft">Forma de pagamento</dt>
+                  <dd className="text-ink">{billing.cardLabel}</dd>
+                </div>
+              ) : null}
             </dl>
+            <p className="mt-4 text-sm text-ink-soft">
+              {billing.renewsAutomatically
+                ? "A renovação é automática ao final de cada período."
+                : billing.cancelAtPeriodEnd
+                  ? "A renovação automática está desativada para esta assinatura."
+                  : "Renovação automática indisponível para este tipo de assinatura."}
+            </p>
             <ul className="mt-4 space-y-1.5 text-sm text-ink-soft">
               {plan.displayBenefits.map((benefit) => (
                 <li key={benefit}>· {benefit}</li>
               ))}
             </ul>
             <div className="mt-6">
-              {hasPortal ? (
-                <ManageSubscriptionButton />
-              ) : auth.hasStripeSubscription ? (
-                <p className="text-sm text-ink-soft">
-                  Portal de cobrança ainda não disponível para esta conta.
-                </p>
-              ) : (
-                <p className="text-sm text-ink-soft">
-                  Esta assinatura não está vinculada ao portal de pagamento. Em caso
-                  de dúvida, fale com o suporte.
-                </p>
-              )}
+              <SubscriptionManagementPanel
+                planName={billing.planName}
+                accessUntilLabel={billing.accessUntilLabel}
+                cancelAtPeriodEnd={billing.cancelAtPeriodEnd}
+                canCancelRenewal={billing.canCancelRenewal}
+                canReactivate={billing.canReactivate}
+                isManualOnly={billing.isManualOnly}
+                hasStripeManagedSubscription={
+                  billing.hasStripeManagedSubscription
+                }
+              />
             </div>
           </>
         ) : (

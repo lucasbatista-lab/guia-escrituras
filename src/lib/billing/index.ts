@@ -56,6 +56,10 @@ export async function createCheckoutSessionPlaceholder(input: {
 
 export { startCheckoutAction } from "./checkout-action";
 export {
+  cancelSubscriptionRenewalAction,
+  reactivateSubscriptionRenewalAction,
+} from "./subscription-actions";
+export {
   resolveEffectiveSubscription,
   selectEffectiveSubscriptionsByUser,
   isLiveSubscriptionStatus,

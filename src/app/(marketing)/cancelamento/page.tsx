@@ -10,12 +10,12 @@ export default function CancelamentoPage() {
     <LegalDocumentShell title="Cancelamento de assinatura">
       <p>
         As assinaturas são recorrentes e podem ser canceladas a qualquer momento
-        pelo portal de cobrança acessível em Minha conta, quando disponível.
+        na página Conta, pela opção “Cancelar renovação”.
       </p>
       <p>
-        Após o cancelamento, o acesso permanece até o fim do período já pago. Não
-        há reembolso proporcional automático nesta versão, salvo quando exigido
-        por lei.
+        Após cancelar a renovação, o acesso permanece até o fim do período já
+        pago. Não há reembolso proporcional automático nesta versão, salvo quando
+        exigido por lei.
       </p>
       <p>
         Falhas de pagamento podem suspender o acesso até regularização. Tentativas

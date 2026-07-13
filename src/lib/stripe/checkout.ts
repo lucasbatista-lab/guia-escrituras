@@ -111,6 +111,7 @@ export async function createSubscriptionCheckout(
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
+    locale: "pt-BR",
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,

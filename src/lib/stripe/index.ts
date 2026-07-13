@@ -12,6 +12,11 @@ export { createSubscriptionCheckout, type CreateCheckoutResult } from "./checkou
 export { handleStripeWebhookEvent } from "./webhook";
 export { createCustomerPortalSession } from "./portal";
 export {
+  cancelSubscriptionRenewal,
+  reactivateSubscriptionRenewal,
+  getAccountBillingView,
+} from "./subscription-management";
+export {
   mapStripeSubscriptionStatus,
   upsertSubscriptionFromStripe,
   recordPaymentEvent,
