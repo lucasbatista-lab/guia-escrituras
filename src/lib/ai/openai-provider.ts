@@ -9,6 +9,11 @@ import {
   buildGroundingPromptSection,
   filterReferencesToGrounding,
 } from "@/lib/biblical";
+import {
+  getMaxOutputTokensForDepth,
+  getOpenAiReasoningEffortDefault,
+} from "./openai-config";
+import { getResponseDepthGuidance } from "./response-depth";
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
 
@@ -55,8 +60,15 @@ export class OpenAiResponsesProvider implements AiProvider {
 
   async generate(input: AiGenerateInput): Promise<AiGenerateResult> {
     const started = Date.now();
+    const depth = input.responseDepth ?? "balanced";
+    const depthGuidance = getResponseDepthGuidance(depth);
+    const maxOutputTokens = getMaxOutputTokensForDepth(depth);
+    const reasoningEffort = getOpenAiReasoningEffortDefault();
+
     const system = [
       ...input.theologyPolicy.composedSystemPromptSections,
+      "",
+      ...depthGuidance.promptLines,
       "",
       ...buildGroundingPromptSection(input.grounding),
       "Responda em português do Brasil.",
@@ -67,6 +79,7 @@ export class OpenAiResponsesProvider implements AiProvider {
       "Use expressões como “em síntese”, “a passagem ensina” ou “à luz desse texto”.",
       "Separe interpretação de aplicação prática.",
       "Nunca afirme ser Jesus, Deus ou uma revelação sobrenatural.",
+      "interpretationNotice: uma frase curta sobre referência/síntese (não um essay).",
     ].join("\n");
 
     const conversation = input.messages
@@ -91,6 +104,8 @@ export class OpenAiResponsesProvider implements AiProvider {
         { role: "system", content: system },
         { role: "user", content: userPrompt },
       ],
+      max_output_tokens: maxOutputTokens,
+      reasoning: { effort: reasoningEffort },
       text: {
         format: {
           type: "json_schema",
@@ -101,7 +116,33 @@ export class OpenAiResponsesProvider implements AiProvider {
       },
     });
 
+    if (response.status === "incomplete") {
+      const reason =
+        response.incomplete_details?.reason ?? "unknown_incomplete";
+      logger.error("ai_response_incomplete", {
+        requestId: input.requestId,
+        reason,
+        maxOutputTokens,
+      });
+      throw new AppError(
+        "ai_incomplete",
+        "ai_incomplete",
+        503,
+        "Não foi possível concluir a reflexão agora. Tente novamente.",
+      );
+    }
+
     const raw = extractOutputText(response);
+    if (!raw.trim()) {
+      logger.error("ai_empty_output", { requestId: input.requestId });
+      throw new AppError(
+        "ai_invalid_output",
+        "ai_invalid_output",
+        503,
+        "Não foi possível gerar a reflexão agora. Tente novamente.",
+      );
+    }
+
     let content;
     try {
       content = parseAndValidateAiProviderContent(raw);
@@ -143,11 +184,12 @@ export class OpenAiResponsesProvider implements AiProvider {
       input.requestId,
     );
 
+    const capped = accepted.slice(0, depthGuidance.referenceCount.max);
     const usage = response.usage;
 
     return {
       answer: content.answer,
-      biblicalReferences: accepted,
+      biblicalReferences: capped,
       interpretationNotice: content.interpretationNotice,
       followUpQuestion: content.followUpQuestion ?? undefined,
       inputTokens: usage?.input_tokens ?? 0,

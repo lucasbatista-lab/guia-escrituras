@@ -60,8 +60,12 @@ export class TheologyPolicyResolver {
       );
     }
 
+    // Identity disclaimer is kept for policy consumers / UI, but the model is
+    // instructed not to recite it at the start of every answer.
     const composedSystemPromptSections = [
-      IDENTITY_DISCLAIMER,
+      "## Identidade (não repetir no início de cada resposta)",
+      "A interface já informa que esta é uma experiência de IA baseada nas Escrituras. Não comece respostas com essa apresentação.",
+      "Nunca afirme ser Jesus, Deus ou revelação sobrenatural.",
       "## Regras gerais",
       ...GENERAL_THEOLOGY_RULES.map((rule) => `- ${rule}`),
       `## Tradição: ${tradition.label}`,

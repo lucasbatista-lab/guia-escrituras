@@ -1,6 +1,7 @@
 import type { BiblicalReference } from "@/lib/biblical";
 import type { BiblicalGroundingResult } from "@/lib/biblical/curated-types";
 import type { TheologyPolicy } from "@/lib/theology";
+import type { ChatResponseDepth } from "./response-depth";
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -15,6 +16,7 @@ export interface AiGenerateInput {
   requestId: string;
   /** Curated biblical grounding for this turn (required in production path). */
   grounding: BiblicalGroundingResult;
+  responseDepth?: ChatResponseDepth;
 }
 
 export interface AiGenerateResult {

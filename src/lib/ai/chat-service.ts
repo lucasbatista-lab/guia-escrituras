@@ -15,12 +15,17 @@ import { AppError } from "@/lib/safety";
 import { theologyPolicyResolver } from "@/lib/theology";
 import { createBiblicalGroundingProvider } from "@/lib/biblical";
 import {
+  groundingLimitForDepth,
+  resolveChatResponseDepth,
+} from "@/lib/ai/response-depth";
+import {
   calculateTokenCost,
   evaluateDailyBurst,
   evaluateMonthlyBudget,
   getBudgetConfig,
   getUsdBrlPlanningRate,
   usageLevelLabel,
+  UnknownModelRateError,
 } from "@/lib/usage";
 import { currentYearMonth } from "@/lib/utils";
 
@@ -204,6 +209,12 @@ export async function runChatTurn(input: {
     userPrefs: auth.spiritualProfile,
   });
 
+  const responseDepth = resolveChatResponseDepth({
+    preferredDepth: auth.spiritualProfile.preferredDepth,
+    preferDeep: Boolean(body.preferDeep),
+  });
+  const groundingLimit = groundingLimitForDepth(responseDepth);
+
   let grounding;
   try {
     const biblical = createBiblicalGroundingProvider();
@@ -213,7 +224,7 @@ export async function runChatTurn(input: {
       personaKey: body.personaKey,
       allowsSaintsContent: policy.allowsSaintsContent,
       varietySeed: requestId,
-      limit: 4,
+      limit: groundingLimit,
     });
   } catch (error) {
     logger.error("biblical_grounding_failed", {
@@ -236,6 +247,7 @@ export async function runChatTurn(input: {
     groundingProvider: grounding.groundingProvider,
     groundingCount: grounding.groundingCount,
     retrievedReferenceIds: grounding.retrievedReferenceIds,
+    responseDepth,
   });
 
   const useMockModel = auth.demoMode || !isOpenAiConfigured();
@@ -256,6 +268,7 @@ export async function runChatTurn(input: {
       conversationSummary: summary?.summary ?? null,
       requestId,
       grounding,
+      responseDepth,
     });
   } catch (error) {
     logger.error("ai_generate_failed", {
@@ -273,12 +286,33 @@ export async function runChatTurn(input: {
   }
 
   // Provider output is validated before this point; never persist invalid assistant content.
-  const costs = calculateTokenCost({
-    model: result.model,
-    inputTokens: result.inputTokens,
-    outputTokens: result.outputTokens,
-    usdBrlPlanningRate: getUsdBrlPlanningRate(),
-  });
+  let costs;
+  try {
+    costs = calculateTokenCost({
+      model: result.model,
+      inputTokens: result.inputTokens,
+      outputTokens: result.outputTokens,
+      usdBrlPlanningRate: getUsdBrlPlanningRate(),
+    });
+  } catch (error) {
+    if (error instanceof UnknownModelRateError) {
+      logger.error("unknown_model_planning_rate", {
+        requestId,
+        model: result.model,
+      });
+      if (requiresRealOpenAiForChat()) {
+        throw new AppError(
+          "model_rate_unconfigured",
+          "model_rate_unconfigured",
+          503,
+          "O chat está temporariamente indisponível. Tente novamente mais tarde.",
+        );
+      }
+      costs = { estimatedCostUsdMicros: 0, estimatedCostBrlCents: 0 };
+    } else {
+      throw error;
+    }
+  }
 
   let persistWarning: string | undefined;
 

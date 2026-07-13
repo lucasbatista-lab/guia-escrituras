@@ -21,4 +21,5 @@ export {
   calculateTokenCost,
   getModelRate,
   getUsdBrlPlanningRate,
+  UnknownModelRateError,
 } from "./cost";

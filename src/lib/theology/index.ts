@@ -8,7 +8,7 @@ export type {
   TraditionKey,
   TraditionPolicy,
 } from "./types";
-export { GENERAL_THEOLOGY_RULES, IDENTITY_DISCLAIMER } from "./general-rules";
+export { GENERAL_THEOLOGY_RULES, IDENTITY_DISCLAIMER, SHORT_INTERPRETATION_NOTICE } from "./general-rules";
 export { TRADITION_POLICIES, getTraditionPolicy } from "./traditions";
 export {
   PERSONA_DEFINITIONS,
