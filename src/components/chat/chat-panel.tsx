@@ -13,16 +13,28 @@ interface UiMessage {
   meta?: ChatResponsePayload;
 }
 
-export function ChatPanel() {
-  const [messages, setMessages] = useState<UiMessage[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: `${IDENTITY_DISCLAIMER}\n\nTraga sua situação com calma. Vamos refletir à luz das Escrituras.`,
-    },
-  ]);
+export function ChatPanel({
+  initialConversationId = null,
+  initialMessages,
+}: {
+  initialConversationId?: string | null;
+  initialMessages?: UiMessage[];
+}) {
+  const [messages, setMessages] = useState<UiMessage[]>(
+    initialMessages && initialMessages.length > 0
+      ? initialMessages
+      : [
+          {
+            id: "welcome",
+            role: "assistant",
+            content: `${IDENTITY_DISCLAIMER}\n\nTraga sua situação com calma. Vamos refletir à luz das Escrituras.`,
+          },
+        ],
+  );
   const [input, setInput] = useState("");
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(
+    initialConversationId,
+  );
   const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,9 +110,9 @@ export function ChatPanel() {
           Mentor principal: interpretação baseada nos Evangelhos
         </p>
         <p className="mt-1 text-xs text-ink-soft">
-          Referências e interpretações baseadas nas Escrituras. Nesta versão, os
-          textos são apresentados por referência e síntese, não como reprodução
-          integral de uma tradução bíblica específica.
+          Referências e interpretações baseadas nas Escrituras. Os textos são
+          apresentados por referência e síntese, não como reprodução integral de
+          uma tradução bíblica específica.
         </p>
       </div>
 
@@ -131,10 +143,7 @@ export function ChatPanel() {
                 {message.meta.followUpQuestion && (
                   <p className="italic">{message.meta.followUpQuestion}</p>
                 )}
-                <p className="text-xs">
-                  {message.meta.usage.label}
-                  {message.meta.provider === "mock" ? " · demonstração" : ""}
-                </p>
+                <p className="text-xs">{message.meta.usage.label}</p>
               </div>
             )}
           </div>
@@ -170,6 +179,7 @@ export function ChatPanel() {
             placeholder="Compartilhe sua situação…"
             className="min-h-[2.75rem] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             maxLength={4000}
+            disabled={loading}
           />
           <Button
             type="button"
@@ -177,7 +187,7 @@ export function ChatPanel() {
             disabled={loading || !input.trim()}
             className="self-end bg-ink hover:bg-ink/90"
           >
-            Enviar
+            {loading ? "Enviando…" : "Enviar"}
           </Button>
         </div>
       </div>

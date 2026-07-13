@@ -21,14 +21,22 @@ export default async function AssinaturaSucessoPage({
   const sessionIdRaw = params.session_id;
   const sessionId = Array.isArray(sessionIdRaw) ? sessionIdRaw[0] : sessionIdRaw;
 
-  let status: "processing" | "active" | "sync_error" = "processing";
+  let status: "processing" | "active" | "sync_error" | "forbidden" =
+    "processing";
 
   if (sessionId) {
     try {
       assertStripeConfigured();
       const stripe = getStripeClient();
       const session = await stripe.checkout.sessions.retrieve(sessionId);
-      if (session.payment_status === "paid" || session.status === "complete") {
+      const sessionUserId = session.metadata?.user_id;
+
+      if (sessionUserId && sessionUserId !== auth.userId) {
+        status = "forbidden";
+      } else if (
+        sessionUserId === auth.userId &&
+        (session.payment_status === "paid" || session.status === "complete")
+      ) {
         const admin = createAdminClient();
         const { data: sub } = await admin
           .from("subscriptions")
@@ -43,6 +51,11 @@ export default async function AssinaturaSucessoPage({
         } else {
           status = "processing";
         }
+      } else if (!sessionUserId) {
+        // Query string alone is never enough; wait for webhook/DB.
+        status = "processing";
+      } else {
+        status = "processing";
       }
     } catch {
       status = "sync_error";
@@ -52,15 +65,19 @@ export default async function AssinaturaSucessoPage({
   const copy = {
     processing: {
       title: "Pagamento em processamento",
-      body: "Recebemos seu pagamento. A assinatura será ativada em instantes após a confirmação.",
+      body: "Recebemos sua solicitação. A assinatura só libera acesso quando o pagamento for confirmado no sistema — a URL de retorno sozinha não ativa o plano.",
     },
     active: {
       title: "Assinatura ativa",
-      body: "Sua assinatura está ativa. Você já pode usar o Amém Chat conforme seu plano.",
+      body: "Sua assinatura está ativa no sistema. Você já pode usar o Amém Chat conforme seu plano.",
     },
     sync_error: {
       title: "Estamos sincronizando",
-      body: "Seu pagamento foi recebido, mas ainda estamos confirmando a assinatura. Atualize esta página em alguns instantes.",
+      body: "Ainda estamos confirmando a assinatura. Atualize esta página em alguns instantes ou consulte sua conta.",
+    },
+    forbidden: {
+      title: "Sessão inválida",
+      body: "Esta confirmação de pagamento não pertence à conta conectada.",
     },
   }[status];
 
@@ -69,11 +86,13 @@ export default async function AssinaturaSucessoPage({
       <h1 className="font-display text-3xl text-ink">{copy.title}</h1>
       <p className="mt-3 text-sm text-ink-soft">{copy.body}</p>
       <div className="mt-8 flex flex-col gap-3">
-        <Button asChild className="bg-ink hover:bg-ink/90">
-          <Link href={status === "active" ? "/inicio" : "/onboarding"}>
-            {status === "active" ? "Ir para o início" : "Concluir onboarding"}
-          </Link>
-        </Button>
+        {status !== "forbidden" ? (
+          <Button asChild className="bg-ink hover:bg-ink/90">
+            <Link href={status === "active" ? "/inicio" : "/onboarding"}>
+              {status === "active" ? "Ir para o início" : "Concluir onboarding"}
+            </Link>
+          </Button>
+        ) : null}
         <Button asChild variant="outline">
           <Link href="/conta">Ver minha conta</Link>
         </Button>

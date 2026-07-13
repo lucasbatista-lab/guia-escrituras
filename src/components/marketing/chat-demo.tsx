@@ -2,15 +2,17 @@ export function ChatDemo() {
   return (
     <div
       className="animate-fade-up-delayed overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-sm backdrop-blur-sm"
-      aria-label="Demonstração do chat"
+      aria-label="Exemplo de conversa"
     >
       <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
         <div>
-          <p className="text-sm font-medium text-ink">Conversa de demonstração</p>
-          <p className="text-xs text-ink-soft">Trechos fictícios · não é citação real</p>
+          <p className="text-sm font-medium text-ink">Exemplo de conversa</p>
+          <p className="text-xs text-ink-soft">
+            Trechos ilustrativos · não é citação real
+          </p>
         </div>
         <span className="rounded-md bg-sand-200/80 px-2 py-1 text-[11px] uppercase tracking-wide text-ink-soft">
-          demonstração
+          exemplo
         </span>
       </div>
       <div className="space-y-4 p-4 font-chat text-[15px] leading-relaxed sm:p-5">

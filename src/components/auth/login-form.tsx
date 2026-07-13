@@ -6,12 +6,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { safeNextPath } from "@/lib/navigation/safe-next-path";
 import { hasSupabaseEnv } from "@/lib/utils";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/inicio";
+  const next = safeNextPath(searchParams.get("next"), "/inicio");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +43,7 @@ export function LoginForm() {
         return;
       }
 
-      router.push(next.startsWith("/") ? next : "/inicio");
+      router.push(next);
       router.refresh();
     } catch {
       setError("Algo deu errado. Tente novamente.");

@@ -36,7 +36,7 @@ export default async function InicioPage() {
           <h2 className="font-display text-xl text-ink">Seu plano</h2>
           <p className="mt-2 text-sm text-ink-soft">
             {plan?.name ?? "Nenhuma assinatura ativa"}
-            {auth.demoMode ? " · modo demonstração" : ""}
+            {auth.demoMode ? " · acesso limitado" : ""}
           </p>
           {!plan && (
             <p className="mt-2 text-xs text-ink-soft">

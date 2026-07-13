@@ -19,9 +19,9 @@ export default function TransparenciaIaPage() {
         selecionou no perfil espiritual.
       </p>
       <p>
-        Referências e interpretações baseadas nas Escrituras. Nesta versão, os
-        textos são apresentados por referência e síntese, não como reprodução
-        integral de uma tradução bíblica específica.
+        Referências e interpretações baseadas nas Escrituras. Os textos são
+        apresentados por referência e síntese, não como reprodução integral de
+        uma tradução bíblica específica.
       </p>
       <p>
         A IA pode errar, omitir contexto ou não cobrir todas as nuances teológicas
@@ -29,8 +29,8 @@ export default function TransparenciaIaPage() {
         orientação humana qualificada.
       </p>
       <p>
-        Não utilizamos suas mensagens para treinar modelos públicos sem consentimento
-        específico. Nesta fundação, o foco é operação do serviço e melhoria
+        Não utilizamos suas mensagens para treinar modelos públicos sem
+        consentimento específico. O foco é a operação do serviço e melhoria
         responsável com dados agregados.
       </p>
     </LegalDocumentShell>

@@ -1,9 +1,9 @@
-import Link from "next/link";
 import {
   PLAN_DEFINITIONS,
   formatPriceBRL,
   type PlanDefinition,
 } from "@/lib/entitlements";
+import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,11 @@ export function PlanCards({
 }
 
 function PlanCard({ plan }: { plan: PlanDefinition }) {
+  const href =
+    plan.ctaType === "request_access"
+      ? "/mensagens-personalizadas"
+      : `/cadastro?plan=${plan.key}`;
+
   return (
     <article
       className={cn(
@@ -60,6 +65,18 @@ function PlanCard({ plan }: { plan: PlanDefinition }) {
           </li>
         ))}
       </ul>
+      {plan.upcomingBenefits && plan.upcomingBenefits.length > 0 ? (
+        <div className="mt-4 border-t border-border/60 pt-4">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+            Em desenvolvimento
+          </p>
+          <ul className="mt-2 space-y-1.5 text-xs text-ink-soft/90">
+            {plan.upcomingBenefits.map((item) => (
+              <li key={item}>· {item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <Button
         asChild
         className={cn(
@@ -70,17 +87,13 @@ function PlanCard({ plan }: { plan: PlanDefinition }) {
               ? "bg-ink hover:bg-ink/90"
               : "",
         )}
-        variant={plan.highlighted || plan.ctaType === "request_access" ? "default" : "outline"}
+        variant={
+          plan.highlighted || plan.ctaType === "request_access"
+            ? "default"
+            : "outline"
+        }
       >
-        <Link
-          href={
-            plan.ctaType === "request_access"
-              ? "/mensagens-personalizadas"
-              : `/cadastro?plan=${plan.key}`
-          }
-        >
-          {plan.ctaLabel}
-        </Link>
+        <TrackingLink href={href}>{plan.ctaLabel}</TrackingLink>
       </Button>
     </article>
   );

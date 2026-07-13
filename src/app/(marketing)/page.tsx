@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
 import { PlanCards } from "@/components/marketing/plan-cards";
+import { TrackingLink } from "@/components/marketing/tracking-link";
 import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
 
@@ -36,7 +36,7 @@ const faq = [
   },
   {
     q: "As citações bíblicas são de traduções oficiais?",
-    a: "Nesta fundação usamos referências e demonstrações rotuladas. A integração com fonte licenciada virá em seguida.",
+    a: "As referências são apresentadas por síntese e indicação de passagem, não como reprodução integral de uma tradução específica.",
   },
   {
     q: "Substitui aconselhamento profissional?",
@@ -64,10 +64,10 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-ink hover:bg-ink/90">
-                <Link href="/cadastro">Começar agora</Link>
+                <TrackingLink href="/cadastro">Começar agora</TrackingLink>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/como-funciona">Ver como funciona</Link>
+                <TrackingLink href="/como-funciona">Ver como funciona</TrackingLink>
               </Button>
             </div>
           </div>
@@ -95,8 +95,8 @@ export default function HomePage() {
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-display text-3xl text-ink">Planos</h2>
           <p className="mt-3 max-w-2xl text-ink-soft">
-            Benefícios definidos por entitlements configuráveis — sem cotas
-            rígidas de mensagens na vitrine.
+            Escolha o plano que combina com o seu ritmo. Não destacamos cotas
+            rígidas de mensagens — o uso é flexível ao longo do mês.
           </p>
           <div className="mt-10">
             <PlanCards />
@@ -150,7 +150,7 @@ export default function HomePage() {
               guiada pelas Escrituras.
             </p>
             <Button asChild size="lg" className="mt-8 bg-wine hover:bg-wine-soft">
-              <Link href="/cadastro">Criar conta</Link>
+              <TrackingLink href="/cadastro">Criar conta</TrackingLink>
             </Button>
           </div>
         </section>

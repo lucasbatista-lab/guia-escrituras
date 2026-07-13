@@ -27,7 +27,10 @@ export interface PlanDefinition {
   ctaLabel: string;
   highlighted?: boolean;
   entitlements: EntitlementKey[];
+  /** Benefits available and billed as part of the active promise. */
   displayBenefits: string[];
+  /** Honest roadmap items — never sold as available now. */
+  upcomingBenefits?: string[];
 }
 
 export const ENTITLEMENT_LABELS: Record<EntitlementKey, string> = {

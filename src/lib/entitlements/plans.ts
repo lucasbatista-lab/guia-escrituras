@@ -1,4 +1,4 @@
-import type { EntitlementKey, PlanDefinition, PlanKey } from "./types";
+import type { PlanDefinition } from "./types";
 
 export const PLAN_DEFINITIONS: PlanDefinition[] = [
   {
@@ -14,7 +14,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "Conversas com orientação baseada nas Escrituras",
       "Memória da conversa em andamento",
       "Uma tradição espiritual no perfil",
-      "Experiência mobile-first",
+      "Experiência pensada para o celular",
     ],
   },
   {
@@ -36,14 +36,16 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     displayBenefits: [
       "Tudo do Essencial",
       "Uso mais frequente ao longo do mês",
-      "Jornadas de leitura guiadas",
       "Franquia flexível ampliada",
+    ],
+    upcomingBenefits: [
+      "Jornadas de leitura guiadas",
     ],
   },
   {
     key: "profundo",
     name: "Profundo",
-    tagline: "Mais profundidade, memória e perspectivas mentoras.",
+    tagline: "Mais profundidade e contexto nas conversas.",
     priceMonthlyCents: 18800,
     currency: "BRL",
     ctaType: "checkout",
@@ -63,10 +65,13 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     displayBenefits: [
       "Tudo do Caminho",
       "Conversas profundas com maior contexto",
+      "Suporte prioritário",
+    ],
+    upcomingBenefits: [
       "Memória estendida entre sessões",
       "Múltiplas perspectivas mentoras",
       "Respostas em áudio",
-      "Suporte prioritário",
+      "Jornadas de leitura guiadas",
     ],
   },
   {
@@ -93,20 +98,22 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "fair_use_extended",
     ],
     displayBenefits: [
-      "Tudo do Profundo",
-      "Concierge humano",
-      "Conteúdo personalizado",
+      "Acompanhamento sob medida, sob solicitação",
+      "Conteúdo e orientação personalizados após alinhamento",
+    ],
+    upcomingBenefits: [
+      "Concierge humano dedicado",
       "Acesso via WhatsApp",
-      "Acompanhamento sob medida",
+      "Recursos avançados dos demais planos quando habilitados",
     ],
   },
 ];
 
-export function getPlanByKey(key: PlanKey): PlanDefinition | undefined {
+export function getPlanByKey(key: PlanDefinition["key"]): PlanDefinition | undefined {
   return PLAN_DEFINITIONS.find((plan) => plan.key === key);
 }
 
-export function getPlanEntitlements(key: PlanKey): EntitlementKey[] {
+export function getPlanEntitlements(key: PlanDefinition["key"]) {
   return getPlanByKey(key)?.entitlements ?? [];
 }
 

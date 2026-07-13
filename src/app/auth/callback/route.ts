@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { completeIntentAfterConfirmation } from "@/lib/signup-intents";
+import { safeNextPath } from "@/lib/navigation/safe-next-path";
 import { createRequestId } from "@/lib/utils";
 import { logger } from "@/lib/logging/logger";
-
-function safeNextPath(next: string | null): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
-    return "/onboarding";
-  }
-  return next;
-}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const intentToken = searchParams.get("intent");
-  const next = safeNextPath(searchParams.get("next"));
+  const next = safeNextPath(searchParams.get("next"), "/onboarding");
   const requestId = createRequestId();
 
   const supabase = await createClient();

@@ -13,9 +13,9 @@ export default function PlanosPage() {
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <h1 className="font-display text-4xl text-ink">Planos</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Cada plano libera um conjunto de entitlements. Não destacamos
-          números de mensagens — o uso é flexível ao longo do mês, com
-          proteção de orçamento e limite diário de segurança.
+          Cada plano libera um conjunto claro de benefícios utilizáveis agora.
+          Recursos ainda em construção aparecem separados como “Em
+          desenvolvimento” e não fazem parte da promessa ativa da assinatura.
         </p>
         <div className="mt-10">
           <PlanCards />

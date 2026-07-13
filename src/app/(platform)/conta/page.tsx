@@ -4,6 +4,11 @@ import { SubscriptionManagementPanel } from "@/components/account/subscription-m
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
 import { getPlanByKey } from "@/lib/entitlements";
+import {
+  preferredDepthLabelPt,
+  responseStyleLabelPt,
+  traditionLabelPt,
+} from "@/lib/profile/labels-pt";
 import { getAccountBillingView } from "@/lib/stripe/subscription-management";
 import {
   evaluateMonthlyBudget,
@@ -44,7 +49,7 @@ export default async function ContaPage() {
       <div>
         <h1 className="font-display text-3xl text-ink">Conta</h1>
         <p className="mt-2 text-ink-soft">
-          {auth.email ?? "Conta em demonstração"}
+          {auth.email ?? "Conta sem e-mail vinculado"}
         </p>
       </div>
 
@@ -94,6 +99,18 @@ export default async function ContaPage() {
                 <li key={benefit}>· {benefit}</li>
               ))}
             </ul>
+            {plan.upcomingBenefits && plan.upcomingBenefits.length > 0 ? (
+              <div className="mt-4">
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+                  Em desenvolvimento
+                </p>
+                <ul className="mt-2 space-y-1 text-xs text-ink-soft">
+                  {plan.upcomingBenefits.map((item) => (
+                    <li key={item}>· {item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             <div className="mt-6">
               <SubscriptionManagementPanel
                 planName={billing.planName}
@@ -135,15 +152,21 @@ export default async function ContaPage() {
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-ink-soft">Tradição</dt>
-            <dd className="text-ink">{auth.spiritualProfile.traditionKey}</dd>
+            <dd className="text-ink">
+              {traditionLabelPt(auth.spiritualProfile.traditionKey)}
+            </dd>
           </div>
           <div>
             <dt className="text-ink-soft">Estilo</dt>
-            <dd className="text-ink">{auth.spiritualProfile.responseStyle}</dd>
+            <dd className="text-ink">
+              {responseStyleLabelPt(auth.spiritualProfile.responseStyle)}
+            </dd>
           </div>
           <div>
             <dt className="text-ink-soft">Profundidade</dt>
-            <dd className="text-ink">{auth.spiritualProfile.preferredDepth}</dd>
+            <dd className="text-ink">
+              {preferredDepthLabelPt(auth.spiritualProfile.preferredDepth)}
+            </dd>
           </div>
           <div>
             <dt className="text-ink-soft">Onboarding</dt>

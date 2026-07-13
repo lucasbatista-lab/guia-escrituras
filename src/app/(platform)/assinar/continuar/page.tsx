@@ -51,7 +51,7 @@ export default async function AssinarContinuarPage({
             </p>
           </div>
           <p className="text-sm text-ink-soft">
-            O valor é definido pelo catálogo interno e confirmado no checkout seguro.
+            O valor mensal é confirmado no checkout seguro antes do pagamento.
           </p>
           <form action={startCheckoutAction.bind(null, intentToken)}>
             <Button type="submit" className="w-full bg-ink hover:bg-ink/90">
