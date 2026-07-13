@@ -72,7 +72,13 @@ function PlanCard({ plan }: { plan: PlanDefinition }) {
         )}
         variant={plan.highlighted || plan.ctaType === "request_access" ? "default" : "outline"}
       >
-        <Link href={plan.ctaType === "request_access" ? "/mensagens-personalizadas" : "/cadastro"}>
+        <Link
+          href={
+            plan.ctaType === "request_access"
+              ? "/mensagens-personalizadas"
+              : `/cadastro?plan=${plan.key}`
+          }
+        >
           {plan.ctaLabel}
         </Link>
       </Button>

@@ -4,16 +4,28 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signUpAction } from "@/lib/auth/sign-up-action";
+import type { SignupTrackingParams } from "@/lib/signup-intents";
+import type { PlanKey } from "@/lib/entitlements";
 import { hasSupabaseEnv } from "@/lib/utils";
 
-export function SignUpForm() {
+export function SignUpForm({
+  planKey = null,
+  tracking,
+  requireTerms = false,
+}: {
+  planKey?: PlanKey | null;
+  tracking?: SignupTrackingParams;
+  requireTerms?: boolean;
+}) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,6 +48,9 @@ export function SignUpForm() {
         displayName,
         email,
         password,
+        planKey,
+        termsAccepted: requireTerms ? termsAccepted : true,
+        tracking,
       });
 
       if (!result.ok) {
@@ -45,7 +60,9 @@ export function SignUpForm() {
 
       if (result.needsEmailConfirmation) {
         setMessage(
-          "Conta criada. Verifique seu e-mail para confirmar e, em seguida, conclua o onboarding.",
+          planKey
+            ? "Conta criada. Verifique seu e-mail para confirmar e continuar com o pagamento."
+            : "Conta criada. Verifique seu e-mail para confirmar e depois conclua o onboarding.",
         );
         return;
       }
@@ -103,6 +120,27 @@ export function SignUpForm() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
+      {requireTerms && (
+        <div className="flex items-start gap-3 rounded-md border border-border/70 px-3 py-3">
+          <Checkbox
+            id="terms"
+            checked={termsAccepted}
+            onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+            aria-required
+          />
+          <Label htmlFor="terms" className="text-sm leading-relaxed text-ink-soft">
+            Li e aceito os{" "}
+            <Link href="/termos" className="text-ink underline-offset-4 hover:underline">
+              Termos de Uso
+            </Link>{" "}
+            e a{" "}
+            <Link href="/privacidade" className="text-ink underline-offset-4 hover:underline">
+              Política de Privacidade
+            </Link>
+            .
+          </Label>
+        </div>
+      )}
       {error && (
         <p className="text-sm text-destructive" role="alert">
           {error}
@@ -116,7 +154,7 @@ export function SignUpForm() {
       <Button
         type="submit"
         className="w-full bg-ink hover:bg-ink/90"
-        disabled={loading || !hasSupabaseEnv()}
+        disabled={loading || !hasSupabaseEnv() || (requireTerms && !termsAccepted)}
       >
         {loading ? "Criando…" : "Criar conta"}
       </Button>

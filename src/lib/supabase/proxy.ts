@@ -16,6 +16,8 @@ const PLATFORM_PREFIXES = [
   "/jornada",
   "/conta",
   "/onboarding",
+  "/assinar",
+  "/assinatura",
 ];
 
 const ADMIN_PREFIXES = ["/admin"];

@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { getPrivacyVersion, getTermsVersion } from "@/config/legal";
 import { getEmailRedirectTo } from "@/lib/auth/app-url";
 import {
   isSignUpDuplicateSoftFail,
@@ -10,6 +11,15 @@ import {
   type SignUpClientCode,
 } from "@/lib/auth/sign-up-errors";
 import { logger } from "@/lib/logging/logger";
+import {
+  completeIntentAfterConfirmation,
+  createSignupIntentWithToken,
+  getAuthCallbackUrlForIntent,
+  markIntentAwaitingConfirmation,
+  SignupIntentConfigError,
+  validateCheckoutPlan,
+  type SignupTrackingParams,
+} from "@/lib/signup-intents";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import { createRequestId } from "@/lib/utils";
@@ -18,13 +28,25 @@ const signUpSchema = z.object({
   displayName: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(320),
   password: z.string().min(8).max(72),
+  planKey: z.string().trim().optional().nullable(),
+  termsAccepted: z.boolean(),
+  tracking: z
+    .object({
+      referralCode: z.string().nullable().optional(),
+      utmSource: z.string().nullable().optional(),
+      utmMedium: z.string().nullable().optional(),
+      utmCampaign: z.string().nullable().optional(),
+      utmContent: z.string().nullable().optional(),
+      utmTerm: z.string().nullable().optional(),
+    })
+    .optional(),
 });
 
 export type SignUpActionResult =
   | {
       ok: true;
       needsEmailConfirmation: boolean;
-      redirectTo: "/onboarding" | null;
+      redirectTo: "/onboarding" | `/assinar/continuar?intent=${string}` | null;
       requestId: string;
     }
   | {
@@ -50,6 +72,9 @@ export async function signUpAction(input: {
   displayName: string;
   email: string;
   password: string;
+  planKey?: string | null;
+  termsAccepted?: boolean;
+  tracking?: SignupTrackingParams;
 }): Promise<SignUpActionResult> {
   const requestId = createRequestId();
 
@@ -62,7 +87,10 @@ export async function signUpAction(input: {
     return fail("config_missing", requestId);
   }
 
-  const parsed = signUpSchema.safeParse(input);
+  const parsed = signUpSchema.safeParse({
+    ...input,
+    termsAccepted: input.termsAccepted ?? false,
+  });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
     const path = issue?.path[0];
@@ -71,9 +99,55 @@ export async function signUpAction(input: {
     return fail("unexpected", requestId);
   }
 
+  const hasPlan = Boolean(parsed.data.planKey?.trim());
+  if (hasPlan && !parsed.data.termsAccepted) {
+    return fail("terms_required", requestId);
+  }
+
+  let intentToken: string | null = null;
+  let intentId: string | null = null;
+
+  if (hasPlan) {
+    const plan = validateCheckoutPlan(parsed.data.planKey);
+    if (!plan.ok) {
+      return fail(
+        plan.code === "request_access_plan" ? "invalid_plan" : "invalid_plan",
+        requestId,
+      );
+    }
+
+    try {
+      const { record, token } = await createSignupIntentWithToken({
+        selectedPlanKey: plan.planKey,
+        tracking: parsed.data.tracking,
+        termsVersion: getTermsVersion(),
+        privacyVersion: getPrivacyVersion(),
+        termsAcceptedAt: new Date().toISOString(),
+      });
+      intentToken = token;
+      intentId = record.id;
+    } catch (error) {
+      if (error instanceof SignupIntentConfigError) {
+        logger.error("sign_up_config_missing", {
+          requestId,
+          route: "signUpAction",
+          reason: "secret_key",
+        });
+        return fail("config_missing", requestId);
+      }
+      logger.error("sign_up_intent_failed", {
+        requestId,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+      return fail("unexpected", requestId);
+    }
+  }
+
   let emailRedirectTo: string;
   try {
-    emailRedirectTo = getEmailRedirectTo("/onboarding");
+    emailRedirectTo = intentToken
+      ? getAuthCallbackUrlForIntent(intentToken)
+      : getEmailRedirectTo("/onboarding");
   } catch {
     logger.error("sign_up_config_missing", {
       requestId,
@@ -148,17 +222,42 @@ export async function signUpAction(input: {
 
   const needsEmailConfirmation = !data.session;
 
+  if (intentId && intentToken) {
+    if (needsEmailConfirmation) {
+      await markIntentAwaitingConfirmation(intentId);
+    } else {
+      const completed = await completeIntentAfterConfirmation(
+        intentToken,
+        data.user.id,
+        requestId,
+      );
+      if (completed.ok) {
+        return {
+          ok: true,
+          needsEmailConfirmation: false,
+          redirectTo: completed.redirectTo as `/assinar/continuar?intent=${string}`,
+          requestId,
+        };
+      }
+    }
+  }
+
   logger.info("sign_up_ok", {
     requestId,
     route: "signUpAction",
     needsEmailConfirmation,
+    hasPlan,
     emailMasked: maskEmail(parsed.data.email),
   });
 
   return {
     ok: true,
     needsEmailConfirmation,
-    redirectTo: needsEmailConfirmation ? null : "/onboarding",
+    redirectTo: needsEmailConfirmation
+      ? null
+      : intentToken
+        ? (`/assinar/continuar?intent=${encodeURIComponent(intentToken)}` as const)
+        : "/onboarding",
     requestId,
   };
 }

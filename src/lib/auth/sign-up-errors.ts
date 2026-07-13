@@ -4,6 +4,8 @@ export type SignUpClientCode =
   | "password_weak"
   | "email_rate_limit"
   | "config_missing"
+  | "terms_required"
+  | "invalid_plan"
   | "unexpected";
 
 export interface SignUpClientError {
@@ -21,6 +23,10 @@ const SAFE_MESSAGES: Record<SignUpClientCode, string> = {
     "Limite de envio de e-mail atingido. Aguarde alguns minutos e tente de novo.",
   config_missing:
     "Cadastro indisponível: configuração do ambiente incompleta. Tente novamente mais tarde.",
+  terms_required:
+    "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
+  invalid_plan:
+    "Plano inválido. Escolha um plano disponível em /planos.",
   unexpected: "Não foi possível criar a conta agora. Tente novamente em instantes.",
 };
 
