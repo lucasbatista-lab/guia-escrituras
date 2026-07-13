@@ -6,6 +6,7 @@ import {
   formatPriceBRL,
   getPlanByKey,
 } from "@/lib/entitlements";
+import { startCheckoutAction } from "@/lib/billing/checkout-action";
 import { getContinuationViewState } from "@/lib/signup-intents";
 
 export default async function AssinarContinuarPage({
@@ -52,12 +53,11 @@ export default async function AssinarContinuarPage({
           <p className="text-sm text-ink-soft">
             O valor é definido pelo catálogo interno e confirmado no checkout seguro.
           </p>
-          <Button disabled className="w-full bg-ink/60">
-            Continuar para pagamento
-          </Button>
-          <p className="text-xs text-ink-soft">
-            O checkout seguro será habilitado após a confirmação do e-mail.
-          </p>
+          <form action={startCheckoutAction.bind(null, intentToken)}>
+            <Button type="submit" className="w-full bg-ink hover:bg-ink/90">
+              Continuar para pagamento
+            </Button>
+          </form>
           <p className="text-center text-sm text-ink-soft">
             <Link href="/planos" className="text-ink underline-offset-4 hover:underline">
               Voltar aos planos

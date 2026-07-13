@@ -24,6 +24,10 @@ function mapRow(row: Record<string, unknown>): SignupIntentRecord {
     termsVersion: (row.terms_version as string | null) ?? null,
     privacyVersion: (row.privacy_version as string | null) ?? null,
     termsAcceptedAt: (row.terms_accepted_at as string | null) ?? null,
+    stripeCheckoutSessionId:
+      (row.stripe_checkout_session_id as string | null) ?? null,
+    checkoutCreatedAt: (row.checkout_created_at as string | null) ?? null,
+    completedAt: (row.completed_at as string | null) ?? null,
     expiresAt: row.expires_at as string,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,

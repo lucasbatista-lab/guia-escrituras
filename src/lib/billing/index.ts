@@ -1,5 +1,5 @@
 /**
- * Billing domain — prepared for Stripe, without real checkout in this slice.
+ * Billing domain — Stripe subscription checkout (sandbox-ready).
  */
 
 export type SubscriptionStatus =
@@ -42,8 +42,7 @@ export function subscriptionStatusLabel(status: SubscriptionStatus): string {
 }
 
 /**
- * Placeholder for future Stripe Checkout Session creation.
- * Intentionally throws until Stripe is wired.
+ * @deprecated Use createSubscriptionCheckout via startCheckoutAction.
  */
 export async function createCheckoutSessionPlaceholder(input: {
   userId: string;
@@ -52,7 +51,7 @@ export async function createCheckoutSessionPlaceholder(input: {
   cancelUrl: string;
 }): Promise<never> {
   void input;
-  throw new Error(
-    "Checkout Stripe ainda não configurado. Veja docs/NEXT_STEPS.md.",
-  );
+  throw new Error("Use createSubscriptionCheckout.");
 }
+
+export { startCheckoutAction } from "./checkout-action";

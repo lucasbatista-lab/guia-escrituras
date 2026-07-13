@@ -24,6 +24,9 @@ export interface SignupIntentRecord {
   termsVersion: string | null;
   privacyVersion: string | null;
   termsAcceptedAt: string | null;
+  stripeCheckoutSessionId: string | null;
+  checkoutCreatedAt: string | null;
+  completedAt: string | null;
   expiresAt: string;
   createdAt: string;
   updatedAt: string;
