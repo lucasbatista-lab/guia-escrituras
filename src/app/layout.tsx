@@ -29,6 +29,21 @@ export const metadata: Metadata = {
     template: `%s · ${brand.name}`,
   },
   description: `${brand.description} ${brand.tagline}`,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: brand.canonicalUrl,
+    siteName: brand.name,
+    title: brand.name,
+    description: `${brand.description} ${brand.tagline}`,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

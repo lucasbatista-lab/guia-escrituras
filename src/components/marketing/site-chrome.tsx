@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { brand } from "@/config/brand";
+import { LEGAL_ROUTES } from "@/config/legal";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -65,24 +66,33 @@ export function SiteFooter() {
             sobrenatural.
           </p>
         </div>
-        <div className="flex flex-wrap gap-4 text-sm text-ink-soft">
-          <Link href="/planos" className="hover:text-ink">
-            Planos
-          </Link>
-          <Link href="/como-funciona" className="hover:text-ink">
-            Como funciona
-          </Link>
-          <a
-            href={`https://instagram.com/${brand.socialHandles.instagram}`}
-            className="hover:text-ink"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            @{brand.socialHandles.instagram}
-          </a>
-          <Link href="/cadastro" className="hover:text-ink">
-            Cadastro
-          </Link>
+        <div className="flex flex-col gap-3 text-sm text-ink-soft">
+          <div className="flex flex-wrap gap-4">
+            <Link href="/planos" className="hover:text-ink">
+              Planos
+            </Link>
+            <Link href="/como-funciona" className="hover:text-ink">
+              Como funciona
+            </Link>
+            <a
+              href={`https://instagram.com/${brand.socialHandles.instagram}`}
+              className="hover:text-ink"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              @{brand.socialHandles.instagram}
+            </a>
+            <Link href="/cadastro" className="hover:text-ink">
+              Cadastro
+            </Link>
+          </div>
+          <nav aria-label="Documentos legais" className="flex flex-wrap gap-x-4 gap-y-2">
+            {LEGAL_ROUTES.map((route) => (
+              <Link key={route.href} href={route.href} className="hover:text-ink">
+                {route.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </footer>

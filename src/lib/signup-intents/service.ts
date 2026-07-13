@@ -8,6 +8,7 @@ import {
   assertNotSelfReferral,
 } from "@/lib/referrals";
 import { logger } from "@/lib/logging/logger";
+import { persistLegalConsent } from "@/lib/legal/consent";
 import { getSignupIntentRepository } from "./repository";
 import { validateCheckoutPlan } from "./params";
 import {
@@ -128,6 +129,17 @@ export async function completeIntentAfterConfirmation(
   });
 
   await createReferralAttributionIfNeeded(updated, userId, requestId);
+
+  if (updated.termsVersion && updated.privacyVersion && updated.termsAcceptedAt) {
+    await persistLegalConsent({
+      userId,
+      termsVersion: updated.termsVersion,
+      privacyVersion: updated.privacyVersion,
+      acceptedAt: updated.termsAcceptedAt,
+      source: "signup_intent_callback",
+      requestId,
+    });
+  }
 
   return {
     ok: true,
