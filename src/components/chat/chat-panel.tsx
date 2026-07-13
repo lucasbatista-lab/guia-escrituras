@@ -23,6 +23,7 @@ export function ChatPanel() {
   ]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,12 +33,18 @@ export function ChatPanel() {
 
     setError(null);
     setLoading(true);
+    const requestId = pendingRequestId ?? crypto.randomUUID();
+    setPendingRequestId(requestId);
+
     const userMessage: UiMessage = {
-      id: crypto.randomUUID(),
+      id: requestId,
       role: "user",
       content: trimmed,
     };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === requestId && m.role === "user")) return prev;
+      return [...prev, userMessage];
+    });
     setInput("");
 
     try {
@@ -48,6 +55,7 @@ export function ChatPanel() {
           message: trimmed,
           conversationId,
           personaKey: "jesus",
+          requestId,
         }),
       });
 
@@ -65,10 +73,11 @@ export function ChatPanel() {
 
       const payload = data as ChatResponsePayload;
       setConversationId(payload.conversationId);
+      setPendingRequestId(null);
       setMessages((prev) => [
         ...prev,
         {
-          id: payload.requestId,
+          id: `${payload.requestId}-assistant`,
           role: "assistant",
           content: payload.answer,
           meta: payload,

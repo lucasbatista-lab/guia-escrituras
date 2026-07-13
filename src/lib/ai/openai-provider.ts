@@ -1,13 +1,11 @@
 import OpenAI from "openai";
-import type { BiblicalReference } from "@/lib/biblical";
 import type { AiGenerateInput, AiGenerateResult, AiProvider } from "./types";
-
-interface StructuredAiPayload {
-  answer: string;
-  biblicalReferences?: BiblicalReference[];
-  interpretationNotice?: string;
-  followUpQuestion?: string;
-}
+import {
+  AI_PROVIDER_JSON_SCHEMA,
+  parseAndValidateAiProviderContent,
+} from "./provider-output";
+import { logger } from "@/lib/logging/logger";
+import { AppError } from "@/lib/safety";
 
 function extractOutputText(response: {
   output_text?: string;
@@ -39,26 +37,9 @@ function extractOutputText(response: {
   return parts.join("\n").trim();
 }
 
-function parseStructuredPayload(raw: string): StructuredAiPayload {
-  try {
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return { answer: raw };
-    }
-    const parsed = JSON.parse(jsonMatch[0]) as StructuredAiPayload;
-    if (!parsed.answer) {
-      return { answer: raw };
-    }
-    return parsed;
-  } catch {
-    return { answer: raw };
-  }
-}
-
 /**
- * OpenAI Responses API provider.
- * Streaming is intentionally deferred to keep the first vertical slice stable.
- * See docs/NEXT_STEPS.md.
+ * OpenAI Responses API provider with structured outputs + Zod validation.
+ * Streaming is intentionally deferred.
  */
 export class OpenAiResponsesProvider implements AiProvider {
   private client: OpenAI;
@@ -73,8 +54,8 @@ export class OpenAiResponsesProvider implements AiProvider {
       ...input.theologyPolicy.composedSystemPromptSections,
       "",
       "Responda em português do Brasil.",
-      "Retorne JSON com: answer, biblicalReferences (array de {book, chapter, verseStart, verseEnd?}), interpretationNotice, followUpQuestion (opcional).",
       "Não invente texto de tradução bíblica licenciada; cite apenas referências.",
+      "Nunca afirme ser Jesus, Deus ou uma revelação sobrenatural.",
     ].join("\n");
 
     const conversation = input.messages
@@ -97,19 +78,47 @@ export class OpenAiResponsesProvider implements AiProvider {
         { role: "system", content: system },
         { role: "user", content: userPrompt },
       ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "chat_reflection",
+          strict: true,
+          schema: AI_PROVIDER_JSON_SCHEMA,
+        },
+      },
     });
 
     const raw = extractOutputText(response);
-    const parsed = parseStructuredPayload(raw);
+    let content;
+    try {
+      content = parseAndValidateAiProviderContent(raw);
+    } catch (error) {
+      logger.error("ai_output_validation_failed", {
+        requestId: input.requestId,
+        err: error instanceof Error ? error.message : "unknown",
+      });
+      if (error instanceof AppError) throw error;
+      throw new AppError(
+        "ai_invalid_output",
+        "ai_invalid_output",
+        503,
+        "Não foi possível gerar a reflexão agora. Tente novamente.",
+      );
+    }
+
     const usage = response.usage;
 
     return {
-      answer: parsed.answer,
-      biblicalReferences: parsed.biblicalReferences ?? [],
-      interpretationNotice:
-        parsed.interpretationNotice ??
-        input.theologyPolicy.identityDisclaimer,
-      followUpQuestion: parsed.followUpQuestion,
+      answer: content.answer,
+      biblicalReferences: content.biblicalReferences.map((ref) => ({
+        book: ref.book,
+        chapter: ref.chapter,
+        verseStart: ref.verseStart,
+        ...(ref.verseEnd != null ? { verseEnd: ref.verseEnd } : {}),
+        ...(ref.translation ? { translation: ref.translation } : {}),
+      })),
+      interpretationNotice: content.interpretationNotice,
+      followUpQuestion: content.followUpQuestion ?? undefined,
       inputTokens: usage?.input_tokens ?? 0,
       outputTokens: usage?.output_tokens ?? 0,
       model: input.model,

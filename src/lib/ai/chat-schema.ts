@@ -14,6 +14,8 @@ export const chatRequestSchema = z.object({
   conversationId: z.string().uuid().optional().nullable(),
   personaKey: z.string().min(1).default("jesus"),
   preferDeep: z.boolean().optional().default(false),
+  /** Client-generated UUID reused across retries of the same send. */
+  requestId: z.string().uuid().optional(),
 });
 
 export type ChatRequestInput = z.infer<typeof chatRequestSchema>;

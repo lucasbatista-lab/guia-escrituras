@@ -13,3 +13,8 @@ export {
   isOpenAiConfigured,
   resolveChatModel,
 } from "./gateway";
+export {
+  parseAndValidateAiProviderContent,
+  aiProviderContentSchema,
+  AI_PROVIDER_JSON_SCHEMA,
+} from "./provider-output";

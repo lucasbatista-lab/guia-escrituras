@@ -86,6 +86,9 @@ export async function runChatTurn(input: {
   const repos = getRepositories();
 
   // Idempotency: if this request_id already produced an assistant message, return it.
+  // Unique index messages_user_request_role_uidx also guards concurrent inserts (23505).
+  // Limitation: two in-flight requests with the same requestId may both call the AI
+  // before either persists; the second insert loses the race and we re-read.
   const existingAssistant = await repos.messages.findByRequestId(
     auth.userId,
     requestId,
@@ -178,6 +181,8 @@ export async function runChatTurn(input: {
     });
   }
 
+  // Idempotent user insert: same requestId must not create a second user row.
+  // If a prior attempt already stored the user message (AI failed afterward), reuse it.
   await repos.messages.insertUserMessage({
     conversationId: conversation.id,
     userId: auth.userId,
@@ -222,6 +227,7 @@ export async function runChatTurn(input: {
       userId: auth.userId,
       err: error instanceof Error ? error.message : "unknown",
     });
+    if (error instanceof AppError) throw error;
     throw new AppError(
       "ai_failed",
       "ai_failed",
@@ -230,6 +236,7 @@ export async function runChatTurn(input: {
     );
   }
 
+  // Provider output is validated before this point; never persist invalid assistant content.
   const costs = calculateTokenCost({
     model: result.model,
     inputTokens: result.inputTokens,

@@ -8,7 +8,7 @@ import { assertMessageSafe, sanitizeUserMessage } from "@/lib/safety";
 import { createRequestId } from "@/lib/utils";
 
 export async function POST(request: Request) {
-  const requestId = createRequestId();
+  let requestId = createRequestId();
 
   try {
     const auth = await getAuthUserContext();
@@ -22,14 +22,25 @@ export async function POST(request: Request) {
     const json: unknown = await request.json();
     const parsed = chatRequestSchema.safeParse(json);
     if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const isRequestId =
+        issue?.path[0] === "requestId"
+          ? "Informe um requestId UUID válido."
+          : (issue?.message ?? "Dados inválidos.");
       return NextResponse.json(
         {
           code: "validation_error",
-          message: parsed.error.issues[0]?.message ?? "Dados inválidos.",
+          message: isRequestId,
           requestId,
         },
         { status: 400 },
       );
+    }
+
+    // Prefer client requestId so retries of the same send are idempotent.
+    // Do not trust user_id, cost, tokens or role from the client.
+    if (parsed.data.requestId) {
+      requestId = parsed.data.requestId;
     }
 
     const message = sanitizeUserMessage(parsed.data.message);
@@ -53,7 +64,6 @@ export async function POST(request: Request) {
     logger.error("chat_route_error", {
       requestId,
       code: client.code,
-      // Do not leak stack to client; log message only
       err: error instanceof Error ? error.message : "unknown",
     });
     return NextResponse.json(
