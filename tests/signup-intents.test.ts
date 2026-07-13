@@ -18,6 +18,30 @@ import type {
   SignupIntentRepository,
 } from "@/lib/signup-intents/types";
 import { setSignupIntentRepositoryForTests } from "@/lib/signup-intents/repository";
+import {
+  setLegalConsentRepositoryForTests,
+  type LegalConsentRecord,
+  type LegalConsentRepository,
+} from "@/lib/legal/consent";
+
+class MemoryLegalConsentRepository implements LegalConsentRepository {
+  rows: LegalConsentRecord[] = [];
+  async find(userId: string, termsVersion: string, privacyVersion: string) {
+    return (
+      this.rows.find(
+        (r) =>
+          r.userId === userId &&
+          r.termsVersion === termsVersion &&
+          r.privacyVersion === privacyVersion,
+      ) ?? null
+    );
+  }
+  async upsert(input: LegalConsentRecord) {
+    if (!(await this.find(input.userId, input.termsVersion, input.privacyVersion))) {
+      this.rows.push(input);
+    }
+  }
+}
 
 class MemorySignupIntentRepository implements SignupIntentRepository {
   private rows = new Map<string, SignupIntentRecord>();
@@ -40,6 +64,9 @@ class MemorySignupIntentRepository implements SignupIntentRepository {
       termsVersion: input.termsVersion,
       privacyVersion: input.privacyVersion,
       termsAcceptedAt: input.termsAcceptedAt,
+      stripeCheckoutSessionId: null,
+      checkoutCreatedAt: null,
+      completedAt: null,
       expiresAt: input.expiresAt,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -170,6 +197,7 @@ describe("signup intent service", () => {
   afterEach(() => {
     process.env = { ...original };
     setSignupIntentRepositoryForTests(null);
+    setLegalConsentRepositoryForTests(null);
     vi.clearAllMocks();
   });
 
@@ -180,6 +208,7 @@ describe("signup intent service", () => {
     process.env.APP_URL = "https://amem-chat.vercel.app";
 
     setSignupIntentRepositoryForTests(memory);
+    setLegalConsentRepositoryForTests(new MemoryLegalConsentRepository());
 
     return import("@/lib/signup-intents/service");
   }

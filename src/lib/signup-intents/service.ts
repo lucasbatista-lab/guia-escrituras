@@ -101,7 +101,13 @@ export async function completeIntentAfterConfirmation(
   redirectTo: string;
 } | {
   ok: false;
-  code: "not_found" | "expired" | "invalid_status" | "wrong_user";
+  code:
+    | "not_found"
+    | "expired"
+    | "invalid_status"
+    | "wrong_user"
+    | "missing_consent_data"
+    | "consent_failed";
 }> {
   const record = await loadSignupIntentByToken(token);
   if (!record) return { ok: false, code: "not_found" };
@@ -122,6 +128,15 @@ export async function completeIntentAfterConfirmation(
     return { ok: false, code: "wrong_user" };
   }
 
+  if (!record.termsVersion || !record.privacyVersion || !record.termsAcceptedAt) {
+    logger.error("signup_intent_missing_legal_versions", {
+      requestId,
+      userId,
+      intentId: record.id,
+    });
+    return { ok: false, code: "missing_consent_data" };
+  }
+
   const repo = getSignupIntentRepository();
   const updated = await repo.update(record.id, {
     userId,
@@ -130,7 +145,7 @@ export async function completeIntentAfterConfirmation(
 
   await createReferralAttributionIfNeeded(updated, userId, requestId);
 
-  if (updated.termsVersion && updated.privacyVersion && updated.termsAcceptedAt) {
+  try {
     await persistLegalConsent({
       userId,
       termsVersion: updated.termsVersion,
@@ -139,6 +154,8 @@ export async function completeIntentAfterConfirmation(
       source: "signup_intent_callback",
       requestId,
     });
+  } catch {
+    return { ok: false, code: "consent_failed" };
   }
 
   return {

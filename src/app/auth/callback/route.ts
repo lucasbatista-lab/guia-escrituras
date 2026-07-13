@@ -62,6 +62,11 @@ export async function GET(request: Request) {
     if (result.code === "expired") {
       return NextResponse.redirect(new URL("/assinar/continuar?expired=1", origin));
     }
+    if (result.code === "consent_failed" || result.code === "missing_consent_data") {
+      return NextResponse.redirect(
+        new URL("/assinar/continuar?error=consent", origin),
+      );
+    }
     return NextResponse.redirect(new URL("/planos", origin));
   }
 

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getPrivacyVersion, getTermsVersion } from "@/config/legal";
 import { getAuthUserContext } from "@/lib/auth/session";
+import { persistLegalConsent, LegalConsentError } from "@/lib/legal/consent";
 import {
   createSignupIntentWithToken,
   SignupIntentConfigError,
@@ -17,7 +18,10 @@ export async function startPlanContinuationAction(input: {
   tracking?: SignupTrackingParams;
 }): Promise<
   | { ok: true; redirectTo: string }
-  | { ok: false; code: "unauthenticated" | "invalid_plan" | "config_missing" }
+  | {
+      ok: false;
+      code: "unauthenticated" | "invalid_plan" | "config_missing" | "consent_failed";
+    }
 > {
   const requestId = createRequestId();
   const auth = await getAuthUserContext();
@@ -30,14 +34,27 @@ export async function startPlanContinuationAction(input: {
     return { ok: false, code: "invalid_plan" };
   }
 
+  const termsVersion = getTermsVersion();
+  const privacyVersion = getPrivacyVersion();
+  const termsAcceptedAt = new Date().toISOString();
+
   try {
+    await persistLegalConsent({
+      userId: auth.userId,
+      termsVersion,
+      privacyVersion,
+      acceptedAt: termsAcceptedAt,
+      source: "authenticated_plan_continuation",
+      requestId,
+    });
+
     const { token } = await createSignupIntentWithToken({
       selectedPlanKey: plan.planKey,
       userId: auth.userId,
       tracking: input.tracking,
-      termsVersion: getTermsVersion(),
-      privacyVersion: getPrivacyVersion(),
-      termsAcceptedAt: new Date().toISOString(),
+      termsVersion,
+      privacyVersion,
+      termsAcceptedAt,
     });
 
     logger.info("plan_continuation_started", {
@@ -53,6 +70,9 @@ export async function startPlanContinuationAction(input: {
   } catch (error) {
     if (error instanceof SignupIntentConfigError) {
       return { ok: false, code: "config_missing" };
+    }
+    if (error instanceof LegalConsentError) {
+      return { ok: false, code: "consent_failed" };
     }
     logger.error("plan_continuation_failed", {
       requestId,

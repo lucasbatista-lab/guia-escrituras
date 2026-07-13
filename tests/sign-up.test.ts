@@ -147,13 +147,41 @@ describe("signUpAction", () => {
     process.env = { ...original };
     vi.resetModules();
     vi.clearAllMocks();
+    vi.doUnmock("@/lib/supabase/keys");
+    vi.doUnmock("@/lib/supabase/server");
   });
 
-  it("returns config_missing without supabase env and does not need secret key", async () => {
-    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-    delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    delete process.env.SUPABASE_SECRET_KEY;
+  async function loadSignUpActionWithClient(client: unknown) {
+    vi.doMock("@/lib/supabase/keys", async () => {
+      const actual = await vi.importActual<typeof import("@/lib/supabase/keys")>(
+        "@/lib/supabase/keys",
+      );
+      return {
+        ...actual,
+        hasSupabasePublicEnv: () => true,
+        getSupabaseUrl: () => "https://example.supabase.co",
+        getSupabasePublishableKey: () => "sb_publishable_test",
+      };
+    });
+    vi.doMock("@/lib/supabase/server", () => ({
+      createClient: vi.fn(async () => client),
+    }));
+    return import("@/lib/auth/sign-up-action");
+  }
+
+  it("returns config_missing when public env check fails", async () => {
+    vi.doMock("@/lib/supabase/keys", async () => {
+      const actual = await vi.importActual<typeof import("@/lib/supabase/keys")>(
+        "@/lib/supabase/keys",
+      );
+      return {
+        ...actual,
+        hasSupabasePublicEnv: () => false,
+      };
+    });
+    vi.doMock("@/lib/supabase/server", () => ({
+      createClient: vi.fn(async () => null),
+    }));
 
     const { signUpAction } = await import("@/lib/auth/sign-up-action");
     const result = await signUpAction({
@@ -171,26 +199,20 @@ describe("signUpAction", () => {
   });
 
   it("maps auth failure and never reports ok", async () => {
-    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
     process.env.APP_URL = "https://amem-chat.vercel.app";
+    const { signUpAction } = await loadSignUpActionWithClient({
+      auth: {
+        signUp: vi.fn(async () => ({
+          data: { user: null, session: null },
+          error: {
+            message: "User already registered",
+            code: "email_exists",
+            status: 422,
+          },
+        })),
+      },
+    });
 
-    vi.doMock("@/lib/supabase/server", () => ({
-      createClient: vi.fn(async () => ({
-        auth: {
-          signUp: vi.fn(async () => ({
-            data: { user: null, session: null },
-            error: {
-              message: "User already registered",
-              code: "email_exists",
-              status: 422,
-            },
-          })),
-        },
-      })),
-    }));
-
-    const { signUpAction } = await import("@/lib/auth/sign-up-action");
     const result = await signUpAction({
       displayName: "Ana",
       email: "ana@domain.com",
@@ -204,10 +226,7 @@ describe("signUpAction", () => {
   });
 
   it("succeeds with confirmation required and does not redirect yet", async () => {
-    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
     process.env.APP_URL = "https://amem-chat.vercel.app";
-
     const signUp = vi.fn(async () => ({
       data: {
         user: { id: "u1", identities: [{ id: "i1" }] },
@@ -216,13 +235,10 @@ describe("signUpAction", () => {
       error: null,
     }));
 
-    vi.doMock("@/lib/supabase/server", () => ({
-      createClient: vi.fn(async () => ({
-        auth: { signUp },
-      })),
-    }));
+    const { signUpAction } = await loadSignUpActionWithClient({
+      auth: { signUp },
+    });
 
-    const { signUpAction } = await import("@/lib/auth/sign-up-action");
     const result = await signUpAction({
       displayName: "Ana",
       email: "ana@domain.com",
