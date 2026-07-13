@@ -23,3 +23,13 @@ export {
   getUsdBrlPlanningRate,
   UnknownModelRateError,
 } from "./cost";
+export {
+  evaluateShortRateLimit,
+  evaluateShortRateLimits,
+  getShortRateLimitConfig,
+} from "./short-rate-limit";
+export type {
+  ShortRateLimitConfig,
+  ShortRateLimitResult,
+  ShortRateLimitWindow,
+} from "./short-rate-limit";

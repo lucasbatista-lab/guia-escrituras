@@ -199,6 +199,26 @@ class SupabaseMessages implements MessageRepository {
     return data ? mapMessage(data) : null;
   }
 
+  async countUserMessagesSince(userId: string, sinceIso: string) {
+    const supabase = await userClient();
+    const { count, error } = await supabase
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("role", "user")
+      .gte("created_at", sinceIso)
+      .not("request_id", "is", null);
+    if (error) {
+      throw new AppError(
+        error.message,
+        "db_error",
+        500,
+        "Erro ao verificar limite de frequência.",
+      );
+    }
+    return count ?? 0;
+  }
+
   async insertUserMessage(input: {
     conversationId: string;
     userId: string;

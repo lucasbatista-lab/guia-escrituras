@@ -21,7 +21,8 @@ export default async function AdminHomePage() {
       <div>
         <h1 className="font-display text-3xl text-ink">Visão geral</h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Dados reais do banco. Sem conteúdo de conversas. Atualizado em{" "}
+          Dados reais do banco. Sem conteúdo de conversas. Métricas de IA são
+          estimativas (não fatura do provedor). Atualizado em{" "}
           {new Date(metrics.generatedAt).toLocaleString("pt-BR")}.
         </p>
         {metrics.aiMetricsPartial ? (

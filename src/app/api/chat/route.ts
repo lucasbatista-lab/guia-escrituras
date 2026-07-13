@@ -3,6 +3,7 @@ import { chatRequestSchema } from "@/lib/ai/chat-schema";
 import { runChatTurn } from "@/lib/ai/chat-service";
 import { getAuthUserContext } from "@/lib/auth";
 import { logger } from "@/lib/logging/logger";
+import { maskUserId } from "@/lib/logging/mask";
 import { toClientError } from "@/lib/safety";
 import { assertMessageSafe, sanitizeUserMessage } from "@/lib/safety";
 import { createRequestId } from "@/lib/utils";
@@ -64,11 +65,20 @@ export async function POST(request: Request) {
     logger.error("chat_route_error", {
       requestId,
       code: client.code,
+      userId: maskUserId(
+        error && typeof error === "object" && "userId" in error
+          ? String((error as { userId?: string }).userId)
+          : undefined,
+      ),
       err: error instanceof Error ? error.message : "unknown",
     });
+    const headers =
+      client.retryAfterSeconds != null
+        ? { "Retry-After": String(client.retryAfterSeconds) }
+        : undefined;
     return NextResponse.json(
       { code: client.code, message: client.message, requestId },
-      { status: client.status },
+      { status: client.status, headers },
     );
   }
 }

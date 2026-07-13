@@ -107,6 +107,8 @@ export interface MessageRepository {
     biblicalReferences: BiblicalReference[];
     requestId: string;
   }): Promise<MessageRecord>;
+  /** Count user messages (one per requestId) since timestamp — short-term rate limits. */
+  countUserMessagesSince(userId: string, sinceIso: string): Promise<number>;
 }
 
 export interface ConversationSummaryRepository {

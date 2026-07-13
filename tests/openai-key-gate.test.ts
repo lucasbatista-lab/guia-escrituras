@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { AppError } from "@/lib/safety";
 
 describe("OPENAI_API_KEY gate (no network)", () => {
   const original = { ...process.env };
@@ -23,6 +22,6 @@ describe("OPENAI_API_KEY gate (no network)", () => {
     const { createAiProvider } = await import("@/lib/ai/gateway");
 
     expect(requiresRealOpenAiForChat()).toBe(true);
-    expect(() => createAiProvider()).toThrow(AppError);
+    expect(() => createAiProvider()).toThrow(/openai_unavailable/);
   });
 });

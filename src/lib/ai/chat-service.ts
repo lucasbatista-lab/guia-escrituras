@@ -22,17 +22,24 @@ import {
   calculateTokenCost,
   evaluateDailyBurst,
   evaluateMonthlyBudget,
+  evaluateShortRateLimits,
   getBudgetConfig,
+  getShortRateLimitConfig,
   getUsdBrlPlanningRate,
   usageLevelLabel,
   UnknownModelRateError,
 } from "@/lib/usage";
 import { currentYearMonth } from "@/lib/utils";
+import { maskUserId } from "@/lib/logging/mask";
 
 function startOfUtcDayIso(date = new Date()): string {
   return new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
   ).toISOString();
+}
+
+function secondsAgoIso(seconds: number, now = new Date()): string {
+  return new Date(now.getTime() - seconds * 1000).toISOString();
 }
 
 export async function runChatTurn(input: {
@@ -162,6 +169,45 @@ export async function runChatTurn(input: {
     );
   }
 
+  const existingUser = await repos.messages.findByRequestId(
+    auth.userId,
+    requestId,
+    "user",
+  );
+  const existingUsage = await repos.usage.findEventByRequestId(
+    auth.userId,
+    requestId,
+  );
+  const isIdempotentRetry = Boolean(existingUser || existingUsage);
+
+  if (!isIdempotentRetry) {
+    const shortConfig = getShortRateLimitConfig();
+    const [countLast60s, countLast10m] = await Promise.all([
+      repos.messages.countUserMessagesSince(
+        auth.userId,
+        secondsAgoIso(shortConfig.perMinute.windowSeconds),
+      ),
+      repos.messages.countUserMessagesSince(
+        auth.userId,
+        secondsAgoIso(shortConfig.perTenMinutes.windowSeconds),
+      ),
+    ]);
+    const short = evaluateShortRateLimits({
+      countLast60s,
+      countLast10m,
+      config: shortConfig,
+    });
+    if (short.blocked) {
+      throw new AppError(
+        "rate_limited",
+        "rate_limited",
+        429,
+        "Você está enviando mensagens rápido demais. Aguarde um momento e tente novamente.",
+        short.retryAfterSeconds,
+      );
+    }
+  }
+
   let conversation =
     body.conversationId != null
       ? await repos.conversations.getByIdForUser(
@@ -229,7 +275,7 @@ export async function runChatTurn(input: {
   } catch (error) {
     logger.error("biblical_grounding_failed", {
       requestId,
-      userId: auth.userId,
+      userId: maskUserId(auth.userId),
       err: error instanceof Error ? error.message : "unknown",
     });
     if (error instanceof AppError) throw error;
@@ -243,7 +289,7 @@ export async function runChatTurn(input: {
 
   logger.info("biblical_grounding_retrieved", {
     requestId,
-    userId: auth.userId,
+    userId: maskUserId(auth.userId),
     groundingProvider: grounding.groundingProvider,
     groundingCount: grounding.groundingCount,
     retrievedReferenceIds: grounding.retrievedReferenceIds,
@@ -273,7 +319,7 @@ export async function runChatTurn(input: {
   } catch (error) {
     logger.error("ai_generate_failed", {
       requestId,
-      userId: auth.userId,
+      userId: maskUserId(auth.userId),
       err: error instanceof Error ? error.message : "unknown",
     });
     if (error instanceof AppError) throw error;
@@ -327,7 +373,7 @@ export async function runChatTurn(input: {
   } catch (error) {
     logger.error("assistant_persist_failed", {
       requestId,
-      userId: auth.userId,
+      userId: maskUserId(auth.userId),
       err: error instanceof Error ? error.message : "unknown",
     });
     persistWarning =
@@ -359,7 +405,7 @@ export async function runChatTurn(input: {
     } catch (error) {
       logger.error("usage_monthly_failed", {
         requestId,
-        userId: auth.userId,
+        userId: maskUserId(auth.userId),
         err: error instanceof Error ? error.message : "unknown",
       });
       persistWarning =
@@ -375,7 +421,7 @@ export async function runChatTurn(input: {
 
   logger.info("chat_turn_completed", {
     requestId,
-    userId: auth.userId,
+    userId: maskUserId(auth.userId),
     conversationId: conversation.id,
     provider: result.provider,
     model: result.model,

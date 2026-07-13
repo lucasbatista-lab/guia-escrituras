@@ -25,23 +25,30 @@ export default async function ContaPage() {
 
   const plan = auth.planKey ? getPlanByKey(auth.planKey) : null;
   const budgetConfig = auth.planKey ? getBudgetConfig(auth.planKey) : null;
-  const billing = plan ? await getAccountBillingView(auth.userId) : null;
+
+  const [billing, monthlyUsage] = await Promise.all([
+    plan ? getAccountBillingView(auth.userId) : Promise.resolve(null),
+    budgetConfig
+      ? (async () => {
+          try {
+            const repos = getRepositories();
+            return await repos.usage.getMonthly(
+              auth.userId,
+              currentYearMonth(),
+            );
+          } catch {
+            return null;
+          }
+        })()
+      : Promise.resolve(null),
+  ]);
 
   let level: "normal" | "elevated" | "near_limit" | "blocked" = "normal";
-  if (budgetConfig) {
-    try {
-      const repos = getRepositories();
-      const monthly = await repos.usage.getMonthly(
-        auth.userId,
-        currentYearMonth(),
-      );
-      level = evaluateMonthlyBudget({
-        usedBrlCents: monthly.usedBrlCents,
-        config: budgetConfig,
-      }).level;
-    } catch {
-      level = "normal";
-    }
+  if (budgetConfig && monthlyUsage) {
+    level = evaluateMonthlyBudget({
+      usedBrlCents: monthlyUsage.usedBrlCents,
+      config: budgetConfig,
+    }).level;
   }
 
   return (

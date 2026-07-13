@@ -3,6 +3,8 @@
  * Repo/folder remain guia-escrituras internally.
  */
 
+import { getCanonicalSiteUrl } from "@/lib/auth/app-url";
+
 export interface BrandConfig {
   name: string;
   tagline: string;
@@ -14,11 +16,10 @@ export interface BrandConfig {
   };
 }
 
-const DEFAULT_BRAND: BrandConfig = {
+const DEFAULT_BRAND = {
   name: "Amém Chat",
   tagline: "Como Jesus responderia à sua situação?",
   description: "Seu guIA cristão, baseado nas Escrituras.",
-  canonicalUrl: "http://localhost:3000",
   supportEmail: "suporte@amemchat.com",
   socialHandles: {
     instagram: "amemchat",
@@ -31,10 +32,7 @@ export function getBrandConfig(): BrandConfig {
     tagline:
       process.env.NEXT_PUBLIC_APP_TAGLINE?.trim() || DEFAULT_BRAND.tagline,
     description: DEFAULT_BRAND.description,
-    canonicalUrl:
-      process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-      process.env.APP_URL?.trim() ||
-      DEFAULT_BRAND.canonicalUrl,
+    canonicalUrl: getCanonicalSiteUrl(),
     supportEmail:
       process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() ||
       DEFAULT_BRAND.supportEmail,

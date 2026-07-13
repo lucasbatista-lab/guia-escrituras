@@ -90,6 +90,23 @@ class MemoryMessages implements MessageRepository {
     return null;
   }
 
+  async countUserMessagesSince(userId: string, sinceIso: string) {
+    let count = 0;
+    for (const list of messages.values()) {
+      for (const m of list) {
+        if (
+          m.userId === userId &&
+          m.role === "user" &&
+          m.requestId &&
+          m.createdAt >= sinceIso
+        ) {
+          count += 1;
+        }
+      }
+    }
+    return count;
+  }
+
   async insertUserMessage(input: {
     conversationId: string;
     userId: string;
