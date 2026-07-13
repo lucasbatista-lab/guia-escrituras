@@ -14,9 +14,14 @@ export default function TransparenciaIaPage() {
         sobrenatural.
       </p>
       <p>
-        As respostas distinguem, quando possível, citação bíblica, interpretação
-        e aplicação prática — conforme a tradição que você selecionou no perfil
-        espiritual.
+        As respostas distinguem, quando possível, referência bíblica,
+        interpretação e aplicação prática — conforme a tradição que você
+        selecionou no perfil espiritual.
+      </p>
+      <p>
+        Referências e interpretações baseadas nas Escrituras. Nesta versão, os
+        textos são apresentados por referência e síntese, não como reprodução
+        integral de uma tradução bíblica específica.
       </p>
       <p>
         A IA pode errar, omitir contexto ou não cobrir todas as nuances teológicas

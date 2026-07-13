@@ -1,4 +1,5 @@
 import type { BiblicalReference } from "@/lib/biblical";
+import type { BiblicalGroundingResult } from "@/lib/biblical/curated-types";
 import type { TheologyPolicy } from "@/lib/theology";
 
 export interface ChatMessage {
@@ -12,6 +13,8 @@ export interface AiGenerateInput {
   model: string;
   conversationSummary?: string | null;
   requestId: string;
+  /** Curated biblical grounding for this turn (required in production path). */
+  grounding: BiblicalGroundingResult;
 }
 
 export interface AiGenerateResult {
@@ -24,6 +27,9 @@ export interface AiGenerateResult {
   model: string;
   latencyMs: number;
   provider: "openai" | "mock";
+  groundingProvider: "curated_v1";
+  retrievedReferenceIds: string[];
+  groundingCount: number;
 }
 
 export interface AiProvider {

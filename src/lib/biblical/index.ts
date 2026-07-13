@@ -3,6 +3,15 @@ export type {
   BiblicalReference,
   BiblicalSourceProvider,
 } from "./types";
+export type {
+  BiblicalGroundingProvider,
+  BiblicalGroundingResult,
+  BiblicalRetrievalInput,
+  BiblicalTheme,
+  CuratedBiblicalEntry,
+  RetrievedBiblicalPassage,
+  Testament,
+} from "./curated-types";
 export {
   CANONICAL_BOOKS,
   formatBiblicalReference,
@@ -12,3 +21,18 @@ export {
   MockBiblicalSourceProvider,
   mockBiblicalSource,
 } from "./mock-provider";
+export { CURATED_BIBLICAL_CORPUS_V1 } from "./corpus-v1";
+export {
+  CuratedBiblicalProvider,
+  curatedBiblicalProvider,
+  detectBiblicalThemes,
+} from "./curated-provider";
+export {
+  createBiblicalGroundingProvider,
+  isProductionBiblicalProvider,
+} from "./gateway";
+export {
+  filterReferencesToGrounding,
+  answerLooksLikeLiteralUnlicensedQuote,
+  buildGroundingPromptSection,
+} from "./grounding";

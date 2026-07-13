@@ -13,6 +13,7 @@ import { resolveEntitlements } from "@/lib/entitlements";
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
 import { theologyPolicyResolver } from "@/lib/theology";
+import { createBiblicalGroundingProvider } from "@/lib/biblical";
 import {
   calculateTokenCost,
   evaluateDailyBurst,
@@ -203,6 +204,40 @@ export async function runChatTurn(input: {
     userPrefs: auth.spiritualProfile,
   });
 
+  let grounding;
+  try {
+    const biblical = createBiblicalGroundingProvider();
+    grounding = biblical.retrieve({
+      question: body.message,
+      traditionKey: auth.spiritualProfile.traditionKey,
+      personaKey: body.personaKey,
+      allowsSaintsContent: policy.allowsSaintsContent,
+      varietySeed: requestId,
+      limit: 4,
+    });
+  } catch (error) {
+    logger.error("biblical_grounding_failed", {
+      requestId,
+      userId: auth.userId,
+      err: error instanceof Error ? error.message : "unknown",
+    });
+    if (error instanceof AppError) throw error;
+    throw new AppError(
+      "biblical_corpus_unavailable",
+      "biblical_corpus_unavailable",
+      503,
+      "O chat está temporariamente indisponível. Tente novamente mais tarde.",
+    );
+  }
+
+  logger.info("biblical_grounding_retrieved", {
+    requestId,
+    userId: auth.userId,
+    groundingProvider: grounding.groundingProvider,
+    groundingCount: grounding.groundingCount,
+    retrievedReferenceIds: grounding.retrievedReferenceIds,
+  });
+
   const useMockModel = auth.demoMode || !isOpenAiConfigured();
   const model = useMockModel
     ? "mock"
@@ -220,6 +255,7 @@ export async function runChatTurn(input: {
       model,
       conversationSummary: summary?.summary ?? null,
       requestId,
+      grounding,
     });
   } catch (error) {
     logger.error("ai_generate_failed", {
@@ -309,6 +345,9 @@ export async function runChatTurn(input: {
     conversationId: conversation.id,
     provider: result.provider,
     model: result.model,
+    groundingProvider: result.groundingProvider,
+    groundingCount: result.groundingCount,
+    retrievedReferenceIds: result.retrievedReferenceIds,
     inputTokens: result.inputTokens,
     outputTokens: result.outputTokens,
     estimatedCostBrlCents: costs.estimatedCostBrlCents,

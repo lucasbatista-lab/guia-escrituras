@@ -208,6 +208,9 @@ describe("runChatTurn requestId idempotency", () => {
       model: "mock",
       latencyMs: 1,
       provider: "mock",
+      groundingProvider: "curated_v1",
+      retrievedReferenceIds: ["jo-14-27"],
+      groundingCount: 1,
     });
   });
 
@@ -268,6 +271,9 @@ describe("runChatTurn requestId idempotency", () => {
       model: "mock",
       latencyMs: 1,
       provider: "mock",
+      groundingProvider: "curated_v1",
+      retrievedReferenceIds: [],
+      groundingCount: 0,
     });
 
     const result = await runChatTurn({
@@ -298,5 +304,24 @@ describe("runChatTurn requestId idempotency", () => {
       ).length;
     }
     expect(userCount).toBe(1);
+  });
+
+  it("passes curated grounding into the AI provider", async () => {
+    const { runChatTurn } = await import("@/lib/ai/chat-service");
+    await runChatTurn({
+      requestId: "44444444-4444-4444-8444-444444444444",
+      auth: { ...auth, userId: "user-grounding" },
+      body: {
+        message: "Estou ansioso e preciso de orientação.",
+        personaKey: "jesus",
+        preferDeep: false,
+      },
+    });
+    expect(generateSpy).toHaveBeenCalled();
+    const arg = generateSpy.mock.calls[0]?.[0] as {
+      grounding?: { groundingProvider: string; groundingCount: number };
+    };
+    expect(arg.grounding?.groundingProvider).toBe("curated_v1");
+    expect(arg.grounding?.groundingCount).toBeGreaterThanOrEqual(3);
   });
 });

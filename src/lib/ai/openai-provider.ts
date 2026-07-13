@@ -4,6 +4,11 @@ import {
   AI_PROVIDER_JSON_SCHEMA,
   parseAndValidateAiProviderContent,
 } from "./provider-output";
+import {
+  answerLooksLikeLiteralUnlicensedQuote,
+  buildGroundingPromptSection,
+  filterReferencesToGrounding,
+} from "@/lib/biblical";
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
 
@@ -53,8 +58,14 @@ export class OpenAiResponsesProvider implements AiProvider {
     const system = [
       ...input.theologyPolicy.composedSystemPromptSections,
       "",
+      ...buildGroundingPromptSection(input.grounding),
       "Responda em português do Brasil.",
-      "Não invente texto de tradução bíblica licenciada; cite apenas referências.",
+      "Utilize somente referências presentes no contexto recuperado.",
+      "Não invente versículos.",
+      "Não apresente paráfrase editorial como citação literal.",
+      "Não use aspas para texto bíblico sem fonte textual licenciada.",
+      "Use expressões como “em síntese”, “a passagem ensina” ou “à luz desse texto”.",
+      "Separe interpretação de aplicação prática.",
       "Nunca afirme ser Jesus, Deus ou uma revelação sobrenatural.",
     ].join("\n");
 
@@ -68,6 +79,8 @@ export class OpenAiResponsesProvider implements AiProvider {
         : "",
       "Mensagens:",
       conversation,
+      "",
+      "Pergunta atual: use a última mensagem do usuário como foco principal.",
     ]
       .filter(Boolean)
       .join("\n");
@@ -106,17 +119,35 @@ export class OpenAiResponsesProvider implements AiProvider {
       );
     }
 
+    if (answerLooksLikeLiteralUnlicensedQuote(content.answer)) {
+      logger.error("ai_literal_quote_guard", { requestId: input.requestId });
+      throw new AppError(
+        "ai_invalid_output",
+        "ai_invalid_output",
+        503,
+        "Não foi possível gerar a reflexão agora. Tente novamente.",
+      );
+    }
+
+    const mapped = content.biblicalReferences.map((ref) => ({
+      book: ref.book,
+      chapter: ref.chapter,
+      verseStart: ref.verseStart,
+      ...(ref.verseEnd != null ? { verseEnd: ref.verseEnd } : {}),
+      ...(ref.translation ? { translation: ref.translation } : {}),
+    }));
+
+    const { accepted } = filterReferencesToGrounding(
+      mapped,
+      input.grounding,
+      input.requestId,
+    );
+
     const usage = response.usage;
 
     return {
       answer: content.answer,
-      biblicalReferences: content.biblicalReferences.map((ref) => ({
-        book: ref.book,
-        chapter: ref.chapter,
-        verseStart: ref.verseStart,
-        ...(ref.verseEnd != null ? { verseEnd: ref.verseEnd } : {}),
-        ...(ref.translation ? { translation: ref.translation } : {}),
-      })),
+      biblicalReferences: accepted,
       interpretationNotice: content.interpretationNotice,
       followUpQuestion: content.followUpQuestion ?? undefined,
       inputTokens: usage?.input_tokens ?? 0,
@@ -124,6 +155,9 @@ export class OpenAiResponsesProvider implements AiProvider {
       model: input.model,
       latencyMs: Date.now() - started,
       provider: "openai",
+      groundingProvider: "curated_v1",
+      retrievedReferenceIds: input.grounding.retrievedReferenceIds,
+      groundingCount: input.grounding.groundingCount,
     };
   }
 }

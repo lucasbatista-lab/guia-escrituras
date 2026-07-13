@@ -97,6 +97,11 @@ export function ChatPanel() {
         <p className="text-xs text-ink-soft">
           Mentor principal: interpretação baseada nos Evangelhos
         </p>
+        <p className="mt-1 text-xs text-ink-soft">
+          Referências e interpretações baseadas nas Escrituras. Nesta versão, os
+          textos são apresentados por referência e síntese, não como reprodução
+          integral de uma tradução bíblica específica.
+        </p>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5 font-chat sm:px-5">
