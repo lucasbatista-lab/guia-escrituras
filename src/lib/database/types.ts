@@ -27,7 +27,7 @@ export interface SubscriptionRow {
   status: string;
 }
 
-/** Mock admin metrics — no private conversation content. */
+/** Admin dashboard metrics shape (real data via admin service). */
 export interface AdminDashboardMetrics {
   subscribersByPlan: Array<{ planKey: PlanKey; count: number }>;
   activeUsers: number;
@@ -41,28 +41,3 @@ export interface AdminDashboardMetrics {
   renewals: number;
   pendingRewards: number;
 }
-
-export const MOCK_ADMIN_METRICS: AdminDashboardMetrics = {
-  subscribersByPlan: [
-    { planKey: "essencial", count: 128 },
-    { planKey: "caminho", count: 86 },
-    { planKey: "profundo", count: 24 },
-    { planKey: "particular", count: 3 },
-  ],
-  activeUsers: 174,
-  estimatedMrrBrlCents: 128 * 3800 + 86 * 5800 + 24 * 18800 + 3 * 98800,
-  aiCostBrlCents: 41200,
-  avgCostPerUserBrlCents: 237,
-  usagePercentiles: { p50: 12, p90: 41, p99: 96 },
-  anomalousUsers: [
-    { userIdHash: "usr_a1", signal: "burst_diario" },
-    { userIdHash: "usr_b2", signal: "custo_elevado" },
-  ],
-  partners: [
-    { code: "PARCEIRO_A", conversions: 14, pendingRewards: 2 },
-    { code: "PARCEIRO_B", conversions: 7, pendingRewards: 1 },
-  ],
-  conversions: 31,
-  renewals: 112,
-  pendingRewards: 3,
-};

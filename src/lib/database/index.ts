@@ -4,5 +4,4 @@ export type {
   SpiritualProfileRow,
   SubscriptionRow,
 } from "./types";
-export { MOCK_ADMIN_METRICS } from "./types";
 export { getRepositories, createMemoryRepositories } from "./repositories";

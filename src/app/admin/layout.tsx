@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { allowsMocks } from "@/config/runtime";
 import { getAuthUserContext } from "@/lib/auth";
 
 const links = [
@@ -23,10 +22,7 @@ export default async function AdminLayout({
     redirect("/entrar?next=/admin");
   }
 
-  const allowed =
-    auth.isAdmin || (auth.demoMode && allowsMocks());
-
-  if (!allowed) {
+  if (!auth?.isAdmin) {
     redirect("/inicio");
   }
 

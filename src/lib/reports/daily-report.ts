@@ -1,7 +1,7 @@
 export interface DailyReportAggregates {
   date: string;
   activeSubscribers: number;
-  revenueBrlCents: number;
+  revenueBrlCents: number | null;
   activeUsers: number;
   totalRequests: number;
   totalInputTokens: number;
@@ -54,7 +54,9 @@ export class DailyReportService {
 
     const highlights: string[] = [
       `${aggregates.activeSubscribers} assinantes ativos`,
-      `Receita do dia: R$ ${(aggregates.revenueBrlCents / 100).toFixed(2)}`,
+      aggregates.revenueBrlCents == null
+        ? "Receita do dia: Ainda não integrada"
+        : `Receita do dia: R$ ${(aggregates.revenueBrlCents / 100).toFixed(2)}`,
       `Custo médio de IA por usuário ativo: R$ ${(avgCostPerUser / 100).toFixed(2)}`,
     ];
 
