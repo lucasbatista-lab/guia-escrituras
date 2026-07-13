@@ -22,6 +22,11 @@ export default async function AdminUsoPage() {
       <p className="mt-2 text-sm text-ink-soft">
         Percentis de requisições mensais (agregados). Sem conteúdo de conversas.
       </p>
+      {usage.partial ? (
+        <p className="mt-2 text-sm text-amber-800">
+          Agregação parcial: limite de páginas atingido.
+        </p>
+      ) : null}
       <p className="mt-4 text-sm text-ink">
         Total de requisições (soma mensal): {usage.totalRequests}
       </p>

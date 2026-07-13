@@ -1,7 +1,8 @@
 import {
   AdminMetricsError,
+  formatRevenueBrl,
   getAdminOverviewMetrics,
-} from "@/lib/admin/metrics";
+} from "@/lib/admin";
 import { formatPriceBRL } from "@/lib/entitlements";
 
 export default async function AdminCustosPage() {
@@ -17,35 +18,49 @@ export default async function AdminCustosPage() {
 
   const avgPerUser =
     metrics.totalUsers > 0
-      ? Math.round(metrics.aiCostBrlCents / metrics.totalUsers)
+      ? Math.round(metrics.aiEstimatedCostBrlCents30d / metrics.totalUsers)
       : 0;
 
   return (
     <div>
       <h1 className="font-display text-3xl text-ink">Custos</h1>
       <p className="mt-2 text-sm text-ink-soft">
-        Estimativas a partir de usage_events — nunca calculadas pela IA.
+        Estimativas internas de planejamento a partir de usage_events (30 dias).
+        Não confundir com fatura OpenAI nem com receita Stripe.
       </p>
+      {metrics.aiMetricsPartial ? (
+        <p className="mt-2 text-sm text-amber-800">
+          Agregação parcial: limite de páginas atingido.
+        </p>
+      ) : null}
       <ul className="mt-8 space-y-3 text-sm">
         <li className="flex justify-between border-b border-border/50 py-3">
-          <span>Custo de IA (BRL)</span>
-          <span>{formatPriceBRL(metrics.aiCostBrlCents)}</span>
+          <span>Custo estimado de IA (BRL, 30d)</span>
+          <span>{formatPriceBRL(metrics.aiEstimatedCostBrlCents30d)}</span>
         </li>
         <li className="flex justify-between border-b border-border/50 py-3">
-          <span>Custo de IA (USD micros)</span>
-          <span>{metrics.aiCostUsdMicros.toLocaleString("pt-BR")}</span>
+          <span>Custo estimado (USD micros, 30d)</span>
+          <span>
+            {metrics.aiEstimatedCostUsdMicros30d.toLocaleString("pt-BR")}
+          </span>
         </li>
         <li className="flex justify-between border-b border-border/50 py-3">
-          <span>Custo médio por usuário</span>
+          <span>Estimativa média por usuário cadastrado</span>
           <span>{formatPriceBRL(avgPerUser)}</span>
         </li>
         <li className="flex justify-between border-b border-border/50 py-3">
-          <span>MRR (assinaturas ativas)</span>
-          <span>{formatPriceBRL(metrics.mrrBrlCents)}</span>
+          <span>MRR estimado pelo catálogo</span>
+          <span>{formatPriceBRL(metrics.mrrCatalogBrlCents)}</span>
+        </li>
+        <li className="flex justify-between border-b border-border/50 py-3">
+          <span>Receita real recebida</span>
+          <span>{formatRevenueBrl(metrics.realRevenueBrlCents)}</span>
         </li>
       </ul>
-      {metrics.aiRequests === 0 && (
-        <p className="mt-6 text-sm text-ink-soft">Nenhum custo de IA registrado.</p>
+      {metrics.aiRequests30d === 0 && (
+        <p className="mt-6 text-sm text-ink-soft">
+          Nenhum custo de IA registrado no período.
+        </p>
       )}
     </div>
   );

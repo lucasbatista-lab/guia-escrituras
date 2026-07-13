@@ -20,7 +20,9 @@ export default async function AdminRelatoriosPage() {
     return (
       <div>
         <h1 className="font-display text-3xl text-ink">Relatórios</h1>
-        <p className="mt-6 text-sm text-ink-soft">Nenhum relatório gerado.</p>
+        <p className="mt-6 text-sm text-ink-soft">
+          Os relatórios automáticos ainda não foram configurados.
+        </p>
       </div>
     );
   }

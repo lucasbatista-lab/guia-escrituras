@@ -1,0 +1,149 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { AdminMetricsError, getAdminUserDetail } from "@/lib/admin";
+import { formatPriceBRL } from "@/lib/entitlements";
+
+export default async function AdminUsuarioDetailPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
+
+  let detail;
+  try {
+    detail = await getAdminUserDetail(userId);
+  } catch (error) {
+    if (error instanceof AdminMetricsError) {
+      return <p className="text-sm text-destructive">{error.message}</p>;
+    }
+    throw error;
+  }
+
+  if (!detail) notFound();
+
+  const serialized = JSON.stringify(detail);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Link href="/admin/usuarios" className="text-sm text-ink-soft underline">
+          ← Usuários
+        </Link>
+        <h1 className="mt-3 font-display text-3xl text-ink">
+          {detail.displayName ?? "Usuário"}
+        </h1>
+        <p className="mt-1 text-sm text-ink-soft">{detail.email}</p>
+        <p className="font-mono text-xs text-ink-soft">{detail.userIdMask}</p>
+      </div>
+
+      <dl className="grid gap-3 rounded-xl border border-border/70 p-4 text-sm sm:grid-cols-2">
+        <Item label="Cadastro" value={new Date(detail.createdAt).toLocaleString("pt-BR")} />
+        <Item
+          label="Onboarding"
+          value={
+            detail.onboardingCompleted == null
+              ? "—"
+              : detail.onboardingCompleted
+                ? "Concluído"
+                : "Pendente"
+          }
+        />
+        <Item label="Tradição" value={detail.traditionLabel ?? "—"} />
+        <Item label="Plano efetivo" value={detail.planName ?? detail.planKey ?? "—"} />
+        <Item label="Status" value={detail.subscriptionStatus ?? "sem assinatura"} />
+        <Item
+          label="Período / validade"
+          value={
+            detail.currentPeriodEnd
+              ? new Date(detail.currentPeriodEnd).toLocaleDateString("pt-BR")
+              : "—"
+          }
+        />
+        <Item
+          label="Renovação"
+          value={
+            detail.cancelAtPeriodEnd == null
+              ? "—"
+              : detail.cancelAtPeriodEnd
+                ? "Cancelada para o fim do período"
+                : detail.renewsAutomatically
+                  ? "Automática"
+                  : "—"
+          }
+        />
+        <Item label="Cartão" value={detail.cardLabel ?? "—"} />
+        <Item
+          label="Consumo do mês"
+          value={formatPriceBRL(detail.monthlyUsedBrlCents)}
+        />
+        <Item label="Requests no mês" value={String(detail.monthlyRequests)} />
+        <Item label="Nível de franquia" value={detail.budgetLevel ?? "—"} />
+        <Item
+          label="Origem"
+          value={
+            [detail.utmSource, detail.utmMedium, detail.utmCampaign]
+              .filter(Boolean)
+              .join(" / ") || "—"
+          }
+        />
+        <Item label="Referral" value={detail.referralCode ?? "—"} />
+      </dl>
+
+      <p className="text-xs text-ink-soft">{detail.monthlyEstimatedCostNote}</p>
+
+      <section>
+        <h2 className="font-display text-xl text-ink">Flags operacionais</h2>
+        <ul className="mt-3 flex flex-wrap gap-2 text-sm">
+          {Object.entries(detail.flags).map(([key, on]) => (
+            <li
+              key={key}
+              className={
+                on
+                  ? "rounded-full border border-amber-700/40 bg-amber-50 px-3 py-1 text-amber-900"
+                  : "rounded-full border border-border px-3 py-1 text-ink-soft"
+              }
+            >
+              {key}: {on ? "sim" : "não"}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="font-display text-xl text-ink">Eventos de pagamento correlacionados</h2>
+        {detail.paymentEventSummaries.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-soft">Nenhum evento correlacionado.</p>
+        ) : (
+          <ul className="mt-3 space-y-2 text-sm">
+            {detail.paymentEventSummaries.map((e) => (
+              <li
+                key={`${e.type}-${e.createdAt}`}
+                className="rounded-lg border border-border/60 px-3 py-2"
+              >
+                {e.type} · {e.processingStatus} ·{" "}
+                {new Date(e.createdAt).toLocaleString("pt-BR")}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Guard tests against leaking Stripe IDs or message bodies */}
+      <span className="hidden" aria-hidden>
+        {serialized.includes("cus_") || serialized.includes("sub_")
+          ? "LEAK"
+          : "ok"}
+      </span>
+    </div>
+  );
+}
+
+function Item({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-ink-soft">{label}</dt>
+      <dd className="text-ink">{value}</dd>
+    </div>
+  );
+}
