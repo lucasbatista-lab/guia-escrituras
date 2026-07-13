@@ -30,6 +30,14 @@ export default async function AdminHomePage() {
         <Metric label="Novos (7 dias)" value={String(metrics.newUsers7d)} />
         <Metric label="Novos (30 dias)" value={String(metrics.newUsers30d)} />
         <Metric label="MRR" value={formatPriceBRL(metrics.mrrBrlCents)} />
+        <Metric
+          label="Assinantes ativos (usuários)"
+          value={String(metrics.activeSubscriberUsers)}
+        />
+        <Metric
+          label="Usuários com assinaturas ativas duplicadas"
+          value={String(metrics.usersWithDuplicateSubscriptions)}
+        />
         <Metric label="Checkouts pendentes" value={String(metrics.pendingCheckouts)} />
         <Metric label="Falhas de pagamento" value={String(metrics.paymentFailures)} />
         <Metric label="Requisições de IA" value={String(metrics.aiRequests)} />

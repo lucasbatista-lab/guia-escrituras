@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ManageSubscriptionButton } from "@/components/account/manage-subscription-button";
 import { getAuthUserContext } from "@/lib/auth";
+import {
+  subscriptionStatusLabel,
+  type SubscriptionStatus,
+  userHasBillingCustomer,
+} from "@/lib/billing";
 import { getRepositories } from "@/lib/database/repositories";
 import { getPlanByKey } from "@/lib/entitlements";
 import {
@@ -17,9 +23,8 @@ export default async function ContaPage() {
   }
 
   const plan = auth.planKey ? getPlanByKey(auth.planKey) : null;
-  const budgetConfig = auth.planKey
-    ? getBudgetConfig(auth.planKey)
-    : null;
+  const budgetConfig = auth.planKey ? getBudgetConfig(auth.planKey) : null;
+  const hasPortal = await userHasBillingCustomer(auth.userId);
 
   let level: "normal" | "elevated" | "near_limit" | "blocked" = "normal";
   if (budgetConfig) {
@@ -38,6 +43,14 @@ export default async function ContaPage() {
     }
   }
 
+  const statusLabel =
+    auth.subscriptionStatus &&
+    ["trialing", "active", "past_due", "canceled", "incomplete", "unpaid"].includes(
+      auth.subscriptionStatus,
+    )
+      ? subscriptionStatusLabel(auth.subscriptionStatus as SubscriptionStatus)
+      : auth.subscriptionStatus;
+
   return (
     <div className="space-y-8">
       <div>
@@ -53,11 +66,41 @@ export default async function ContaPage() {
           {plan?.name ?? "Sem assinatura ativa"}
         </p>
         {plan ? (
-          <ul className="mt-4 space-y-1.5 text-sm text-ink-soft">
-            {plan.displayBenefits.map((benefit) => (
-              <li key={benefit}>· {benefit}</li>
-            ))}
-          </ul>
+          <>
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-ink-soft">Status</dt>
+                <dd className="text-ink">{statusLabel ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-soft">Validade</dt>
+                <dd className="text-ink">
+                  {auth.subscriptionPeriodEnd
+                    ? new Date(auth.subscriptionPeriodEnd).toLocaleDateString("pt-BR")
+                    : "Não informada"}
+                </dd>
+              </div>
+            </dl>
+            <ul className="mt-4 space-y-1.5 text-sm text-ink-soft">
+              {plan.displayBenefits.map((benefit) => (
+                <li key={benefit}>· {benefit}</li>
+              ))}
+            </ul>
+            <div className="mt-6">
+              {hasPortal ? (
+                <ManageSubscriptionButton />
+              ) : auth.hasStripeSubscription ? (
+                <p className="text-sm text-ink-soft">
+                  Portal de cobrança ainda não disponível para esta conta.
+                </p>
+              ) : (
+                <p className="text-sm text-ink-soft">
+                  Esta assinatura não está vinculada ao portal de pagamento. Em caso
+                  de dúvida, fale com o suporte.
+                </p>
+              )}
+            </div>
+          </>
         ) : (
           <p className="mt-3 text-sm text-ink-soft">
             Não há plano gratuito.{" "}

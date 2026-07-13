@@ -5,6 +5,11 @@ import { getPlanByKey } from "@/lib/entitlements";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { DailyReportAggregates } from "@/lib/reports";
 import { AppError } from "@/lib/safety";
+import {
+  resolveEffectiveSubscription,
+  selectEffectiveSubscriptionsByUser,
+  type SubscriptionCandidate,
+} from "@/lib/billing/effective-subscription";
 
 export class AdminMetricsError extends Error {
   constructor(message: string) {
@@ -32,7 +37,9 @@ export interface AdminOverviewMetrics {
   newUsers7d: number;
   newUsers30d: number;
   subscribersByPlan: Array<{ planKey: PlanKey; count: number }>;
+  activeSubscriberUsers: number;
   mrrBrlCents: number;
+  usersWithDuplicateSubscriptions: number;
   pendingCheckouts: number;
   paymentFailures: number;
   aiRequests: number;
@@ -73,7 +80,9 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
       .gte("created_at", d30),
     client
       .from("subscriptions")
-      .select("plan_key, status")
+      .select(
+        "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
+      )
       .in("status", ["active", "trialing"]),
     client
       .from("signup_intents")
@@ -91,12 +100,27 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     client.from("referral_attributions").select("status"),
   ]);
 
+  const candidates: SubscriptionCandidate[] = (subscriptions.data ?? []).map(
+    (row) => ({
+      id: row.id as string,
+      userId: row.user_id as string,
+      planKey: row.plan_key as PlanKey,
+      status: row.status as string,
+      stripeCustomerId: (row.stripe_customer_id as string | null) ?? null,
+      stripeSubscriptionId: (row.stripe_subscription_id as string | null) ?? null,
+      currentPeriodEnd: (row.current_period_end as string | null) ?? null,
+      createdAt: row.created_at as string,
+    }),
+  );
+
+  const { effective, usersWithDuplicates } =
+    selectEffectiveSubscriptionsByUser(candidates);
+
   const planCounts = new Map<PlanKey, number>();
   let mrr = 0;
-  for (const row of subscriptions.data ?? []) {
-    const key = row.plan_key as PlanKey;
-    planCounts.set(key, (planCounts.get(key) ?? 0) + 1);
-    mrr += getPlanByKey(key)?.priceMonthlyCents ?? 0;
+  for (const row of effective) {
+    planCounts.set(row.planKey, (planCounts.get(row.planKey) ?? 0) + 1);
+    mrr += getPlanByKey(row.planKey)?.priceMonthlyCents ?? 0;
   }
 
   const subscribersByPlan = (["essencial", "caminho", "profundo", "particular"] as PlanKey[]).map(
@@ -118,7 +142,9 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     newUsers7d: profiles7.count ?? 0,
     newUsers30d: profiles30.count ?? 0,
     subscribersByPlan,
+    activeSubscriberUsers: effective.length,
     mrrBrlCents: mrr,
+    usersWithDuplicateSubscriptions: usersWithDuplicates,
     pendingCheckouts: intents.count ?? 0,
     paymentFailures: (pastDue.count ?? 0) + (failedEvents.count ?? 0),
     aiRequests: usage.data?.length ?? 0,
@@ -166,24 +192,39 @@ export async function getAdminUsers(params?: {
   const { data: subs } = ids.length
     ? await client
         .from("subscriptions")
-        .select("user_id, plan_key, status")
+        .select(
+          "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
+        )
         .in("user_id", ids)
         .in("status", ["active", "trialing", "past_due"])
-    : { data: [] as Array<{ user_id: string; plan_key: string; status: string }> };
+    : { data: [] as Array<Record<string, unknown>> };
 
-  const subByUser = new Map(
-    (subs ?? []).map((s) => [s.user_id, s]),
-  );
+  const byUser = new Map<string, SubscriptionCandidate[]>();
+  for (const row of subs ?? []) {
+    const candidate: SubscriptionCandidate = {
+      id: row.id as string,
+      userId: row.user_id as string,
+      planKey: row.plan_key as PlanKey,
+      status: row.status as string,
+      stripeCustomerId: (row.stripe_customer_id as string | null) ?? null,
+      stripeSubscriptionId: (row.stripe_subscription_id as string | null) ?? null,
+      currentPeriodEnd: (row.current_period_end as string | null) ?? null,
+      createdAt: row.created_at as string,
+    };
+    const list = byUser.get(candidate.userId) ?? [];
+    list.push(candidate);
+    byUser.set(candidate.userId, list);
+  }
 
   return {
     total: count ?? 0,
     rows: (profiles ?? []).map((p) => {
-      const sub = subByUser.get(p.id);
+      const resolved = resolveEffectiveSubscription(byUser.get(p.id) ?? []);
       return {
         userIdMask: maskUserId(p.id),
         createdAt: p.created_at,
-        planKey: sub?.plan_key ?? null,
-        subscriptionStatus: sub?.status ?? null,
+        planKey: resolved?.subscription.planKey ?? null,
+        subscriptionStatus: resolved?.subscription.status ?? null,
       };
     }),
   };

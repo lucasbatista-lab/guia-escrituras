@@ -55,3 +55,15 @@ export async function createCheckoutSessionPlaceholder(input: {
 }
 
 export { startCheckoutAction } from "./checkout-action";
+export {
+  resolveEffectiveSubscription,
+  selectEffectiveSubscriptionsByUser,
+  isLiveSubscriptionStatus,
+  type SubscriptionCandidate,
+  type EffectiveSubscription,
+} from "./effective-subscription";
+export {
+  getEffectiveSubscriptionForUser,
+  loadUserSubscriptions,
+  userHasBillingCustomer,
+} from "./subscription-lookup";

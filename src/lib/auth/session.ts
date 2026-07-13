@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import type { SpiritualProfilePrefs } from "@/lib/theology";
 import { AppError } from "@/lib/safety";
+import { getEffectiveSubscriptionForUser } from "@/lib/billing/subscription-lookup";
 
 export interface AuthUserContext {
   userId: string;
@@ -11,6 +12,10 @@ export interface AuthUserContext {
   spiritualProfile: SpiritualProfilePrefs;
   /** Null when the user has no active paid subscription. */
   planKey: PlanKey | null;
+  subscriptionStatus: string | null;
+  subscriptionPeriodEnd: string | null;
+  hasStripeSubscription: boolean;
+  hasDuplicateSubscriptions: boolean;
   isAdmin: boolean;
   /** True only when runtime explicitly allows demo/mocks. */
   demoMode: boolean;
@@ -39,6 +44,10 @@ export async function getAuthUserContext(): Promise<AuthUserContext | null> {
       email: "demo@amemchat.local",
       spiritualProfile: DEMO_PROFILE,
       planKey: "caminho",
+      subscriptionStatus: "active",
+      subscriptionPeriodEnd: null,
+      hasStripeSubscription: false,
+      hasDuplicateSubscriptions: false,
       isAdmin: true,
       demoMode: true,
     };
@@ -52,6 +61,10 @@ export async function getAuthUserContext(): Promise<AuthUserContext | null> {
         email: "demo@amemchat.local",
         spiritualProfile: DEMO_PROFILE,
         planKey: "caminho",
+        subscriptionStatus: "active",
+        subscriptionPeriodEnd: null,
+        hasStripeSubscription: false,
+        hasDuplicateSubscriptions: false,
         isAdmin: true,
         demoMode: true,
       };
@@ -71,14 +84,7 @@ export async function getAuthUserContext(): Promise<AuthUserContext | null> {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("plan_key, status")
-    .eq("user_id", user.id)
-    .in("status", ["active", "trialing"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const effective = await getEffectiveSubscriptionForUser(user.id);
 
   const { data: adminRole } = await supabase
     .from("admin_roles")
@@ -105,7 +111,13 @@ export async function getAuthUserContext(): Promise<AuthUserContext | null> {
     userId: user.id,
     email: user.email ?? null,
     spiritualProfile,
-    planKey: (subscription?.plan_key as PlanKey | undefined) ?? null,
+    planKey: effective?.subscription.planKey ?? null,
+    subscriptionStatus: effective?.subscription.status ?? null,
+    subscriptionPeriodEnd: effective?.subscription.currentPeriodEnd ?? null,
+    hasStripeSubscription: Boolean(
+      effective?.subscription.stripeSubscriptionId,
+    ),
+    hasDuplicateSubscriptions: effective?.hasDuplicates ?? false,
     isAdmin: Boolean(adminRole),
     demoMode: false,
   };
