@@ -14,7 +14,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "Conversas com orientação baseada nas Escrituras",
       "Memória da conversa em andamento",
       "Uma tradição espiritual no perfil",
-      "Experiência pensada para o celular",
+      "Uso flexível dentro do orçamento do plano",
     ],
   },
   {
@@ -24,7 +24,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     priceMonthlyCents: 5800,
     currency: "BRL",
     ctaType: "checkout",
-    ctaLabel: "Escolher Caminho",
+    ctaLabel: "Começar com Caminho",
     highlighted: true,
     entitlements: [
       "chat_standard",
@@ -36,20 +36,19 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     displayBenefits: [
       "Tudo do Essencial",
       "Uso mais frequente ao longo do mês",
-      "Franquia flexível ampliada",
+      "Orçamento mensal ampliado para conversas",
+      "Franquia flexível maior dentro do plano",
     ],
-    upcomingBenefits: [
-      "Jornadas de leitura guiadas",
-    ],
+    upcomingBenefits: ["Jornadas de leitura guiadas"],
   },
   {
     key: "profundo",
     name: "Profundo",
-    tagline: "Mais profundidade e contexto nas conversas.",
+    tagline: "Mais profundidade e margem nas conversas.",
     priceMonthlyCents: 18800,
     currency: "BRL",
     ctaType: "checkout",
-    ctaLabel: "Escolher Profundo",
+    ctaLabel: "Começar com Profundo",
     entitlements: [
       "chat_standard",
       "chat_frequent",
@@ -65,6 +64,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     displayBenefits: [
       "Tudo do Caminho",
       "Conversas profundas com maior contexto",
+      "Orçamento mensal bem mais amplo",
       "Suporte prioritário",
     ],
     upcomingBenefits: [

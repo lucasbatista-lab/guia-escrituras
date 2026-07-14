@@ -107,7 +107,8 @@ export function ChatPanel({
       <div className="border-b border-border/70 px-4 py-3 sm:px-5">
         <h1 className="font-display text-xl text-ink">Conversar</h1>
         <p className="text-xs text-ink-soft">
-          Mentor principal: interpretação baseada nos Evangelhos
+          Interpretação baseada nos Evangelhos — reflexão teológica, não voz
+          divina.
         </p>
         <p className="mt-1 text-xs text-ink-soft">
           Referências e interpretações baseadas nas Escrituras. Os textos são
@@ -157,7 +158,11 @@ export function ChatPanel({
 
       <div className="border-t border-border/70 p-4 sm:p-5">
         {error && (
-          <p className="mb-3 text-sm text-destructive" role="alert">
+          <p
+            className="mb-3 text-sm text-destructive"
+            role="alert"
+            aria-live="assertive"
+          >
             {error}
           </p>
         )}
@@ -177,7 +182,9 @@ export function ChatPanel({
               }
             }}
             placeholder="Compartilhe sua situação…"
-            className="min-h-[2.75rem] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "chat-error" : undefined}
+            className="min-h-11 flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             maxLength={4000}
             disabled={loading}
           />
@@ -185,11 +192,16 @@ export function ChatPanel({
             type="button"
             onClick={() => void send()}
             disabled={loading || !input.trim()}
-            className="self-end bg-ink hover:bg-ink/90"
+            className="min-h-11 self-end bg-ink hover:bg-ink/90"
           >
             {loading ? "Enviando…" : "Enviar"}
           </Button>
         </div>
+        {error ? (
+          <p id="chat-error" className="sr-only">
+            {error}
+          </p>
+        ) : null}
       </div>
     </div>
   );

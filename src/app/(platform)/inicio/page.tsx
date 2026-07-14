@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PlatformActionCard } from "@/components/platform/action-card";
 import { getAuthUserContext } from "@/lib/auth";
 import { getPlanByKey } from "@/lib/entitlements";
 import { Button } from "@/components/ui/button";
@@ -67,35 +68,29 @@ export default async function InicioPage() {
       <div className="space-y-8">
         <div>
           <h1 className="font-display text-3xl text-ink">{greeting}</h1>
-          <p className="mt-2 max-w-2xl text-ink-soft">
+          <p className="mt-2 max-w-2xl text-ink-soft" aria-live="polite">
             {hasPendingPayment
               ? "Seu plano está reservado. Conclua o pagamento para liberar o chat."
               : "Não há plano gratuito. Escolha um plano para começar a conversar."}
           </p>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-card/60 p-6">
-          <h2 className="font-display text-xl text-ink">
-            {hasPendingPayment ? "Concluir assinatura" : "Escolher meu plano"}
-          </h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            Etapas: plano → pagamento → personalizar → conversar.
-          </p>
-          <Button asChild className="mt-5 bg-ink hover:bg-ink/90">
-            <Link
-              href={
-                hasPendingPayment
-                  ? state === "payment_processing"
-                    ? "/assinatura/sucesso"
-                    : "/assinar/continuar"
-                  : "/planos"
-              }
-            >
-              {hasPendingPayment
-                ? "Continuar para pagamento"
-                : "Escolher meu plano"}
-            </Link>
-          </Button>
-        </div>
+        <PlatformActionCard
+          title={hasPendingPayment ? "Concluir assinatura" : "Escolher meu plano"}
+          body="Etapas: plano → pagamento → personalizar → conversar."
+          href={
+            hasPendingPayment
+              ? state === "payment_processing"
+                ? "/assinatura/sucesso"
+                : "/assinar/continuar"
+              : "/planos"
+          }
+          cta={
+            hasPendingPayment
+              ? "Continuar para pagamento"
+              : "Escolher meu plano"
+          }
+          tone="emphasis"
+        />
       </div>
     );
   }
@@ -105,21 +100,17 @@ export default async function InicioPage() {
       <div className="space-y-8">
         <div>
           <h1 className="font-display text-3xl text-ink">{greeting}</h1>
-          <p className="mt-2 max-w-2xl text-ink-soft">
+          <p className="mt-2 max-w-2xl text-ink-soft" aria-live="polite">
             Pagamento concluído — falta 1 etapa.
           </p>
         </div>
-        <div className="rounded-2xl border border-wine/30 bg-wine/5 p-6">
-          <h2 className="font-display text-xl text-ink">
-            Personalize sua experiência
-          </h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            Conte-nos como você prefere receber suas reflexões.
-          </p>
-          <Button asChild className="mt-5 bg-ink hover:bg-ink/90">
-            <Link href="/personalizar">Personalizar minha experiência</Link>
-          </Button>
-        </div>
+        <PlatformActionCard
+          title="Personalize sua experiência"
+          body="Conte-nos como você prefere receber suas reflexões."
+          href="/personalizar"
+          cta="Personalizar minha experiência"
+          tone="emphasis"
+        />
       </div>
     );
   }
@@ -129,14 +120,18 @@ export default async function InicioPage() {
       <div className="space-y-8">
         <div>
           <h1 className="font-display text-3xl text-ink">{greeting}</h1>
-          <p className="mt-2 max-w-2xl text-ink-soft">
+          <p className="mt-2 max-w-2xl text-ink-soft" role="status" aria-live="polite">
             Há um problema com o pagamento da sua assinatura. Atualize a forma
             de pagamento para continuar conversando.
           </p>
         </div>
-        <Button asChild className="bg-ink hover:bg-ink/90">
-          <Link href="/conta">Atualizar pagamento</Link>
-        </Button>
+        <PlatformActionCard
+          title="Atualizar pagamento"
+          body="Revise a assinatura e a forma de pagamento na sua conta."
+          href="/conta"
+          cta="Ir para minha conta"
+          tone="emphasis"
+        />
       </div>
     );
   }
@@ -155,34 +150,27 @@ export default async function InicioPage() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="rounded-2xl border border-border/70 bg-card/60 p-6">
-          <h2 className="font-display text-xl text-ink">
-            Começar uma reflexão
-          </h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            {recentConversation?.title
+        <PlatformActionCard
+          title="Começar uma reflexão"
+          body={
+            recentConversation?.title
               ? `Recente: ${recentConversation.title}`
-              : "Uma conversa guiada pelas Escrituras, no tom que você escolheu."}
-          </p>
-          <Button asChild className="mt-5 bg-ink hover:bg-ink/90">
-            <Link
-              href={
-                recentConversation
-                  ? `/conversar?c=${recentConversation.id}`
-                  : "/conversar"
-              }
-            >
-              Conversar
-            </Link>
-          </Button>
-        </div>
+              : "Uma conversa guiada pelas Escrituras, no tom que você escolheu."
+          }
+          href={
+            recentConversation
+              ? `/conversar?c=${recentConversation.id}`
+              : "/conversar"
+          }
+          cta="Conversar"
+        />
         <div className="rounded-2xl border border-border/70 bg-card/60 p-6">
           <h2 className="font-display text-xl text-ink">Seu plano</h2>
           <p className="mt-2 text-sm text-ink-soft">
             {plan?.name ?? "Assinatura ativa"}
             {auth.demoMode ? " · acesso limitado" : ""}
           </p>
-          <Button asChild variant="outline" className="mt-5">
+          <Button asChild variant="outline" className="mt-5 min-h-11">
             <Link href="/conta">Gerenciar assinatura</Link>
           </Button>
         </div>

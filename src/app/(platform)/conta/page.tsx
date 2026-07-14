@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SubscriptionManagementPanel } from "@/components/account/subscription-management-panel";
+import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
 import { getPlanByKey } from "@/lib/entitlements";
@@ -55,8 +56,11 @@ export default async function ContaPage() {
     <div className="space-y-8">
       <div>
         <h1 className="font-display text-3xl text-ink">Conta</h1>
-        <p className="mt-2 text-ink-soft">
-          {auth.email ?? "Conta sem e-mail vinculado"}
+        <p className="mt-2 text-sm text-ink-soft">
+          <span className="text-ink-soft">E-mail de acesso</span>
+          <span className="mt-0.5 block text-base text-ink">
+            {auth.email ?? "Sem e-mail vinculado"}
+          </span>
         </p>
       </div>
 
@@ -94,7 +98,7 @@ export default async function ContaPage() {
                 </div>
               ) : null}
             </dl>
-            <p className="mt-4 text-sm text-ink-soft">
+            <p className="mt-4 text-sm text-ink-soft" aria-live="polite">
               {billing.renewsAutomatically
                 ? "A renovação é automática ao final de cada período."
                 : billing.cancelAtPeriodEnd
@@ -107,7 +111,7 @@ export default async function ContaPage() {
               ))}
             </ul>
             {plan.upcomingBenefits && plan.upcomingBenefits.length > 0 ? (
-              <div className="mt-4">
+              <div className="mt-4 border-t border-border/60 pt-4">
                 <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
                   Em desenvolvimento
                 </p>
@@ -133,21 +137,26 @@ export default async function ContaPage() {
             </div>
           </>
         ) : (
-          <p className="mt-3 text-sm text-ink-soft">
-            Não há plano gratuito.{" "}
-            <Link href="/planos" className="underline underline-offset-4">
-              Conhecer planos
-            </Link>
-          </p>
+          <div className="mt-3" role="status" aria-live="polite">
+            <p className="text-sm text-ink-soft">
+              Não há plano gratuito.{" "}
+              <Link
+                href="/planos"
+                className="text-ink underline underline-offset-4"
+              >
+                Conhecer planos
+              </Link>
+            </p>
+          </div>
         )}
       </section>
 
       <section className="rounded-2xl border border-border/70 bg-card/60 p-6">
-        <h2 className="font-display text-xl text-ink">Uso</h2>
+        <h2 className="font-display text-xl text-ink">Uso neste mês</h2>
         <p className="mt-2 text-lg text-ink">{usageLevelLabel(level)}</p>
         <p className="mt-2 max-w-lg text-sm text-ink-soft">
-          Linguagem amigável (uso normal, elevado ou próximo do limite), sem
-          cotas rígidas de mensagens.
+          Uso flexível dentro do orçamento do plano — sem cotas rígidas de
+          mensagens.
           {budgetConfig
             ? ` Limite diário de segurança: ${budgetConfig.dailyBurstLimit} requisições.`
             : ""}
@@ -155,7 +164,7 @@ export default async function ContaPage() {
       </section>
 
       <section className="rounded-2xl border border-border/70 bg-card/60 p-6">
-        <h2 className="font-display text-xl text-ink">Perfil espiritual</h2>
+        <h2 className="font-display text-xl text-ink">Preferências</h2>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-ink-soft">Tradição</dt>
@@ -184,6 +193,9 @@ export default async function ContaPage() {
             </dd>
           </div>
         </dl>
+        <Button asChild variant="outline" className="mt-5 min-h-11">
+          <Link href="/personalizar">Atualizar preferências</Link>
+        </Button>
       </section>
     </div>
   );

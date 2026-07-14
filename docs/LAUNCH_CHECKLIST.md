@@ -5,8 +5,10 @@ Checklist manual de cutover. **Não incluir valores de secrets neste arquivo.**
 ## 1. Domínio e URLs
 
 - [ ] DNS `amemchat.com.br` apontando para a Vercel (A/CNAME conforme painel)
-- [ ] `APP_URL` e `NEXT_PUBLIC_APP_URL` = origem HTTPS pública (sem localhost)
+- [ ] Redirecionamento externo **www → apex** (`www.amemchat.com.br` → `https://amemchat.com.br`)
+- [ ] `APP_URL` e `NEXT_PUBLIC_APP_URL` = `https://amemchat.com.br` (sem localhost, sem `*.vercel.app` visível ao cliente)
 - [ ] Confirmar canonical/OG/sitemap com a URL de produção
+- [ ] Cookies de auth/continuidade sem `Domain` www-bound (host-only no apex)
 
 ## 2. Supabase Auth
 
@@ -17,6 +19,8 @@ Checklist manual de cutover. **Não incluir valores de secrets neste arquivo.**
 ## 3. Resend / e-mail
 
 - [ ] Domínio autenticado (SPF/DKIM)
+- [ ] **P0 antes de billing ao vivo:** `NEXT_PUBLIC_SUPPORT_EMAIL` configurado (nunca inventar fallback)
+- [ ] Templates aplicados conforme `docs/AUTH_EMAIL_TEMPLATES.md` (confirmação com `token_hash`)
 - [ ] Teste de e-mail de confirmação de cadastro
 - [ ] Teste de recuperação de senha
 
@@ -40,7 +44,7 @@ Checklist manual de cutover. **Não incluir valores de secrets neste arquivo.**
 
 - [ ] Cadastro com plano Essencial/Caminho
 - [ ] Confirmação de e-mail
-- [ ] Onboarding + tradição
+- [ ] Personalização (tradição / estilo) + conversa
 - [ ] Checkout
 - [ ] Chat (nova conversa + reabrir histórico `/conversas` → `/conversar?c=`)
 - [ ] Cancelamento de renovação em `/conta`

@@ -27,16 +27,20 @@ const situations = [
 
 const steps = [
   {
-    title: "1. Crie sua conta",
-    body: "Confirme o e-mail e escolha a tradição que moldará as respostas.",
+    title: "1. Escolha seu plano",
+    body: "Essencial, Caminho ou Profundo — com benefícios claros do que já está disponível hoje.",
   },
   {
-    title: "2. Assine com segurança",
-    body: "Checkout pela Stripe. Você só paga depois da confirmação do e-mail.",
+    title: "2. Confirme seu e-mail",
+    body: "Crie a conta e confirme o e-mail para seguir com segurança.",
   },
   {
-    title: "3. Traga sua situação",
-    body: "Converse com orientação baseada nas Escrituras — referência, interpretação e aplicação.",
+    title: "3. Pague com segurança",
+    body: "Checkout pela Stripe. Renovação mensal, cancelável na sua conta no Amém Chat.",
+  },
+  {
+    title: "4. Personalize e converse",
+    body: "Escolha a tradição e o tom das reflexões — depois traga sua situação.",
   },
 ];
 
@@ -44,17 +48,18 @@ const whatYouGet = [
   "Conversas com orientação baseada nas Escrituras",
   "Tradição espiritual no perfil (ecumênica, evangélica ou católica)",
   "Memória da conversa em andamento",
+  "Uso flexível dentro do orçamento do plano escolhido",
   "Cancelamento da renovação pela própria conta no Amém Chat",
 ];
 
 const faq = [
   {
     q: "A plataforma afirma ser Jesus?",
-    a: "Não. É uma experiência de inteligência artificial baseada nas Escrituras — nunca apresentada como voz divina.",
+    a: "Não. É uma experiência de inteligência artificial baseada nas Escrituras — nunca apresentada como voz divina. Detalhes em Transparência sobre IA.",
   },
   {
     q: "Como funciona o pagamento?",
-    a: "O checkout é processado pela Stripe. Você confirma o e-mail primeiro e só então conclui a assinatura.",
+    a: "Assinatura mensal com renovação automática. O checkout é processado pela Stripe. Você confirma o e-mail primeiro e só então conclui a assinatura.",
   },
   {
     q: "Posso cancelar facilmente?",
@@ -76,8 +81,8 @@ export default function HomePage() {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.12),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.08),_transparent_50%)]"
           />
-          <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14 lg:pt-10">
-            <div className="animate-fade-up">
+          <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-6 sm:px-6 lg:pb-16 lg:pt-10">
+            <div className="animate-fade-up max-w-2xl">
               <p className="font-display text-4xl leading-[1.1] tracking-tight text-ink sm:text-5xl lg:text-[3.4rem]">
                 {brand.name}
               </p>
@@ -85,27 +90,38 @@ export default function HomePage() {
                 {brand.tagline}
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-ink-soft sm:text-lg">
-                Quando a mente aperta e faltam palavras, o Amém Chat ajuda você
-                a trazer a situação real e receber uma reflexão clara, pastoral
-                e ancorada nas Escrituras — com a tradição que você escolhe.
-              </p>
-              <p className="mt-3 max-w-lg text-sm leading-relaxed text-ink-soft">
-                É inteligência artificial. Não afirma ser Jesus, Deus ou
-                revelação.
+                Quando a mente aperta e faltam palavras, traga a situação real e
+                receba uma reflexão clara, pastoral e ancorada nas Escrituras —
+                com a tradição que você escolhe.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="bg-ink hover:bg-ink/90">
-                  <TrackingLink href="/cadastro">Criar minha conta</TrackingLink>
+                <Button asChild size="lg" className="min-h-11 bg-ink hover:bg-ink/90">
+                  <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
                 </Button>
-                <Button asChild size="lg" variant="outline">
-                  <a href="#demonstracao">Ver um exemplo</a>
+                <Button asChild size="lg" variant="outline" className="min-h-11">
+                  <a href="#demonstracao">Ver uma reflexão de exemplo</a>
                 </Button>
               </div>
               <p className="mt-5 max-w-md text-xs leading-relaxed text-ink-soft">
-                Pagamento seguro pela Stripe · renovação cancelável na sua conta
-                · acesso após confirmar o e-mail e concluir a assinatura.
+                Assinatura mensal · pagamento seguro pela Stripe · renovação
+                cancelável na sua conta.
               </p>
             </div>
+          </div>
+        </section>
+
+        <section
+          className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16"
+          aria-labelledby="demo-heading"
+        >
+          <h2 id="demo-heading" className="font-display text-3xl text-ink">
+            Veja uma reflexão de exemplo
+          </h2>
+          <p className="mt-3 max-w-2xl text-ink-soft">
+            Experimente situações reais abaixo — sem criar conta e sem chamar a
+            API.
+          </p>
+          <div className="mt-8 max-w-xl lg:max-w-2xl">
             <ChatDemo />
           </div>
         </section>
@@ -131,11 +147,11 @@ export default function HomePage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">Como funciona</h2>
+          <h2 className="font-display text-3xl text-ink">Como começar</h2>
           <p className="mt-3 max-w-2xl text-ink-soft">
-            Três passos simples até a primeira conversa.
+            Do plano à primeira conversa, em passos claros.
           </p>
-          <div className="mt-10 grid gap-8 md:grid-cols-3">
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step) => (
               <div key={step.title}>
                 <h3 className="font-display text-xl text-ink">{step.title}</h3>
@@ -149,11 +165,11 @@ export default function HomePage() {
 
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-display text-3xl text-ink">
-            O que você recebe hoje
+            Benefícios disponíveis hoje
           </h2>
           <p className="mt-3 max-w-2xl text-ink-soft">
-            Benefícios já disponíveis. Recursos em desenvolvimento não entram
-            nesta lista.
+            O que já funciona na assinatura. Recursos em desenvolvimento não
+            entram nesta lista.
           </p>
           <ul className="mt-8 max-w-xl space-y-3 text-sm text-ink-soft">
             {whatYouGet.map((item) => (
@@ -168,8 +184,8 @@ export default function HomePage() {
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-display text-3xl text-ink">Tradições</h2>
           <p className="mt-3 max-w-2xl text-ink-soft">
-            A tradição altera a política teológica da resposta — não apenas o
-            tom.
+            A tradição que você escolhe molda como as reflexões são
+            apresentadas — não apenas o tom.
           </p>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {TRADITION_POLICIES.map((tradition) => (
@@ -189,12 +205,25 @@ export default function HomePage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="font-display text-3xl text-ink">Planos</h2>
+          <p className="mt-3 max-w-2xl text-ink-soft">
+            Assinatura mensal com renovação automática. Escolha o ritmo que cabe
+            na sua vida — frequência e profundidade variam por plano. Recursos
+            futuros aparecem separados como “Em desenvolvimento”.
+          </p>
+          <div className="mt-10">
+            <PlanCards />
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-display text-3xl text-ink">
             Transparência e segurança
           </h2>
           <p className="mt-3 max-w-2xl text-ink-soft">
-            Identidade clara, checkout seguro e cancelamento sem labirinto.
-            Detalhes completos em{" "}
+            O Amém Chat é inteligência artificial baseada nas Escrituras. Não
+            afirma ser Jesus, Deus ou revelação. Identidade clara, checkout
+            seguro e cancelamento sem labirinto — detalhes completos em{" "}
             <TrackingLink
               href="/transparencia-ia"
               className="text-ink underline underline-offset-4"
@@ -209,17 +238,6 @@ export default function HomePage() {
             <li>Sem pressão de doação ou culpa na conversa</li>
             <li>Referências bíblicas apresentadas por síntese</li>
           </ul>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">Planos</h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            Escolha o ritmo que cabe na sua vida. Recursos futuros aparecem
-            separados como “Em desenvolvimento”.
-          </p>
-          <div className="mt-10">
-            <PlanCards />
-          </div>
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
@@ -239,14 +257,18 @@ export default function HomePage() {
         <section className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6">
           <div className="rounded-3xl border border-border/70 bg-gradient-to-br from-sand-100/90 to-card px-6 py-12 text-center sm:px-10">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Pronto para trazer sua situação?
+              Pronto para começar?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-              Crie a conta, confirme o e-mail e comece com a tradição que faz
-              sentido para você.
+              Escolha o plano, confirme o e-mail e traga sua situação com a
+              tradição que faz sentido para você.
             </p>
-            <Button asChild size="lg" className="mt-8 bg-wine hover:bg-wine-soft">
-              <TrackingLink href="/cadastro">Criar conta</TrackingLink>
+            <Button
+              asChild
+              size="lg"
+              className="mt-8 min-h-11 bg-wine hover:bg-wine-soft"
+            >
+              <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
             </Button>
           </div>
         </section>

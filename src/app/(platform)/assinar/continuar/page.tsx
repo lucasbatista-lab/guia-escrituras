@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { FocusPageTitle } from "@/components/a11y/focus-page-title";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth/session";
 import {
@@ -48,29 +49,67 @@ export default async function AssinarContinuarPage({
 
     return (
       <ContinuationShell kind="ready">
-        <div className="space-y-4">
-          <div className="rounded-lg border border-border/80 bg-card/70 p-5">
-            <p className="text-sm text-ink-soft">Plano selecionado</p>
-            <h2 className="font-display text-2xl text-ink">{plan.name}</h2>
-            <p className="mt-2 text-sm text-ink-soft">{plan.tagline}</p>
+        <div className="mt-8 space-y-5">
+          <div className="rounded-2xl border border-border/80 bg-card/70 p-5 sm:p-6">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">
+              Seu plano
+            </p>
+            <h2 className="mt-2 font-display text-2xl text-ink">{plan.name}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+              {plan.tagline}
+            </p>
             <p className="mt-4 font-display text-3xl text-ink">
               {formatPriceBRL(plan.priceMonthlyCents)}
               <span className="ml-1 text-sm font-sans font-normal text-ink-soft">
                 /mês
               </span>
             </p>
+            <ul className="mt-5 space-y-2 text-sm text-ink-soft">
+              {plan.displayBenefits.map((benefit) => (
+                <li key={benefit} className="flex gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine/70" />
+                  <span>{benefit}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <p className="text-sm text-ink-soft">
-            O valor mensal é confirmado no checkout seguro antes do pagamento.
-          </p>
+
+          <div className="space-y-2 text-sm leading-relaxed text-ink-soft">
+            <p>Assinatura mensal com renovação automática.</p>
+            <p>
+              Você pode cancelar a renovação a qualquer momento na sua conta no
+              Amém Chat.
+            </p>
+            <p>Pagamento seguro processado pela Stripe.</p>
+          </div>
+
+          <div
+            className="rounded-xl border border-border/60 bg-sand-100/60 px-4 py-3 text-sm text-ink-soft"
+            aria-live="polite"
+          >
+            <p className="font-medium text-ink">Próximos passos</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-5">
+              <li>Confirmar o pagamento</li>
+              <li>Personalizar sua experiência</li>
+              <li>Começar a conversar</li>
+            </ol>
+          </div>
+
           <form action={startCheckoutAction.bind(null, checkoutToken)}>
-            <Button type="submit" className="w-full bg-ink hover:bg-ink/90">
-              Continuar para pagamento
+            <Button
+              type="submit"
+              size="lg"
+              className="min-h-12 w-full bg-ink text-base hover:bg-ink/90"
+            >
+              Ir para pagamento seguro
             </Button>
           </form>
           <p className="text-center text-sm text-ink-soft">
-            <Link href="/planos" className="text-ink underline-offset-4 hover:underline">
-              Voltar aos planos
+            <Link
+              href="/planos"
+              className="text-ink underline-offset-4 hover:underline"
+            >
+              Trocar de plano
             </Link>
           </p>
         </div>
@@ -88,34 +127,51 @@ function ContinuationShell({
   kind: "ready" | "expired" | "used" | "not_found" | "forbidden";
   children?: React.ReactNode;
 }) {
-  const copy: Record<typeof kind, { title: string; body: string }> = {
-    ready: { title: "Continuar assinatura", body: "" },
+  const copy: Record<
+    typeof kind,
+    { title: string; body: string; live?: string }
+  > = {
+    ready: {
+      title: "Quase lá — confirme sua assinatura",
+      body: "Revise o plano e siga para o pagamento. Faltam poucos passos.",
+    },
     expired: {
-      title: "Link expirado",
-      body: "Este link de continuação expirou. Escolha um plano novamente.",
+      title: "Este link expirou",
+      body: "Escolha um plano novamente para retomar a assinatura.",
+      live: "Link de continuação expirado.",
     },
     used: {
-      title: "Assinatura em andamento",
-      body: "Este fluxo já foi utilizado. Acesse sua conta para ver o status.",
+      title: "Assinatura já em andamento",
+      body: "Este passo já foi usado. Veja o status na sua conta.",
+      live: "Fluxo de assinatura já utilizado.",
     },
     not_found: {
-      title: "Continuação indisponível",
-      body: "Não encontramos um plano pendente para continuar.",
+      title: "Nenhum plano pendente",
+      body: "Não encontramos uma assinatura para continuar. Escolha um plano para começar.",
+      live: "Continuação indisponível.",
     },
     forbidden: {
-      title: "Acesso negado",
+      title: "Acesso não permitido",
       body: "Esta continuação pertence a outra conta.",
+      live: "Continuação de outra conta.",
     },
   };
 
-  const { title, body } = copy[kind];
+  const { title, body, live } = copy[kind];
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center px-4 py-16">
-      <h1 className="font-display text-3xl text-ink">{title}</h1>
-      {body ? <p className="mt-3 text-sm text-ink-soft">{body}</p> : null}
+      <FocusPageTitle className="font-display text-3xl text-ink">
+        {title}
+      </FocusPageTitle>
+      <p className="mt-3 text-sm leading-relaxed text-ink-soft">{body}</p>
+      {live ? (
+        <p className="sr-only" role="status" aria-live="polite">
+          {live}
+        </p>
+      ) : null}
       {children ?? (
-        <Button asChild className="mt-6 w-full" variant="outline">
+        <Button asChild className="mt-8 min-h-11 w-full" variant="outline">
           <Link href="/planos">Ver planos</Link>
         </Button>
       )}

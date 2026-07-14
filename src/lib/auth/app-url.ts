@@ -40,7 +40,16 @@ export function getCanonicalSiteUrl(): string {
     if (getAppRuntime() === "production" && isLocalHost(new URL(origin).hostname)) {
       continue;
     }
+    // Public/canonical surface must not expose *.vercel.app to clients.
+    if (getAppRuntime() === "production" && isVercelAppHost(origin)) {
+      continue;
+    }
     return origin;
+  }
+
+  if (getAppRuntime() === "production") {
+    // Canonical production origin (apex). Configure APP_URL; do not show Vercel URLs.
+    return "https://amemchat.com.br";
   }
 
   const vercel = process.env.VERCEL_URL?.trim();
@@ -49,12 +58,15 @@ export function getCanonicalSiteUrl(): string {
     if (origin) return origin;
   }
 
-  if (getAppRuntime() === "production") {
-    // Last safe fallback on Vercel production without APP_URL — still not localhost.
-    return "https://amemchat.com.br";
-  }
-
   return "http://localhost:3000";
+}
+
+function isVercelAppHost(origin: string): boolean {
+  try {
+    return new URL(origin).hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -78,6 +90,9 @@ export function getAppUrl(): string {
     const url = new URL(raw);
     if (url.protocol !== "https:" && url.protocol !== "http:") return "";
     if (getAppRuntime() === "production" && isLocalHost(url.hostname)) {
+      return getCanonicalSiteUrl();
+    }
+    if (getAppRuntime() === "production" && isVercelAppHost(url.origin)) {
       return getCanonicalSiteUrl();
     }
     return url.origin;

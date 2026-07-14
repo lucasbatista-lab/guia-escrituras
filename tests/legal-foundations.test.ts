@@ -71,3 +71,14 @@ describe("home page honesty", () => {
     expect(source).not.toMatch(/fale com o verdadeiro Jesus/i);
   });
 });
+
+describe("support email honesty", () => {
+  it("never falls back to invented address", async () => {
+    const original = { ...process.env };
+    delete process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
+    delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
+    const { getSupportEmail } = await import("@/config/legal");
+    expect(getSupportEmail()).toBeNull();
+    process.env = { ...original };
+  });
+});

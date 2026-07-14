@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { FocusPageTitle } from "@/components/a11y/focus-page-title";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -69,7 +70,7 @@ export default async function AssinaturaSucessoPage({
     },
     active: {
       title: "Assinatura ativa",
-      body: "Sua assinatura está ativa no sistema. Você já pode usar o Amém Chat conforme seu plano.",
+      body: "Sua assinatura está ativa. Próximo passo: personalizar sua experiência e começar a conversar.",
     },
     sync_error: {
       title: "Estamos sincronizando",
@@ -83,11 +84,15 @@ export default async function AssinaturaSucessoPage({
 
   return (
     <main className="mx-auto max-w-lg px-4 py-16">
-      <h1 className="font-display text-3xl text-ink">{copy.title}</h1>
-      <p className="mt-3 text-sm text-ink-soft">{copy.body}</p>
+      <FocusPageTitle className="font-display text-3xl text-ink">
+        {copy.title}
+      </FocusPageTitle>
+      <p className="mt-3 text-sm text-ink-soft" aria-live="polite" role="status">
+        {copy.body}
+      </p>
       <div className="mt-8 flex flex-col gap-3">
         {status !== "forbidden" ? (
-          <Button asChild className="bg-ink hover:bg-ink/90">
+          <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
             <Link
               href={
                 status === "active" ? "/personalizar" : "/assinatura/sucesso"
@@ -99,7 +104,7 @@ export default async function AssinaturaSucessoPage({
             </Link>
           </Button>
         ) : null}
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="min-h-11">
           <Link href="/conta">Ver minha conta</Link>
         </Button>
       </div>

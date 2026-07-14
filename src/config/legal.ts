@@ -20,13 +20,20 @@ export function getLegalEntityDocument(): string | null {
   return v || null;
 }
 
-export function getSupportEmail(): string {
+/**
+ * Public support address. Returns null when unset — never invent a fallback.
+ * Configure NEXT_PUBLIC_SUPPORT_EMAIL before live billing (P0).
+ */
+export function getSupportEmail(): string | null {
   return (
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() ||
     process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL?.trim() ||
-    "suporte@amemchat.com"
+    null
   );
 }
+
+/** User-facing copy when no support address is configured. */
+export const SUPPORT_CHANNEL_PENDING = "Canal de suporte em configuração";
 
 export const LEGAL_ROUTES = [
   { href: "/termos", label: "Termos de Uso" },

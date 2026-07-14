@@ -58,7 +58,7 @@ export function SiteHeader({ className }: { className?: string }) {
           </TrackingLink>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/80 text-ink md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border/80 text-ink md:hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             aria-expanded={open}
             aria-controls="marketing-mobile-nav"
             aria-label={open ? "Fechar menu" : "Abrir menu"}

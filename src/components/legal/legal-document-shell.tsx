@@ -4,6 +4,7 @@ import {
   getLegalEntityDocument,
   getLegalEntityName,
   getSupportEmail,
+  SUPPORT_CHANNEL_PENDING,
 } from "@/config/legal";
 
 export function LegalDocumentShell({
@@ -15,6 +16,7 @@ export function LegalDocumentShell({
 }) {
   const entity = getLegalEntityName();
   const document = getLegalEntityDocument();
+  const supportEmail = getSupportEmail();
 
   return (
     <div className="min-h-screen">
@@ -33,11 +35,21 @@ export function LegalDocumentShell({
         </article>
         <p className="mt-10 text-sm text-ink-soft">
           Dúvidas:{" "}
-          <a href={`mailto:${getSupportEmail()}`} className="text-ink underline-offset-4 hover:underline">
-            {getSupportEmail()}
-          </a>
+          {supportEmail ? (
+            <a
+              href={`mailto:${supportEmail}`}
+              className="text-ink underline-offset-4 hover:underline"
+            >
+              {supportEmail}
+            </a>
+          ) : (
+            <span>{SUPPORT_CHANNEL_PENDING}</span>
+          )}
           {" · "}
-          <Link href="/transparencia-ia" className="text-ink underline-offset-4 hover:underline">
+          <Link
+            href="/transparencia-ia"
+            className="text-ink underline-offset-4 hover:underline"
+          >
             Transparência sobre IA
           </Link>
         </p>

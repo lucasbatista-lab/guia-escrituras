@@ -97,11 +97,11 @@ export function ChatDemo() {
 
       <div className="border-t border-border/70 px-4 py-4 sm:px-5">
         <p className="text-sm text-ink-soft">
-          Gostou do tom? Crie sua conta para conversar de verdade — com a
+          Gostou do tom? Escolha um plano para conversar de verdade — com a
           tradição que você escolher.
         </p>
-        <Button asChild className="mt-3 w-full bg-ink hover:bg-ink/90 sm:w-auto">
-          <TrackingLink href="/cadastro">Criar conta</TrackingLink>
+        <Button asChild className="mt-3 min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto">
+          <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
         </Button>
       </div>
     </div>

@@ -13,20 +13,20 @@ describe("launch conversion home", () => {
   const home = read("src", "app", "(marketing)", "page.tsx");
   const demo = read("src", "components", "marketing", "chat-demo.tsx");
 
-  it("keeps brand, tagline and AI transparency without legal overload in hero CTAs", () => {
+  it("keeps brand, tagline and conversion CTAs without legal overload in hero", () => {
     expect(home).toContain("brand.name");
     expect(home).toContain("brand.tagline");
-    expect(home).toContain("inteligência artificial");
-    expect(home).toContain("Criar minha conta");
+    expect(home).toContain("Escolher meu plano");
     expect(home).toContain("#demonstracao");
+    expect(home).toContain("Ver uma reflexão de exemplo");
     expect(home).toContain("Stripe");
     expect(home).toContain("cancel");
   });
 
   it("includes essential conversion sections", () => {
     expect(home).toContain("Situações em que o Amém Chat pode ajudar");
-    expect(home).toContain("Como funciona");
-    expect(home).toContain("O que você recebe hoje");
+    expect(home).toContain("Como começar");
+    expect(home).toContain("Benefícios disponíveis hoje");
     expect(home).toContain("Tradições");
     expect(home).toContain("Transparência e segurança");
     expect(home).toContain("Planos");
@@ -53,7 +53,8 @@ describe("launch conversion home", () => {
     expect(demo).toContain("Sem chamada à API");
     expect(demo).not.toContain("fetch(");
     expect(demo).not.toContain("/api/chat");
-    expect(demo).toContain('href="/cadastro"');
+    expect(demo).toContain('href="/planos"');
+    expect(demo).toContain("Escolher meu plano");
   });
 });
 

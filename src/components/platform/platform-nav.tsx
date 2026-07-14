@@ -44,7 +44,7 @@ export function PlatformNav({
               key={item.href}
               href={item.href}
               className={cn(
-                "whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm transition",
+                "whitespace-nowrap rounded-md px-2.5 py-2.5 text-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                 pathname === item.href
                   ? "bg-sand-200 text-ink"
                   : item.dominant
@@ -58,7 +58,7 @@ export function PlatformNav({
           <button
             type="button"
             onClick={logout}
-            className="ml-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm text-ink-soft hover:text-ink"
+            className="ml-1 min-h-11 whitespace-nowrap rounded-md px-2.5 py-2.5 text-sm text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             Sair
           </button>

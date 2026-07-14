@@ -37,6 +37,9 @@ Inclua (Site URL + Redirect URLs):
 Não altere templates remotos a partir deste repositório/deploy automático —
 esta alteração é **manual** no Dashboard após o deploy.
 
+Modelos completos (confirmação, recuperação, magic link, alteração de e-mail):
+`docs/AUTH_EMAIL_TEMPLATES.md`.
+
 ## Checklist rápido
 
 1. Deploy da aplicação com `APP_URL=https://amemchat.com.br`

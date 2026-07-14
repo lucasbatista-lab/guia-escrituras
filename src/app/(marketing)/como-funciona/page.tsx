@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
+import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 const steps = [
   {
-    title: "Crie seu perfil espiritual",
-    body: "Escolha tradição, estilo de resposta e profundidade preferida.",
+    title: "Escolha seu plano",
+    body: "Essencial, Caminho ou Profundo — com benefícios claros do que já está disponível.",
   },
   {
-    title: "Assine um plano",
-    body: "Não há plano gratuito. Essencial, Caminho, Profundo ou Particular (sob solicitação).",
+    title: "Crie a conta e confirme o e-mail",
+    body: "Você só segue para o pagamento depois da confirmação.",
+  },
+  {
+    title: "Pague com segurança e personalize",
+    body: "Checkout pela Stripe. Depois escolha tradição, estilo e profundidade.",
   },
   {
     title: "Traga sua situação",
-    body: "Escreva com calma. A mensagem é validada e limitada em tamanho por segurança.",
-  },
-  {
-    title: "Reflexão com referências",
-    body: "Você recebe orientação com referências bíblicas, aviso de interpretação e, quando fizer sentido, uma pergunta de continuidade.",
+    body: "Receba orientação com referências bíblicas, interpretação e um próximo passo possível.",
   },
 ];
 
@@ -53,8 +53,8 @@ export default function ComoFuncionaPage() {
             </li>
           ))}
         </ol>
-        <Button asChild className="mt-12 bg-ink hover:bg-ink/90">
-          <Link href="/cadastro">Criar conta</Link>
+        <Button asChild className="mt-12 min-h-11 bg-ink hover:bg-ink/90">
+          <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
         </Button>
       </main>
       <SiteFooter />

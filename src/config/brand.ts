@@ -4,13 +4,15 @@
  */
 
 import { getCanonicalSiteUrl } from "@/lib/auth/app-url";
+import { getSupportEmail } from "@/config/legal";
 
 export interface BrandConfig {
   name: string;
   tagline: string;
   description: string;
   canonicalUrl: string;
-  supportEmail: string;
+  /** Configured support address, or null when unset (never invent one). */
+  supportEmail: string | null;
   socialHandles: {
     instagram: string;
   };
@@ -20,7 +22,6 @@ const DEFAULT_BRAND = {
   name: "Amém Chat",
   tagline: "Como Jesus responderia à sua situação?",
   description: "Seu guIA cristão, baseado nas Escrituras.",
-  supportEmail: "suporte@amemchat.com",
   socialHandles: {
     instagram: "amem.chat",
   },
@@ -33,9 +34,7 @@ export function getBrandConfig(): BrandConfig {
       process.env.NEXT_PUBLIC_APP_TAGLINE?.trim() || DEFAULT_BRAND.tagline,
     description: DEFAULT_BRAND.description,
     canonicalUrl: getCanonicalSiteUrl(),
-    supportEmail:
-      process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() ||
-      DEFAULT_BRAND.supportEmail,
+    supportEmail: getSupportEmail(),
     socialHandles: {
       instagram:
         process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim()?.replace(/^@/, "") ||

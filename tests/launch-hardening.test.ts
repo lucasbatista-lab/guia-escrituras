@@ -102,7 +102,7 @@ describe("SEO discoverability", () => {
     expect(urls.join(" ")).not.toContain("/conversar");
   });
 
-  it("canonical never falls back to localhost in production", () => {
+  it("canonical never falls back to localhost or vercel.app in production", () => {
     const original = { ...process.env };
     try {
       process.env.VERCEL_ENV = "production";
@@ -110,8 +110,9 @@ describe("SEO discoverability", () => {
       delete process.env.NEXT_PUBLIC_APP_URL;
       delete process.env.APP_URL;
       process.env.VERCEL_URL = "guia-escrituras.vercel.app";
-      expect(getCanonicalSiteUrl()).toBe("https://guia-escrituras.vercel.app");
+      expect(getCanonicalSiteUrl()).toBe("https://amemchat.com.br");
       expect(getCanonicalSiteUrl()).not.toContain("localhost");
+      expect(getCanonicalSiteUrl()).not.toContain("vercel.app");
     } finally {
       process.env = { ...original };
     }

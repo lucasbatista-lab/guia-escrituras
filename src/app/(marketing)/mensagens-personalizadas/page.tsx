@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { brand } from "@/config/brand";
+import { SUPPORT_CHANNEL_PENDING } from "@/config/legal";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default function MensagensPersonalizadasPage() {
+  const supportEmail = brand.supportEmail;
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -22,20 +25,29 @@ export default function MensagensPersonalizadasPage() {
         <div className="mt-10 rounded-2xl border border-border/70 bg-card/60 p-6">
           <h2 className="font-display text-2xl text-ink">Solicitar acesso</h2>
           <p className="mt-2 text-sm text-ink-soft">
-            Envie uma mensagem descrevendo o contexto do acompanhamento desejado.
-            Respondemos quando for possível analisar o pedido — sem prazo
-            garantido de resposta.
+            Descreva o contexto do acompanhamento desejado. Analisamos pedidos
+            conforme disponibilidade — não há prazo de resposta assegurado.
           </p>
           <p className="mt-4 text-sm text-ink-soft">
             Valor de referência: R$ 988/mês, confirmado apenas após alinhamento.
           </p>
-          <Button asChild className="mt-6 bg-wine hover:bg-wine-soft">
-            <a
-              href={`mailto:${brand.supportEmail}?subject=${encodeURIComponent("Solicitação Particular")}`}
+          {supportEmail ? (
+            <Button asChild className="mt-6 min-h-11 bg-wine hover:bg-wine-soft">
+              <a
+                href={`mailto:${supportEmail}?subject=${encodeURIComponent("Solicitação Particular")}`}
+              >
+                Enviar solicitação por e-mail
+              </a>
+            </Button>
+          ) : (
+            <p
+              className="mt-6 rounded-lg border border-border/70 bg-sand-100/70 px-4 py-3 text-sm text-ink-soft"
+              role="status"
             >
-              Enviar solicitação por e-mail
-            </a>
-          </Button>
+              {SUPPORT_CHANNEL_PENDING}. Enquanto isso, você pode conhecer os
+              planos com checkout disponível.
+            </p>
+          )}
           <p className="mt-4 text-center text-sm text-ink-soft">
             <TrackingLink
               href="/planos"
