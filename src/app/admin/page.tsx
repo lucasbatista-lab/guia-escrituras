@@ -4,6 +4,7 @@ import {
   getAdminOverviewMetrics,
 } from "@/lib/admin/metrics";
 import { formatPriceBRL } from "@/lib/entitlements";
+import { StripeReadinessPanel } from "@/components/admin/stripe-readiness-panel";
 
 export default async function AdminHomePage() {
   let metrics;
@@ -32,6 +33,10 @@ export default async function AdminHomePage() {
           </p>
         ) : null}
       </div>
+
+      <Section title="Prontidão de pagamentos">
+        <StripeReadinessPanel />
+      </Section>
 
       <Section title="Usuários">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

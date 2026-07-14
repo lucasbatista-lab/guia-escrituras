@@ -136,6 +136,7 @@ export async function createSubscriptionCheckout(
     customer: customerId,
     client_reference_id: auth.userId,
     line_items: [{ price: priceId, quantity: 1 }],
+    allow_promotion_codes: true,
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: sharedMetadata,

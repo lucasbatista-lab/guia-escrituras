@@ -178,6 +178,7 @@ describe("checkout cutover fields", () => {
     const checkout = read("src", "lib", "stripe", "checkout.ts");
     expect(checkout).toContain("client_reference_id: auth.userId");
     expect(checkout).toContain("stripe_mode:");
+    expect(checkout).toContain("allow_promotion_codes: true");
     expect(checkout).toContain("subscription_data");
     expect(checkout).toContain("user_id");
     expect(checkout).toContain("plan_key");
