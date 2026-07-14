@@ -3,6 +3,7 @@ export type SignUpClientCode =
   | "email_invalid"
   | "password_weak"
   | "email_rate_limit"
+  | "email_service_unavailable"
   | "config_missing"
   | "terms_required"
   | "invalid_plan"
@@ -20,14 +21,17 @@ const SAFE_MESSAGES: Record<SignUpClientCode, string> = {
   password_weak:
     "A senha é muito fraca. Use pelo menos 8 caracteres, com letras e números.",
   email_rate_limit:
-    "Limite de envio de e-mail atingido. Aguarde alguns minutos e tente de novo.",
+    "Muitas tentativas de envio de e-mail. Aguarde alguns minutos e tente de novo.",
+  email_service_unavailable:
+    "Não foi possível enviar o e-mail de confirmação agora. Tente reenviar em alguns minutos.",
   config_missing:
     "Cadastro indisponível: configuração do ambiente incompleta. Tente novamente mais tarde.",
   terms_required:
     "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
   invalid_plan:
     "Plano inválido. Escolha um plano disponível em /planos.",
-  unexpected: "Não foi possível criar a conta agora. Tente novamente em instantes.",
+  unexpected:
+    "Não foi possível criar a conta agora. Tente novamente em instantes.",
 };
 
 export function safeSignUpMessage(code: SignUpClientCode): string {
@@ -69,7 +73,7 @@ export function mapSignUpAuthError(error: AuthLikeError): SignUpClientError {
     code === "email_address_invalid" ||
     code === "validation_failed" ||
     message.includes("invalid email") ||
-    message.includes("email address") && message.includes("invalid")
+    (message.includes("email address") && message.includes("invalid"))
   ) {
     return { code: "email_invalid", message: SAFE_MESSAGES.email_invalid };
   }
@@ -78,7 +82,7 @@ export function mapSignUpAuthError(error: AuthLikeError): SignUpClientError {
     code === "weak_password" ||
     message.includes("password should be") ||
     message.includes("password is too weak") ||
-    message.includes("at least") && message.includes("character")
+    (message.includes("at least") && message.includes("character"))
   ) {
     return { code: "password_weak", message: SAFE_MESSAGES.password_weak };
   }
@@ -93,6 +97,26 @@ export function mapSignUpAuthError(error: AuthLikeError): SignUpClientError {
     return {
       code: "email_rate_limit",
       message: SAFE_MESSAGES.email_rate_limit,
+    };
+  }
+
+  // SMTP / mailer failures — never label these as rate limit.
+  // Do not treat bare unexpected_failure alone as SMTP.
+  if (
+    code.includes("smtp") ||
+    message.includes("smtp") ||
+    message.includes("error sending confirmation email") ||
+    message.includes("error sending email") ||
+    message.includes("unable to send") ||
+    message.includes("failed to send") ||
+    message.includes("confirmation email") ||
+    message.includes("mailer") ||
+    message.includes("email provider") ||
+    (message.includes("sending") && message.includes("email"))
+  ) {
+    return {
+      code: "email_service_unavailable",
+      message: SAFE_MESSAGES.email_service_unavailable,
     };
   }
 
@@ -111,4 +135,39 @@ export function isSignUpDuplicateSoftFail(payload: {
   if (payload.session) return false;
   const identities = payload.user.identities;
   return Array.isArray(identities) && identities.length === 0;
+}
+
+export type ResendConfirmationClientCode =
+  | "email_invalid"
+  | "email_rate_limit"
+  | "email_service_unavailable"
+  | "config_missing"
+  | "unexpected";
+
+const RESEND_MESSAGES: Record<ResendConfirmationClientCode, string> = {
+  email_invalid: SAFE_MESSAGES.email_invalid,
+  email_rate_limit: SAFE_MESSAGES.email_rate_limit,
+  email_service_unavailable: SAFE_MESSAGES.email_service_unavailable,
+  config_missing: SAFE_MESSAGES.config_missing,
+  unexpected:
+    "Não foi possível reenviar o e-mail agora. Tente novamente em instantes.",
+};
+
+export function safeResendMessage(code: ResendConfirmationClientCode): string {
+  return RESEND_MESSAGES[code];
+}
+
+export function mapResendAuthError(
+  error: AuthLikeError,
+): { code: ResendConfirmationClientCode; message: string } {
+  const mapped = mapSignUpAuthError(error);
+  if (
+    mapped.code === "email_invalid" ||
+    mapped.code === "email_rate_limit" ||
+    mapped.code === "email_service_unavailable" ||
+    mapped.code === "config_missing"
+  ) {
+    return { code: mapped.code, message: RESEND_MESSAGES[mapped.code] };
+  }
+  return { code: "unexpected", message: RESEND_MESSAGES.unexpected };
 }

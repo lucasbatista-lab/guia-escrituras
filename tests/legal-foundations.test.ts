@@ -48,14 +48,16 @@ describe("footer legal links", () => {
 });
 
 describe("signup form terms checkbox", () => {
-  it("requires terms when plan is selected", async () => {
+  it("always shows terms acceptance with links", async () => {
     const source = await import("node:fs/promises").then((fs) =>
       fs.readFile("src/components/auth/sign-up-form.tsx", "utf8"),
     );
-    expect(source).toContain("requireTerms");
+    expect(source).toContain("Li e aceito");
     expect(source).toContain('href="/termos"');
     expect(source).toContain('href="/privacidade"');
     expect(source).toContain("aria-required");
+    expect(source).not.toContain("requireTerms");
+    expect(source).toContain("termsAccepted");
   });
 });
 

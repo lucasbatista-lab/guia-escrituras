@@ -27,7 +27,12 @@ import { createRequestId } from "@/lib/utils";
 const signUpSchema = z.object({
   displayName: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(320),
-  password: z.string().min(8).max(72),
+  password: z
+    .string()
+    .min(8)
+    .max(72)
+    .regex(/[A-Za-z]/, "letters")
+    .regex(/[0-9]/, "numbers"),
   planKey: z.string().trim().optional().nullable(),
   termsAccepted: z.boolean(),
   tracking: z
@@ -96,13 +101,23 @@ export async function signUpAction(input: {
     const path = issue?.path[0];
     if (path === "email") return fail("email_invalid", requestId);
     if (path === "password") return fail("password_weak", requestId);
+    if (path === "termsAccepted") return fail("terms_required", requestId);
+    logger.warn("sign_up_validation_failed", {
+      requestId,
+      path: typeof path === "string" ? path : "unknown",
+    });
     return fail("unexpected", requestId);
   }
 
-  const hasPlan = Boolean(parsed.data.planKey?.trim());
-  if (hasPlan && !parsed.data.termsAccepted) {
+  // Legal acceptance is always required — never skip by plan absence.
+  if (!parsed.data.termsAccepted) {
     return fail("terms_required", requestId);
   }
+
+  const hasPlan = Boolean(parsed.data.planKey?.trim());
+  const termsVersion = getTermsVersion();
+  const privacyVersion = getPrivacyVersion();
+  const termsAcceptedAt = new Date().toISOString();
 
   let intentToken: string | null = null;
   let intentId: string | null = null;
@@ -110,19 +125,16 @@ export async function signUpAction(input: {
   if (hasPlan) {
     const plan = validateCheckoutPlan(parsed.data.planKey);
     if (!plan.ok) {
-      return fail(
-        plan.code === "request_access_plan" ? "invalid_plan" : "invalid_plan",
-        requestId,
-      );
+      return fail("invalid_plan", requestId);
     }
 
     try {
       const { record, token } = await createSignupIntentWithToken({
         selectedPlanKey: plan.planKey,
         tracking: parsed.data.tracking,
-        termsVersion: getTermsVersion(),
-        privacyVersion: getPrivacyVersion(),
-        termsAcceptedAt: new Date().toISOString(),
+        termsVersion,
+        privacyVersion,
+        termsAcceptedAt,
       });
       intentToken = token;
       intentId = record.id;
@@ -171,7 +183,12 @@ export async function signUpAction(input: {
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { display_name: parsed.data.displayName },
+      data: {
+        display_name: parsed.data.displayName,
+        terms_version: termsVersion,
+        privacy_version: privacyVersion,
+        terms_accepted_at: termsAcceptedAt,
+      },
       emailRedirectTo,
     },
   });
@@ -184,8 +201,10 @@ export async function signUpAction(input: {
       code: mapped.code,
       authCode: error.code ?? null,
       authStatus: error.status ?? null,
-      authMessage: error.message,
+      // Never log raw message if it may contain tokens; store truncated shape only.
+      authMessage: (error.message ?? "").slice(0, 160),
       emailMasked: maskEmail(parsed.data.email),
+      hasIntent: Boolean(intentId),
     });
     return {
       ok: false,
@@ -216,6 +235,7 @@ export async function signUpAction(input: {
       code: "unexpected",
       reason: "empty_user",
       emailMasked: maskEmail(parsed.data.email),
+      hasIntent: Boolean(intentId),
     });
     return fail("unexpected", requestId);
   }
@@ -224,7 +244,14 @@ export async function signUpAction(input: {
 
   if (intentId && intentToken) {
     if (needsEmailConfirmation) {
-      await markIntentAwaitingConfirmation(intentId);
+      try {
+        await markIntentAwaitingConfirmation(intentId);
+      } catch (markError) {
+        logger.error("sign_up_intent_mark_failed", {
+          requestId,
+          error: markError instanceof Error ? markError.message : "unknown",
+        });
+      }
     } else {
       const completed = await completeIntentAfterConfirmation(
         intentToken,
@@ -239,6 +266,10 @@ export async function signUpAction(input: {
           requestId,
         };
       }
+      logger.warn("sign_up_intent_complete_failed", {
+        requestId,
+        code: completed.code,
+      });
     }
   }
 

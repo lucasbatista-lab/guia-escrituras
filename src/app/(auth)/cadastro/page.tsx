@@ -54,7 +54,6 @@ export default async function CadastroPage({
       <SignUpForm
         planKey={validated?.ok ? validated.planKey : null}
         tracking={tracking}
-        requireTerms={Boolean(validated?.ok)}
       />
     </AuthShell>
   );
