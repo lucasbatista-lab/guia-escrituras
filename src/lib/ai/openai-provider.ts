@@ -14,6 +14,10 @@ import {
   getOpenAiReasoningEffortDefault,
 } from "./openai-config";
 import { getResponseDepthGuidance } from "./response-depth";
+import {
+  buildConversationMemoryPromptGuidance,
+  sanitizeConversationMemory,
+} from "./conversation-memory";
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
 
@@ -65,10 +69,16 @@ export class OpenAiResponsesProvider implements AiProvider {
     const maxOutputTokens = getMaxOutputTokensForDepth(depth);
     const reasoningEffort = getOpenAiReasoningEffortDefault();
 
+    const currentQuestion =
+      [...input.messages].reverse().find((m) => m.role === "user")?.content ??
+      "";
+
     const system = [
       ...input.theologyPolicy.composedSystemPromptSections,
       "",
       ...depthGuidance.promptLines,
+      "",
+      ...buildConversationMemoryPromptGuidance(),
       "",
       ...buildGroundingPromptSection(input.grounding),
       "Responda em português do Brasil.",
@@ -80,20 +90,21 @@ export class OpenAiResponsesProvider implements AiProvider {
       "Separe interpretação de aplicação prática.",
       "Nunca afirme ser Jesus, Deus ou uma revelação sobrenatural.",
       "interpretationNotice: uma frase curta sobre referência/síntese (não um essay).",
+      "Finalize com no máximo uma pergunta de continuidade (followUpQuestion).",
     ].join("\n");
 
-    const conversation = input.messages
+    const recentBlock = input.messages
       .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
       .join("\n\n");
 
     const userPrompt = [
       input.conversationSummary
-        ? `Resumo da conversa:\n${input.conversationSummary}\n`
-        : "",
-      "Mensagens:",
-      conversation,
-      "",
-      "Pergunta atual: use a última mensagem do usuário como foco principal.",
+        ? `Resumo compacto da conversa (atualize em conversationMemory):\n${input.conversationSummary}\n`
+        : "Ainda não há resumo: após este turno, conversationMemory será o primeiro resumo.\n",
+      recentBlock
+        ? `Mensagens recentes (não é o histórico completo):\n${recentBlock}\n`
+        : "Sem mensagens anteriores além da pergunta atual.\n",
+      `Pergunta atual:\n${currentQuestion || "(sem texto)"}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -186,12 +197,16 @@ export class OpenAiResponsesProvider implements AiProvider {
 
     const capped = accepted.slice(0, depthGuidance.referenceCount.max);
     const usage = response.usage;
+    const conversationMemory = sanitizeConversationMemory(
+      content.conversationMemory,
+    );
 
     return {
       answer: content.answer,
       biblicalReferences: capped,
       interpretationNotice: content.interpretationNotice,
       followUpQuestion: content.followUpQuestion ?? undefined,
+      conversationMemory,
       inputTokens: usage?.input_tokens ?? 0,
       outputTokens: usage?.output_tokens ?? 0,
       model: input.model,

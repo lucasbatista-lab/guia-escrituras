@@ -24,6 +24,12 @@ export {
   groundingLimitForDepth,
 } from "./response-depth";
 export {
+  RECENT_CONTEXT_MESSAGE_LIMIT,
+  getConversationMemoryMaxChars,
+  sanitizeConversationMemory,
+  selectContextMessages,
+} from "./conversation-memory";
+export {
   getOpenAiReasoningEffortDefault,
   getMaxOutputTokensForDepth,
 } from "./openai-config";

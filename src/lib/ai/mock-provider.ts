@@ -94,6 +94,19 @@ export class MockAiProvider implements AiProvider {
       interpretationNotice: SHORT_INTERPRETATION_NOTICE,
       followUpQuestion:
         "Há algum detalhe dessa situação que você gostaria de trazer com mais calma?",
+      conversationMemory: [
+        input.conversationSummary
+          ? `Continuidade: ${input.conversationSummary.slice(0, 280)}`
+          : null,
+        lastUser
+          ? `Situação atual: ${lastUser.content.slice(0, 200)}`
+          : "Situação atual: reflexão espiritual.",
+        "Orientação: acolhimento bíblico e próximo passo concreto.",
+        "Ponto aberto: detalhe adicional da situação.",
+      ]
+        .filter(Boolean)
+        .join(" | ")
+        .slice(0, 1000),
       inputTokens: 320,
       outputTokens: 180,
       model: input.model || "mock",

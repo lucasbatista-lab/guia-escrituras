@@ -49,11 +49,13 @@ describe("parseAndValidateAiProviderContent", () => {
         ],
         interpretationNotice: IDENTITY_DISCLAIMER,
         followUpQuestion: null,
+        conversationMemory: "Situação: busca de paz. Ponto aberto: detalhes.",
       }),
     );
     expect(content.answer).toContain("reflexão");
     expect(content.biblicalReferences).toHaveLength(1);
     expect(content.interpretationNotice).toBeTruthy();
+    expect(content.conversationMemory).toContain("paz");
   });
 
   it("rejects invalid JSON", () => {
@@ -66,6 +68,7 @@ describe("parseAndValidateAiProviderContent", () => {
         JSON.stringify({
           biblicalReferences: [],
           interpretationNotice: IDENTITY_DISCLAIMER,
+          conversationMemory: "x",
         }),
       ),
     ).toThrow(AppError);
@@ -77,6 +80,7 @@ describe("parseAndValidateAiProviderContent", () => {
         JSON.stringify({
           answer: "ok",
           biblicalReferences: [],
+          conversationMemory: "x",
         }),
       ),
     ).toThrow(AppError);
@@ -88,6 +92,7 @@ describe("parseAndValidateAiProviderContent", () => {
         JSON.stringify({
           answer: "ok",
           interpretationNotice: IDENTITY_DISCLAIMER,
+          conversationMemory: "x",
         }),
       ),
     ).toThrow(AppError);
@@ -100,6 +105,7 @@ describe("parseAndValidateAiProviderContent", () => {
           answer: "a".repeat(MAX_AI_ANSWER_LENGTH + 1),
           biblicalReferences: [],
           interpretationNotice: IDENTITY_DISCLAIMER,
+          conversationMemory: "x",
         }),
       ),
     ).toThrow(AppError);
@@ -112,7 +118,22 @@ describe("parseAndValidateAiProviderContent", () => {
           answer: "ok",
           biblicalReferences: [],
           interpretationNotice: IDENTITY_DISCLAIMER,
+          followUpQuestion: null,
+          conversationMemory: "memória curta",
           secretCost: 99,
+        }),
+      ),
+    ).toThrow(AppError);
+  });
+
+  it("rejects missing conversationMemory", () => {
+    expect(() =>
+      parseAndValidateAiProviderContent(
+        JSON.stringify({
+          answer: "ok",
+          biblicalReferences: [],
+          interpretationNotice: IDENTITY_DISCLAIMER,
+          followUpQuestion: null,
         }),
       ),
     ).toThrow(AppError);
@@ -126,6 +147,7 @@ describe("AI identity regression", () => {
         answer: "Eu sou Jesus e vim falar com você.",
         biblicalReferences: [],
         interpretationNotice: IDENTITY_DISCLAIMER,
+        conversationMemory: "x",
       }),
     ).toThrow(AppError);
   });
@@ -136,6 +158,7 @@ describe("AI identity regression", () => {
         answer: "Esta é uma revelação sobrenatural para você.",
         biblicalReferences: [],
         interpretationNotice: IDENTITY_DISCLAIMER,
+        conversationMemory: "x",
       }),
     ).toThrow(AppError);
   });
@@ -146,6 +169,8 @@ describe("AI identity regression", () => {
         answer: "Uma orientação baseada nas Escrituras.",
         biblicalReferences: [],
         interpretationNotice: IDENTITY_DISCLAIMER,
+        followUpQuestion: null,
+        conversationMemory: "Situação: orientação bíblica.",
       }),
     );
     expect(content.interpretationNotice).toContain("inteligência artificial");
@@ -203,6 +228,8 @@ describe("runChatTurn requestId idempotency", () => {
       biblicalReferences: [{ book: "João", chapter: 14, verseStart: 27 }],
       interpretationNotice: IDENTITY_DISCLAIMER,
       followUpQuestion: "Quer aprofundar?",
+      conversationMemory:
+        "Situação: busca de paz. Orientação: acolhimento. Ponto aberto: detalhes.",
       inputTokens: 10,
       outputTokens: 20,
       model: "mock",
@@ -266,6 +293,7 @@ describe("runChatTurn requestId idempotency", () => {
       answer: "Segunda tentativa ok.",
       biblicalReferences: [],
       interpretationNotice: IDENTITY_DISCLAIMER,
+      conversationMemory: "Situação: mensagem única após retry.",
       inputTokens: 1,
       outputTokens: 1,
       model: "mock",

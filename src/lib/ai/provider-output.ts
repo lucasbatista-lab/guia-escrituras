@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AppError } from "@/lib/safety";
+import { getConversationMemoryMaxChars } from "./conversation-memory";
 
 export const MAX_AI_ANSWER_LENGTH = 12_000;
 
@@ -15,6 +16,7 @@ const biblicalReferenceSchema = z
 
 /**
  * Structured payload expected from the AI provider (content only).
+ * conversationMemory is internal — never returned on the public chat API.
  */
 export const aiProviderContentSchema = z
   .object({
@@ -26,6 +28,11 @@ export const aiProviderContentSchema = z
     biblicalReferences: z.array(biblicalReferenceSchema).max(20),
     interpretationNotice: z.string().trim().min(1).max(2000),
     followUpQuestion: z.string().trim().max(500).nullish(),
+    conversationMemory: z
+      .string()
+      .trim()
+      .min(1, "Memória vazia.")
+      .max(2000, "Memória excessivamente longa."),
   })
   .strict();
 
@@ -40,6 +47,7 @@ export const AI_PROVIDER_JSON_SCHEMA = {
     "biblicalReferences",
     "interpretationNotice",
     "followUpQuestion",
+    "conversationMemory",
   ],
   properties: {
     answer: { type: "string", minLength: 1, maxLength: MAX_AI_ANSWER_LENGTH },
@@ -61,11 +69,16 @@ export const AI_PROVIDER_JSON_SCHEMA = {
     },
     interpretationNotice: { type: "string", minLength: 1, maxLength: 2000 },
     followUpQuestion: { type: ["string", "null"] },
+    conversationMemory: {
+      type: "string",
+      minLength: 1,
+      maxLength: 2000,
+    },
   },
 } as const;
 
 const FORBIDDEN_IDENTITY =
-  /\b(eu sou jesus|sou o próprio jesus|eu sou deus|sou deus|esta é uma revelação sobrenatural|recebi uma revelação divina)\b/i;
+  /\b(eu sou jesus|sou o próprio jesus|eu sou deus|sou deus|esta é uma revelação sobrenatural|recebi uma revelação divina|jesus está dizendo a você)\b/i;
 
 export function assertSafeAiIdentity(content: AiProviderContent): void {
   const haystack = `${content.answer}\n${content.interpretationNotice}`;
@@ -107,5 +120,14 @@ export function parseAndValidateAiProviderContent(raw: string): AiProviderConten
   }
 
   assertSafeAiIdentity(result.data);
+
+  const max = getConversationMemoryMaxChars();
+  if (result.data.conversationMemory.length > max) {
+    return {
+      ...result.data,
+      conversationMemory: result.data.conversationMemory.slice(0, max).trim(),
+    };
+  }
+
   return result.data;
 }

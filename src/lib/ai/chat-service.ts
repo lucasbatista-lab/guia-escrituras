@@ -19,6 +19,11 @@ import {
   resolveChatResponseDepth,
 } from "@/lib/ai/response-depth";
 import {
+  RECENT_CONTEXT_MESSAGE_LIMIT,
+  sanitizeConversationMemory,
+  selectContextMessages,
+} from "@/lib/ai/conversation-memory";
+import {
   calculateTokenCost,
   evaluateDailyBurst,
   evaluateMonthlyBudget,
@@ -246,9 +251,15 @@ export async function runChatTurn(input: {
   const recent = await repos.messages.listRecent(
     conversation.id,
     auth.userId,
-    8,
+    RECENT_CONTEXT_MESSAGE_LIMIT + 1,
   );
   const summary = await repos.summaries.get(conversation.id, auth.userId);
+  const contextMessages = selectContextMessages({
+    recentChronological: recent,
+    currentUserMessage: body.message,
+    limit: RECENT_CONTEXT_MESSAGE_LIMIT,
+  });
+  const summaryUsed = Boolean(summary?.summary?.trim());
 
   const policy = theologyPolicyResolver.resolve({
     traditionKey: auth.spiritualProfile.traditionKey,
@@ -306,8 +317,8 @@ export async function runChatTurn(input: {
   let result;
   try {
     result = await provider.generate({
-      messages: recent.map((m) => ({
-        role: m.role === "system" ? "system" : m.role,
+      messages: contextMessages.map((m) => ({
+        role: m.role,
         content: m.content,
       })),
       theologyPolicy: policy,
@@ -362,8 +373,14 @@ export async function runChatTurn(input: {
   }
 
   let persistWarning: string | undefined;
+  let assistantPersisted = false;
 
   try {
+    const priorAssistant = await repos.messages.findByRequestId(
+      auth.userId,
+      requestId,
+      "assistant",
+    );
     await repos.messages.insertAssistantMessage({
       conversationId: conversation.id,
       userId: auth.userId,
@@ -371,6 +388,8 @@ export async function runChatTurn(input: {
       biblicalReferences: result.biblicalReferences,
       requestId,
     });
+    // First successful insert for this requestId updates memory; retries skip.
+    assistantPersisted = !priorAssistant;
   } catch (error) {
     logger.error("assistant_persist_failed", {
       requestId,
@@ -379,6 +398,28 @@ export async function runChatTurn(input: {
     });
     persistWarning =
       "A resposta foi gerada, mas a persistência ficou incompleta.";
+  }
+
+  if (assistantPersisted) {
+    const memory = sanitizeConversationMemory(result.conversationMemory ?? "");
+    if (memory) {
+      try {
+        await repos.summaries.upsert({
+          conversationId: conversation.id,
+          userId: auth.userId,
+          summary: memory,
+        });
+      } catch (error) {
+        logger.error("conversation_summary_upsert_failed", {
+          requestId,
+          userId: maskUserId(auth.userId),
+          err: error instanceof Error ? error.message : "unknown",
+        });
+        persistWarning =
+          persistWarning ??
+          "A resposta foi salva; a memória da conversa pode atrasar.";
+      }
+    }
   }
 
   const usageInsert = await repos.usage.insertEvent({
@@ -437,6 +478,12 @@ export async function runChatTurn(input: {
     usageInserted: usageInsert.inserted,
     featureType: body.preferDeep ? "chat_deep" : "chat_standard",
     persistWarning: persistWarning ?? null,
+    // Context telemetry (logs only — usage_events has no metadata column).
+    recentMessageCount: contextMessages.length,
+    summaryUsed,
+    summaryLength: sanitizeConversationMemory(result.conversationMemory ?? "")
+      .length,
+    depth: responseDepth,
   });
 
   return {

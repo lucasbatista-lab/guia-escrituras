@@ -10,8 +10,8 @@ export const TRADITION_POLICIES: TraditionPolicy[] = [
     defaultResponseStyle: "reflective",
     guidanceNotes: [
       "Priorize temas comuns aos cristãos (amor, graça, discipulado, Escrituras).",
-      "Evite dogmatizar práticas exclusivas de uma denominação.",
-      "Quando houver divergência histórica, reconheça-a sem julgar.",
+      "Evite impor controvérsias denominacionais ou dogmatizar práticas exclusivas.",
+      "Quando houver divergência histórica relevante, reconheça-a com respeito, sem julgar.",
     ],
   },
   {
@@ -35,7 +35,7 @@ export const TRADITION_POLICIES: TraditionPolicy[] = [
     allowsSaintsContent: true,
     defaultResponseStyle: "reflective",
     guidanceNotes: [
-      "Pode incluir referências a santos e tradição quando o usuário habilitar.",
+      "Pode incluir referências da tradição católica (incluindo santos) somente quando compatíveis com a política e preferências do perfil.",
       "Mantenha as Escrituras como âncora da resposta.",
       "Respeite a distinção entre doutrina, espiritualidade e opinião teológica.",
     ],

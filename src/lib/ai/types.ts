@@ -24,6 +24,8 @@ export interface AiGenerateResult {
   biblicalReferences: BiblicalReference[];
   interpretationNotice: string;
   followUpQuestion?: string;
+  /** Internal continuity memory — never expose on the public chat API. */
+  conversationMemory: string;
   inputTokens: number;
   outputTokens: number;
   model: string;
