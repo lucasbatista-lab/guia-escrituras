@@ -158,9 +158,11 @@ describe("production copy and jargon", () => {
   });
 
   it("maps profile labels to Portuguese", () => {
-    expect(traditionLabelPt("ecumenical")).toBe("Ecumênica");
+    expect(traditionLabelPt("ecumenical")).toBe("Cristã ecumênica");
     expect(responseStyleLabelPt("pastoral")).toBe("Pastoral");
     expect(preferredDepthLabelPt("balanced")).toBe("Equilibrada");
+    expect(preferredDepthLabelPt("deep")).toBe("Profunda");
+    expect(responseStyleLabelPt("reflective")).toBe("Acolhedor e reflexivo");
   });
 });
 

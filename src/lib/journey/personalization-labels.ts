@@ -28,19 +28,34 @@ export const PERSONALIZATION_STYLES = [
   {
     key: "reflective",
     label: "Acolhedor e reflexivo",
+    description: "Tom suave, com espaço para sentir e refletir.",
   },
   {
     key: "practical",
     label: "Direto e prático",
+    description: "Clareza objetiva e próximos passos concretos.",
   },
   {
     key: "study",
     label: "Estudo mais aprofundado",
+    description: "Mais contexto bíblico e nuance na reflexão.",
   },
 ] as const;
 
 export const PERSONALIZATION_DEPTHS = [
-  { key: "brief", label: "Breve" },
-  { key: "balanced", label: "Equilibrada" },
-  { key: "deep", label: "Profunda" },
+  {
+    key: "brief",
+    label: "Breve",
+    description: "Resposta curta, com o essencial.",
+  },
+  {
+    key: "balanced",
+    label: "Equilibrada",
+    description: "Equilíbrio entre acolhimento e profundidade.",
+  },
+  {
+    key: "deep",
+    label: "Profunda",
+    description: "Reflexão mais longa, com aplicação cuidadosa.",
+  },
 ] as const;

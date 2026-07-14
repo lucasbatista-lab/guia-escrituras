@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   cancelSubscriptionRenewalAction,
@@ -32,12 +32,30 @@ export function SubscriptionManagementPanel({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const cancelTriggerRef = useRef<HTMLButtonElement>(null);
+  const wasConfirmOpen = useRef(false);
+
+  useEffect(() => {
+    if (wasConfirmOpen.current && !confirmOpen) {
+      cancelTriggerRef.current?.focus();
+    }
+    wasConfirmOpen.current = confirmOpen;
+  }, [confirmOpen]);
+
+  useEffect(() => {
+    if (!confirmOpen) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setConfirmOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [confirmOpen]);
 
   if (isManualOnly || !hasStripeManagedSubscription) {
     return (
       <p className="text-sm text-ink-soft">
         Esta assinatura não está vinculada à cobrança online. Em caso de dúvida,
-        fale com o suporte.
+        acesse a seção de suporte desta página, se disponível.
       </p>
     );
   }
@@ -84,7 +102,7 @@ export function SubscriptionManagementPanel({
               type="button"
               onClick={onReactivate}
               disabled={pending}
-              className="bg-ink hover:bg-ink/90"
+              className="min-h-11 bg-ink hover:bg-ink/90"
             >
               {pending ? "Salvando…" : "Manter minha assinatura"}
             </Button>
@@ -92,8 +110,10 @@ export function SubscriptionManagementPanel({
         </div>
       ) : canCancelRenewal ? (
         <Button
+          ref={cancelTriggerRef}
           type="button"
           variant="outline"
+          className="min-h-11"
           onClick={() => setConfirmOpen(true)}
           disabled={pending}
         >
@@ -113,21 +133,24 @@ export function SubscriptionManagementPanel({
           </h3>
           <p className="mt-2 text-sm text-ink-soft">
             Você continuará com acesso ao plano {planName}
-            {accessUntilLabel ? ` até ${accessUntilLabel}` : " até o fim do período atual"}.
-            Depois dessa data, não haverá uma nova cobrança.
+            {accessUntilLabel
+              ? ` até ${accessUntilLabel}`
+              : " até o fim do período atual"}
+            . Depois dessa data, não haverá uma nova cobrança.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
               type="button"
               onClick={onCancelConfirm}
               disabled={pending}
-              className="bg-ink hover:bg-ink/90"
+              className="min-h-11 bg-ink hover:bg-ink/90"
             >
               {pending ? "Confirmando…" : "Confirmar cancelamento"}
             </Button>
             <Button
               type="button"
               variant="outline"
+              className="min-h-11"
               disabled={pending}
               onClick={() => setConfirmOpen(false)}
             >
@@ -138,12 +161,12 @@ export function SubscriptionManagementPanel({
       ) : null}
 
       {message ? (
-        <p className="text-sm text-ink" role="status">
+        <p className="text-sm text-ink" role="status" aria-live="polite">
           {message}
         </p>
       ) : null}
       {error ? (
-        <p className="text-sm text-destructive" role="alert">
+        <p className="text-sm text-destructive" role="alert" aria-live="assertive">
           {error}
         </p>
       ) : null}

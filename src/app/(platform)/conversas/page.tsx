@@ -1,5 +1,8 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { EmptyState } from "@/components/platform/empty-state";
+import { PlatformPageHeader } from "@/components/platform/page-header";
+import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
 import {
@@ -7,6 +10,13 @@ import {
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
+
+function sanitizePreview(title: string | null): string {
+  const raw = (title ?? "").replace(/\s+/g, " ").trim();
+  if (!raw) return "Conversa sem título";
+  // Avoid dumping long sensitive content in list previews.
+  return raw.length > 72 ? `${raw.slice(0, 72).trim()}…` : raw;
+}
 
 export default async function ConversasPage() {
   const auth = await getAuthUserContext();
@@ -33,38 +43,51 @@ export default async function ConversasPage() {
   }
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-ink">Conversas</h1>
-      <p className="mt-3 max-w-xl text-ink-soft">
-        Histórico das suas conversas. Conteúdo privado — visível apenas para
-        você.
-      </p>
-      <ul className="mt-8 space-y-3 text-sm">
-        {rows.length === 0 ? (
-          <li className="rounded-xl border border-dashed border-border/80 px-4 py-3 text-ink-soft">
-            Nenhuma conversa ainda.{" "}
-            <Link href="/conversar" className="underline underline-offset-4">
-              Começar
-            </Link>
-          </li>
-        ) : (
-          rows.map((row) => (
+    <div className="space-y-8">
+      <PlatformPageHeader
+        title="Conversas"
+        description="Suas reflexões anteriores, privadas e visíveis só para você."
+        actions={
+          <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
+            <Link href="/conversar">Nova reflexão</Link>
+          </Button>
+        }
+      />
+
+      {rows.length === 0 ? (
+        <EmptyState
+          title="Nenhuma conversa ainda"
+          description="Quando você começar a conversar, suas reflexões aparecerão aqui."
+          actionHref="/conversar"
+          actionLabel="Começar uma reflexão"
+        />
+      ) : (
+        <ul className="space-y-3">
+          {rows.map((row) => (
             <li key={row.id}>
               <Link
                 href={`/conversar?c=${row.id}`}
-                className="flex items-center justify-between rounded-xl border border-border/70 px-4 py-3 hover:bg-card/80"
+                className="block rounded-2xl border border-border/70 bg-card/70 px-4 py-4 transition hover:border-wine/25 hover:bg-card focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-5"
               >
-                <span className="text-ink">
-                  {row.title || "Conversa sem título"}
-                </span>
-                <span className="text-xs text-ink-soft">
-                  {new Date(row.updatedAt).toLocaleDateString("pt-BR")}
-                </span>
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="font-medium text-ink">
+                    {sanitizePreview(row.title)}
+                  </h2>
+                  <time
+                    dateTime={row.updatedAt}
+                    className="shrink-0 text-xs text-ink-soft"
+                  >
+                    {new Date(row.updatedAt).toLocaleDateString("pt-BR")}
+                  </time>
+                </div>
+                <p className="mt-1.5 text-sm text-ink-soft">
+                  Abrir conversa
+                </p>
               </Link>
             </li>
-          ))
-        )}
-      </ul>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

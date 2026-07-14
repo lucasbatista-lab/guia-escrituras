@@ -4,6 +4,10 @@ import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
 import { isUuid } from "@/lib/navigation/safe-next-path";
 import {
+  preferredDepthLabelPt,
+  traditionLabelPt,
+} from "@/lib/profile/labels-pt";
+import {
   getRequiredDestinationForState,
   journeyAllowsChat,
   resolveUserJourneyState,
@@ -27,13 +31,38 @@ export default async function ConversarPage({
   const params = await searchParams;
   const raw = params.c;
   const conversationParam = Array.isArray(raw) ? raw[0] : raw;
+  const temaRaw = params.tema;
+  const temaParam = Array.isArray(temaRaw) ? temaRaw[0] : temaRaw;
+  const initialDraft =
+    typeof temaParam === "string" && temaParam.trim().length > 0
+      ? temaParam.trim().slice(0, 400)
+      : undefined;
+
+  const traditionLabel = traditionLabelPt(
+    auth.spiritualProfile.traditionKey,
+  );
+  const depthLabel = preferredDepthLabelPt(
+    auth.spiritualProfile.preferredDepth,
+  );
 
   if (!conversationParam?.trim()) {
-    return <ChatPanel />;
+    return (
+      <ChatPanel
+        traditionLabel={traditionLabel}
+        depthLabel={depthLabel}
+        initialDraft={initialDraft}
+      />
+    );
   }
 
   if (!isUuid(conversationParam)) {
-    return <ChatPanel />;
+    return (
+      <ChatPanel
+        traditionLabel={traditionLabel}
+        depthLabel={depthLabel}
+        initialDraft={initialDraft}
+      />
+    );
   }
 
   const repos = getRepositories();
@@ -77,6 +106,8 @@ export default async function ConversarPage({
     <ChatPanel
       initialConversationId={conversationId}
       initialMessages={initialMessages}
+      traditionLabel={traditionLabel}
+      depthLabel={depthLabel}
     />
   );
 }

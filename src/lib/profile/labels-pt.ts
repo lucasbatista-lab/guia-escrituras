@@ -1,22 +1,28 @@
 import type { PreferredDepth, ResponseStyle, TraditionKey } from "@/lib/theology";
-import { getTraditionPolicy } from "@/lib/theology";
+import {
+  PERSONALIZATION_DEPTHS,
+  PERSONALIZATION_STYLES,
+  PERSONALIZATION_TRADITIONS,
+} from "@/lib/journey/personalization-labels";
 
-const STYLE_LABELS: Record<ResponseStyle, string> = {
-  reflective: "Reflexivo",
+const TRADITION_LABELS: Partial<Record<TraditionKey, string>> =
+  Object.fromEntries(
+    PERSONALIZATION_TRADITIONS.map((t) => [t.key, t.label]),
+  );
+
+const STYLE_LABELS: Partial<Record<ResponseStyle, string>> = {
+  ...Object.fromEntries(
+    PERSONALIZATION_STYLES.map((s) => [s.key, s.label]),
+  ),
   pastoral: "Pastoral",
-  practical: "Prático",
-  study: "Estudo",
 };
 
-const DEPTH_LABELS: Record<PreferredDepth, string> = {
-  brief: "Breve",
-  balanced: "Equilibrada",
-  deep: "Aprofundada",
-};
+const DEPTH_LABELS: Partial<Record<PreferredDepth, string>> =
+  Object.fromEntries(PERSONALIZATION_DEPTHS.map((d) => [d.key, d.label]));
 
 export function traditionLabelPt(key: string | null | undefined): string {
   if (!key) return "Não definida";
-  return getTraditionPolicy(key as TraditionKey)?.label ?? "Não definida";
+  return TRADITION_LABELS[key as TraditionKey] ?? "Não definida";
 }
 
 export function responseStyleLabelPt(

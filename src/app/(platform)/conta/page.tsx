@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SubscriptionManagementPanel } from "@/components/account/subscription-management-panel";
+import { InlineNotice } from "@/components/platform/inline-notice";
+import { PlatformPageHeader } from "@/components/platform/page-header";
+import { PlatformSection } from "@/components/platform/section";
+import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
 import { Button } from "@/components/ui/button";
+import { brand } from "@/config/brand";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
 import { getPlanByKey } from "@/lib/entitlements";
@@ -17,6 +22,28 @@ import {
   usageLevelLabel,
 } from "@/lib/usage";
 import { currentYearMonth } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/server";
+
+async function loadProfileMeta(userId: string): Promise<{
+  displayName: string | null;
+  createdAt: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { displayName: null, createdAt: null };
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name, created_at")
+      .eq("id", userId)
+      .maybeSingle();
+    return {
+      displayName: (data?.display_name as string | null) ?? null,
+      createdAt: (data?.created_at as string | null) ?? null,
+    };
+  } catch {
+    return { displayName: null, createdAt: null };
+  }
+}
 
 export default async function ContaPage() {
   const auth = await getAuthUserContext();
@@ -26,6 +53,8 @@ export default async function ContaPage() {
 
   const plan = auth.planKey ? getPlanByKey(auth.planKey) : null;
   const budgetConfig = auth.planKey ? getBudgetConfig(auth.planKey) : null;
+  const supportEmail = brand.supportEmail;
+  const profileMeta = await loadProfileMeta(auth.userId);
 
   const [billing, monthlyUsage] = await Promise.all([
     plan ? getAccountBillingView(auth.userId) : Promise.resolve(null),
@@ -52,40 +81,110 @@ export default async function ContaPage() {
     }).level;
   }
 
+  const personalizationDone = auth.spiritualProfile.onboardingCompleted;
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-ink">Conta</h1>
-        <p className="mt-2 text-sm text-ink-soft">
-          <span className="text-ink-soft">E-mail de acesso</span>
-          <span className="mt-0.5 block text-base text-ink">
-            {auth.email ?? "Sem e-mail vinculado"}
-          </span>
-        </p>
-      </div>
+      <PlatformPageHeader
+        title="Conta"
+        description="Perfil, preferências e assinatura em um só lugar."
+      />
 
-      <section className="rounded-2xl border border-border/70 bg-card/60 p-6">
-        <h2 className="font-display text-xl text-ink">Assinatura</h2>
+      <PlatformSection title="Perfil">
+        <dl className="grid gap-4 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-ink-soft">Nome</dt>
+            <dd className="mt-0.5 text-base text-ink">
+              {profileMeta.displayName?.trim() || "Não informado"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">E-mail</dt>
+            <dd className="mt-0.5 text-base text-ink">
+              {auth.email ?? "Sem e-mail vinculado"}
+            </dd>
+          </div>
+          {profileMeta.createdAt ? (
+            <div>
+              <dt className="text-ink-soft">Cadastro</dt>
+              <dd className="mt-0.5 text-base text-ink">
+                {new Date(profileMeta.createdAt).toLocaleDateString("pt-BR")}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+      </PlatformSection>
+
+      <PlatformSection
+        title="Preferências"
+        description="Como preferimos falar com você nas reflexões."
+      >
+        <dl className="grid gap-4 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-ink-soft">Tradição</dt>
+            <dd className="mt-0.5 text-base text-ink">
+              {traditionLabelPt(auth.spiritualProfile.traditionKey)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Estilo</dt>
+            <dd className="mt-0.5 text-base text-ink">
+              {responseStyleLabelPt(auth.spiritualProfile.responseStyle)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Profundidade</dt>
+            <dd className="mt-0.5 text-base text-ink">
+              {preferredDepthLabelPt(auth.spiritualProfile.preferredDepth)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Status</dt>
+            <dd className="mt-0.5">
+              <PlanStatusBadge
+                label={personalizationDone ? "Preferências salvas" : "Pendente"}
+                tone={personalizationDone ? "active" : "attention"}
+              />
+            </dd>
+          </div>
+        </dl>
+        <Button asChild variant="outline" className="mt-5 min-h-11">
+          <Link href="/personalizar">Alterar preferências</Link>
+        </Button>
+      </PlatformSection>
+
+      <PlatformSection title="Assinatura">
         {plan && billing ? (
           <>
-            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <div className="mb-4">
+              <PlanStatusBadge
+                label={billing.statusLabel}
+                tone={
+                  billing.cancelAtPeriodEnd ||
+                  billing.statusLabel.toLowerCase().includes("atras")
+                    ? "attention"
+                    : "active"
+                }
+              />
+            </div>
+            <dl className="grid gap-4 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-ink-soft">Plano atual</dt>
-                <dd className="text-ink">{billing.planName}</dd>
+                <dt className="text-ink-soft">Plano</dt>
+                <dd className="mt-0.5 text-base text-ink">{billing.planName}</dd>
               </div>
               <div>
                 <dt className="text-ink-soft">Valor mensal</dt>
-                <dd className="text-ink">{billing.priceMonthlyLabel}</dd>
-              </div>
-              <div>
-                <dt className="text-ink-soft">Status</dt>
-                <dd className="text-ink">{billing.statusLabel}</dd>
+                <dd className="mt-0.5 text-base text-ink">
+                  {billing.priceMonthlyLabel}
+                </dd>
               </div>
               <div>
                 <dt className="text-ink-soft">
-                  {billing.cancelAtPeriodEnd ? "Acesso até" : "Próxima cobrança"}
+                  {billing.cancelAtPeriodEnd
+                    ? "Acesso até"
+                    : "Próxima cobrança"}
                 </dt>
-                <dd className="text-ink">
+                <dd className="mt-0.5 text-base text-ink">
                   {billing.cancelAtPeriodEnd
                     ? (billing.accessUntilLabel ?? "Não informada")
                     : (billing.nextChargeLabel ?? "Não informada")}
@@ -93,8 +192,10 @@ export default async function ContaPage() {
               </div>
               {billing.cardLabel ? (
                 <div>
-                  <dt className="text-ink-soft">Forma de pagamento</dt>
-                  <dd className="text-ink">{billing.cardLabel}</dd>
+                  <dt className="text-ink-soft">Cartão</dt>
+                  <dd className="mt-0.5 text-base text-ink">
+                    {billing.cardLabel}
+                  </dd>
                 </div>
               ) : null}
             </dl>
@@ -102,24 +203,15 @@ export default async function ContaPage() {
               {billing.renewsAutomatically
                 ? "A renovação é automática ao final de cada período."
                 : billing.cancelAtPeriodEnd
-                  ? "A renovação automática está desativada para esta assinatura."
+                  ? "A renovação automática está desativada. Você mantém o acesso até a data indicada."
                   : "Renovação automática indisponível para este tipo de assinatura."}
             </p>
-            <ul className="mt-4 space-y-1.5 text-sm text-ink-soft">
-              {plan.displayBenefits.map((benefit) => (
-                <li key={benefit}>· {benefit}</li>
-              ))}
-            </ul>
-            {plan.upcomingBenefits && plan.upcomingBenefits.length > 0 ? (
-              <div className="mt-4 border-t border-border/60 pt-4">
-                <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
-                  Em desenvolvimento
-                </p>
-                <ul className="mt-2 space-y-1 text-xs text-ink-soft">
-                  {plan.upcomingBenefits.map((item) => (
-                    <li key={item}>· {item}</li>
-                  ))}
-                </ul>
+            {level !== "normal" ? (
+              <div className="mt-4">
+                <InlineNotice tone="info">
+                  Uso neste mês: {usageLevelLabel(level)}. Sem cotas rígidas de
+                  mensagens — o plano tem um orçamento flexível.
+                </InlineNotice>
               </div>
             ) : null}
             <div className="mt-6">
@@ -137,7 +229,7 @@ export default async function ContaPage() {
             </div>
           </>
         ) : (
-          <div className="mt-3" role="status" aria-live="polite">
+          <div role="status" aria-live="polite">
             <p className="text-sm text-ink-soft">
               Não há plano gratuito.{" "}
               <Link
@@ -149,54 +241,30 @@ export default async function ContaPage() {
             </p>
           </div>
         )}
-      </section>
+      </PlatformSection>
 
-      <section className="rounded-2xl border border-border/70 bg-card/60 p-6">
-        <h2 className="font-display text-xl text-ink">Uso neste mês</h2>
-        <p className="mt-2 text-lg text-ink">{usageLevelLabel(level)}</p>
-        <p className="mt-2 max-w-lg text-sm text-ink-soft">
-          Uso flexível dentro do orçamento do plano — sem cotas rígidas de
-          mensagens.
-          {budgetConfig
-            ? ` Limite diário de segurança: ${budgetConfig.dailyBurstLimit} requisições.`
-            : ""}
-        </p>
-      </section>
-
-      <section className="rounded-2xl border border-border/70 bg-card/60 p-6">
-        <h2 className="font-display text-xl text-ink">Preferências</h2>
-        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-ink-soft">Tradição</dt>
-            <dd className="text-ink">
-              {traditionLabelPt(auth.spiritualProfile.traditionKey)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-ink-soft">Estilo</dt>
-            <dd className="text-ink">
-              {responseStyleLabelPt(auth.spiritualProfile.responseStyle)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-ink-soft">Profundidade</dt>
-            <dd className="text-ink">
-              {preferredDepthLabelPt(auth.spiritualProfile.preferredDepth)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-ink-soft">Personalização</dt>
-            <dd className="text-ink">
-              {auth.spiritualProfile.onboardingCompleted
-                ? "Concluída"
-                : "Pendente"}
-            </dd>
-          </div>
-        </dl>
-        <Button asChild variant="outline" className="mt-5 min-h-11">
-          <Link href="/personalizar">Atualizar preferências</Link>
+      <PlatformSection
+        title="Segurança"
+        description="Proteja o acesso à sua conta."
+      >
+        <Button asChild variant="outline" className="min-h-11">
+          <Link href="/recuperar-senha">Redefinir senha</Link>
         </Button>
-      </section>
+      </PlatformSection>
+
+      {supportEmail ? (
+        <PlatformSection
+          title="Suporte"
+          description="Precisa de ajuda com a conta ou a assinatura?"
+        >
+          <a
+            href={`mailto:${supportEmail}`}
+            className="text-base text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            {supportEmail}
+          </a>
+        </PlatformSection>
+      ) : null}
     </div>
   );
 }

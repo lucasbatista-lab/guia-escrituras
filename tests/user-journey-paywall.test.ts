@@ -241,7 +241,7 @@ describe("Portuguese personalization labels", () => {
 
     const form = readSrc("src", "components", "auth", "onboarding-form.tsx");
     expect(form).toContain("PERSONALIZATION_TRADITIONS");
-    expect(form).toContain("Salvar preferências");
+    expect(form).toContain("Salvar e começar");
     expect(form).not.toContain("Concluir onboarding");
     expect(form).not.toMatch(/>\s*ecumenical\s*</);
   });
@@ -293,7 +293,7 @@ describe("redirects and gates (source contracts)", () => {
     expect(conversar).toContain("journeyAllowsChat");
     expect(conversar).toContain("getRequiredDestinationForState");
     expect(conversar.indexOf("if (!journeyAllowsChat")).toBeLessThan(
-      conversar.indexOf("return <ChatPanel"),
+      conversar.indexOf("<ChatPanel"),
     );
     expect(conversas).toContain("journeyAllowsChat");
     expect(conversas).toContain("getRequiredDestinationForState");

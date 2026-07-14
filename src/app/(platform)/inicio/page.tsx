@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PlatformActionCard } from "@/components/platform/action-card";
+import { PrimaryActionCard } from "@/components/platform/primary-action-card";
+import { PlatformPageHeader } from "@/components/platform/page-header";
+import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
+import { ProgressSteps } from "@/components/platform/progress-steps";
+import { StatusCard } from "@/components/platform/status-card";
+import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import { getPlanByKey } from "@/lib/entitlements";
-import { Button } from "@/components/ui/button";
 import {
   firstNameFromDisplayName,
   journeyAllowsChat,
@@ -11,6 +15,14 @@ import {
 } from "@/lib/journey";
 import { getRepositories } from "@/lib/database/repositories";
 import { createClient } from "@/lib/supabase/server";
+
+const THEME_SHORTCUTS = [
+  { label: "Ansiedade", prompt: "Estou ansioso(a) e preciso de paz." },
+  { label: "Decisões", prompt: "Preciso de sabedoria para uma decisão importante." },
+  { label: "Família", prompt: "Quero refletir sobre uma situação na família." },
+  { label: "Perdão", prompt: "Estou lutando com perdão e reconciliação." },
+  { label: "Recomeços", prompt: "Sinto que preciso de um recomeço." },
+] as const;
 
 async function loadDisplayName(userId: string): Promise<string | null> {
   try {
@@ -66,17 +78,44 @@ export default async function InicioPage() {
       state === "payment_pending" || state === "payment_processing";
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="font-display text-3xl text-ink">{greeting}</h1>
-          <p className="mt-2 max-w-2xl text-ink-soft" aria-live="polite">
-            {hasPendingPayment
-              ? "Seu plano está reservado. Conclua o pagamento para liberar o chat."
-              : "Não há plano gratuito. Escolha um plano para começar a conversar."}
-          </p>
-        </div>
-        <PlatformActionCard
+        <PlatformPageHeader
+          title={greeting}
+          description={
+            hasPendingPayment
+              ? "Falta concluir o pagamento para liberar suas reflexões."
+              : "Falta escolher um plano para começar a conversar."
+          }
+        />
+
+        {hasPendingPayment && plan ? (
+          <StatusCard
+            tone="success"
+            title="Plano reservado"
+            body={`Seu plano ${plan.name} está reservado. Conclua o pagamento para seguir.`}
+          >
+            <PlanStatusBadge label={plan.name} tone="active" />
+          </StatusCard>
+        ) : null}
+
+        <ProgressSteps
+          steps={[
+            { label: "Conta criada", status: "done" },
+            {
+              label: "Pagamento",
+              status: hasPendingPayment ? "current" : "upcoming",
+            },
+            { label: "Personalização", status: "upcoming" },
+            { label: "Primeira reflexão", status: "upcoming" },
+          ]}
+        />
+
+        <PrimaryActionCard
           title={hasPendingPayment ? "Concluir assinatura" : "Escolher meu plano"}
-          body="Etapas: plano → pagamento → personalizar → conversar."
+          body={
+            hasPendingPayment
+              ? "Continue de onde parou. Em poucos passos você libera o chat."
+              : "Escolha o plano que combina com o ritmo de reflexão que você deseja."
+          }
           href={
             hasPendingPayment
               ? state === "payment_processing"
@@ -98,15 +137,28 @@ export default async function InicioPage() {
   if (state === "active_needs_personalization") {
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="font-display text-3xl text-ink">{greeting}</h1>
-          <p className="mt-2 max-w-2xl text-ink-soft" aria-live="polite">
-            Pagamento concluído — falta 1 etapa.
-          </p>
-        </div>
-        <PlatformActionCard
+        <PlatformPageHeader
+          title={greeting}
+          description="Seu plano está ativo. Falta só personalizar como você prefere receber as reflexões."
+        />
+        <StatusCard
+          tone="success"
+          title="Seu plano está ativo"
+          body="Leva poucos instantes — tradição, estilo e profundidade."
+        >
+          {plan ? <PlanStatusBadge label={plan.name} tone="active" /> : null}
+        </StatusCard>
+        <ProgressSteps
+          steps={[
+            { label: "Conta criada", status: "done" },
+            { label: "Pagamento", status: "done" },
+            { label: "Personalização", status: "current" },
+            { label: "Primeira reflexão", status: "upcoming" },
+          ]}
+        />
+        <PrimaryActionCard
           title="Personalize sua experiência"
-          body="Conte-nos como você prefere receber suas reflexões."
+          body="Conte-nos como você prefere receber suas reflexões. Leva poucos instantes."
           href="/personalizar"
           cta="Personalizar minha experiência"
           tone="emphasis"
@@ -118,16 +170,18 @@ export default async function InicioPage() {
   if (state === "past_due") {
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="font-display text-3xl text-ink">{greeting}</h1>
-          <p className="mt-2 max-w-2xl text-ink-soft" role="status" aria-live="polite">
-            Há um problema com o pagamento da sua assinatura. Atualize a forma
-            de pagamento para continuar conversando.
-          </p>
-        </div>
-        <PlatformActionCard
-          title="Atualizar pagamento"
-          body="Revise a assinatura e a forma de pagamento na sua conta."
+        <PlatformPageHeader
+          title={greeting}
+          description="Há um problema com o pagamento da sua assinatura."
+        />
+        <StatusCard
+          tone="warning"
+          title="Assinatura com pagamento pendente"
+          body="Atualize a forma de pagamento na sua conta para voltar a conversar. Estamos aqui quando estiver pronto."
+        />
+        <PrimaryActionCard
+          title="Próximo passo"
+          body="Revise a assinatura e a forma de pagamento com calma."
           href="/conta"
           cta="Ir para minha conta"
           tone="emphasis"
@@ -139,41 +193,72 @@ export default async function InicioPage() {
   // active_ready | canceling_at_period_end
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-ink">{greeting}</h1>
-        <p className="mt-2 max-w-2xl text-ink-soft">
-          Traga sua situação e receba uma reflexão baseada nas Escrituras.
-          {state === "canceling_at_period_end"
-            ? " Sua renovação está cancelada, mas o acesso continua até o fim do período."
-            : ""}
-        </p>
-      </div>
+      <PlatformPageHeader
+        title={greeting}
+        description={
+          state === "canceling_at_period_end"
+            ? "Sua renovação está cancelada, mas o acesso continua até o fim do período. Traga sua situação com calma."
+            : "Traga sua situação e receba uma reflexão baseada nas Escrituras."
+        }
+        actions={
+          plan ? (
+            <PlanStatusBadge label={`Plano ${plan.name}`} tone="neutral" />
+          ) : null
+        }
+      />
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <PlatformActionCard
-          title="Começar uma reflexão"
-          body={
-            recentConversation?.title
-              ? `Recente: ${recentConversation.title}`
-              : "Uma conversa guiada pelas Escrituras, no tom que você escolheu."
-          }
-          href={
-            recentConversation
-              ? `/conversar?c=${recentConversation.id}`
-              : "/conversar"
-          }
-          cta="Conversar"
-        />
-        <div className="rounded-2xl border border-border/70 bg-card/60 p-6">
-          <h2 className="font-display text-xl text-ink">Seu plano</h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            {plan?.name ?? "Assinatura ativa"}
-            {auth.demoMode ? " · acesso limitado" : ""}
-          </p>
-          <Button asChild variant="outline" className="mt-5 min-h-11">
-            <Link href="/conta">Gerenciar assinatura</Link>
-          </Button>
-        </div>
+      <PrimaryActionCard
+        title="Começar uma reflexão"
+        body={
+          recentConversation?.title
+            ? `Continuar: ${recentConversation.title}`
+            : "Uma conversa guiada pelas Escrituras, no tom que você escolheu."
+        }
+        href={
+          recentConversation
+            ? `/conversar?c=${recentConversation.id}`
+            : "/conversar"
+        }
+        cta="Começar uma reflexão"
+        tone="emphasis"
+      />
+
+      <section aria-labelledby="theme-shortcuts-heading">
+        <h2
+          id="theme-shortcuts-heading"
+          className="font-display text-lg text-ink"
+        >
+          Por onde começar
+        </h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Atalhos opcionais — você também pode escrever com as próprias palavras.
+        </p>
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {THEME_SHORTCUTS.map((theme) => (
+            <li key={theme.label}>
+              <Link
+                href={`/conversar?tema=${encodeURIComponent(theme.prompt)}`}
+                className="inline-flex min-h-11 items-center rounded-full border border-border/70 bg-card/70 px-3.5 py-2 text-sm text-ink transition hover:border-wine/30 hover:bg-wine/[0.04] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {theme.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
+        <Button asChild variant="outline" className="min-h-11">
+          <Link href="/conta">Ver assinatura</Link>
+        </Button>
+        {recentConversation ? (
+          <Link
+            href="/conversas"
+            className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            Ver conversas anteriores
+          </Link>
+        ) : null}
       </div>
     </div>
   );

@@ -47,3 +47,10 @@
     text-wrap: balance;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-soft-pulse,
+  .animate-fade-up {
+    animation: none !important;
+  }
+}
