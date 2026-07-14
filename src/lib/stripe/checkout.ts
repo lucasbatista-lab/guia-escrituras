@@ -14,11 +14,12 @@ import { createRequestId } from "@/lib/utils";
 import {
   assertStripeConfigured,
   getCheckoutUrls,
+  getConfiguredStripeMode,
   getStripePriceIdForPlan,
   StripeConfigError,
 } from "./config";
 import { getStripeClient } from "./client";
-import { getOrCreateBillingCustomer } from "./persistence";
+import { getOrCreateBillingCustomer } from "./billing-customer";
 
 export type CreateCheckoutResult =
   | { ok: true; url: string }
@@ -116,33 +117,30 @@ export async function createSubscriptionCheckout(
   const customerId = await getOrCreateBillingCustomer(
     auth.userId,
     auth.email,
-    async (input) => {
-      const customer = await stripe.customers.create(input);
-      return { id: customer.id };
-    },
   );
 
   const priceId = getStripePriceIdForPlan(view.planKey);
   const { successUrl, cancelUrl } = getCheckoutUrls();
+  const stripeMode = getConfiguredStripeMode();
+
+  const sharedMetadata = {
+    user_id: auth.userId,
+    plan_key: view.planKey,
+    signup_intent_id: intent.id,
+    stripe_mode: stripeMode,
+  };
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     locale: "pt-BR",
     customer: customerId,
+    client_reference_id: auth.userId,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
-    metadata: {
-      user_id: auth.userId,
-      plan_key: view.planKey,
-      signup_intent_id: intent.id,
-    },
+    metadata: sharedMetadata,
     subscription_data: {
-      metadata: {
-        user_id: auth.userId,
-        plan_key: view.planKey,
-        signup_intent_id: intent.id,
-      },
+      metadata: sharedMetadata,
     },
   });
 

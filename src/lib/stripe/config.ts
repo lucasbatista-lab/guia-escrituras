@@ -2,6 +2,11 @@ import "server-only";
 
 import type { PlanKey } from "@/lib/entitlements";
 import { getAppUrl, getCanonicalSiteUrl } from "@/lib/auth/app-url";
+import {
+  InvalidStripeKeyError,
+  resolveStripeKeyMode,
+  type StripeKeyMode,
+} from "./key-mode";
 
 export class StripeConfigError extends Error {
   constructor(message: string) {
@@ -9,6 +14,9 @@ export class StripeConfigError extends Error {
     this.name = "StripeConfigError";
   }
 }
+
+export { resolveStripeKeyMode };
+export type { StripeKeyMode };
 
 const PRICE_ENV: Record<Exclude<PlanKey, "particular">, string> = {
   essencial: "STRIPE_PRICE_ESSENCIAL",
@@ -25,11 +33,36 @@ export function getStripeWebhookSecret(): string {
 }
 
 export function assertStripeConfigured(): void {
-  if (!getStripeSecretKey()) {
+  const key = getStripeSecretKey();
+  if (!key) {
     throw new StripeConfigError(
       "Pagamento indisponível: configure STRIPE_SECRET_KEY no servidor.",
     );
   }
+  try {
+    resolveStripeKeyMode(key);
+  } catch (error) {
+    if (error instanceof InvalidStripeKeyError) {
+      throw new StripeConfigError(error.message);
+    }
+    throw error;
+  }
+}
+
+/** Configured Stripe mode from secret key (does not force live in Vercel production). */
+export function getConfiguredStripeMode(): StripeKeyMode {
+  assertStripeConfigured();
+  return resolveStripeKeyMode(getStripeSecretKey());
+}
+
+export function isStripeWebhookConfigured(): boolean {
+  return Boolean(getStripeWebhookSecret());
+}
+
+export function getStripePriceEnvName(
+  planKey: Exclude<PlanKey, "particular">,
+): string {
+  return PRICE_ENV[planKey];
 }
 
 export function getStripePriceIdForPlan(planKey: PlanKey): string {

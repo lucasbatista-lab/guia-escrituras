@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/client";
-import { getStripeWebhookSecret } from "@/lib/stripe/config";
+import {
+  getConfiguredStripeMode,
+  getStripeWebhookSecret,
+} from "@/lib/stripe/config";
 import { handleStripeWebhookEvent } from "@/lib/stripe/webhook";
+import {
+  assertEventMatchesKeyMode,
+  StripeModeMismatchError,
+} from "@/lib/stripe/key-mode";
+import { logger } from "@/lib/logging/logger";
 
 export const runtime = "nodejs";
 
@@ -27,6 +35,24 @@ export async function POST(request: Request) {
     event = stripe.webhooks.constructEvent(rawBody, signature, secret);
   } catch {
     return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
+  }
+
+  // Mode check AFTER signature verification and BEFORE any persistence.
+  try {
+    const keyMode = getConfiguredStripeMode();
+    assertEventMatchesKeyMode(event, keyMode);
+  } catch (error) {
+    if (error instanceof StripeModeMismatchError) {
+      logger.warn("stripe_webhook_mode_mismatch", {
+        eventType: event.type,
+        eventLivemode: event.livemode,
+        // Never log secrets or full event payloads.
+        eventIdPrefix:
+          typeof event.id === "string" ? event.id.slice(0, 8) : undefined,
+      });
+      return NextResponse.json({ error: "mode_mismatch" }, { status: 400 });
+    }
+    return NextResponse.json({ error: "mode_check_failed" }, { status: 503 });
   }
 
   try {

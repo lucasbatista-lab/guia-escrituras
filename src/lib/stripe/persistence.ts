@@ -59,38 +59,6 @@ export async function upsertSubscriptionFromStripe(input: {
   }
 }
 
-export async function getOrCreateBillingCustomer(
-  userId: string,
-  email: string | null,
-  stripeCreateCustomer: (input: {
-    email?: string;
-    metadata: { user_id: string };
-  }) => Promise<{ id: string }>,
-): Promise<string> {
-  const admin = createAdminClient();
-  const { data: existing } = await admin
-    .from("billing_customers")
-    .select("stripe_customer_id")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (existing?.stripe_customer_id) {
-    return existing.stripe_customer_id;
-  }
-
-  const customer = await stripeCreateCustomer({
-    email: email ?? undefined,
-    metadata: { user_id: userId },
-  });
-
-  await admin.from("billing_customers").insert({
-    user_id: userId,
-    stripe_customer_id: customer.id,
-  });
-
-  return customer.id;
-}
-
 export async function recordPaymentEvent(input: {
   providerEventId: string;
   eventType: string;

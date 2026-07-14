@@ -1,5 +1,6 @@
 export {
   assertStripeConfigured,
+  getConfiguredStripeMode,
   getStripeSecretKey,
   getStripeWebhookSecret,
   getStripePriceIdForPlan,
@@ -7,8 +8,27 @@ export {
   getPortalReturnUrl,
   StripeConfigError,
 } from "./config";
+export {
+  getOrCreateBillingCustomer,
+  resolveBillingCustomerId,
+  isStripeResourceMissing,
+} from "./billing-customer";
+export {
+  resolveStripeKeyMode,
+  assertEventMatchesKeyMode,
+  StripeModeMismatchError,
+  InvalidStripeKeyError,
+  type StripeKeyMode,
+} from "./key-mode";
+export {
+  evaluateStripeReadiness,
+  validatePriceAgainstCatalog,
+} from "./readiness";
 export { getStripeClient, setStripeClientForTests } from "./client";
-export { createSubscriptionCheckout, type CreateCheckoutResult } from "./checkout";
+export {
+  createSubscriptionCheckout,
+  type CreateCheckoutResult,
+} from "./checkout";
 export { handleStripeWebhookEvent } from "./webhook";
 export { createCustomerPortalSession } from "./portal";
 export {
