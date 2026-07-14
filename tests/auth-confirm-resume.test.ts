@@ -94,6 +94,20 @@ class MemorySignupIntentRepository implements SignupIntentRepository {
       );
   }
 
+  async findCheckoutCreatedByUserId(userId: string) {
+    return [...this.rows.values()]
+      .filter(
+        (r) =>
+          r.userId === userId &&
+          r.status === "checkout_created" &&
+          new Date(r.expiresAt).getTime() > Date.now(),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+  }
+
   async update(
     id: string,
     patch: Partial<

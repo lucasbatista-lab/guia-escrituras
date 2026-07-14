@@ -49,21 +49,22 @@ export async function runChatTurn(input: {
 }): Promise<ChatResponsePayload> {
   const { requestId, auth, body } = input;
 
-  if (!auth.spiritualProfile.onboardingCompleted) {
-    throw new AppError(
-      "onboarding_required",
-      "onboarding_required",
-      403,
-      "Conclua o onboarding antes de conversar.",
-    );
-  }
-
+  // Subscription gate BEFORE any persistence (and before personalization).
   if (!auth.planKey) {
     throw new AppError(
       "subscription_required",
       "subscription_required",
       402,
       "É necessária uma assinatura ativa para conversar. Não há plano gratuito.",
+    );
+  }
+
+  if (!auth.spiritualProfile.onboardingCompleted) {
+    throw new AppError(
+      "personalization_required",
+      "personalization_required",
+      403,
+      "Personalize sua experiência antes de conversar.",
     );
   }
 

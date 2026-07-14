@@ -88,8 +88,14 @@ export default async function AssinaturaSucessoPage({
       <div className="mt-8 flex flex-col gap-3">
         {status !== "forbidden" ? (
           <Button asChild className="bg-ink hover:bg-ink/90">
-            <Link href={status === "active" ? "/inicio" : "/onboarding"}>
-              {status === "active" ? "Ir para o início" : "Concluir onboarding"}
+            <Link
+              href={
+                status === "active" ? "/personalizar" : "/assinatura/sucesso"
+              }
+            >
+              {status === "active"
+                ? "Personalizar minha experiência"
+                : "Aguardar confirmação"}
             </Link>
           </Button>
         ) : null}

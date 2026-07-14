@@ -4,15 +4,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { brand } from "@/config/brand";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
+import type { PlatformNavItem } from "@/lib/journey/journey-state";
 
-const nav = [
+const DEFAULT_NAV: PlatformNavItem[] = [
   { href: "/inicio", label: "Início" },
-  { href: "/conversar", label: "Conversar" },
-  { href: "/conversas", label: "Conversas" },
   { href: "/conta", label: "Conta" },
 ];
 
-export function PlatformNav() {
+export function PlatformNav({
+  items = DEFAULT_NAV,
+}: {
+  items?: PlatformNavItem[];
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -32,8 +35,11 @@ export function PlatformNav() {
         <Link href="/inicio" className="font-display text-lg text-ink">
           {brand.name}
         </Link>
-        <nav className="flex flex-1 items-center justify-end gap-1 overflow-x-auto sm:gap-2" aria-label="Plataforma">
-          {nav.map((item) => (
+        <nav
+          className="flex flex-1 items-center justify-end gap-1 overflow-x-auto sm:gap-2"
+          aria-label="Plataforma"
+        >
+          {items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -41,7 +47,9 @@ export function PlatformNav() {
                 "whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm transition",
                 pathname === item.href
                   ? "bg-sand-200 text-ink"
-                  : "text-ink-soft hover:text-ink",
+                  : item.dominant
+                    ? "font-medium text-ink underline underline-offset-4"
+                    : "text-ink-soft hover:text-ink",
               )}
             >
               {item.label}

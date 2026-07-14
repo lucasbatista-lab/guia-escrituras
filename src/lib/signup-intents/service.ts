@@ -159,6 +159,24 @@ export async function findLatestActionableIntentByUserId(
   return awaiting ?? null;
 }
 
+/**
+ * Latest non-expired checkout_created intent (payment in Stripe, webhook pending).
+ */
+export async function findLatestCheckoutCreatedIntentByUserId(
+  userId: string,
+): Promise<SignupIntentRecord | null> {
+  assertSignupIntentBackendConfigured();
+  const repo = getSignupIntentRepository();
+  const rows = await repo.findCheckoutCreatedByUserId(userId);
+  const fresh = rows.filter(
+    (r) =>
+      r.userId === userId &&
+      !isSignupIntentExpired(r.expiresAt) &&
+      r.status === "checkout_created",
+  );
+  return fresh[0] ?? null;
+}
+
 export async function completeIntentAfterConfirmation(
   token: string,
   userId: string,

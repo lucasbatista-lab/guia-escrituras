@@ -176,10 +176,10 @@ export default async function ContaPage() {
             </dd>
           </div>
           <div>
-            <dt className="text-ink-soft">Onboarding</dt>
+            <dt className="text-ink-soft">Personalização</dt>
             <dd className="text-ink">
               {auth.spiritualProfile.onboardingCompleted
-                ? "Concluído"
+                ? "Concluída"
                 : "Pendente"}
             </dd>
           </div>

@@ -18,6 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           "/conversas",
           "/inicio",
           "/onboarding",
+          "/personalizar",
           "/assinar",
           "/assinatura",
           "/auth",

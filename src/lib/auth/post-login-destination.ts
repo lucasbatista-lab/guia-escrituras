@@ -3,12 +3,19 @@ import "server-only";
 import { safeNextPath } from "@/lib/navigation/safe-next-path";
 import {
   findLatestActionableIntentByUserId,
+  findLatestCheckoutCreatedIntentByUserId,
   loadSignupIntentByToken,
 } from "@/lib/signup-intents";
 import { readSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
 import { getAuthUserContext } from "@/lib/auth/session";
-
-const ACTIVE_STATUSES = new Set(["active", "trialing"]);
+import {
+  getRequiredDestinationForState,
+  resolveUserJourneyStateFromSnapshot,
+  snapshotFromAuthContext,
+  type UserJourneyState,
+} from "@/lib/journey/resolve-user-journey-state";
+import { loadUserSubscriptions } from "@/lib/billing/subscription-lookup";
+import { isLiveSubscriptionStatus } from "@/lib/billing/effective-subscription";
 
 function continuationPath(token: string | null): string {
   if (token) {
@@ -19,11 +26,9 @@ function continuationPath(token: string | null): string {
 
 /**
  * Post-login destination priority:
- * 1. Valid intent from next/cookie
- * 2. Actionable intent linked to user_id
- * 3. Active sub without personalization → /onboarding
- * 4. Active ready → /inicio
- * 5. No subscription → /planos
+ * 1. Valid intent from next/cookie → continuation
+ * 2. Actionable / processing intent linked to user_id
+ * 3. Journey state destination (personalizar, inicio, planos, etc.)
  *
  * Never uses /inicio as a universal fallback.
  */
@@ -59,10 +64,12 @@ export async function resolvePostLoginDestination(options?: {
         if (
           record.status === "ready_for_checkout" ||
           record.status === "awaiting_confirmation" ||
-          record.status === "pending_signup" ||
-          record.status === "checkout_created"
+          record.status === "pending_signup"
         ) {
           return continuationPath(hintedToken);
+        }
+        if (record.status === "checkout_created") {
+          return "/assinatura/sucesso";
         }
       }
     } catch {
@@ -71,6 +78,10 @@ export async function resolvePostLoginDestination(options?: {
   }
 
   try {
+    const processing = await findLatestCheckoutCreatedIntentByUserId(userId);
+    if (processing) {
+      return "/assinatura/sucesso";
+    }
     const actionable = await findLatestActionableIntentByUserId(userId);
     if (actionable) {
       return continuationPath(null);
@@ -79,15 +90,35 @@ export async function resolvePostLoginDestination(options?: {
     // ignore
   }
 
-  const subscribed =
-    Boolean(auth.planKey) &&
-    Boolean(auth.subscriptionStatus) &&
-    ACTIVE_STATUSES.has(auth.subscriptionStatus!);
-
-  if (subscribed) {
-    if (!auth.spiritualProfile.onboardingCompleted) {
-      return "/onboarding";
+  const rows = await loadUserSubscriptions(userId).catch(() => []);
+  let liveStatus: string | null = null;
+  let hasPastDue = false;
+  let hasEnded = false;
+  for (const row of rows) {
+    if (isLiveSubscriptionStatus(row.status)) liveStatus = row.status;
+    else if (row.status === "past_due") hasPastDue = true;
+    else if (
+      row.status === "canceled" ||
+      row.status === "unpaid" ||
+      row.status === "incomplete"
+    ) {
+      hasEnded = true;
     }
+  }
+
+  const snapshot = snapshotFromAuthContext(auth, {
+    signupIntentStatus: null,
+    hasPastDueSubscription: hasPastDue,
+    hasEndedSubscription: hasEnded,
+    emailConfirmed: true,
+  });
+  if (liveStatus) {
+    snapshot.liveSubscriptionStatus = liveStatus;
+  }
+
+  const state: UserJourneyState = resolveUserJourneyStateFromSnapshot(snapshot);
+
+  if (state === "active_ready" || state === "canceling_at_period_end") {
     const safeRequested = nextRaw
       ? safeNextPath(nextRaw, "/inicio")
       : "/inicio";
@@ -99,10 +130,12 @@ export async function resolvePostLoginDestination(options?: {
     ) {
       return "/inicio";
     }
-    return safeRequested;
+    return getRequiredDestinationForState(state, {
+      allowRequested: safeRequested,
+    });
   }
 
-  return "/planos";
+  return getRequiredDestinationForState(state);
 }
 
 function extractIntentFromNext(nextParam: string | null): string | null {

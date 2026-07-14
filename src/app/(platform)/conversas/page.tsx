@@ -2,11 +2,21 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
+import {
+  getRequiredDestinationForState,
+  journeyAllowsChat,
+  resolveUserJourneyState,
+} from "@/lib/journey";
 
 export default async function ConversasPage() {
   const auth = await getAuthUserContext();
   if (!auth) {
     redirect("/entrar?next=/conversas");
+  }
+
+  const journey = await resolveUserJourneyState({ userId: auth.userId });
+  if (!journeyAllowsChat(journey.state)) {
+    redirect(getRequiredDestinationForState(journey.state));
   }
 
   let rows: Array<{ id: string; title: string | null; updatedAt: string }> = [];

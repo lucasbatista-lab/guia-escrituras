@@ -57,6 +57,7 @@ export interface SignupIntentRepository {
   findByTokenHash(tokenHash: string): Promise<SignupIntentRecord | null>;
   findById(id: string): Promise<SignupIntentRecord | null>;
   findActionableByUserId(userId: string): Promise<SignupIntentRecord[]>;
+  findCheckoutCreatedByUserId(userId: string): Promise<SignupIntentRecord[]>;
   update(
     id: string,
     patch: Partial<

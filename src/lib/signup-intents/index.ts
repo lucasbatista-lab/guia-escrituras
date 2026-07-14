@@ -25,6 +25,7 @@ export {
   markIntentAwaitingConfirmation,
   associateIntentUserAwaitingConfirmation,
   findLatestActionableIntentByUserId,
+  findLatestCheckoutCreatedIntentByUserId,
   completeIntentAfterConfirmation,
   getContinuationViewState,
   getContinuationViewStateForUser,

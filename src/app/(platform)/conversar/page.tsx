@@ -3,12 +3,27 @@ import { ChatPanel } from "@/components/chat/chat-panel";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
 import { isUuid } from "@/lib/navigation/safe-next-path";
+import {
+  getRequiredDestinationForState,
+  journeyAllowsChat,
+  resolveUserJourneyState,
+} from "@/lib/journey";
 
 export default async function ConversarPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const auth = await getAuthUserContext();
+  if (!auth) {
+    redirect("/entrar?next=/conversar");
+  }
+
+  const journey = await resolveUserJourneyState({ userId: auth.userId });
+  if (!journeyAllowsChat(journey.state)) {
+    redirect(getRequiredDestinationForState(journey.state));
+  }
+
   const params = await searchParams;
   const raw = params.c;
   const conversationParam = Array.isArray(raw) ? raw[0] : raw;
@@ -19,13 +34,6 @@ export default async function ConversarPage({
 
   if (!isUuid(conversationParam)) {
     return <ChatPanel />;
-  }
-
-  const auth = await getAuthUserContext();
-  if (!auth) {
-    redirect(
-      `/entrar?next=${encodeURIComponent(`/conversar?c=${conversationParam}`)}`,
-    );
   }
 
   const repos = getRepositories();
