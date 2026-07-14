@@ -2,19 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getPrivacyVersion, getTermsVersion } from "@/config/legal";
-import { resendConfirmationAction } from "@/lib/auth/resend-confirmation-action";
 import { signUpAction } from "@/lib/auth/sign-up-action";
 import type { SignupTrackingParams } from "@/lib/signup-intents";
 import type { PlanKey } from "@/lib/entitlements";
 import { hasSupabaseEnv } from "@/lib/utils";
-
-const RESEND_COOLDOWN_SECONDS = 60;
 
 function passwordChecks(password: string) {
   return {
@@ -44,25 +41,12 @@ export function SignUpForm({
     terms?: string;
   }>({});
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [requestIdHint, setRequestIdHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [resendFeedback, setResendFeedback] = useState<string | null>(null);
 
   const termsVersion = getTermsVersion();
   const privacyVersion = getPrivacyVersion();
   const checks = useMemo(() => passwordChecks(password), [password]);
-
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const id = window.setInterval(() => {
-      setResendCooldown((s) => (s > 0 ? s - 1 : 0));
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [resendCooldown]);
 
   function onPasswordKey(event: React.KeyboardEvent<HTMLInputElement>) {
     setCapsLockOn(event.getModifierState?.("CapsLock") ?? false);
@@ -71,9 +55,7 @@ export function SignUpForm({
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    setMessage(null);
     setRequestIdHint(null);
-    setResendFeedback(null);
     setFieldError({});
 
     if (!termsAccepted) {
@@ -123,22 +105,11 @@ export function SignUpForm({
         if (result.code === "unexpected" || result.code === "email_service_unavailable") {
           setRequestIdHint(result.requestId.slice(0, 8));
         }
-        if (
-          result.code === "email_service_unavailable" ||
-          result.code === "email_rate_limit"
-        ) {
-          setAwaitingConfirmation(true);
-        }
         return;
       }
 
-      if (result.needsEmailConfirmation) {
-        setAwaitingConfirmation(true);
-        setMessage(
-          planKey
-            ? "Conta criada. Verifique seu e-mail para confirmar e continuar com o pagamento."
-            : "Conta criada. Verifique seu e-mail para confirmar e depois conclua o onboarding.",
-        );
+      if (result.needsEmailConfirmation && result.redirectTo) {
+        router.push(result.redirectTo);
         return;
       }
 
@@ -152,27 +123,6 @@ export function SignUpForm({
       );
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function onResend() {
-    if (resendCooldown > 0 || resendLoading || !email.trim()) return;
-    setResendFeedback(null);
-    setResendLoading(true);
-    try {
-      const result = await resendConfirmationAction({ email });
-      setResendCooldown(RESEND_COOLDOWN_SECONDS);
-      if (!result.ok) {
-        setResendFeedback(result.message);
-        return;
-      }
-      setResendFeedback(result.message);
-    } catch {
-      setResendFeedback(
-        "Não foi possível reenviar o e-mail agora. Tente novamente em instantes.",
-      );
-    } finally {
-      setResendLoading(false);
     }
   }
 
@@ -316,35 +266,6 @@ export function SignUpForm({
           ) : null}
         </p>
       )}
-      {message && (
-        <p className="text-sm text-ink-soft" role="status">
-          {message}
-        </p>
-      )}
-
-      {awaitingConfirmation ? (
-        <div className="space-y-2 rounded-md border border-border/70 bg-sand-50/80 p-3">
-          <p className="text-sm text-ink">Não recebeu o e-mail?</p>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => void onResend()}
-            disabled={resendLoading || resendCooldown > 0 || !email.trim()}
-          >
-            {resendLoading
-              ? "Reenviando…"
-              : resendCooldown > 0
-                ? `Reenviar em ${resendCooldown}s`
-                : "Reenviar e-mail de confirmação"}
-          </Button>
-          {resendFeedback ? (
-            <p className="text-xs text-ink-soft" role="status">
-              {resendFeedback}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
 
       <Button
         type="submit"

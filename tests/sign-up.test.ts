@@ -60,19 +60,19 @@ describe("getEmailRedirectTo", () => {
     process.env = { ...original };
   });
 
-  it("prefers APP_URL and points confirmation to /auth/callback → onboarding", () => {
+  it("prefers APP_URL and points confirmation to /auth/confirm → planos", () => {
     process.env.APP_URL = "https://amem-chat.vercel.app/";
     process.env.NEXT_PUBLIC_APP_URL = "https://ignored.example";
     expect(getAppUrl()).toBe("https://amem-chat.vercel.app");
-    expect(getEmailRedirectTo("/onboarding")).toBe(
-      "https://amem-chat.vercel.app/auth/callback?next=%2Fonboarding",
+    expect(getEmailRedirectTo("/planos")).toBe(
+      "https://amem-chat.vercel.app/auth/confirm?next=%2Fplanos",
     );
   });
 
   it("falls back to NEXT_PUBLIC_APP_URL", () => {
     delete process.env.APP_URL;
     process.env.NEXT_PUBLIC_APP_URL = "https://amem-chat.vercel.app";
-    expect(getEmailRedirectTo()).toContain("/auth/callback?next=");
+    expect(getEmailRedirectTo()).toContain("/auth/confirm?next=");
   });
 });
 
@@ -190,9 +190,13 @@ describe("signup UI guarantees", () => {
   });
 
   it("includes resend confirmation with cooldown", () => {
-    expect(form).toContain("Reenviar e-mail de confirmação");
-    expect(form).toContain("RESEND_COOLDOWN_SECONDS");
-    expect(form).toContain("resendConfirmationAction");
+    const checkEmail = readFileSync(
+      join(process.cwd(), "src", "components", "auth", "check-email-experience.tsx"),
+      "utf8",
+    );
+    expect(checkEmail).toContain("Reenviar e-mail de confirmação");
+    expect(checkEmail).toContain("RESEND_COOLDOWN_SECONDS");
+    expect(checkEmail).toContain("resendConfirmationAction");
   });
 });
 
@@ -341,7 +345,7 @@ describe("signUpAction", () => {
     }
   });
 
-  it("succeeds with confirmation required and does not redirect yet", async () => {
+  it("succeeds with confirmation required and redirects to check-email", async () => {
     process.env.APP_URL = "https://amem-chat.vercel.app";
     const signUp = vi.fn(async () => ({
       data: {
@@ -360,7 +364,7 @@ describe("signUpAction", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.needsEmailConfirmation).toBe(true);
-      expect(result.redirectTo).toBeNull();
+      expect(result.redirectTo).toContain("/confira-seu-email");
     }
     expect(signUp).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -372,7 +376,7 @@ describe("signUpAction", () => {
             privacy_version: expect.any(String),
           }),
           emailRedirectTo:
-            "https://amem-chat.vercel.app/auth/callback?next=%2Fonboarding",
+            "https://amem-chat.vercel.app/auth/confirm?next=%2Fplanos",
         }),
       }),
     );

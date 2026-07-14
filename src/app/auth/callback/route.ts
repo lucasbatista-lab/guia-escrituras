@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { completeIntentAfterConfirmation } from "@/lib/signup-intents";
+import { setSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
 import { safeNextPath } from "@/lib/navigation/safe-next-path";
 import { createRequestId } from "@/lib/utils";
 import { logger } from "@/lib/logging/logger";
 
+/**
+ * Legacy/compat callback (PKCE code exchange).
+ * New signup confirmation emails should use /auth/confirm with token_hash.
+ */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const intentToken = searchParams.get("intent");
-  const next = safeNextPath(searchParams.get("next"), "/onboarding");
+  const next = safeNextPath(searchParams.get("next"), "/planos");
   const requestId = createRequestId();
 
   const supabase = await createClient();
@@ -44,6 +49,7 @@ export async function GET(request: Request) {
     );
 
     if (result.ok) {
+      await setSignupIntentCookie(intentToken);
       return NextResponse.redirect(new URL(result.redirectTo, origin));
     }
 

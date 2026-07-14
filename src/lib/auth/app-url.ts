@@ -86,11 +86,35 @@ export function getAppUrl(): string {
   }
 }
 
-export function getEmailRedirectTo(nextPath = "/onboarding"): string {
+/**
+ * Email confirmation RedirectTo base on /auth/confirm (canonical domain).
+ * Supabase template must append: &token_hash={{ .TokenHash }}&type=email
+ *
+ * With plan: next continues subscription (/email-confirmado).
+ * Without plan: next is /planos.
+ */
+export function getEmailRedirectTo(nextPath = "/planos"): string {
   const origin = getAppUrl() || getCanonicalSiteUrl();
-  const next = nextPath.startsWith("/") ? nextPath : "/onboarding";
+  const next = nextPath.startsWith("/") ? nextPath : "/planos";
   if (!origin) {
     throw new Error("APP_URL_or_NEXT_PUBLIC_APP_URL_missing");
   }
-  return `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  return `${origin}/auth/confirm?next=${encodeURIComponent(next)}`;
+}
+
+/** Build confirm redirect including opaque intent token. */
+export function getEmailRedirectToWithIntent(
+  intentToken: string,
+  nextPath = "/email-confirmado",
+): string {
+  const origin = getAppUrl() || getCanonicalSiteUrl();
+  if (!origin) {
+    throw new Error("APP_URL_or_NEXT_PUBLIC_APP_URL_missing");
+  }
+  const next = nextPath.startsWith("/") ? nextPath : "/email-confirmado";
+  const params = new URLSearchParams({
+    intent: intentToken,
+    next,
+  });
+  return `${origin}/auth/confirm?${params.toString()}`;
 }

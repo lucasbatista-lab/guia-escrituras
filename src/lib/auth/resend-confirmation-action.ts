@@ -1,7 +1,10 @@
 "use server";
 
 import { z } from "zod";
-import { getEmailRedirectTo } from "@/lib/auth/app-url";
+import {
+  getEmailRedirectTo,
+  getEmailRedirectToWithIntent,
+} from "@/lib/auth/app-url";
 import {
   mapResendAuthError,
   maskEmail,
@@ -12,9 +15,11 @@ import { logger } from "@/lib/logging/logger";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import { createRequestId } from "@/lib/utils";
+import { readSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
 
 const resendSchema = z.object({
   email: z.string().trim().email().max(320),
+  intentToken: z.string().trim().min(16).max(128).optional().nullable(),
 });
 
 export type ResendConfirmationResult =
@@ -29,9 +34,11 @@ export type ResendConfirmationResult =
 /**
  * Resend signup confirmation. Always returns success-shaped feedback when the
  * request is well-formed so we do not reveal whether the email exists.
+ * Preserves opaque intent via RedirectTo when available (cookie or input).
  */
 export async function resendConfirmationAction(input: {
   email: string;
+  intentToken?: string | null;
 }): Promise<ResendConfirmationResult> {
   const requestId = createRequestId();
   const genericOk =
@@ -60,9 +67,15 @@ export async function resendConfirmationAction(input: {
     };
   }
 
+  const cookieIntent = await readSignupIntentCookie();
+  const intentToken =
+    parsed.data.intentToken?.trim() || cookieIntent || null;
+
   let emailRedirectTo: string;
   try {
-    emailRedirectTo = getEmailRedirectTo("/onboarding");
+    emailRedirectTo = intentToken
+      ? getEmailRedirectToWithIntent(intentToken, "/email-confirmado")
+      : getEmailRedirectTo("/planos");
   } catch {
     logger.error("resend_confirmation_config_missing", {
       requestId,
@@ -103,7 +116,6 @@ export async function resendConfirmationAction(input: {
       emailMasked: maskEmail(parsed.data.email),
     });
 
-    // Rate limit and SMTP issues: honest differentiation.
     if (
       mapped.code === "email_rate_limit" ||
       mapped.code === "email_service_unavailable" ||
@@ -117,7 +129,6 @@ export async function resendConfirmationAction(input: {
       };
     }
 
-    // Other auth errors: do not reveal account existence.
     logger.warn("resend_confirmation_soft_ok", {
       requestId,
       emailMasked: maskEmail(parsed.data.email),

@@ -20,10 +20,15 @@ export {
 export {
   createSignupIntentWithToken,
   getAuthCallbackUrlForIntent,
+  getAuthConfirmUrlForIntent,
   loadSignupIntentByToken,
   markIntentAwaitingConfirmation,
+  associateIntentUserAwaitingConfirmation,
+  findLatestActionableIntentByUserId,
   completeIntentAfterConfirmation,
   getContinuationViewState,
+  getContinuationViewStateForUser,
+  loadSignupIntentByIdForUser,
   assertSignupIntentBackendConfigured,
   SignupIntentConfigError,
   type ContinuationViewState,
@@ -32,3 +37,10 @@ export {
   getSignupIntentRepository,
   setSignupIntentRepositoryForTests,
 } from "./repository";
+export {
+  SIGNUP_INTENT_COOKIE,
+  setSignupIntentCookie,
+  readSignupIntentCookie,
+  clearSignupIntentCookie,
+  signupIntentCookieOptions,
+} from "./continuity-cookie";

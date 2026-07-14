@@ -83,6 +83,21 @@ class MemorySignupIntentRepository implements SignupIntentRepository {
     return this.rows.get(id) ?? null;
   }
 
+  async findActionableByUserId(userId: string) {
+    return [...this.rows.values()]
+      .filter(
+        (r) =>
+          r.userId === userId &&
+          (r.status === "ready_for_checkout" ||
+            r.status === "awaiting_confirmation") &&
+          new Date(r.expiresAt).getTime() > Date.now(),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+  }
+
   async update(
     id: string,
     patch: Partial<
@@ -213,7 +228,7 @@ describe("signup intent service", () => {
     return import("@/lib/signup-intents/service");
   }
 
-  it("creates intent and callback URL with opaque token only", async () => {
+  it("creates intent and confirm URL with opaque token only", async () => {
     const svc = await setup();
     const { record, token } = await svc.createSignupIntentWithToken({
       selectedPlanKey: "caminho",
@@ -222,11 +237,11 @@ describe("signup intent service", () => {
       termsAcceptedAt: new Date().toISOString(),
     });
     expect(record.status).toBe("pending_signup");
-    expect(svc.getAuthCallbackUrlForIntent(token)).toBe(
-      `https://amem-chat.vercel.app/auth/callback?intent=${encodeURIComponent(token)}`,
+    expect(svc.getAuthConfirmUrlForIntent(token)).toBe(
+      `https://amem-chat.vercel.app/auth/confirm?intent=${encodeURIComponent(token)}&next=%2Femail-confirmado`,
     );
-    expect(svc.getAuthCallbackUrlForIntent(token)).not.toContain("utm");
-    expect(svc.getAuthCallbackUrlForIntent(token)).not.toContain("@");
+    expect(svc.getAuthConfirmUrlForIntent(token)).not.toContain("utm");
+    expect(svc.getAuthConfirmUrlForIntent(token)).not.toContain("@");
   });
 
   it("associates intent to user after confirmation", async () => {
@@ -245,7 +260,7 @@ describe("signup intent service", () => {
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.redirectTo).toContain("/assinar/continuar?intent=");
+      expect(result.redirectTo).toContain("/email-confirmado?intent=");
     }
     const updated = await memory.findById(record.id);
     expect(updated?.userId).toBe("user-123");

@@ -2,7 +2,10 @@
 
 import { z } from "zod";
 import { getPrivacyVersion, getTermsVersion } from "@/config/legal";
-import { getEmailRedirectTo } from "@/lib/auth/app-url";
+import {
+  getEmailRedirectTo,
+  getEmailRedirectToWithIntent,
+} from "@/lib/auth/app-url";
 import {
   isSignUpDuplicateSoftFail,
   mapSignUpAuthError,
@@ -12,14 +15,14 @@ import {
 } from "@/lib/auth/sign-up-errors";
 import { logger } from "@/lib/logging/logger";
 import {
+  associateIntentUserAwaitingConfirmation,
   completeIntentAfterConfirmation,
   createSignupIntentWithToken,
-  getAuthCallbackUrlForIntent,
-  markIntentAwaitingConfirmation,
   SignupIntentConfigError,
   validateCheckoutPlan,
   type SignupTrackingParams,
 } from "@/lib/signup-intents";
+import { setSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import { createRequestId } from "@/lib/utils";
@@ -51,8 +54,14 @@ export type SignUpActionResult =
   | {
       ok: true;
       needsEmailConfirmation: boolean;
-      redirectTo: "/onboarding" | `/assinar/continuar?intent=${string}` | null;
+      redirectTo:
+        | "/confira-seu-email"
+        | `/confira-seu-email?${string}`
+        | `/assinar/continuar?intent=${string}`
+        | null;
       requestId: string;
+      emailMasked?: string;
+      planKey?: string | null;
     }
   | {
       ok: false;
@@ -71,6 +80,13 @@ function fail(
     message: safeSignUpMessage(code),
     requestId,
   };
+}
+
+function checkEmailPath(emailMasked: string, planKey: string | null): string {
+  const params = new URLSearchParams();
+  params.set("hint", emailMasked);
+  if (planKey) params.set("plan", planKey);
+  return `/confira-seu-email?${params.toString()}`;
 }
 
 export async function signUpAction(input: {
@@ -109,7 +125,6 @@ export async function signUpAction(input: {
     return fail("unexpected", requestId);
   }
 
-  // Legal acceptance is always required — never skip by plan absence.
   if (!parsed.data.termsAccepted) {
     return fail("terms_required", requestId);
   }
@@ -121,12 +136,14 @@ export async function signUpAction(input: {
 
   let intentToken: string | null = null;
   let intentId: string | null = null;
+  let selectedPlanKey: string | null = null;
 
   if (hasPlan) {
     const plan = validateCheckoutPlan(parsed.data.planKey);
     if (!plan.ok) {
       return fail("invalid_plan", requestId);
     }
+    selectedPlanKey = plan.planKey;
 
     try {
       const { record, token } = await createSignupIntentWithToken({
@@ -158,8 +175,8 @@ export async function signUpAction(input: {
   let emailRedirectTo: string;
   try {
     emailRedirectTo = intentToken
-      ? getAuthCallbackUrlForIntent(intentToken)
-      : getEmailRedirectTo("/onboarding");
+      ? getEmailRedirectToWithIntent(intentToken, "/email-confirmado")
+      : getEmailRedirectTo("/planos");
   } catch {
     logger.error("sign_up_config_missing", {
       requestId,
@@ -201,7 +218,6 @@ export async function signUpAction(input: {
       code: mapped.code,
       authCode: error.code ?? null,
       authStatus: error.status ?? null,
-      // Never log raw message if it may contain tokens; store truncated shape only.
       authMessage: (error.message ?? "").slice(0, 160),
       emailMasked: maskEmail(parsed.data.email),
       hasIntent: Boolean(intentId),
@@ -243,13 +259,18 @@ export async function signUpAction(input: {
   const needsEmailConfirmation = !data.session;
 
   if (intentId && intentToken) {
+    await setSignupIntentCookie(intentToken);
+
     if (needsEmailConfirmation) {
       try {
-        await markIntentAwaitingConfirmation(intentId);
-      } catch (markError) {
-        logger.error("sign_up_intent_mark_failed", {
+        await associateIntentUserAwaitingConfirmation(intentId, data.user.id);
+      } catch (associateError) {
+        logger.error("sign_up_intent_associate_failed", {
           requestId,
-          error: markError instanceof Error ? markError.message : "unknown",
+          error:
+            associateError instanceof Error
+              ? associateError.message
+              : "unknown",
         });
       }
     } else {
@@ -262,7 +283,7 @@ export async function signUpAction(input: {
         return {
           ok: true,
           needsEmailConfirmation: false,
-          redirectTo: completed.redirectTo as `/assinar/continuar?intent=${string}`,
+          redirectTo: `/assinar/continuar?intent=${encodeURIComponent(intentToken)}` as `/assinar/continuar?intent=${string}`,
           requestId,
         };
       }
@@ -281,14 +302,27 @@ export async function signUpAction(input: {
     emailMasked: maskEmail(parsed.data.email),
   });
 
+  if (needsEmailConfirmation) {
+    const emailMasked = maskEmail(parsed.data.email);
+    return {
+      ok: true,
+      needsEmailConfirmation: true,
+      redirectTo: checkEmailPath(
+        emailMasked,
+        selectedPlanKey,
+      ) as `/confira-seu-email?${string}`,
+      requestId,
+      emailMasked,
+      planKey: selectedPlanKey,
+    };
+  }
+
   return {
     ok: true,
-    needsEmailConfirmation,
-    redirectTo: needsEmailConfirmation
-      ? null
-      : intentToken
-        ? (`/assinar/continuar?intent=${encodeURIComponent(intentToken)}` as const)
-        : "/onboarding",
+    needsEmailConfirmation: false,
+    redirectTo: intentToken
+      ? (`/assinar/continuar?intent=${encodeURIComponent(intentToken)}` as const)
+      : "/confira-seu-email",
     requestId,
   };
 }

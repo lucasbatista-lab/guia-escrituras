@@ -6,13 +6,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { safeNextPath } from "@/lib/navigation/safe-next-path";
+import { loginAction } from "@/lib/auth/login-action";
 import { hasSupabaseEnv } from "@/lib/utils";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = safeNextPath(searchParams.get("next"), "/inicio");
+  const nextParam = searchParams.get("next");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,19 +31,18 @@ export function LoginForm() {
         return;
       }
 
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const result = await loginAction({
         email,
         password,
+        next: nextParam,
       });
 
-      if (signInError) {
-        setError("Não foi possível entrar. Verifique e-mail e senha.");
+      if (!result.ok) {
+        setError(result.message);
         return;
       }
 
-      router.push(next);
+      router.push(result.redirectTo);
       router.refresh();
     } catch {
       setError("Algo deu errado. Tente novamente.");

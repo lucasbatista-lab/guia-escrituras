@@ -3,7 +3,10 @@ import "server-only";
 import { getAuthUserContext } from "@/lib/auth/session";
 import {
   getContinuationViewState,
+  getContinuationViewStateForUser,
+  loadSignupIntentByIdForUser,
   loadSignupIntentByToken,
+  type ContinuationViewState,
 } from "@/lib/signup-intents";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logging/logger";
@@ -31,8 +34,18 @@ export type CreateCheckoutResult =
       message: string;
     };
 
+async function resolveCheckoutView(
+  authUserId: string,
+  intentToken: string | null,
+): Promise<ContinuationViewState> {
+  if (intentToken) {
+    return getContinuationViewState(intentToken, authUserId);
+  }
+  return getContinuationViewStateForUser(authUserId);
+}
+
 export async function createSubscriptionCheckout(
-  intentToken: string,
+  intentToken: string | null = null,
 ): Promise<CreateCheckoutResult> {
   const requestId = createRequestId();
   const auth = await getAuthUserContext();
@@ -57,7 +70,7 @@ export async function createSubscriptionCheckout(
     };
   }
 
-  const view = await getContinuationViewState(intentToken, auth.userId);
+  const view = await resolveCheckoutView(auth.userId, intentToken);
   if (view.kind === "expired") {
     return { ok: false, code: "expired", message: "Este link expirou." };
   }
@@ -75,8 +88,11 @@ export async function createSubscriptionCheckout(
     };
   }
 
-  const intent = await loadSignupIntentByToken(intentToken);
-  if (!intent) {
+  const intent = intentToken
+    ? await loadSignupIntentByToken(intentToken)
+    : await loadSignupIntentByIdForUser(view.intentId, auth.userId);
+
+  if (!intent || intent.userId !== auth.userId) {
     return {
       ok: false,
       code: "invalid_intent",

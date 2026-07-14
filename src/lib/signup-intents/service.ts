@@ -59,6 +59,7 @@ export async function createSignupIntentWithToken(
   return { record, token };
 }
 
+/** @deprecated Prefer getAuthConfirmUrlForIntent — kept for old links / tests. */
 export function getAuthCallbackUrlForIntent(token: string): string {
   const origin = getAppUrl();
   if (!origin) {
@@ -66,6 +67,26 @@ export function getAuthCallbackUrlForIntent(token: string): string {
   }
   const params = new URLSearchParams({ intent: token });
   return `${origin}/auth/callback?${params.toString()}`;
+}
+
+/**
+ * Canonical email confirmation redirect (domain + query).
+ * Supabase template must append &token_hash=&type=email to RedirectTo.
+ */
+export function getAuthConfirmUrlForIntent(
+  token: string,
+  nextPath = "/email-confirmado",
+): string {
+  const origin = getAppUrl();
+  if (!origin) {
+    throw new SignupIntentConfigError("APP_URL ou NEXT_PUBLIC_APP_URL ausente.");
+  }
+  const next = nextPath.startsWith("/") ? nextPath : "/email-confirmado";
+  const params = new URLSearchParams({
+    intent: token,
+    next,
+  });
+  return `${origin}/auth/confirm?${params.toString()}`;
 }
 
 export async function loadSignupIntentByToken(
@@ -92,6 +113,52 @@ export async function markIntentAwaitingConfirmation(
   await repo.update(intentId, { status: "awaiting_confirmation" });
 }
 
+/**
+ * Bind intent to a newly created user while status stays awaiting_confirmation.
+ * Only call when signUp returned a real new identity (not obfuscated duplicate).
+ */
+export async function associateIntentUserAwaitingConfirmation(
+  intentId: string,
+  userId: string,
+): Promise<SignupIntentRecord> {
+  const repo = getSignupIntentRepository();
+  const current = await repo.findById(intentId);
+  if (!current) {
+    throw new Error("signup_intent_not_found");
+  }
+  if (current.userId && current.userId !== userId) {
+    throw new Error("signup_intent_wrong_user");
+  }
+  return repo.update(intentId, {
+    userId,
+    status: "awaiting_confirmation",
+  });
+}
+
+/**
+ * Latest non-expired actionable intent for this user only.
+ * Priority: ready_for_checkout, then awaiting_confirmation.
+ */
+export async function findLatestActionableIntentByUserId(
+  userId: string,
+): Promise<SignupIntentRecord | null> {
+  assertSignupIntentBackendConfigured();
+  const repo = getSignupIntentRepository();
+  const rows = await repo.findActionableByUserId(userId);
+  const fresh = rows.filter(
+    (r) =>
+      r.userId === userId &&
+      !isSignupIntentExpired(r.expiresAt) &&
+      r.status !== "expired" &&
+      r.status !== "completed" &&
+      r.status !== "canceled",
+  );
+  const ready = fresh.find((r) => r.status === "ready_for_checkout");
+  if (ready) return ready;
+  const awaiting = fresh.find((r) => r.status === "awaiting_confirmation");
+  return awaiting ?? null;
+}
+
 export async function completeIntentAfterConfirmation(
   token: string,
   userId: string,
@@ -107,12 +174,21 @@ export async function completeIntentAfterConfirmation(
     | "invalid_status"
     | "wrong_user"
     | "missing_consent_data"
-    | "consent_failed";
+    | "consent_failed"
+    | "already_ready";
 }> {
   const record = await loadSignupIntentByToken(token);
   if (!record) return { ok: false, code: "not_found" };
   if (record.status === "expired" || isSignupIntentExpired(record.expiresAt)) {
     return { ok: false, code: "expired" };
+  }
+
+  // Idempotent: already completed association for this user.
+  if (record.status === "ready_for_checkout" && record.userId === userId) {
+    return {
+      ok: true,
+      redirectTo: `/email-confirmado?intent=${encodeURIComponent(token)}`,
+    };
   }
 
   const allowed: SignupIntentStatus[] = [
@@ -148,9 +224,9 @@ export async function completeIntentAfterConfirmation(
   try {
     await persistLegalConsent({
       userId,
-      termsVersion: updated.termsVersion,
-      privacyVersion: updated.privacyVersion,
-      acceptedAt: updated.termsAcceptedAt,
+      termsVersion: updated.termsVersion!,
+      privacyVersion: updated.privacyVersion!,
+      acceptedAt: updated.termsAcceptedAt!,
       source: "signup_intent_callback",
       requestId,
     });
@@ -160,7 +236,7 @@ export async function completeIntentAfterConfirmation(
 
   return {
     ok: true,
-    redirectTo: `/assinar/continuar?intent=${encodeURIComponent(token)}`,
+    redirectTo: `/email-confirmado?intent=${encodeURIComponent(token)}`,
   };
 }
 
@@ -222,17 +298,48 @@ async function createReferralAttributionIfNeeded(
 }
 
 export type ContinuationViewState =
-  | { kind: "ready"; planKey: SignupIntentRecord["selectedPlanKey"]; intentToken: string }
+  | { kind: "ready"; planKey: SignupIntentRecord["selectedPlanKey"]; intentToken: string | null; intentId: string }
   | { kind: "expired" }
   | { kind: "used" }
   | { kind: "not_found" }
   | { kind: "forbidden" };
+
+function toReadyState(
+  record: SignupIntentRecord,
+  intentToken: string | null,
+): ContinuationViewState {
+  return {
+    kind: "ready",
+    planKey: record.selectedPlanKey,
+    intentToken,
+    intentId: record.id,
+  };
+}
 
 export async function getContinuationViewState(
   token: string,
   userId: string,
 ): Promise<ContinuationViewState> {
   const record = await loadSignupIntentByToken(token);
+  if (!record) return { kind: "not_found" };
+  if (record.status === "expired" || isSignupIntentExpired(record.expiresAt)) {
+    return { kind: "expired" };
+  }
+  if (record.userId && record.userId !== userId) return { kind: "forbidden" };
+  if (record.status === "completed" || record.status === "checkout_created") {
+    return { kind: "used" };
+  }
+  if (record.status !== "ready_for_checkout") {
+    return { kind: "not_found" };
+  }
+  return toReadyState(record, token);
+}
+
+/** Resume checkout when authenticated user has an actionable intent and no token in URL. */
+export async function getContinuationViewStateForUser(
+  userId: string,
+): Promise<ContinuationViewState> {
+  const record = await findLatestActionableIntentByUserId(userId);
   if (!record) return { kind: "not_found" };
   if (record.status === "expired" || isSignupIntentExpired(record.expiresAt)) {
     return { kind: "expired" };
@@ -244,9 +351,23 @@ export async function getContinuationViewState(
   if (record.status !== "ready_for_checkout") {
     return { kind: "not_found" };
   }
-  return {
-    kind: "ready",
-    planKey: record.selectedPlanKey,
-    intentToken: token,
-  };
+  return toReadyState(record, null);
+}
+
+export async function loadSignupIntentByIdForUser(
+  intentId: string,
+  userId: string,
+): Promise<SignupIntentRecord | null> {
+  assertSignupIntentBackendConfigured();
+  const repo = getSignupIntentRepository();
+  const record = await repo.findById(intentId);
+  if (!record) return null;
+  if (record.userId !== userId) return null;
+  if (isSignupIntentExpired(record.expiresAt)) {
+    if (record.status !== "expired" && record.status !== "completed") {
+      await repo.update(record.id, { status: "expired" });
+    }
+    return { ...record, status: "expired" };
+  }
+  return record;
 }

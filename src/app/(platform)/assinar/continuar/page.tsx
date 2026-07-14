@@ -7,7 +7,11 @@ import {
   getPlanByKey,
 } from "@/lib/entitlements";
 import { startCheckoutAction } from "@/lib/billing/checkout-action";
-import { getContinuationViewState } from "@/lib/signup-intents";
+import {
+  getContinuationViewState,
+  getContinuationViewStateForUser,
+  readSignupIntentCookie,
+} from "@/lib/signup-intents";
 
 export default async function AssinarContinuarPage({
   searchParams,
@@ -22,19 +26,25 @@ export default async function AssinarContinuarPage({
   const params = await searchParams;
   const expiredFlag = params.expired === "1";
   const intentRaw = params.intent;
-  const intentToken = Array.isArray(intentRaw) ? intentRaw[0] : intentRaw;
+  const intentFromQuery = Array.isArray(intentRaw) ? intentRaw[0] : intentRaw;
+  const intentFromCookie = await readSignupIntentCookie();
+  const intentToken = intentFromQuery?.trim() || intentFromCookie;
 
-  if (expiredFlag || !intentToken) {
+  if (expiredFlag) {
     return <ContinuationShell kind="expired" />;
   }
 
-  const state = await getContinuationViewState(intentToken, auth.userId);
+  const state = intentToken
+    ? await getContinuationViewState(intentToken, auth.userId)
+    : await getContinuationViewStateForUser(auth.userId);
 
   if (state.kind === "ready") {
     const plan = getPlanByKey(state.planKey);
     if (!plan) {
       return <ContinuationShell kind="not_found" />;
     }
+
+    const checkoutToken = state.intentToken;
 
     return (
       <ContinuationShell kind="ready">
@@ -53,7 +63,7 @@ export default async function AssinarContinuarPage({
           <p className="text-sm text-ink-soft">
             O valor mensal é confirmado no checkout seguro antes do pagamento.
           </p>
-          <form action={startCheckoutAction.bind(null, intentToken)}>
+          <form action={startCheckoutAction.bind(null, checkoutToken)}>
             <Button type="submit" className="w-full bg-ink hover:bg-ink/90">
               Continuar para pagamento
             </Button>
