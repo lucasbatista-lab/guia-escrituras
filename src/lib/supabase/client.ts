@@ -4,6 +4,7 @@ import {
   getSupabaseUrl,
   hasSupabasePublicEnv,
 } from "@/lib/supabase/keys";
+import { getAuthCookieOptions } from "@/lib/supabase/auth-cookie-options";
 
 export function createClient() {
   if (!hasSupabasePublicEnv()) {
@@ -12,5 +13,7 @@ export function createClient() {
     );
   }
 
-  return createBrowserClient(getSupabaseUrl(), getSupabasePublishableKey());
+  return createBrowserClient(getSupabaseUrl(), getSupabasePublishableKey(), {
+    cookieOptions: getAuthCookieOptions(),
+  });
 }

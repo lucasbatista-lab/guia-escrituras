@@ -188,20 +188,20 @@ describe("purchase experience — canonical domain", () => {
     expect(getAppUrl()).toBe("https://amemchat.com.br");
   });
 
-  it("documents www→apex redirect and host-only cookies", () => {
+  it("documents www→apex redirect and shared production cookie domain", () => {
     const templates = read("docs", "AUTH_EMAIL_TEMPLATES.md");
     const checklist = read("docs", "LAUNCH_CHECKLIST.md");
     expect(templates).toContain("www → apex");
     expect(templates).toContain("amemchat.com.br");
-    expect(templates).toContain("host-only");
     expect(checklist).toContain("www → apex");
-    const cookie = read(
+    const cookieOpts = read(
       "src",
       "lib",
-      "signup-intents",
-      "continuity-cookie.ts",
+      "supabase",
+      "auth-cookie-options.ts",
     );
-    expect(cookie).not.toMatch(/domain:\s*["'].*amemchat/i);
+    expect(cookieOpts).toContain(".amemchat.com.br");
+    expect(cookieOpts).toContain('sameSite: "lax"');
   });
 });
 
@@ -242,11 +242,9 @@ describe("purchase experience — visual states & a11y hooks", () => {
     );
     const sucesso = read(
       "src",
-      "app",
-      "(platform)",
-      "assinatura",
-      "sucesso",
-      "page.tsx",
+      "components",
+      "billing",
+      "checkout-success-client.tsx",
     );
     const loading = read("src", "app", "(platform)", "loading.tsx");
     const focus = read("src", "components", "a11y", "focus-page-title.tsx");

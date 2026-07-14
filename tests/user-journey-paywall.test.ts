@@ -306,6 +306,10 @@ describe("redirects and gates (source contracts)", () => {
   });
 
   it("success page directs active users to personalizar", () => {
+    const logic = readSrc("src", "lib", "billing", "checkout-success.ts");
+    expect(logic).toContain('"/personalizar"');
+    expect(logic).toContain("onboardingCompleted");
+    expect(logic).not.toContain('"/onboarding"');
     const page = readSrc(
       "src",
       "app",
@@ -314,7 +318,7 @@ describe("redirects and gates (source contracts)", () => {
       "sucesso",
       "page.tsx",
     );
-    expect(page).toContain('status === "active" ? "/personalizar"');
+    expect(page).toContain("resolveCheckoutSuccessState");
     expect(page).not.toContain('"/onboarding"');
   });
 

@@ -201,6 +201,11 @@ describe("UTM and referral preservation", () => {
 
 describe("subscription success ownership", () => {
   it("verifies session metadata user before treating as active", () => {
+    const logic = readSrc("src", "lib", "billing", "checkout-success.ts");
+    expect(logic).toContain("metadata?.user_id");
+    expect(logic).toContain("sessionUserId !== auth.userId");
+    expect(logic).toContain("forbidden");
+    expect(logic).toContain("isActiveSubscription");
     const page = readSrc(
       "src",
       "app",
@@ -209,10 +214,7 @@ describe("subscription success ownership", () => {
       "sucesso",
       "page.tsx",
     );
-    expect(page).toContain("metadata?.user_id");
-    expect(page).toContain("sessionUserId !== auth.userId");
-    expect(page).toContain("forbidden");
-    expect(page).toContain("isActiveSubscription");
+    expect(page).toContain("resolveCheckoutSuccessState");
   });
 });
 

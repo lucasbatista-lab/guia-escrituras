@@ -5,6 +5,7 @@ import {
   getSupabaseUrl,
   hasSupabasePublicEnv,
 } from "@/lib/supabase/keys";
+import { getAuthCookieOptions } from "@/lib/supabase/auth-cookie-options";
 
 /**
  * Server Supabase client with user cookies.
@@ -16,8 +17,10 @@ export async function createClient() {
   }
 
   const cookieStore = await cookies();
+  const cookieOptions = getAuthCookieOptions();
 
   return createServerClient(getSupabaseUrl(), getSupabasePublishableKey(), {
+    cookieOptions,
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -25,7 +28,7 @@ export async function createClient() {
       setAll(cookiesToSet) {
         try {
           cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
+            cookieStore.set(name, value, { ...cookieOptions, ...options }),
           );
         } catch {
           // Called from a Server Component — proxy refresh handles sessions.

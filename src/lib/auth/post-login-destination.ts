@@ -7,6 +7,7 @@ import {
   loadSignupIntentByToken,
 } from "@/lib/signup-intents";
 import { readSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
+import { readCheckoutReturnCookie } from "@/lib/billing/checkout-return-cookie";
 import { getAuthUserContext } from "@/lib/auth/session";
 import {
   getRequiredDestinationForState,
@@ -26,9 +27,10 @@ function continuationPath(token: string | null): string {
 
 /**
  * Post-login destination priority:
- * 1. Valid intent from next/cookie → continuation
- * 2. Actionable / processing intent linked to user_id
- * 3. Journey state destination (personalizar, inicio, planos, etc.)
+ * 1. Checkout success resume (next or cookie)
+ * 2. Valid intent from next/cookie → continuation
+ * 3. Actionable / processing intent linked to user_id
+ * 4. Journey state destination (personalizar, inicio, planos, etc.)
  *
  * Never uses /inicio as a universal fallback.
  */
@@ -45,6 +47,20 @@ export async function resolvePostLoginDestination(options?: {
   const userId = auth.userId;
   const cookieToken = await readSignupIntentCookie();
   const nextRaw = options?.nextParam ?? null;
+  const safeNext = nextRaw ? safeNextPath(nextRaw, "/planos") : null;
+
+  // Preserve completed Checkout confirmation after an auth gap.
+  if (
+    safeNext === "/assinatura/sucesso" ||
+    safeNext?.startsWith("/assinatura/sucesso?")
+  ) {
+    return "/assinatura/sucesso";
+  }
+
+  const checkoutReturn = await readCheckoutReturnCookie().catch(() => null);
+  if (checkoutReturn) {
+    return "/assinatura/sucesso";
+  }
 
   const hintedToken =
     options?.intentTokenHint?.trim() ||
@@ -122,6 +138,9 @@ export async function resolvePostLoginDestination(options?: {
     const safeRequested = nextRaw
       ? safeNextPath(nextRaw, "/inicio")
       : "/inicio";
+    if (safeRequested.startsWith("/assinatura/sucesso")) {
+      return "/assinatura/sucesso";
+    }
     if (
       safeRequested.startsWith("/assinar") ||
       safeRequested.startsWith("/planos") ||

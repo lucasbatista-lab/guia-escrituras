@@ -18,6 +18,14 @@ function normalizeOrigin(raw: string | null | undefined): string | null {
   try {
     const url = new URL(value);
     if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    // Prefer apex for the production brand domain so Checkout returns match
+    // the same host family as shared auth cookies (.amemchat.com.br).
+    if (
+      url.hostname === "www.amemchat.com.br" ||
+      url.hostname === "amemchat.com.br"
+    ) {
+      return "https://amemchat.com.br";
+    }
     return url.origin;
   } catch {
     return null;
@@ -86,16 +94,17 @@ export function getAppUrl(): string {
     return "";
   }
 
+  const origin = normalizeOrigin(raw);
+  if (!origin) return "";
+
   try {
-    const url = new URL(raw);
-    if (url.protocol !== "https:" && url.protocol !== "http:") return "";
-    if (getAppRuntime() === "production" && isLocalHost(url.hostname)) {
+    if (getAppRuntime() === "production" && isLocalHost(new URL(origin).hostname)) {
       return getCanonicalSiteUrl();
     }
-    if (getAppRuntime() === "production" && isVercelAppHost(url.origin)) {
+    if (getAppRuntime() === "production" && isVercelAppHost(origin)) {
       return getCanonicalSiteUrl();
     }
-    return url.origin;
+    return origin;
   } catch {
     return "";
   }

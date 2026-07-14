@@ -6,12 +6,14 @@ import {
   getSupabaseUrl,
   hasSupabasePublicEnv,
 } from "@/lib/supabase/keys";
+import { getAuthCookieOptions } from "@/lib/supabase/auth-cookie-options";
 import {
   getRequiredDestinationForState,
   resolveUserJourneyStateFromSnapshot,
   type JourneySnapshot,
   type UserJourneyState,
 } from "@/lib/journey/journey-state";
+import { isStripeCheckoutSessionId } from "@/lib/billing/stripe-session-id";
 
 const AUTH_PAGES = ["/entrar", "/cadastro", "/recuperar-senha"];
 
@@ -52,6 +54,18 @@ function isPublicApi(pathname: string): boolean {
     pathname === "/api/health" ||
     pathname.startsWith("/api/health/")
   );
+}
+
+/** Copy refreshed auth cookies onto a redirect so the session is not dropped. */
+function redirectPreservingCookies(
+  url: URL,
+  supabaseResponse: NextResponse,
+): NextResponse {
+  const redirectResponse = NextResponse.redirect(url);
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie);
+  });
+  return redirectResponse;
 }
 
 async function loadJourneySnapshotForUser(
@@ -148,9 +162,22 @@ function unpaidDestination(snapshot: JourneySnapshot): string {
   return "/planos";
 }
 
+function loginNextForRequest(request: NextRequest): string {
+  const pathname = request.nextUrl.pathname;
+  // Prefer a stable resume path without putting Stripe ids in the login URL.
+  if (
+    pathname === "/assinatura/sucesso" ||
+    pathname.startsWith("/assinatura/sucesso/")
+  ) {
+    return "/assinatura/sucesso";
+  }
+  return pathname + (request.nextUrl.search || "");
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
+  const cookieOptions = getAuthCookieOptions();
 
   if (!hasSupabasePublicEnv()) {
     if (!allowsMocks() && matchesPrefix(pathname, [...PLATFORM_PREFIXES, ...ADMIN_PREFIXES])) {
@@ -165,6 +192,7 @@ export async function updateSession(request: NextRequest) {
     getSupabaseUrl(),
     getSupabasePublishableKey(),
     {
+      cookieOptions,
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -175,41 +203,75 @@ export async function updateSession(request: NextRequest) {
           );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, {
+              ...cookieOptions,
+              ...options,
+            }),
           );
         },
       },
     },
   );
 
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+  // Prefer getUser so refresh tokens are applied after long checkout redirects.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user && matchesPrefix(pathname, PLATFORM_PREFIXES)) {
+    // Preserve Checkout session_id in HttpOnly cookie before login bounce.
+    if (
+      pathname === "/assinatura/sucesso" ||
+      pathname.startsWith("/assinatura/sucesso/")
+    ) {
+      const sessionId = request.nextUrl.searchParams.get("session_id");
+      if (sessionId && isStripeCheckoutSessionId(sessionId)) {
+        supabaseResponse.cookies.set("amem_checkout_return", sessionId, {
+          ...cookieOptions,
+          httpOnly: true,
+          maxAge: 60 * 60,
+        });
+      }
+    }
+
     const url = request.nextUrl.clone();
     url.pathname = "/entrar";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    url.search = "";
+    url.searchParams.set("next", loginNextForRequest(request));
+    return redirectPreservingCookies(url, supabaseResponse);
   }
 
   if (!user && matchesPrefix(pathname, ADMIN_PREFIXES)) {
     const url = request.nextUrl.clone();
     url.pathname = "/entrar";
+    url.search = "";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    return redirectPreservingCookies(url, supabaseResponse);
   }
 
-  const userId = user?.sub as string | undefined;
+  const userId = user?.id;
 
   // Logged-in users leaving auth pages → journey destination (avoid loops)
   if (user && userId && AUTH_PAGES.includes(pathname)) {
+    const nextParam = request.nextUrl.searchParams.get("next");
+    if (
+      nextParam &&
+      (nextParam === "/assinatura/sucesso" ||
+        nextParam.startsWith("/assinatura/sucesso?"))
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/assinatura/sucesso";
+      url.search = "";
+      return redirectPreservingCookies(url, supabaseResponse);
+    }
+
     const snapshot = await loadJourneySnapshotForUser(supabase, userId);
     const state = resolveUserJourneyStateFromSnapshot(snapshot);
     const dest = getRequiredDestinationForState(state);
     const url = request.nextUrl.clone();
     url.pathname = dest;
     url.search = "";
-    return NextResponse.redirect(url);
+    return redirectPreservingCookies(url, supabaseResponse);
   }
 
   if (user && userId) {
@@ -232,17 +294,15 @@ export async function updateSession(request: NextRequest) {
           snapshot.liveSubscriptionStatus === "trialing",
       );
 
-      // /onboarding always redirects to /personalizar
       if (
         pathname === "/onboarding" ||
         pathname.startsWith("/onboarding/")
       ) {
         const url = request.nextUrl.clone();
         url.pathname = "/personalizar";
-        return NextResponse.redirect(url);
+        return redirectPreservingCookies(url, supabaseResponse);
       }
 
-      // Personalization: only with active/trialing sub
       if (
         pathname === "/personalizar" ||
         pathname.startsWith("/personalizar/")
@@ -254,12 +314,11 @@ export async function updateSession(request: NextRequest) {
           url.search = dest.includes("?")
             ? `?${dest.split("?")[1]}`
             : "";
-          return NextResponse.redirect(url);
+          return redirectPreservingCookies(url, supabaseResponse);
         }
         return supabaseResponse;
       }
 
-      // Chat routes: auth (done) → subscription → personalization
       if (
         pathname === "/conversar" ||
         pathname.startsWith("/conversar/") ||
@@ -274,13 +333,13 @@ export async function updateSession(request: NextRequest) {
           const dest = unpaidDestination(snapshot);
           url.pathname = dest.split("?")[0] ?? "/planos";
           url.search = "";
-          return NextResponse.redirect(url);
+          return redirectPreservingCookies(url, supabaseResponse);
         }
         if (!snapshot.onboardingCompleted) {
           const url = request.nextUrl.clone();
           url.pathname = "/personalizar";
           url.search = "";
-          return NextResponse.redirect(url);
+          return redirectPreservingCookies(url, supabaseResponse);
         }
         void state;
       }

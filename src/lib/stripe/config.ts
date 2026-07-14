@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { PlanKey } from "@/lib/entitlements";
+import { getAppUrl, getCanonicalSiteUrl } from "@/lib/auth/app-url";
 
 export class StripeConfigError extends Error {
   constructor(message: string) {
@@ -45,11 +46,12 @@ export function getStripePriceIdForPlan(planKey: PlanKey): string {
   return priceId;
 }
 
+/**
+ * Checkout return URLs always use the configured canonical host
+ * (apex https://amemchat.com.br in production), never a stray www/vercel host.
+ */
 export function getCheckoutUrls(): { successUrl: string; cancelUrl: string } {
-  const origin =
-    process.env.APP_URL?.trim() ||
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    "";
+  const origin = getAppUrl() || getCanonicalSiteUrl();
   if (!origin) {
     throw new StripeConfigError("APP_URL ou NEXT_PUBLIC_APP_URL ausente.");
   }
@@ -61,10 +63,7 @@ export function getCheckoutUrls(): { successUrl: string; cancelUrl: string } {
 }
 
 export function getPortalReturnUrl(): string {
-  const origin =
-    process.env.APP_URL?.trim() ||
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    "";
+  const origin = getAppUrl() || getCanonicalSiteUrl();
   if (!origin) throw new StripeConfigError("APP_URL ausente.");
   return `${origin.replace(/\/$/, "")}/conta`;
 }

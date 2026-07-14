@@ -1,113 +1,59 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { FocusPageTitle } from "@/components/a11y/focus-page-title";
-import { Button } from "@/components/ui/button";
-import { getAuthUserContext } from "@/lib/auth/session";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { isActiveSubscription } from "@/lib/billing";
-import { getStripeClient } from "@/lib/stripe/client";
-import { assertStripeConfigured } from "@/lib/stripe/config";
+import { CheckoutSuccessClient } from "@/components/billing/checkout-success-client";
+import { resolveCheckoutSuccessState } from "@/lib/billing/checkout-success";
+import { isStripeCheckoutSessionId } from "@/lib/billing/stripe-session-id";
+import { setCheckoutReturnCookie } from "@/lib/billing/checkout-return-cookie";
 
 export default async function AssinaturaSucessoPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const auth = await getAuthUserContext();
-  if (!auth || auth.demoMode) {
-    redirect("/entrar?next=/assinatura/sucesso");
-  }
-
   const params = await searchParams;
   const sessionIdRaw = params.session_id;
-  const sessionId = Array.isArray(sessionIdRaw) ? sessionIdRaw[0] : sessionIdRaw;
+  const sessionIdFromQuery = Array.isArray(sessionIdRaw)
+    ? sessionIdRaw[0]
+    : sessionIdRaw;
 
-  let status: "processing" | "active" | "sync_error" | "forbidden" =
-    "processing";
-
-  if (sessionId) {
-    try {
-      assertStripeConfigured();
-      const stripe = getStripeClient();
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-      const sessionUserId = session.metadata?.user_id;
-
-      if (sessionUserId && sessionUserId !== auth.userId) {
-        status = "forbidden";
-      } else if (
-        sessionUserId === auth.userId &&
-        (session.payment_status === "paid" || session.status === "complete")
-      ) {
-        const admin = createAdminClient();
-        const { data: sub } = await admin
-          .from("subscriptions")
-          .select("status")
-          .eq("user_id", auth.userId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (sub && isActiveSubscription(sub.status)) {
-          status = "active";
-        } else {
-          status = "processing";
-        }
-      } else if (!sessionUserId) {
-        // Query string alone is never enough; wait for webhook/DB.
-        status = "processing";
-      } else {
-        status = "processing";
-      }
-    } catch {
-      status = "sync_error";
-    }
+  if (sessionIdFromQuery && isStripeCheckoutSessionId(sessionIdFromQuery)) {
+    await setCheckoutReturnCookie(sessionIdFromQuery);
   }
 
-  const copy = {
-    processing: {
-      title: "Pagamento em processamento",
-      body: "Recebemos sua solicitação. A assinatura só libera acesso quando o pagamento for confirmado no sistema — a URL de retorno sozinha não ativa o plano.",
-    },
-    active: {
-      title: "Assinatura ativa",
-      body: "Sua assinatura está ativa. Próximo passo: personalizar sua experiência e começar a conversar.",
-    },
-    sync_error: {
-      title: "Estamos sincronizando",
-      body: "Ainda estamos confirmando a assinatura. Atualize esta página em alguns instantes ou consulte sua conta.",
-    },
-    forbidden: {
-      title: "Sessão inválida",
-      body: "Esta confirmação de pagamento não pertence à conta conectada.",
-    },
-  }[status];
+  const view = await resolveCheckoutSuccessState({
+    sessionIdFromQuery,
+  });
+
+  if (view.kind === "unauthenticated") {
+    redirect(view.resumePath);
+  }
+
+  if (view.kind === "active") {
+    redirect(view.nextPath);
+  }
+
+  const initialStatus =
+    view.kind === "forbidden"
+      ? "forbidden"
+      : view.kind === "sync_error"
+        ? "sync_error"
+        : "processing";
 
   return (
     <main className="mx-auto max-w-lg px-4 py-16">
-      <FocusPageTitle className="font-display text-3xl text-ink">
-        {copy.title}
-      </FocusPageTitle>
-      <p className="mt-3 text-sm text-ink-soft" aria-live="polite" role="status">
-        {copy.body}
-      </p>
-      <div className="mt-8 flex flex-col gap-3">
-        {status !== "forbidden" ? (
-          <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
-            <Link
-              href={
-                status === "active" ? "/personalizar" : "/assinatura/sucesso"
-              }
-            >
-              {status === "active"
-                ? "Personalizar minha experiência"
-                : "Aguardar confirmação"}
-            </Link>
-          </Button>
-        ) : null}
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href="/conta">Ver minha conta</Link>
-        </Button>
-      </div>
+      <CheckoutSuccessClient initialStatus={initialStatus} />
+      {/* Fallback links if JS is unavailable */}
+      <noscript>
+        <p className="mt-6 text-sm text-ink-soft">
+          <Link href="/assinatura/sucesso" className="underline">
+            Atualizar status
+          </Link>
+          {" · "}
+          <Link href="/conta" className="underline">
+            Ver minha conta
+          </Link>
+        </p>
+      </noscript>
     </main>
   );
 }
