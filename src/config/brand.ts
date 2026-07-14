@@ -22,7 +22,7 @@ const DEFAULT_BRAND = {
   description: "Seu guIA cristão, baseado nas Escrituras.",
   supportEmail: "suporte@amemchat.com",
   socialHandles: {
-    instagram: "amemchat",
+    instagram: "amem.chat",
   },
 };
 
