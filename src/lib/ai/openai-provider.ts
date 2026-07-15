@@ -69,9 +69,7 @@ export class OpenAiResponsesProvider implements AiProvider {
     const maxOutputTokens = getMaxOutputTokensForDepth(depth);
     const reasoningEffort = getOpenAiReasoningEffortDefault();
 
-    const currentQuestion =
-      [...input.messages].reverse().find((m) => m.role === "user")?.content ??
-      "";
+    const currentQuestion = input.currentUserMessage.trim();
 
     const system = [
       ...input.theologyPolicy.composedSystemPromptSections,
@@ -89,8 +87,10 @@ export class OpenAiResponsesProvider implements AiProvider {
       "Use expressões como “em síntese”, “a passagem ensina” ou “à luz desse texto”.",
       "Separe interpretação de aplicação prática.",
       "Nunca afirme ser Jesus, Deus ou uma revelação sobrenatural.",
+      "A pergunta atual (abaixo) é o foco obrigatório desta resposta; mensagens recentes e o resumo são só contexto.",
+      "No campo answer: NÃO repita interpretationNotice, followUpQuestion nem uma lista final de biblicalReferences — a interface já renderiza esses campos.",
       "interpretationNotice: uma frase curta sobre referência/síntese (não um essay).",
-      "Finalize com no máximo uma pergunta de continuidade (followUpQuestion).",
+      "Finalize com no máximo uma pergunta de continuidade (followUpQuestion), apenas no campo dedicado.",
     ].join("\n");
 
     const recentBlock = input.messages
@@ -102,9 +102,9 @@ export class OpenAiResponsesProvider implements AiProvider {
         ? `Resumo compacto da conversa (atualize em conversationMemory):\n${input.conversationSummary}\n`
         : "Ainda não há resumo: após este turno, conversationMemory será o primeiro resumo.\n",
       recentBlock
-        ? `Mensagens recentes (não é o histórico completo):\n${recentBlock}\n`
+        ? `Mensagens recentes anteriores (não incluem a pergunta atual; não é o histórico completo):\n${recentBlock}\n`
         : "Sem mensagens anteriores além da pergunta atual.\n",
-      `Pergunta atual:\n${currentQuestion || "(sem texto)"}`,
+      `Pergunta atual (responda a isto):\n${currentQuestion || "(sem texto)"}`,
     ]
       .filter(Boolean)
       .join("\n");

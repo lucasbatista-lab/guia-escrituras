@@ -42,33 +42,42 @@ export interface ContextMessage {
   content: string;
 }
 
+export type RecentMessageForContext = {
+  id?: string;
+  role: string;
+  content: string;
+  requestId?: string | null;
+};
+
 /**
- * Select up to N prior messages for the model, excluding the current user
- * utterance (sent separately as “pergunta atual”).
+ * Select up to N prior messages for the model, excluding the current turn.
+ * Exclusion MUST use requestId / message id — never fragile text equality alone.
+ * The current user utterance is passed separately as currentUserMessage.
  */
 export function selectContextMessages(input: {
-  recentChronological: Array<{
-    role: string;
-    content: string;
-  }>;
-  currentUserMessage: string;
+  recentChronological: RecentMessageForContext[];
+  /** Request id of the in-flight turn (user message already persisted). */
+  currentRequestId: string;
+  /** Optional persisted message id for the current user utterance. */
+  currentMessageId?: string | null;
   limit?: number;
 }): ContextMessage[] {
   const limit = input.limit ?? RECENT_CONTEXT_MESSAGE_LIMIT;
-  let msgs = input.recentChronological.map((m) => ({
-    role: (m.role === "assistant" || m.role === "system"
-      ? m.role
-      : "user") as ContextMessage["role"],
-    content: m.content,
-  }));
+  const requestId = input.currentRequestId.trim();
+  const messageId = input.currentMessageId?.trim() || null;
 
-  const last = msgs[msgs.length - 1];
-  if (
-    last?.role === "user" &&
-    last.content.trim() === input.currentUserMessage.trim()
-  ) {
-    msgs = msgs.slice(0, -1);
-  }
+  const msgs = input.recentChronological
+    .filter((m) => {
+      if (messageId && m.id && m.id === messageId) return false;
+      if (requestId && m.requestId && m.requestId === requestId) return false;
+      return true;
+    })
+    .map((m) => ({
+      role: (m.role === "assistant" || m.role === "system"
+        ? m.role
+        : "user") as ContextMessage["role"],
+      content: m.content,
+    }));
 
   return msgs.slice(-limit);
 }

@@ -109,24 +109,49 @@ describe("conversation memory helpers", () => {
     expect(cleaned.length).toBeLessThanOrEqual(200);
   });
 
-  it("selects at most 4 prior messages and excludes current question", () => {
+  it("selects at most 4 prior messages and excludes current by requestId", () => {
     const current = "Pergunta atual única";
+    const currentRequestId = "curr-req";
     const recent = [
-      { role: "user", content: "u1" },
-      { role: "assistant", content: "a1" },
-      { role: "user", content: "u2" },
-      { role: "assistant", content: "a2" },
-      { role: "user", content: "u3" },
-      { role: "assistant", content: "a3" },
-      { role: "user", content: current },
+      { role: "user", content: "u1", requestId: "r1", id: "m1" },
+      { role: "assistant", content: "a1", requestId: "r1", id: "m2" },
+      { role: "user", content: "u2", requestId: "r2", id: "m3" },
+      { role: "assistant", content: "a2", requestId: "r2", id: "m4" },
+      { role: "user", content: "u3", requestId: "r3", id: "m5" },
+      { role: "assistant", content: "a3", requestId: "r3", id: "m6" },
+      {
+        role: "user",
+        content: current,
+        requestId: currentRequestId,
+        id: "m7",
+      },
     ];
     const selected = selectContextMessages({
       recentChronological: recent,
-      currentUserMessage: current,
+      currentRequestId,
+      currentMessageId: "m7",
     });
     expect(selected.length).toBe(RECENT_CONTEXT_MESSAGE_LIMIT);
     expect(selected.map((m) => m.content)).toEqual(["u2", "a2", "u3", "a3"]);
     expect(selected.some((m) => m.content === current)).toBe(false);
+  });
+
+  it("does not drop current question when identical text appeared earlier", () => {
+    const sameText = "Mesmo texto em dois turnos";
+    const recent = [
+      { role: "user", content: sameText, requestId: "old", id: "old-u" },
+      { role: "assistant", content: "resposta antiga", requestId: "old", id: "old-a" },
+      { role: "user", content: sameText, requestId: "new", id: "new-u" },
+    ];
+    const selected = selectContextMessages({
+      recentChronological: recent,
+      currentRequestId: "new",
+      currentMessageId: "new-u",
+    });
+    expect(selected.map((m) => m.content)).toEqual([
+      sameText,
+      "resposta antiga",
+    ]);
   });
 });
 
@@ -270,6 +295,7 @@ describe("runChatTurn memory persistence", () => {
 
     const lastCall = generateSpy.mock.calls.at(-1)?.[0] as {
       messages: Array<{ content: string }>;
+      currentUserMessage: string;
       conversationSummary?: string | null;
     };
     expect(lastCall.messages.length).toBeLessThanOrEqual(
@@ -280,6 +306,9 @@ describe("runChatTurn memory persistence", () => {
         m.content.includes("Pergunta final do histórico longo"),
       ),
     ).toBe(false);
+    expect(lastCall.currentUserMessage).toBe(
+      "Pergunta final do histórico longo",
+    );
     expect(lastCall.conversationSummary).toContain("Resumo prévio");
 
     const full = await sharedRepos.messages.listRecent(conv.id, userId, 100);

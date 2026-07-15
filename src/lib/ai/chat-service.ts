@@ -23,6 +23,7 @@ import {
   sanitizeConversationMemory,
   selectContextMessages,
 } from "@/lib/ai/conversation-memory";
+import { normalizeAssistantPresentation } from "@/lib/ai/normalize-assistant-presentation";
 import {
   calculateTokenCost,
   evaluateDailyBurst,
@@ -241,22 +242,25 @@ export async function runChatTurn(input: {
 
   // Idempotent user insert: same requestId must not create a second user row.
   // If a prior attempt already stored the user message (AI failed afterward), reuse it.
-  await repos.messages.insertUserMessage({
+  const persistedUser = await repos.messages.insertUserMessage({
     conversationId: conversation.id,
     userId: auth.userId,
     content: body.message,
     requestId,
   });
 
+  // Fetch enough history so that after excluding the current turn we still have
+  // up to RECENT_CONTEXT_MESSAGE_LIMIT prior messages.
   const recent = await repos.messages.listRecent(
     conversation.id,
     auth.userId,
-    RECENT_CONTEXT_MESSAGE_LIMIT + 1,
+    RECENT_CONTEXT_MESSAGE_LIMIT + 2,
   );
   const summary = await repos.summaries.get(conversation.id, auth.userId);
   const contextMessages = selectContextMessages({
     recentChronological: recent,
-    currentUserMessage: body.message,
+    currentRequestId: requestId,
+    currentMessageId: persistedUser.id,
     limit: RECENT_CONTEXT_MESSAGE_LIMIT,
   });
   const summaryUsed = Boolean(summary?.summary?.trim());
@@ -321,6 +325,7 @@ export async function runChatTurn(input: {
         role: m.role,
         content: m.content,
       })),
+      currentUserMessage: body.message,
       theologyPolicy: policy,
       model,
       conversationSummary: summary?.summary ?? null,
@@ -342,6 +347,13 @@ export async function runChatTurn(input: {
       "Não foi possível gerar a reflexão agora. Tente novamente.",
     );
   }
+
+  const presented = normalizeAssistantPresentation({
+    answer: result.answer,
+    biblicalReferences: result.biblicalReferences,
+    interpretationNotice: result.interpretationNotice,
+    followUpQuestion: result.followUpQuestion,
+  });
 
   // Provider output is validated before this point; never persist invalid assistant content.
   let costs;
@@ -384,7 +396,7 @@ export async function runChatTurn(input: {
     await repos.messages.insertAssistantMessage({
       conversationId: conversation.id,
       userId: auth.userId,
-      content: result.answer,
+      content: presented.answer,
       biblicalReferences: result.biblicalReferences,
       requestId,
     });
@@ -487,12 +499,10 @@ export async function runChatTurn(input: {
   });
 
   return {
-    answer: result.answer,
+    answer: presented.answer,
     biblicalReferences: result.biblicalReferences,
-    interpretationNotice: persistWarning
-      ? `${result.interpretationNotice} (${persistWarning})`
-      : result.interpretationNotice,
-    followUpQuestion: result.followUpQuestion,
+    interpretationNotice: presented.interpretationNotice,
+    followUpQuestion: presented.followUpQuestion,
     usage: {
       level:
         updatedBudget.level === "blocked"

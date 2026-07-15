@@ -11,9 +11,7 @@ import { logger } from "@/lib/logging/logger";
 export class MockAiProvider implements AiProvider {
   async generate(input: AiGenerateInput): Promise<AiGenerateResult> {
     const started = Date.now();
-    const lastUser = [...input.messages]
-      .reverse()
-      .find((message) => message.role === "user");
+    const currentUser = input.currentUserMessage.trim();
     const depth = input.responseDepth ?? "balanced";
     const guidance = getResponseDepthGuidance(depth);
     const topRefs = input.grounding.retrieved.slice(
@@ -51,8 +49,8 @@ export class MockAiProvider implements AiProvider {
             ];
 
     const answer = [
-      lastUser
-        ? `Obrigado por trazer isso com honestidade. Ouço o peso em: “${lastUser.content.slice(0, 120)}${lastUser.content.length > 120 ? "…" : ""}”.`
+      currentUser
+        ? `Obrigado por trazer isso com honestidade. Ouço o peso em: “${currentUser.slice(0, 120)}${currentUser.length > 120 ? "…" : ""}”.`
         : "Obrigado por trazer sua situação com honestidade.",
       "",
       refReflection ||
@@ -98,8 +96,8 @@ export class MockAiProvider implements AiProvider {
         input.conversationSummary
           ? `Continuidade: ${input.conversationSummary.slice(0, 280)}`
           : null,
-        lastUser
-          ? `Situação atual: ${lastUser.content.slice(0, 200)}`
+        currentUser
+          ? `Situação atual: ${currentUser.slice(0, 200)}`
           : "Situação atual: reflexão espiritual.",
         "Orientação: acolhimento bíblico e próximo passo concreto.",
         "Ponto aberto: detalhe adicional da situação.",

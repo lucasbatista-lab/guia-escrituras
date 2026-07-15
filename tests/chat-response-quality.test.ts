@@ -87,7 +87,8 @@ describe("mock grounded response quality", () => {
   it("does not start with the long identity disclaimer", async () => {
     const provider = new MockAiProvider();
     const result = await provider.generate({
-      messages: [{ role: "user", content: "Estou ansioso" }],
+      messages: [],
+      currentUserMessage: "Estou ansioso",
       theologyPolicy: policy,
       model: "mock",
       requestId: "11111111-1111-4111-8111-111111111111",
@@ -110,7 +111,8 @@ describe("mock grounded response quality", () => {
   it("respects brief reference budget", async () => {
     const provider = new MockAiProvider();
     const result = await provider.generate({
-      messages: [{ role: "user", content: "Estou ansioso" }],
+      messages: [],
+      currentUserMessage: "Estou ansioso",
       theologyPolicy: policy,
       model: "mock",
       requestId: "11111111-1111-4111-8111-111111111112",
@@ -155,7 +157,8 @@ describe("OpenAI provider incomplete / invalid (no network)", () => {
 
     await expect(
       provider.generate({
-        messages: [{ role: "user", content: "Oi" }],
+        messages: [],
+        currentUserMessage: "Oi",
         theologyPolicy: policy,
         model: "gpt-5-mini",
         requestId: "11111111-1111-4111-8111-111111111113",
@@ -205,7 +208,8 @@ describe("OpenAI provider incomplete / invalid (no network)", () => {
 
     await expect(
       provider.generate({
-        messages: [{ role: "user", content: "Oi" }],
+        messages: [],
+        currentUserMessage: "Oi",
         theologyPolicy: policy,
         model: "gpt-5-mini",
         requestId: "11111111-1111-4111-8111-111111111114",

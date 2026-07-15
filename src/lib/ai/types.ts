@@ -10,6 +10,8 @@ export interface ChatMessage {
 
 export interface AiGenerateInput {
   messages: ChatMessage[];
+  /** Exact current user utterance for this turn — never infer from history. */
+  currentUserMessage: string;
   theologyPolicy: TheologyPolicy;
   model: string;
   conversationSummary?: string | null;
