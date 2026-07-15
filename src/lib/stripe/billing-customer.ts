@@ -28,13 +28,12 @@ export function isStripeResourceMissing(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
   const err = error as { code?: string; message?: string };
   if (err.code === "resource_missing") return true;
-  if (
-    typeof err.message === "string" &&
-    /no such customer/i.test(err.message)
-  ) {
-    return true;
-  }
-  return false;
+  if (typeof err.message !== "string") return false;
+  return (
+    /no such customer/i.test(err.message) ||
+    /no such checkout\.session/i.test(err.message) ||
+    /no such price/i.test(err.message)
+  );
 }
 
 /**

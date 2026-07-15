@@ -15,24 +15,30 @@ import {
   assertStripeConfigured,
   getCheckoutUrls,
   getConfiguredStripeMode,
-  getStripePriceIdForPlan,
   StripeConfigError,
 } from "./config";
 import { getStripeClient } from "./client";
-import { getOrCreateBillingCustomer } from "./billing-customer";
+import {
+  getOrCreateBillingCustomer,
+  isStripeResourceMissing,
+} from "./billing-customer";
+import { preflightCheckoutPlan } from "./checkout-preflight";
+import {
+  checkoutFailureMessage,
+  mapStripeCheckoutError,
+  shortCheckoutRef,
+  type CheckoutFailureCode,
+  type CheckoutStage,
+} from "./checkout-errors";
 
 export type CreateCheckoutResult =
-  | { ok: true; url: string }
+  | { ok: true; url: string; requestId: string }
   | {
       ok: false;
-      code:
-        | "unauthenticated"
-        | "config_missing"
-        | "invalid_intent"
-        | "forbidden"
-        | "expired"
-        | "used";
+      code: CheckoutFailureCode;
       message: string;
+      requestId: string;
+      ref: string;
     };
 
 async function resolveCheckoutView(
@@ -45,130 +51,228 @@ async function resolveCheckoutView(
   return getContinuationViewStateForUser(authUserId);
 }
 
+function fail(
+  requestId: string,
+  code: CheckoutFailureCode,
+  stage: CheckoutStage,
+  extras?: { planKey?: string; mode?: string; issue?: string },
+): Extract<CreateCheckoutResult, { ok: false }> {
+  logger.error("stripe_checkout_failed", {
+    requestId,
+    stage,
+    mode: extras?.mode,
+    planKey: extras?.planKey,
+    code,
+    issue: extras?.issue,
+  });
+  return {
+    ok: false,
+    code,
+    message: checkoutFailureMessage(code),
+    requestId,
+    ref: shortCheckoutRef(requestId),
+  };
+}
+
 export async function createSubscriptionCheckout(
   intentToken: string | null = null,
 ): Promise<CreateCheckoutResult> {
   const requestId = createRequestId();
-  const auth = await getAuthUserContext();
-  if (!auth || auth.demoMode) {
-    return {
-      ok: false,
-      code: "unauthenticated",
-      message: "Faça login para continuar.",
-    };
-  }
+  let stage: CheckoutStage = "auth";
+  let planKey: string | undefined;
+  let mode: string | undefined;
 
   try {
-    assertStripeConfigured();
-  } catch (error) {
-    return {
-      ok: false,
-      code: "config_missing",
-      message:
-        error instanceof StripeConfigError
-          ? error.message
-          : "Pagamento indisponível no momento.",
-    };
-  }
-
-  const view = await resolveCheckoutView(auth.userId, intentToken);
-  if (view.kind === "expired") {
-    return { ok: false, code: "expired", message: "Este link expirou." };
-  }
-  if (view.kind === "used") {
-    return { ok: false, code: "used", message: "Este fluxo já foi utilizado." };
-  }
-  if (view.kind === "forbidden") {
-    return { ok: false, code: "forbidden", message: "Acesso negado." };
-  }
-  if (view.kind !== "ready") {
-    return {
-      ok: false,
-      code: "invalid_intent",
-      message: "Continuação indisponível.",
-    };
-  }
-
-  const intent = intentToken
-    ? await loadSignupIntentByToken(intentToken)
-    : await loadSignupIntentByIdForUser(view.intentId, auth.userId);
-
-  if (!intent || intent.userId !== auth.userId) {
-    return {
-      ok: false,
-      code: "invalid_intent",
-      message: "Continuação indisponível.",
-    };
-  }
-
-  const admin = createAdminClient();
-
-  if (intent.stripeCheckoutSessionId && intent.status === "checkout_created") {
-    const stripe = getStripeClient();
-    const existing = await stripe.checkout.sessions.retrieve(
-      intent.stripeCheckoutSessionId,
-    );
-    if (existing.url && existing.status === "open") {
-      return { ok: true, url: existing.url };
+    const auth = await getAuthUserContext();
+    if (!auth || auth.demoMode) {
+      return fail(requestId, "unauthenticated", "auth");
     }
-  }
 
-  const stripe = getStripeClient();
-  const customerId = await getOrCreateBillingCustomer(
-    auth.userId,
-    auth.email,
-  );
+    stage = "config";
+    try {
+      assertStripeConfigured();
+      mode = getConfiguredStripeMode();
+    } catch (error) {
+      return fail(requestId, "config_missing", "config", {
+        mode,
+        issue:
+          error instanceof StripeConfigError
+            ? "secret_key_invalid_or_missing"
+            : "config_assert_failed",
+      });
+    }
 
-  const priceId = getStripePriceIdForPlan(view.planKey);
-  const { successUrl, cancelUrl } = getCheckoutUrls();
-  const stripeMode = getConfiguredStripeMode();
+    stage = "intent";
+    const view = await resolveCheckoutView(auth.userId, intentToken);
+    if (view.kind === "expired") {
+      return fail(requestId, "expired", "intent");
+    }
+    if (view.kind === "used") {
+      return fail(requestId, "used", "intent");
+    }
+    if (view.kind === "forbidden") {
+      return fail(requestId, "forbidden", "intent");
+    }
+    if (view.kind !== "ready") {
+      return fail(requestId, "invalid_intent", "intent");
+    }
+    planKey = view.planKey;
 
-  const sharedMetadata = {
-    user_id: auth.userId,
-    plan_key: view.planKey,
-    signup_intent_id: intent.id,
-    stripe_mode: stripeMode,
-  };
+    const intent = intentToken
+      ? await loadSignupIntentByToken(intentToken)
+      : await loadSignupIntentByIdForUser(view.intentId, auth.userId);
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    locale: "pt-BR",
-    customer: customerId,
-    client_reference_id: auth.userId,
-    line_items: [{ price: priceId, quantity: 1 }],
-    allow_promotion_codes: true,
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    metadata: sharedMetadata,
-    subscription_data: {
-      metadata: sharedMetadata,
-    },
-  });
+    if (!intent || intent.userId !== auth.userId) {
+      return fail(requestId, "invalid_intent", "intent", { planKey, mode });
+    }
 
-  if (!session.url) {
-    logger.error("stripe_checkout_no_url", { requestId, userId: auth.userId });
-    return {
-      ok: false,
-      code: "config_missing",
-      message: "Não foi possível iniciar o pagamento.",
+    stage = "preflight";
+    const preflight = await preflightCheckoutPlan(view.planKey);
+    if (!preflight.ok) {
+      return fail(requestId, preflight.code, "preflight", {
+        planKey,
+        mode,
+        issue: preflight.issue,
+      });
+    }
+    mode = preflight.mode;
+    const priceId = preflight.priceId;
+
+    const stripe = getStripeClient();
+    const admin = createAdminClient();
+
+    stage = "reuse_session";
+    if (intent.stripeCheckoutSessionId && intent.status === "checkout_created") {
+      try {
+        const existing = await stripe.checkout.sessions.retrieve(
+          intent.stripeCheckoutSessionId,
+        );
+        if (existing.url && existing.status === "open") {
+          logger.info("stripe_checkout_reused", {
+            requestId,
+            stage: "reuse_session",
+            mode,
+            planKey,
+            code: "ok",
+          });
+          return { ok: true, url: existing.url, requestId };
+        }
+      } catch (error) {
+        // Sandbox session ID with live key (or deleted) — create a new session.
+        if (!isStripeResourceMissing(error)) {
+          const mapped = mapStripeCheckoutError(error);
+          return fail(requestId, mapped.code, "reuse_session", {
+            planKey,
+            mode,
+            issue: mapped.providerCode ?? "reuse_failed",
+          });
+        }
+        logger.info("stripe_checkout_reuse_skipped", {
+          requestId,
+          stage: "reuse_session",
+          mode,
+          planKey,
+          code: "resource_missing",
+        });
+      }
+    }
+
+    stage = "customer";
+    let customerId: string;
+    try {
+      customerId = await getOrCreateBillingCustomer(auth.userId, auth.email);
+    } catch (error) {
+      const mapped = mapStripeCheckoutError(error);
+      return fail(
+        requestId,
+        mapped.code === "checkout_failed" ? "customer_failed" : mapped.code,
+        "customer",
+        {
+          planKey,
+          mode,
+          issue: mapped.providerCode ?? "customer_error",
+        },
+      );
+    }
+
+    stage = "create_session";
+    const { successUrl, cancelUrl } = getCheckoutUrls();
+    const sharedMetadata = {
+      user_id: auth.userId,
+      plan_key: view.planKey,
+      signup_intent_id: intent.id,
+      stripe_mode: mode,
     };
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        locale: "pt-BR",
+        customer: customerId,
+        client_reference_id: auth.userId,
+        line_items: [{ price: priceId, quantity: 1 }],
+        allow_promotion_codes: true,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: sharedMetadata,
+        subscription_data: {
+          metadata: sharedMetadata,
+        },
+      });
+    } catch (error) {
+      const mapped = mapStripeCheckoutError(error);
+      return fail(requestId, mapped.code, "create_session", {
+        planKey,
+        mode,
+        issue: mapped.providerCode ?? "session_create_failed",
+      });
+    }
+
+    if (!session.url) {
+      return fail(requestId, "checkout_failed", "create_session", {
+        planKey,
+        mode,
+        issue: "missing_session_url",
+      });
+    }
+
+    stage = "persist";
+    try {
+      await admin
+        .from("signup_intents")
+        .update({
+          status: "checkout_created",
+          stripe_checkout_session_id: session.id,
+          checkout_created_at: new Date().toISOString(),
+        })
+        .eq("id", intent.id);
+    } catch {
+      // Session already exists at Stripe — still redirect user.
+      logger.error("stripe_checkout_persist_failed", {
+        requestId,
+        stage: "persist",
+        mode,
+        planKey,
+        code: "persist_failed",
+      });
+    }
+
+    logger.info("stripe_checkout_created", {
+      requestId,
+      stage: "create_session",
+      mode,
+      planKey,
+      code: "ok",
+    });
+
+    return { ok: true, url: session.url, requestId };
+  } catch (error) {
+    const mapped = mapStripeCheckoutError(error);
+    return fail(requestId, mapped.code, stage, {
+      planKey,
+      mode,
+      issue: mapped.providerCode ?? "unexpected",
+    });
   }
-
-  await admin
-    .from("signup_intents")
-    .update({
-      status: "checkout_created",
-      stripe_checkout_session_id: session.id,
-      checkout_created_at: new Date().toISOString(),
-    })
-    .eq("id", intent.id);
-
-  logger.info("stripe_checkout_created", {
-    requestId,
-    userId: auth.userId,
-    planKey: view.planKey,
-    intentId: intent.id,
-  });
-
-  return { ok: true, url: session.url };
 }

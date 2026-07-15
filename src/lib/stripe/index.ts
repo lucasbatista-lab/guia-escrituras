@@ -35,6 +35,13 @@ export {
   createSubscriptionCheckout,
   type CreateCheckoutResult,
 } from "./checkout";
+export {
+  checkoutFailureMessage,
+  mapStripeCheckoutError,
+  shortCheckoutRef,
+  type CheckoutFailureCode,
+} from "./checkout-errors";
+export { preflightCheckoutPlan } from "./checkout-preflight";
 export { handleStripeWebhookEvent } from "./webhook";
 export { createCustomerPortalSession } from "./portal";
 export {

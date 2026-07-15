@@ -13,6 +13,41 @@ import {
   getContinuationViewStateForUser,
   readSignupIntentCookie,
 } from "@/lib/signup-intents";
+import {
+  checkoutFailureMessage,
+  type CheckoutFailureCode,
+} from "@/lib/stripe/checkout-errors";
+
+const CHECKOUT_ERROR_CODES = new Set<CheckoutFailureCode>([
+  "unauthenticated",
+  "config_missing",
+  "invalid_intent",
+  "forbidden",
+  "expired",
+  "used",
+  "price_unavailable",
+  "stripe_account_unavailable",
+  "stripe_temporary",
+  "customer_failed",
+  "checkout_failed",
+]);
+
+function parseCheckoutError(
+  raw: string | string[] | undefined,
+): CheckoutFailureCode | null {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (!value || !CHECKOUT_ERROR_CODES.has(value as CheckoutFailureCode)) {
+    return null;
+  }
+  return value as CheckoutFailureCode;
+}
+
+function parseCheckoutRef(raw: string | string[] | undefined): string | null {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (!value) return null;
+  if (!/^[a-zA-Z0-9]{6,12}$/.test(value)) return null;
+  return value;
+}
 
 export default async function AssinarContinuarPage({
   searchParams,
@@ -30,6 +65,8 @@ export default async function AssinarContinuarPage({
   const intentFromQuery = Array.isArray(intentRaw) ? intentRaw[0] : intentRaw;
   const intentFromCookie = await readSignupIntentCookie();
   const intentToken = intentFromQuery?.trim() || intentFromCookie;
+  const checkoutError = parseCheckoutError(params.checkout_error);
+  const checkoutRef = parseCheckoutRef(params.ref);
 
   if (expiredFlag) {
     return <ContinuationShell kind="expired" />;
@@ -50,6 +87,21 @@ export default async function AssinarContinuarPage({
     return (
       <ContinuationShell kind="ready">
         <div className="mt-8 space-y-5">
+          {checkoutError ? (
+            <div
+              className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+              role="alert"
+              aria-live="assertive"
+            >
+              <p>{checkoutFailureMessage(checkoutError)}</p>
+              {checkoutRef ? (
+                <p className="mt-1 text-xs text-destructive/80">
+                  Referência: {checkoutRef}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="rounded-2xl border border-border/80 bg-card/70 p-5 sm:p-6">
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">
               Seu plano
@@ -101,7 +153,9 @@ export default async function AssinarContinuarPage({
               size="lg"
               className="min-h-12 w-full bg-ink text-base hover:bg-ink/90"
             >
-              Ir para pagamento seguro
+              {checkoutError
+                ? "Tentar pagamento novamente"
+                : "Ir para pagamento seguro"}
             </Button>
           </form>
           <p className="text-center text-sm text-ink-soft">
