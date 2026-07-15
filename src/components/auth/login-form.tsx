@@ -9,13 +9,28 @@ import { Label } from "@/components/ui/label";
 import { loginAction } from "@/lib/auth/login-action";
 import { hasSupabaseEnv } from "@/lib/utils";
 
+const AUTH_LINK_ERRORS: Record<string, string> = {
+  token: "Este link é inválido ou incompleto. Solicite um novo e-mail.",
+  expired: "Este link expirou. Solicite um novo e-mail para continuar.",
+  session:
+    "Não foi possível concluir a confirmação. Tente entrar ou peça um novo link.",
+  type: "Este link é inválido. Solicite um novo e-mail.",
+  confirm: "Não foi possível confirmar o acesso. Tente novamente.",
+  config: "Autenticação temporariamente indisponível. Tente mais tarde.",
+};
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
+  const errorParam = searchParams.get("error");
+  const linkError =
+    errorParam && AUTH_LINK_ERRORS[errorParam]
+      ? AUTH_LINK_ERRORS[errorParam]
+      : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(linkError);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(event: React.FormEvent) {
@@ -95,7 +110,10 @@ export function LoginForm() {
       </Button>
       <p className="text-center text-sm text-ink-soft">
         Não tem conta?{" "}
-        <Link href="/cadastro" className="text-ink underline-offset-4 hover:underline">
+        <Link
+          href="/cadastro"
+          className="text-ink underline-offset-4 hover:underline"
+        >
           Cadastre-se
         </Link>
       </p>

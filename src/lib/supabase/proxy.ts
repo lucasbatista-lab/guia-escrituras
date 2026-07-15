@@ -15,7 +15,10 @@ import {
 } from "@/lib/journey/journey-state";
 import { isStripeCheckoutSessionId } from "@/lib/billing/stripe-session-id";
 
-const AUTH_PAGES = ["/entrar", "/cadastro", "/recuperar-senha"];
+/** Auth entry pages that bounce signed-in users to the journey (not recovery). */
+const AUTH_BOUNCE_PAGES = ["/entrar", "/cadastro"];
+/** Signed-in-only auth surfaces that must keep the recovery session. */
+const RECOVERY_SESSION_PAGES = ["/redefinir-senha"];
 
 const PLATFORM_PREFIXES = [
   "/inicio",
@@ -41,6 +44,8 @@ const PAYWALL_SAFE_PREFIXES = [
   "/onboarding",
   "/confira-seu-email",
   "/email-confirmado",
+  "/redefinir-senha",
+  "/recuperar-senha",
 ];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
@@ -249,10 +254,19 @@ export async function updateSession(request: NextRequest) {
     return redirectPreservingCookies(url, supabaseResponse);
   }
 
+  if (!user && RECOVERY_SESSION_PAGES.includes(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/recuperar-senha";
+    url.search = "";
+    url.searchParams.set("error", "session");
+    return redirectPreservingCookies(url, supabaseResponse);
+  }
+
   const userId = user?.id;
 
-  // Logged-in users leaving auth pages → journey destination (avoid loops)
-  if (user && userId && AUTH_PAGES.includes(pathname)) {
+  // Logged-in users leaving login/signup → journey destination (avoid loops).
+  // Keep /recuperar-senha and /redefinir-senha so password recovery works.
+  if (user && userId && AUTH_BOUNCE_PAGES.includes(pathname)) {
     const nextParam = request.nextUrl.searchParams.get("next");
     if (
       nextParam &&

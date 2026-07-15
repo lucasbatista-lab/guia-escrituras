@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { resendConfirmationAction } from "@/lib/auth/resend-confirmation-action";
+import { requestPasswordResetAction } from "@/lib/auth/password-reset-action";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -13,11 +14,16 @@ export function CheckEmailExperience({
   emailHint,
   planName,
   planKey,
+  mode = "signup",
+  supportEmail,
 }: {
   emailHint: string | null;
   planName: string | null;
   planKey: string | null;
+  mode?: "signup" | "recovery";
+  supportEmail: string | null;
 }) {
+  const isRecovery = mode === "recovery";
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [resendEmail, setResendEmail] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
@@ -41,7 +47,9 @@ export function CheckEmailExperience({
     setResendFeedback(null);
     setResendLoading(true);
     try {
-      const result = await resendConfirmationAction({ email: resendEmail });
+      const result = isRecovery
+        ? await requestPasswordResetAction({ email: resendEmail })
+        : await resendConfirmationAction({ email: resendEmail });
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       if (!result.ok) {
         setResendFeedback(result.message);
@@ -56,6 +64,12 @@ export function CheckEmailExperience({
       setResendLoading(false);
     }
   }
+
+  const correctHref = isRecovery
+    ? "/recuperar-senha"
+    : planKey
+      ? `/cadastro?plan=${planKey}`
+      : "/cadastro";
 
   return (
     <div className="space-y-8 rounded-2xl border border-border/70 bg-card/80 p-6 shadow-sm sm:p-8">
@@ -87,15 +101,19 @@ export function CheckEmailExperience({
         </h1>
         {emailHint ? (
           <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
-            Enviamos um link de confirmação para{" "}
+            {isRecovery
+              ? "Enviamos um link de recuperação para "
+              : "Enviamos um link de confirmação para "}
             <span className="font-medium text-ink">{emailHint}</span>.
           </p>
         ) : (
           <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
-            Enviamos um link de confirmação para o e-mail informado.
+            {isRecovery
+              ? "Se o e-mail existir, enviamos um link para redefinir a senha."
+              : "Enviamos um link de confirmação para o e-mail informado."}
           </p>
         )}
-        {planName ? (
+        {!isRecovery && planName ? (
           <p className="mt-2 rounded-md bg-sand-100 px-3 py-1.5 text-sm text-ink">
             Plano reservado: <strong>{planName}</strong>
           </p>
@@ -109,22 +127,35 @@ export function CheckEmailExperience({
         </li>
         <li className="flex gap-3">
           <span className="font-display text-lg text-ink">2</span>
-          <span>Confirme sua conta pelo link seguro.</span>
+          <span>
+            {isRecovery
+              ? "Abra o link seguro para criar uma nova senha."
+              : "Confirme sua conta pelo link seguro."}
+          </span>
         </li>
         <li className="flex gap-3">
           <span className="font-display text-lg text-ink">3</span>
           <span>
-            {planKey
-              ? "Conclua o pagamento para liberar sua experiência."
-              : "Escolha um plano e conclua o pagamento."}
+            {isRecovery
+              ? "Depois, entre no Amém Chat com a nova senha."
+              : planKey
+                ? "Conclua o pagamento para liberar sua experiência."
+                : "Escolha um plano e conclua o pagamento."}
           </span>
         </li>
       </ol>
 
-      <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">
-        Nenhuma cobrança ocorreu. O pagamento só acontece depois da confirmação
-        do e-mail, no checkout seguro.
-      </p>
+      {!isRecovery ? (
+        <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">
+          Nenhuma cobrança ocorreu. O pagamento só acontece depois da confirmação
+          do e-mail, no checkout seguro.
+        </p>
+      ) : (
+        <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">
+          O link funciona neste ou em outro navegador. Se não usar, sua senha
+          atual permanece a mesma.
+        </p>
+      )}
 
       <div className="space-y-3 border-t border-border/60 pt-5">
         <p className="text-sm font-medium text-ink">Não recebeu o e-mail?</p>
@@ -150,7 +181,9 @@ export function CheckEmailExperience({
             ? "Reenviando…"
             : resendCooldown > 0
               ? `Reenviar em ${resendCooldown}s`
-              : "Reenviar e-mail de confirmação"}
+              : isRecovery
+                ? "Reenviar link de recuperação"
+                : "Reenviar e-mail de confirmação"}
         </Button>
         {resendFeedback ? (
           <p className="text-xs text-ink-soft" role="status" aria-live="polite">
@@ -160,12 +193,23 @@ export function CheckEmailExperience({
         <p className="text-center text-sm text-ink-soft">
           Digitou errado?{" "}
           <Link
-            href={planKey ? `/cadastro?plan=${planKey}` : "/cadastro"}
+            href={correctHref}
             className="text-ink underline-offset-4 hover:underline"
           >
             Corrigir e-mail
           </Link>
         </p>
+        {supportEmail ? (
+          <p className="text-center text-xs text-ink-soft">
+            Precisa de ajuda?{" "}
+            <a
+              href={`mailto:${supportEmail}`}
+              className="text-ink underline-offset-4 hover:underline"
+            >
+              {supportEmail}
+            </a>
+          </p>
+        ) : null}
       </div>
     </div>
   );

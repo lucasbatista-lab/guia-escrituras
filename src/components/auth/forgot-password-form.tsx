@@ -1,46 +1,59 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { requestPasswordResetAction } from "@/lib/auth/password-reset-action";
 import { hasSupabaseEnv } from "@/lib/utils";
 
-export function ForgotPasswordForm() {
+const RECOVERY_ERRORS: Record<string, string> = {
+  token: "Este link é inválido ou incompleto. Solicite um novo.",
+  expired: "Este link expirou. Solicite um novo para continuar.",
+  session: "Não foi possível abrir a redefinição. Solicite um novo link.",
+  type: "Este link é inválido. Solicite um novo.",
+};
+
+export function ForgotPasswordForm({
+  supportEmail,
+}: {
+  supportEmail: string | null;
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const errorParam = searchParams.get("error");
+  const initialError =
+    errorParam && RECOVERY_ERRORS[errorParam]
+      ? RECOVERY_ERRORS[errorParam]
+      : null;
+
   const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    setMessage(null);
     setLoading(true);
 
     try {
       if (!hasSupabaseEnv()) {
-        setMessage(
-          "Supabase não configurado. Quando conectado, enviaremos o link de recuperação.",
+        setError(
+          "Recuperação indisponível neste ambiente. Tente novamente mais tarde.",
         );
         return;
       }
 
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
-      const origin = window.location.origin;
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email,
-        { redirectTo: `${origin}/auth/callback?next=/entrar` },
-      );
-
-      if (resetError) {
-        setError("Não foi possível enviar o e-mail. Tente novamente.");
+      const result = await requestPasswordResetAction({ email });
+      if (!result.ok) {
+        setError(result.message);
         return;
       }
 
-      setMessage("Se o e-mail existir, enviamos um link de recuperação.");
+      router.push(result.redirectTo);
+      router.refresh();
     } catch {
       setError("Algo deu errado. Tente novamente.");
     } finally {
@@ -61,24 +74,34 @@ export function ForgotPasswordForm() {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      {error && (
+      {error ? (
         <p className="text-sm text-destructive" role="alert">
           {error}
         </p>
-      )}
-      {message && (
-        <p className="text-sm text-ink-soft" role="status">
-          {message}
-        </p>
-      )}
-      <Button type="submit" className="w-full bg-ink hover:bg-ink/90" disabled={loading}>
-        {loading ? "Enviando…" : "Enviar link"}
+      ) : null}
+      <Button
+        type="submit"
+        className="w-full bg-ink hover:bg-ink/90"
+        disabled={loading || !hasSupabaseEnv()}
+      >
+        {loading ? "Enviando…" : "Enviar link de recuperação"}
       </Button>
       <p className="text-center text-sm text-ink-soft">
         <Link href="/entrar" className="underline-offset-4 hover:underline">
           Voltar ao login
         </Link>
       </p>
+      {supportEmail ? (
+        <p className="text-center text-xs text-ink-soft">
+          Precisa de ajuda?{" "}
+          <a
+            href={`mailto:${supportEmail}`}
+            className="text-ink underline-offset-4 hover:underline"
+          >
+            {supportEmail}
+          </a>
+        </p>
+      ) : null}
     </form>
   );
 }

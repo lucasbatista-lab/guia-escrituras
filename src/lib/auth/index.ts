@@ -4,7 +4,7 @@ export {
   requireAdminUser,
   type AuthUserContext,
 } from "./session";
-export { getAppUrl, getEmailRedirectTo, getEmailRedirectToWithIntent } from "./app-url";
+export { getAppUrl, getEmailRedirectTo, getEmailRedirectToWithIntent, getPasswordRecoveryRedirectTo } from "./app-url";
 export {
   mapSignUpAuthError,
   mapResendAuthError,
@@ -15,5 +15,7 @@ export {
 } from "./sign-up-errors";
 export { signUpAction } from "./sign-up-action";
 export { resendConfirmationAction } from "./resend-confirmation-action";
+export { requestPasswordResetAction } from "./password-reset-action";
+export { updatePasswordAction } from "./update-password-action";
 export { loginAction } from "./login-action";
 export { resolvePostLoginDestination } from "./post-login-destination";

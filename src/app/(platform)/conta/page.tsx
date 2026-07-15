@@ -103,6 +103,9 @@ export default async function ContaPage() {
             <dd className="mt-0.5 text-base text-ink">
               {auth.email ?? "Sem e-mail vinculado"}
             </dd>
+            <p className="mt-1 text-xs text-ink-soft">
+              A alteração de e-mail pela conta ainda não está disponível.
+            </p>
           </div>
           {profileMeta.createdAt ? (
             <div>

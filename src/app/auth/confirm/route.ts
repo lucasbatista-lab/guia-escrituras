@@ -30,9 +30,11 @@ function isOpaqueIntentToken(value: string | null): value is string {
 function confirmErrorRedirect(
   origin: string,
   code: "token" | "expired" | "session" | "type" | "already",
+  type: string | null,
 ): NextResponse {
   const params = new URLSearchParams({ error: code });
-  return NextResponse.redirect(new URL(`/entrar?${params.toString()}`, origin));
+  const path = type === "recovery" ? "/recuperar-senha" : "/entrar";
+  return NextResponse.redirect(new URL(`${path}?${params.toString()}`, origin));
 }
 
 export async function GET(request: Request) {
@@ -53,12 +55,12 @@ export async function GET(request: Request) {
 
   if (!tokenHash || tokenHash.length < 16) {
     logger.warn("auth_confirm_missing_token_hash", { requestId });
-    return confirmErrorRedirect(origin, "token");
+    return confirmErrorRedirect(origin, "token", typeRaw);
   }
 
   if (!typeRaw || !ALLOWED_OTP_TYPES.has(typeRaw)) {
     logger.warn("auth_confirm_invalid_type", { requestId });
-    return confirmErrorRedirect(origin, "type");
+    return confirmErrorRedirect(origin, "type", typeRaw);
   }
 
   const type = typeRaw as
@@ -71,7 +73,9 @@ export async function GET(request: Request) {
 
   const supabase = await createClient();
   if (!supabase) {
-    return NextResponse.redirect(new URL("/entrar?error=config", origin));
+    const path =
+      type === "recovery" ? "/recuperar-senha?error=config" : "/entrar?error=config";
+    return NextResponse.redirect(new URL(path, origin));
   }
 
   const { error: otpError } = await supabase.auth.verifyOtp({
@@ -89,6 +93,7 @@ export async function GET(request: Request) {
       requestId,
       authCode: otpError.code ?? null,
       expired,
+      type,
     });
 
     // Already confirmed / used token: try continuing if session exists.
@@ -96,7 +101,7 @@ export async function GET(request: Request) {
       data: { user: maybeUser },
     } = await supabase.auth.getUser();
     if (!maybeUser) {
-      return confirmErrorRedirect(origin, expired ? "expired" : "token");
+      return confirmErrorRedirect(origin, expired ? "expired" : "token", type);
     }
   }
 
@@ -105,7 +110,12 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return confirmErrorRedirect(origin, "session");
+    return confirmErrorRedirect(origin, "session", type);
+  }
+
+  // Password recovery: session created → set new password (cross-browser safe).
+  if (type === "recovery") {
+    return NextResponse.redirect(new URL("/redefinir-senha", origin));
   }
 
   if (intentToken) {

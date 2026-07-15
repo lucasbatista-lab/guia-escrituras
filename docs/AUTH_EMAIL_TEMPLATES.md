@@ -11,12 +11,12 @@ Email Templates**.
 **Remetente:** configurar no provedor SMTP (ex.: Resend) com o domínio autenticado.
 
 **Suporte no rodapé:** incluir endereço de suporte **somente** se
-`NEXT_PUBLIC_SUPPORT_EMAIL` estiver configurado no ambiente. Caso contrário,
-omitir a linha de suporte — nunca inventar e-mail.
+`NEXT_PUBLIC_SUPPORT_EMAIL` estiver configurado no ambiente (produção esperada:
+`amemchatbr@gmail.com`). Caso contrário, omitir a linha de suporte — nunca
+inventar e-mail.
 
 **P0 antes de billing ao vivo:** configurar `NEXT_PUBLIC_SUPPORT_EMAIL` (e SMTP)
-para canais legais e Particular. Sem isso, a UI mostra
-“Canal de suporte em configuração” onde aplicável.
+para canais legais e Particular. Sem isso, a UI omite o endereço onde aplicável.
 
 ---
 
@@ -29,11 +29,25 @@ para canais legais e Particular. Sem isso, a UI mostra
 - Próximo passo explícito
 - Aviso de segurança curto
 - Domínio oficial no rodapé
-- Sem jargão técnico desnecessário no corpo
+- Sem jargão técnico no corpo (sem nomes de rotas internas ou mecanismos)
+
+---
+
+## Resumo: token_hash vs ConfirmationURL
+
+| Fluxo | Template no Dashboard | Mecanismo | Redirect esperado no app |
+|-------|------------------------|-----------|---------------------------|
+| Confirmação de cadastro | `RedirectTo` + `token_hash` + `type=email` | SSR `/auth/confirm` | `/email-confirmado` ou `/planos` |
+| Recuperação de senha | `RedirectTo` + `token_hash` + `type=recovery` | SSR `/auth/confirm` | `/redefinir-senha` |
+| Magic Link (sem CTA pública) | Preferir `RedirectTo` + `token_hash` + `type=magiclink` | SSR `/auth/confirm` | `next` (ex. `/inicio`) |
+| Magic Link legado | `ConfirmationURL` | PKCE `/auth/callback` | Site URL / callback |
+| Alteração de e-mail (P1) | `ConfirmationURL` (até o fluxo no app existir) | ver nota P1 | n/a no app hoje |
 
 ---
 
 ## 1. Confirm signup (Confirmação de cadastro)
+
+**Usa:** `token_hash` (obrigatório)
 
 ### Subject
 
@@ -68,21 +82,19 @@ Confirme seu e-mail — Amém Chat
   confirmação.
 </p>
 <p>Amém Chat · https://amemchat.com.br</p>
-<!-- Suporte: incluir só se NEXT_PUBLIC_SUPPORT_EMAIL estiver configurado -->
 ```
 
-### Link obrigatório do botão
+### Link obrigatório
 
 ```
 {{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email
 ```
 
-`RedirectTo` já aponta para `/auth/confirm` no domínio canônico, com `next` (e
-`intent` quando houver plano). O template **deve** anexar `token_hash` e `type`.
-
 ---
 
 ## 2. Reset password (Recuperação de senha)
+
+**Usa:** `token_hash` (obrigatório para outro navegador)
 
 ### Subject
 
@@ -100,14 +112,16 @@ Redefinir sua senha — Amém Chat
   <strong>Amém Chat</strong>.
 </p>
 <p>
-  <a href="{{ .ConfirmationURL }}">Criar nova senha</a>
+  <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery"
+    >Criar nova senha</a
+  >
 </p>
 <p>
   Se o botão não funcionar, copie e cole este link no navegador:<br />
-  {{ .ConfirmationURL }}
+  {{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery
 </p>
 <p>
-  <strong>Próximo passo:</strong> defina uma nova senha e entre na sua conta.
+  <strong>Próximo passo:</strong> defina uma nova senha e continue no Amém Chat.
 </p>
 <p>
   Se você não solicitou esta alteração, ignore este e-mail. Sua senha atual
@@ -116,9 +130,32 @@ Redefinir sua senha — Amém Chat
 <p>Amém Chat · https://amemchat.com.br</p>
 ```
 
+### Link obrigatório
+
+```
+{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery
+```
+
+`RedirectTo` do app: `https://amemchat.com.br/auth/confirm?next=%2Fredefinir-senha`
+
+> Não use apenas `{{ .ConfirmationURL }}` neste fluxo: isso depende de PKCE e
+> falha quando o e-mail é aberto em outro navegador.
+
 ---
 
 ## 3. Magic Link (Link mágico de acesso)
+
+**Estado no produto:** sem CTA pública de login. A rota `/auth/confirm` aceita
+`type=magiclink` se o template/envio for configurado no futuro.
+
+### Preferido (token_hash / SSR)
+
+Configure o envio com `emailRedirectTo` apontando para
+`/auth/confirm?next=/inicio` e no template:
+
+```
+{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=magiclink
+```
 
 ### Subject
 
@@ -126,7 +163,7 @@ Redefinir sua senha — Amém Chat
 Seu link de acesso — Amém Chat
 ```
 
-### Body (HTML)
+### Body (HTML) — preferido
 
 ```html
 <h2>Acesse sua conta</h2>
@@ -136,25 +173,41 @@ Seu link de acesso — Amém Chat
   senha neste momento.
 </p>
 <p>
-  <a href="{{ .ConfirmationURL }}">Entrar no Amém Chat</a>
+  <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=magiclink"
+    >Entrar no Amém Chat</a
+  >
 </p>
 <p>
   Se o botão não funcionar, copie e cole este link no navegador:<br />
-  {{ .ConfirmationURL }}
+  {{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=magiclink
 </p>
 <p>
-  <strong>Próximo passo:</strong> o link abre a sessão na sua conta. Ele é de uso
-  único e expira por segurança.
+  <strong>Próximo passo:</strong> o link abre sua sessão. Ele é de uso único e
+  expira por segurança.
 </p>
-<p>
-  Se você não pediu este acesso, ignore este e-mail.
-</p>
+<p>Se você não pediu este acesso, ignore este e-mail.</p>
 <p>Amém Chat · https://amemchat.com.br</p>
 ```
 
+### Legado (ConfirmationURL / PKCE)
+
+Somente se o envio não definir `RedirectTo` para `/auth/confirm`:
+
+```
+{{ .ConfirmationURL }}
+```
+
+Esse caminho usa `/auth/callback` e **não** é confiável em outro navegador.
+
 ---
 
-## 4. Change email address (Alteração de e-mail)
+## 4. Change email address (Alteração de e-mail) — P1
+
+**Estado no produto:** alteração de e-mail **não** está exposta em `/conta`
+(somente leitura + aviso). Não ative expectativa na UI até o fluxo existir.
+
+Enquanto o app não enviar alteração de e-mail, o template pode permanecer com
+`ConfirmationURL` para referência futura:
 
 ### Subject
 
@@ -162,7 +215,7 @@ Seu link de acesso — Amém Chat
 Confirme o novo e-mail — Amém Chat
 ```
 
-### Body (HTML)
+### Body (HTML) — referência
 
 ```html
 <h2>Confirme o novo e-mail</h2>
@@ -189,6 +242,12 @@ Confirme o novo e-mail — Amém Chat
 <p>Amém Chat · https://amemchat.com.br</p>
 ```
 
+Quando o fluxo for implementado (P1), migrar para o mesmo padrão SSR:
+
+```
+{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email_change
+```
+
 ---
 
 ## Redirect URLs (lembrete)
@@ -203,7 +262,7 @@ Inclua no Supabase (Site URL + Redirect URLs):
 - Canônico: **https://amemchat.com.br** (apex)
 - Cookies de sessão/continuidade **não** devem fixar `Domain=.amemchat.com.br` nem
   `www` — permanecem host-only no apex.
-- Redirecionamento externo **www → apex** (`www.amemchat.com.br` →
-  `amemchat.com.br`) deve ser configurado no DNS/hosting (fora deste repo).
+- Redirecionamento externo **www → apex** deve ser configurado no DNS/hosting
+  (fora deste repo).
 - `APP_URL` / `NEXT_PUBLIC_APP_URL` devem ser `https://amemchat.com.br` em
   produção. URLs `*.vercel.app` não devem aparecer para clientes.

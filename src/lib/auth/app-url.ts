@@ -142,3 +142,11 @@ export function getEmailRedirectToWithIntent(
   });
   return `${origin}/auth/confirm?${params.toString()}`;
 }
+
+/**
+ * Password recovery RedirectTo base on /auth/confirm (canonical domain).
+ * Supabase template must append: &token_hash={{ .TokenHash }}&type=recovery
+ */
+export function getPasswordRecoveryRedirectTo(): string {
+  return getEmailRedirectTo("/redefinir-senha");
+}

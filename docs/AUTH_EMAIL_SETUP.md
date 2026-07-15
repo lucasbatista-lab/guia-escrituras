@@ -1,54 +1,75 @@
 # Configuração de e-mail de autenticação (Supabase)
 
-Após o deploy deste código, a confirmação de cadastro usa **`/auth/confirm`**
-com `token_hash` + `type` (SSR via `verifyOtp`), para funcionar também quando o
-e-mail é aberto em **outro navegador ou dispositivo**.
+Após o deploy deste código:
 
-A aplicação continua aceitando `/auth/callback` (exchange de `code` / PKCE) para
-links antigos e outros fluxos.
+- **Confirmação de cadastro** e **recuperação de senha** usam **`/auth/confirm`**
+  com `token_hash` + `type` (SSR via `verifyOtp`), para funcionar também quando o
+  e-mail é aberto em **outro navegador ou dispositivo**.
+- `/auth/callback` (exchange de `code` / PKCE) permanece para links antigos e
+  compatibilidade.
 
-## Alteração manual obrigatória no template do Supabase
+## Alterações manuais no Supabase Dashboard
 
-No **Supabase Dashboard → Authentication → Email Templates → Confirm signup**,
-o botão / link de confirmação deve usar o `RedirectTo` enviado pelo app **e**
-anexar `token_hash` e `type`:
+### 1. Confirm signup
+
+**Authentication → Email Templates → Confirm signup**
 
 ```html
 href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email"
 ```
 
-### Por quê?
+`RedirectTo` (enviado pelo app) aponta para o domínio canônico, por exemplo:
 
-- `RedirectTo` já aponta para o domínio canônico (`https://amemchat.com.br`)
-  com query string, por exemplo:
-  - Com plano: `/auth/confirm?intent=<token>&next=/email-confirmado`
-  - Sem plano: `/auth/confirm?next=/planos`
-- O template precisa acrescentar `&token_hash={{ .TokenHash }}&type=email`
-  para a rota `/auth/confirm` criar a sessão no servidor **sem** depender do
-  code verifier PKCE do navegador original.
+- Com plano: `/auth/confirm?intent=<token>&next=/email-confirmado`
+- Sem plano: `/auth/confirm?next=/planos`
 
-### Redirect URLs no Supabase
+### 2. Reset password (obrigatório para recuperação cross-browser)
+
+**Authentication → Email Templates → Reset password**
+
+```html
+href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery"
+```
+
+`RedirectTo` do app: `/auth/confirm?next=/redefinir-senha`
+
+Fluxo no produto:
+
+1. `/recuperar-senha` → e-mail enviado  
+2. `/confira-seu-email?mode=recovery`  
+3. Link abre `/auth/confirm` (cria sessão no servidor)  
+4. `/redefinir-senha` → nova senha  
+5. confirmação visual → Entrar no Amém Chat  
+
+### 3. Redirect URLs
 
 Inclua (Site URL + Redirect URLs):
 
 - `https://amemchat.com.br/auth/confirm`
 - `https://amemchat.com.br/auth/callback`
 
-Não altere templates remotos a partir deste repositório/deploy automático —
-esta alteração é **manual** no Dashboard após o deploy.
+### 4. Suporte
 
-Modelos completos (confirmação, recuperação, magic link, alteração de e-mail):
-`docs/AUTH_EMAIL_TEMPLATES.md`.
+Configure `NEXT_PUBLIC_SUPPORT_EMAIL=amemchatbr@gmail.com` em produção para
+mostrar o contato nas telas de e-mail/conta. Sem a variável, a UI omite o
+endereço (nunca inventa).
 
 ## Checklist rápido
 
-1. Deploy da aplicação com `APP_URL=https://amemchat.com.br`
-2. Atualizar template Confirm signup com o `href` acima
+1. Deploy com `APP_URL=https://amemchat.com.br`
+2. Atualizar templates Confirm signup **e** Reset password com `token_hash`
 3. Confirmar Redirect URLs
-4. Testar: cadastro → abrir e-mail em outro navegador → sessão criada →
-   `/email-confirmado` → `/assinar/continuar` (com plano) ou `/planos` (sem)
+4. Testar confirmação de cadastro em outro navegador
+5. Testar recuperação de senha em outro navegador → `/redefinir-senha`
 
 ## Segurança
 
-- Nunca coloque e-mail, preço, referral ou UTM no link de confirmação.
+- Nunca coloque e-mail, preço, referral ou UTM no link de confirmação/recuperação.
 - Nunca registre `token_hash`, token do intent ou e-mail completo em logs.
+
+Modelos completos: `docs/AUTH_EMAIL_TEMPLATES.md`.
+
+## P1 — Alteração de e-mail
+
+A alteração de e-mail **não** está disponível na área `/conta` nesta versão
+(somente leitura + aviso). Implementação ampla fica como P1.
