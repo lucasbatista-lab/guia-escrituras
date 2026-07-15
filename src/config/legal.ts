@@ -21,14 +21,16 @@ export function getLegalEntityDocument(): string | null {
 }
 
 /**
- * Public support address. Returns null when unset — never invent a fallback.
- * Configure NEXT_PUBLIC_SUPPORT_EMAIL before live billing (P0).
+ * Public support address. Defaults to the live inbox when env is unset.
+ * Override with NEXT_PUBLIC_SUPPORT_EMAIL in deployment if needed.
  */
+const DEFAULT_SUPPORT_EMAIL = "amemchatbr@gmail.com";
+
 export function getSupportEmail(): string | null {
   return (
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() ||
     process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL?.trim() ||
-    null
+    DEFAULT_SUPPORT_EMAIL
   );
 }
 

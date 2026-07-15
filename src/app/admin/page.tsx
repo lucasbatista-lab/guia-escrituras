@@ -4,6 +4,7 @@ import {
   formatRevenueBrl,
   getAdminOverviewMetrics,
 } from "@/lib/admin/metrics";
+import { formatCancelingWithAccessMetric } from "@/lib/admin/format-canceling-metric";
 import { formatPriceBRL } from "@/lib/entitlements";
 import { StripeReadinessPanel } from "@/components/admin/stripe-readiness-panel";
 
@@ -19,6 +20,9 @@ export default async function AdminHomePage() {
   }
 
   const alerts = buildAlerts(metrics);
+  const cancelingLabel = formatCancelingWithAccessMetric(
+    metrics.cancelingWithAccessCount,
+  );
 
   return (
     <div className="space-y-8">
@@ -71,7 +75,7 @@ export default async function AdminHomePage() {
             Sem assinatura ({metrics.usersWithoutSubscription})
           </OpLink>
           <OpLink href="/admin/usuarios?canceling=1">
-            Cancelando no fim do período ({metrics.cancelingWithAccessCount})
+            Cancelando no fim do período ({cancelingLabel})
           </OpLink>
           <OpLink href="/admin/usuarios?past_due=1">
             Pagamento em atraso ({metrics.pastDueSubscriptions})
@@ -114,8 +118,13 @@ export default async function AdminHomePage() {
           />
           <Metric
             label="Renovação cancelada (acesso vigente)"
-            value={String(metrics.cancelingWithAccessCount)}
+            value={cancelingLabel}
             href="/admin/usuarios?canceling=1"
+            hint={
+              metrics.cancelingWithAccessCount == null
+                ? "Consulta à Stripe indisponível — não exibimos zero."
+                : undefined
+            }
           />
           <Metric
             label="Pagamento em atraso (past_due)"
@@ -277,6 +286,7 @@ function buildAlerts(metrics: {
   pastDueSubscriptions: number;
   checkoutsStuckOver30m: number;
   usersWithDuplicateSubscriptions: number;
+  cancelingWithAccessCount: number | null;
 }) {
   const alerts: Array<{
     key: string;

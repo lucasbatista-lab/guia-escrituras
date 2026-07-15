@@ -18,6 +18,11 @@ export default function PlanosPage() {
           benefícios utilizáveis agora; a diferença principal está na frequência
           de uso e na profundidade das conversas.
         </p>
+        <p className="mt-2 max-w-2xl text-sm text-ink-soft">
+          Essencial é o ponto de entrada. Caminho é a recomendação principal
+          para uso regular. Profundo amplia contexto e margem nas reflexões já
+          disponíveis hoje.
+        </p>
 
         <ul className="mt-6 max-w-2xl space-y-2 text-sm text-ink-soft">
           <li>· Checkout seguro processado pela Stripe</li>

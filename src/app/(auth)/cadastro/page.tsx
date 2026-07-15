@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
 import { brand } from "@/config/brand";
 import { redirectAuthenticatedPlanSelection } from "@/lib/auth/plan-continuation-action";
 import {
@@ -55,6 +56,7 @@ export default async function CadastroPage({
 
       <main className="mx-auto grid w-full max-w-5xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-12 lg:py-14">
         <section className="rounded-2xl border border-border/70 bg-card/70 p-6 shadow-sm backdrop-blur-sm sm:p-8">
+          <PurchaseJourneySteps current="conta" className="mb-8" />
           <h1 className="font-display text-3xl text-ink sm:text-4xl">
             Criar conta
           </h1>

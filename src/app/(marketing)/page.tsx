@@ -6,6 +6,9 @@ import { TrackingLink } from "@/components/marketing/tracking-link";
 import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
 
+/** Starting price for Essencial — kept in sync with plan catalog (R$ 38/mês). */
+const ESSENCIAL_PRICE_LABEL = "R$ 38";
+
 const situations = [
   {
     title: "Quando a ansiedade aperta",
@@ -90,9 +93,10 @@ export default function HomePage() {
                 {brand.tagline}
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-ink-soft sm:text-lg">
-                Quando a mente aperta e faltam palavras, traga a situação real e
-                receba uma reflexão clara, pastoral e ancorada nas Escrituras —
-                com a tradição que você escolhe.
+                Quando a mente aperta e faltam palavras, traga o que pesa de
+                verdade. Receba uma reflexão clara, pastoral e ancorada nas
+                Escrituras — com inteligência artificial transparente e a
+                tradição cristã que você escolhe.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="min-h-11 bg-ink hover:bg-ink/90">
@@ -102,9 +106,17 @@ export default function HomePage() {
                   <a href="#demonstracao">Ver uma reflexão de exemplo</a>
                 </Button>
               </div>
-              <p className="mt-5 max-w-md text-xs leading-relaxed text-ink-soft">
-                Assinatura mensal · pagamento seguro pela Stripe · renovação
-                cancelável na sua conta.
+              <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
+                <li>Pagamento seguro</li>
+                <li>Cancelamento pelo Amém Chat</li>
+                <li>Personalização pela tradição cristã</li>
+              </ul>
+              <p className="mt-3 text-sm font-medium text-ink">
+                A partir de {ESSENCIAL_PRICE_LABEL}/mês · assinatura mensal
+              </p>
+              <p className="mt-2 max-w-md text-xs leading-relaxed text-ink-soft">
+                Renovação cancelável na sua conta · checkout processado pela
+                Stripe.
               </p>
             </div>
           </div>

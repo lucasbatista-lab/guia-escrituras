@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckEmailExperience } from "@/components/auth/check-email-experience";
+import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
 import { brand } from "@/config/brand";
 import { getPlanByKey } from "@/lib/entitlements";
 import { isCheckoutPlanKey, validateCheckoutPlan } from "@/lib/signup-intents";
@@ -47,6 +48,9 @@ export default async function ConfiraSeuEmailPage({
         </Link>
       </header>
       <main className="mx-auto max-w-lg px-4 py-12">
+        {mode === "signup" ? (
+          <PurchaseJourneySteps current="conta" className="mb-8" />
+        ) : null}
         <CheckEmailExperience
           emailHint={emailHint?.trim() || null}
           planName={plan?.name ?? null}

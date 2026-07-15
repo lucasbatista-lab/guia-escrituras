@@ -4,7 +4,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
   {
     key: "essencial",
     name: "Essencial",
-    tagline: "Um ponto de partida acolhedor para reflexão diária.",
+    tagline: "Ponto de entrada acolhedor para começar a refletir.",
     priceMonthlyCents: 3800,
     currency: "BRL",
     ctaType: "checkout",
@@ -20,7 +20,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
   {
     key: "caminho",
     name: "Caminho",
-    tagline: "Para quem deseja acompanhar a jornada com mais regularidade.",
+    tagline: "O ritmo ideal para acompanhar a jornada com regularidade.",
     priceMonthlyCents: 5800,
     currency: "BRL",
     ctaType: "checkout",
@@ -44,7 +44,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
   {
     key: "profundo",
     name: "Profundo",
-    tagline: "Mais profundidade e margem nas conversas.",
+    tagline: "Mais margem e profundidade nas conversas de hoje.",
     priceMonthlyCents: 18800,
     currency: "BRL",
     ctaType: "checkout",
@@ -63,9 +63,9 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     ],
     displayBenefits: [
       "Tudo do Caminho",
-      "Conversas profundas com maior contexto",
-      "Orçamento mensal bem mais amplo",
-      "Suporte prioritário",
+      "Conversas profundas com maior contexto e continuidade",
+      "Orçamento mensal bem mais amplo para uso frequente",
+      "Suporte prioritário na assinatura",
     ],
     upcomingBenefits: [
       "Memória estendida entre sessões",

@@ -17,8 +17,8 @@ describe("brand config", () => {
     const brand = getBrandConfig();
     expect(brand.name).toBe("Amém Chat");
     expect(brand.tagline).toBe("Como Jesus responderia à sua situação?");
-    expect(brand.description).toContain("guIA cristão");
-    expect(brand.supportEmail).toBeNull();
+    expect(brand.description).toContain("Escrituras");
+    expect(brand.supportEmail).toBe("amemchatbr@gmail.com");
   });
 
   it("allows env overrides", () => {

@@ -21,7 +21,7 @@ export interface BrandConfig {
 const DEFAULT_BRAND = {
   name: "Amém Chat",
   tagline: "Como Jesus responderia à sua situação?",
-  description: "Seu guIA cristão, baseado nas Escrituras.",
+  description: "Reflexões cristãs baseadas nas Escrituras.",
   socialHandles: {
     instagram: "amem.chat",
   },

@@ -160,8 +160,8 @@ export interface AdminOverviewMetrics {
   newUsers7d: number;
   newUsers30d: number;
   activeSubscriberUsers: number;
-  /** Active/trialing with Stripe cancel_at_period_end (access until period end). */
-  cancelingWithAccessCount: number;
+  /** Active/trialing with Stripe cancel_at_period_end (access until period end). null when Stripe lookup fails. */
+  cancelingWithAccessCount: number | null;
   canceledSubscriptions: number;
   usersWithoutSubscription: number;
   subscribersByPlan: Array<{ planKey: PlanKey; count: number }>;
@@ -198,7 +198,7 @@ export interface AdminOverviewMetrics {
   referralsRewardPending: number;
 }
 
-async function countCancelingWithAccess(): Promise<number> {
+async function countCancelingWithAccess(): Promise<number | null> {
   try {
     const { getStripeClient } = await import("@/lib/stripe/client");
     const { assertStripeConfigured } = await import("@/lib/stripe/config");
@@ -222,7 +222,7 @@ async function countCancelingWithAccess(): Promise<number> {
     }
     return count;
   } catch {
-    return 0;
+    return null;
   }
 }
 

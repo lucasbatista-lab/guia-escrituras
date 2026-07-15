@@ -10,36 +10,36 @@ const SCENARIOS = [
     id: "ansiedade",
     label: "Ansiedade",
     prompt: "Estou ansioso com o que ainda não controla. Como posso buscar paz?",
-    answer:
-      "Esta é uma reflexão de exemplo, gerada localmente — não uma voz divina.\n\nÀ luz de Filipenses 4:6-7, o convite é apresentar a preocupação em oração e dar o próximo passo com firmeza serena, sem carregar tudo sozinho.\n\nReferência · interpretação · aplicação prática",
+    body: "À luz de Filipenses 4:6-7, o convite é apresentar a preocupação em oração e dar o próximo passo com firmeza serena — sem carregar tudo sozinho.",
+    reference: "Filipenses 4:6-7",
   },
   {
     id: "decisoes",
     label: "Decisões",
     prompt: "Preciso tomar uma decisão difícil. Por onde começar?",
-    answer:
-      "Esta é uma reflexão de exemplo, gerada localmente — não uma voz divina.\n\nCom Tiago 1:5, a orientação é pedir sabedoria com humildade, consultar pessoas de confiança e avançar um passo claro de cada vez.\n\nReferência · interpretação · aplicação prática",
+    body: "Com Tiago 1:5, a orientação é pedir sabedoria com humildade, consultar pessoas de confiança e avançar um passo claro de cada vez.",
+    reference: "Tiago 1:5",
   },
   {
     id: "familia",
     label: "Família",
     prompt: "Estou ferido em uma conversa em família. Como responder com cuidado?",
-    answer:
-      "Esta é uma reflexão de exemplo, gerada localmente — não uma voz divina.\n\nEm Efésios 4:31-32, o caminho é soltar a amargura, falar a verdade com mansidão e buscar reconciliação sem negar o que doeu.\n\nReferência · interpretação · aplicação prática",
+    body: "Em Efésios 4:31-32, o caminho é soltar a amargura, falar a verdade com mansidão e buscar reconciliação sem negar o que doeu.",
+    reference: "Efésios 4:31-32",
   },
   {
     id: "perdao",
     label: "Perdão",
     prompt: "Quero perdoar, mas ainda dói. O que as Escrituras iluminam?",
-    answer:
-      "Esta é uma reflexão de exemplo, gerada localmente — não uma voz divina.\n\nColossenses 3:13 lembra que perdoar é um processo de soltar a dívida, não de negar a ferida. Comece com honestidade diante de Deus e um gesto pequeno de paz.\n\nReferência · interpretação · aplicação prática",
+    body: "Colossenses 3:13 lembra que perdoar é um processo de soltar a dívida, não de negar a ferida. Comece com honestidade diante de Deus e um gesto pequeno de paz.",
+    reference: "Colossenses 3:13",
   },
   {
     id: "recomecos",
     label: "Recomeços",
     prompt: "Sinto que falhei e preciso recomeçar. Há esperança prática?",
-    answer:
-      "Esta é uma reflexão de exemplo, gerada localmente — não uma voz divina.\n\nEm Lamentações 3:22-23, as misericórdias se renovam. Nomeie o que precisa mudar, peça força e dê um passo concreto hoje.\n\nReferência · interpretação · aplicação prática",
+    body: "Em Lamentações 3:22-23, as misericórdias se renovam. Nomeie o que precisa mudar, peça força e dê um passo concreto hoje.",
+    reference: "Lamentações 3:22-23",
   },
 ] as const;
 
@@ -74,7 +74,7 @@ export function ChatDemo() {
             type="button"
             onClick={() => setActiveId(scenario.id)}
             className={cn(
-              "rounded-md px-2.5 py-1.5 text-xs transition",
+              "min-h-9 rounded-md px-2.5 py-1.5 text-xs transition",
               activeId === scenario.id
                 ? "bg-ink text-sand-50"
                 : "bg-sand-100 text-ink-soft hover:text-ink",
@@ -86,12 +86,21 @@ export function ChatDemo() {
         ))}
       </div>
 
-      <div className="space-y-4 p-4 font-chat text-[15px] leading-relaxed sm:p-5">
+      <div
+        key={active.id}
+        className="space-y-4 p-4 font-chat text-[15px] leading-relaxed motion-safe:animate-fade-up sm:p-5"
+      >
+        <p className="text-xs text-ink-soft">
+          Isto é um exemplo local — não uma conversa real nem voz divina.
+        </p>
         <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-ink px-4 py-3 text-sand-50">
           {active.prompt}
         </div>
-        <div className="max-w-[92%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-border/80 bg-sand-50/90 px-4 py-3 text-ink">
-          {active.answer}
+        <div className="max-w-[92%] space-y-3 rounded-2xl rounded-bl-md border border-border/80 bg-sand-50/90 px-4 py-3 text-ink">
+          <p>{active.body}</p>
+          <p className="rounded-md bg-card/80 px-2.5 py-1.5 text-xs font-medium text-ink-soft">
+            Referência: {active.reference}
+          </p>
         </div>
       </div>
 

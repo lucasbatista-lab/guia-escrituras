@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FocusPageTitle } from "@/components/a11y/focus-page-title";
+import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth/session";
 import {
@@ -215,6 +216,9 @@ function ContinuationShell({
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center px-4 py-16">
+      {kind === "ready" ? (
+        <PurchaseJourneySteps current="pagamento" className="mb-8" />
+      ) : null}
       <FocusPageTitle className="font-display text-3xl text-ink">
         {title}
       </FocusPageTitle>

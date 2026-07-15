@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { PersonalizationForm } from "@/components/auth/onboarding-form";
+import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { getAuthUserContext } from "@/lib/auth";
 import {
@@ -22,6 +23,7 @@ export default async function PersonalizarPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-8">
+      <PurchaseJourneySteps current="personalizacao" />
       <PlatformPageHeader
         title="Personalize sua experiência"
         description="Conte-nos como você prefere receber suas reflexões."

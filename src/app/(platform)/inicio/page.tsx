@@ -99,7 +99,8 @@ export default async function InicioPage() {
 
         <ProgressSteps
           steps={[
-            { label: "Conta criada", status: "done" },
+            { label: "Plano", status: "done" },
+            { label: "Conta", status: "done" },
             {
               label: "Pagamento",
               status: hasPendingPayment ? "current" : "upcoming",
@@ -150,7 +151,8 @@ export default async function InicioPage() {
         </StatusCard>
         <ProgressSteps
           steps={[
-            { label: "Conta criada", status: "done" },
+            { label: "Plano", status: "done" },
+            { label: "Conta", status: "done" },
             { label: "Pagamento", status: "done" },
             { label: "Personalização", status: "current" },
             { label: "Primeira reflexão", status: "upcoming" },
@@ -191,6 +193,8 @@ export default async function InicioPage() {
   }
 
   // active_ready | canceling_at_period_end
+  const isFirstReadyVisit = !recentConversation;
+
   return (
     <div className="space-y-8">
       <PlatformPageHeader
@@ -198,7 +202,9 @@ export default async function InicioPage() {
         description={
           state === "canceling_at_period_end"
             ? "Sua renovação está cancelada, mas o acesso continua até o fim do período. Traga sua situação com calma."
-            : "Traga sua situação e receba uma reflexão baseada nas Escrituras."
+            : isFirstReadyVisit
+              ? "Tudo pronto. Sua personalização foi salva — você já pode começar."
+              : "Traga sua situação e receba uma reflexão baseada nas Escrituras."
         }
         actions={
           plan ? (
@@ -207,8 +213,20 @@ export default async function InicioPage() {
         }
       />
 
+      {isFirstReadyVisit ? (
+        <StatusCard
+          tone="success"
+          title="Tudo pronto para a primeira reflexão"
+          body="Plano ativo, preferências salvas. Escolha um tema ou escreva com as próprias palavras."
+        />
+      ) : null}
+
       <PrimaryActionCard
-        title="Começar uma reflexão"
+        title={
+          isFirstReadyVisit
+            ? "Começar minha primeira reflexão"
+            : "Começar uma reflexão"
+        }
         body={
           recentConversation?.title
             ? `Continuar: ${recentConversation.title}`
@@ -219,7 +237,11 @@ export default async function InicioPage() {
             ? `/conversar?c=${recentConversation.id}`
             : "/conversar"
         }
-        cta="Começar uma reflexão"
+        cta={
+          isFirstReadyVisit
+            ? "Começar minha primeira reflexão"
+            : "Começar uma reflexão"
+        }
         tone="emphasis"
       />
 

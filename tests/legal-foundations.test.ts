@@ -73,12 +73,12 @@ describe("home page honesty", () => {
 });
 
 describe("support email honesty", () => {
-  it("never falls back to invented address", async () => {
+  it("defaults to the live Amém Chat inbox when unset", async () => {
     const original = { ...process.env };
     delete process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
     delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
     const { getSupportEmail } = await import("@/config/legal");
-    expect(getSupportEmail()).toBeNull();
+    expect(getSupportEmail()).toBe("amemchatbr@gmail.com");
     process.env = { ...original };
   });
 });

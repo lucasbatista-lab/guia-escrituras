@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmailConfirmedExperience } from "@/components/auth/email-confirmed-experience";
+import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
 import { brand } from "@/config/brand";
 import { getAuthUserContext } from "@/lib/auth/session";
 import { getPlanByKey } from "@/lib/entitlements";
@@ -65,6 +66,10 @@ export default async function EmailConfirmadoPage({
         </Link>
       </header>
       <main className="mx-auto max-w-lg px-4 py-12">
+        <PurchaseJourneySteps
+          current={hasPlan ? "pagamento" : "conta"}
+          className="mb-8"
+        />
         <EmailConfirmedExperience
           planName={planName}
           continueHref={continueHref}

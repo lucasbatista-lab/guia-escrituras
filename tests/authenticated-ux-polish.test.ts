@@ -34,10 +34,13 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Seu plano está ativo");
     expect(page).toContain("Começar uma reflexão");
     expect(page).toContain("ProgressSteps");
-    expect(page).toContain("Conta criada");
+    expect(page).toContain("Plano");
+    expect(page).toContain("Conta");
     expect(page).toContain("Pagamento");
     expect(page).toContain("Personalização");
     expect(page).toContain("Primeira reflexão");
+    expect(page).toContain("Começar minha primeira reflexão");
+    expect(page).toContain("Tudo pronto");
     expect(page).toContain("Ansiedade");
     expect(page).toContain("Perdão");
     expect(page).toContain("journeyAllowsChat");
@@ -46,7 +49,7 @@ describe("authenticated UX polish", () => {
     expect(page).not.toContain("acesso limitado");
     expect(page).not.toContain("Stripe");
     // Chat shortcuts only after allowsChat gate
-    const readyIdx = page.indexOf("Começar uma reflexão");
+    const readyIdx = page.indexOf("Começar minha primeira reflexão");
     const gateIdx = page.indexOf("allowsChat");
     expect(gateIdx).toBeGreaterThan(-1);
     expect(readyIdx).toBeGreaterThan(-1);

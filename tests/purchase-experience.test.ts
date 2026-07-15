@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import { getBrandConfig } from "@/config/brand";
 import {
   getSupportEmail,
-  SUPPORT_CHANNEL_PENDING,
 } from "@/config/legal";
 import { getCanonicalSiteUrl, getAppUrl } from "@/lib/auth/app-url";
 import { PLAN_DEFINITIONS, getPlanByKey } from "@/lib/entitlements";
@@ -45,6 +44,10 @@ describe("purchase experience — home copy & flow order", () => {
     expect(home).toContain("Escolher meu plano");
     expect(home).toContain("Ver uma reflexão de exemplo");
     expect(home).toContain("#demonstracao");
+    expect(home).toContain("A partir de");
+    expect(home).toContain("Pagamento seguro");
+    expect(home).toContain("Cancelamento pelo Amém Chat");
+    expect(home).toContain("Personalização pela tradição cristã");
     // AI disclaimer lives in transparency section, not piled into hero
     const heroEnd = home.indexOf("Veja uma reflexão de exemplo");
     const hero = home.slice(0, heroEnd);
@@ -103,6 +106,8 @@ describe("purchase experience — honest plan cards", () => {
     expect(planos).toContain("orçamento do plano");
     expect(planos).toContain("Checkout seguro");
     expect(planos).toContain("frequência");
+    expect(planos).toContain("ponto de entrada");
+    expect(planos).toContain("recomendação principal");
   });
 });
 
@@ -135,15 +140,14 @@ describe("purchase experience — support email honesty", () => {
     process.env = { ...original };
   });
 
-  it("does not invent suporte@amemchat.com fallback", () => {
+  it("defaults to amemchatbr@gmail.com when env is unset", () => {
     delete process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
     delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
-    expect(getSupportEmail()).toBeNull();
-    expect(getBrandConfig().supportEmail).toBeNull();
-    expect(SUPPORT_CHANNEL_PENDING).toContain("configuração");
+    expect(getSupportEmail()).toBe("amemchatbr@gmail.com");
+    expect(getBrandConfig().supportEmail).toBe("amemchatbr@gmail.com");
   });
 
-  it("does not render nonexistent address in legal or Particular UI", () => {
+  it("does not invent suporte@amemchat.com in UI source", () => {
     const legal = read("src", "components", "legal", "legal-document-shell.tsx");
     const particular = read(
       "src",
@@ -152,14 +156,13 @@ describe("purchase experience — support email honesty", () => {
       "mensagens-personalizadas",
       "page.tsx",
     );
-    expect(legal).toContain("SUPPORT_CHANNEL_PENDING");
     expect(legal).not.toContain("suporte@amemchat.com");
-    expect(particular).toContain("SUPPORT_CHANNEL_PENDING");
     expect(particular).not.toContain("suporte@amemchat.com");
     const brandSrc = read("src", "config", "brand.ts");
     const legalSrc = read("src", "config", "legal.ts");
     expect(brandSrc).not.toContain("suporte@amemchat.com");
     expect(legalSrc).not.toContain("suporte@amemchat.com");
+    expect(legalSrc).toContain("amemchatbr@gmail.com");
   });
 });
 
