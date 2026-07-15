@@ -2,9 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAuthUserContext } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 const links = [
   { href: "/admin", label: "Visão geral" },
   { href: "/admin/usuarios", label: "Usuários" },
+  { href: "/admin/eventos", label: "Eventos" },
   { href: "/admin/uso", label: "Uso" },
   { href: "/admin/custos", label: "Custos" },
   { href: "/admin/parceiros", label: "Parceiros" },

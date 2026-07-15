@@ -9,6 +9,9 @@ import {
   selectEffectiveSubscriptionsByUser,
   type SubscriptionCandidate,
 } from "@/lib/billing/effective-subscription";
+import { PAYMENT_EVENT_LEASE_MS } from "@/lib/stripe/payment-event-claim";
+import { maskStripeId } from "./labels";
+import { assertAdminServiceAccess } from "./require-admin";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export class AdminMetricsError extends Error {
@@ -157,6 +160,10 @@ export interface AdminOverviewMetrics {
   newUsers7d: number;
   newUsers30d: number;
   activeSubscriberUsers: number;
+  /** Active/trialing with Stripe cancel_at_period_end (access until period end). */
+  cancelingWithAccessCount: number;
+  canceledSubscriptions: number;
+  usersWithoutSubscription: number;
   subscribersByPlan: Array<{ planKey: PlanKey; count: number }>;
   /** Catalog-estimated MRR — not Stripe cash collected. */
   mrrCatalogBrlCents: number;
@@ -171,6 +178,8 @@ export interface AdminOverviewMetrics {
   pastDueSubscriptions: number;
   usersWithDuplicateSubscriptions: number;
   paymentEventsReceived: number;
+  /** received older than webhook lease (3 minutes) — likely stuck. */
+  paymentEventsReceivedStuck: number;
   paymentEventsFailed: number;
   paymentEventsProcessed: number;
   aiRequestsToday: number;
@@ -189,14 +198,48 @@ export interface AdminOverviewMetrics {
   referralsRewardPending: number;
 }
 
+async function countCancelingWithAccess(): Promise<number> {
+  try {
+    const { getStripeClient } = await import("@/lib/stripe/client");
+    const { assertStripeConfigured } = await import("@/lib/stripe/config");
+    assertStripeConfigured();
+    const stripe = getStripeClient();
+    let count = 0;
+    for (const status of ["active", "trialing"] as const) {
+      let startingAfter: string | undefined;
+      for (let page = 0; page < 5; page += 1) {
+        const list = await stripe.subscriptions.list({
+          status,
+          limit: 100,
+          starting_after: startingAfter,
+        });
+        for (const sub of list.data) {
+          if (sub.cancel_at_period_end) count += 1;
+        }
+        if (!list.has_more || list.data.length === 0) break;
+        startingAfter = list.data[list.data.length - 1]?.id;
+      }
+    }
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
+  await assertAdminServiceAccess();
   const client = admin();
   const now = new Date();
   const generatedAt = now.toISOString();
   const today = startOfUtcDayIso(now);
   const d7 = new Date(now.getTime() - 7 * 86400000).toISOString();
   const d30 = new Date(now.getTime() - 30 * 86400000).toISOString();
-  const stuckCutoff = new Date(now.getTime() - 30 * 60 * 1000).toISOString();
+  const stuckCheckoutCutoff = new Date(
+    now.getTime() - 30 * 60 * 1000,
+  ).toISOString();
+  const stuckEventCutoff = new Date(
+    now.getTime() - PAYMENT_EVENT_LEASE_MS,
+  ).toISOString();
 
   const [
     profiles,
@@ -204,6 +247,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     profiles7,
     profiles30,
     subscriptions,
+    canceledSubs,
     intentsStarted,
     intentsCompleted,
     intentsPending,
@@ -211,11 +255,13 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     intentsStuck,
     pastDue,
     eventsReceived,
+    eventsReceivedStuck,
     eventsFailed,
     eventsProcessed,
     referrals,
     usageToday,
     usage30,
+    cancelingWithAccessCount,
   ] = await Promise.all([
     client.from("profiles").select("id", { count: "exact", head: true }),
     client
@@ -237,6 +283,10 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
       )
       .in("status", ["active", "trialing"]),
     client
+      .from("subscriptions")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "canceled"),
+    client
       .from("signup_intents")
       .select("id", { count: "exact", head: true })
       .in("status", ["checkout_created", "completed"]),
@@ -256,7 +306,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
       .from("signup_intents")
       .select("id", { count: "exact", head: true })
       .eq("status", "checkout_created")
-      .lt("checkout_created_at", stuckCutoff),
+      .lt("checkout_created_at", stuckCheckoutCutoff),
     client
       .from("subscriptions")
       .select("id", { count: "exact", head: true })
@@ -268,6 +318,11 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     client
       .from("payment_events")
       .select("id", { count: "exact", head: true })
+      .eq("processing_status", "received")
+      .lt("updated_at", stuckEventCutoff),
+    client
+      .from("payment_events")
+      .select("id", { count: "exact", head: true })
       .eq("processing_status", "failed"),
     client
       .from("payment_events")
@@ -276,6 +331,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     client.from("referral_attributions").select("status"),
     aggregateUsageEventsPaginated(client, { sinceIso: today }),
     aggregateUsageEventsPaginated(client, { sinceIso: d30 }),
+    countCancelingWithAccess(),
   ]);
 
   const candidates = (subscriptions.data ?? []).map((row) =>
@@ -298,6 +354,9 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     count: planCounts.get(planKey) ?? 0,
   }));
 
+  const totalUsers = profiles.count ?? 0;
+  const usersWithoutSubscription = Math.max(0, totalUsers - effective.length);
+
   const refStatuses = referrals.data ?? [];
   const avgLatency =
     usage30.latencySamples > 0
@@ -306,11 +365,14 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
 
   return {
     generatedAt,
-    totalUsers: profiles.count ?? 0,
+    totalUsers,
     newUsersToday: profilesToday.count ?? 0,
     newUsers7d: profiles7.count ?? 0,
     newUsers30d: profiles30.count ?? 0,
     activeSubscriberUsers: effective.length,
+    cancelingWithAccessCount,
+    canceledSubscriptions: canceledSubs.count ?? 0,
+    usersWithoutSubscription,
     subscribersByPlan,
     mrrCatalogBrlCents: mrr,
     mrrIsCatalogEstimate: true,
@@ -323,6 +385,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     pastDueSubscriptions: pastDue.count ?? 0,
     usersWithDuplicateSubscriptions: usersWithDuplicates,
     paymentEventsReceived: eventsReceived.count ?? 0,
+    paymentEventsReceivedStuck: eventsReceivedStuck.count ?? 0,
     paymentEventsFailed: eventsFailed.count ?? 0,
     paymentEventsProcessed: eventsProcessed.count ?? 0,
     aiRequestsToday: usageToday.requests,
@@ -356,6 +419,7 @@ export interface StoredDailyReport {
 export async function getStoredDailyReports(
   limit = 10,
 ): Promise<StoredDailyReport[]> {
+  await assertAdminServiceAccess();
   const client = admin();
   const { data } = await client
     .from("daily_reports")
@@ -385,6 +449,7 @@ function percentile(sorted: number[], p: number): number {
 }
 
 export async function getAdminUsageMetrics(): Promise<AdminUsageMetrics> {
+  await assertAdminServiceAccess();
   const client = admin();
   const pageSize = 1000;
   const maxPages = 50;
@@ -428,11 +493,73 @@ export interface AdminPartnerRow {
   rewardPending: number;
 }
 
+export type AdminPaymentEventFilter =
+  | "any"
+  | "failed"
+  | "received"
+  | "received_stuck"
+  | "processed";
+
+export interface AdminPaymentEventRow {
+  id: string;
+  eventType: string;
+  processingStatus: string;
+  createdAt: string;
+  updatedAt: string;
+  objectIdMasked: string | null;
+}
+
+export async function getAdminPaymentEvents(options: {
+  filter?: AdminPaymentEventFilter;
+  limit?: number;
+} = {}): Promise<AdminPaymentEventRow[]> {
+  await assertAdminServiceAccess();
+  const client = admin();
+  const limit = Math.min(100, Math.max(1, options.limit ?? 50));
+  const filter = options.filter ?? "any";
+  const stuckCutoff = new Date(Date.now() - PAYMENT_EVENT_LEASE_MS).toISOString();
+
+  let query = client
+    .from("payment_events")
+    .select("id, event_type, processing_status, created_at, updated_at, object_id")
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+
+  if (filter === "failed") {
+    query = query.eq("processing_status", "failed");
+  } else if (filter === "received") {
+    query = query.eq("processing_status", "received");
+  } else if (filter === "received_stuck") {
+    query = query
+      .eq("processing_status", "received")
+      .lt("updated_at", stuckCutoff);
+  } else if (filter === "processed") {
+    query = query.eq("processing_status", "processed");
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    throw new AppError("admin_query_failed", "admin_query_failed", 500);
+  }
+
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    eventType: String(row.event_type ?? ""),
+    processingStatus: String(row.processing_status ?? ""),
+    createdAt: String(row.created_at ?? ""),
+    updatedAt: String(row.updated_at ?? ""),
+    objectIdMasked: maskStripeId(
+      typeof row.object_id === "string" ? row.object_id : null,
+    ),
+  }));
+}
+
 export async function getAdminPartnerMetrics(): Promise<{
   rows: AdminPartnerRow[];
   totalRewardPending: number;
   partial: boolean;
 }> {
+  await assertAdminServiceAccess();
   const client = admin();
   const { data: codes } = await client
     .from("referral_codes")

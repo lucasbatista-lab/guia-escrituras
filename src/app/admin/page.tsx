@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   AdminMetricsError,
   formatRevenueBrl,
@@ -17,6 +18,8 @@ export default async function AdminHomePage() {
     throw error;
   }
 
+  const alerts = buildAlerts(metrics);
+
   return (
     <div className="space-y-8">
       <div>
@@ -34,6 +37,57 @@ export default async function AdminHomePage() {
         ) : null}
       </div>
 
+      {alerts.length > 0 ? (
+        <Section title="Alertas operacionais">
+          <ul className="space-y-2">
+            {alerts.map((alert) => (
+              <li key={alert.key}>
+                <Link
+                  href={alert.href}
+                  className={
+                    alert.level === "P0"
+                      ? "flex flex-col gap-1 rounded-lg border border-red-700/40 bg-red-50 px-3 py-3 text-sm text-red-950 sm:flex-row sm:items-center sm:justify-between"
+                      : "flex flex-col gap-1 rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-3 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between"
+                  }
+                >
+                  <span>
+                    <span className="font-medium">{alert.level}</span>
+                    {" · "}
+                    {alert.message}
+                  </span>
+                  <span className="text-xs underline underline-offset-2">
+                    {alert.cta}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      <Section title="Atalhos operacionais">
+        <div className="flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/usuarios?status=none">
+            Sem assinatura ({metrics.usersWithoutSubscription})
+          </OpLink>
+          <OpLink href="/admin/usuarios?canceling=1">
+            Cancelando no fim do período ({metrics.cancelingWithAccessCount})
+          </OpLink>
+          <OpLink href="/admin/usuarios?past_due=1">
+            Pagamento em atraso ({metrics.pastDueSubscriptions})
+          </OpLink>
+          <OpLink href="/admin/usuarios?checkout_pending=1">
+            Checkouts pendentes ({metrics.checkoutsPending})
+          </OpLink>
+          <OpLink href="/admin/eventos?status=failed">
+            Eventos failed ({metrics.paymentEventsFailed})
+          </OpLink>
+          <OpLink href="/admin/eventos?status=received_stuck">
+            Received presos ({metrics.paymentEventsReceivedStuck})
+          </OpLink>
+        </div>
+      </Section>
+
       <Section title="Prontidão de pagamentos">
         <StripeReadinessPanel />
       </Section>
@@ -44,32 +98,48 @@ export default async function AdminHomePage() {
           <Metric label="Novos hoje" value={String(metrics.newUsersToday)} />
           <Metric label="Novos (7 dias)" value={String(metrics.newUsers7d)} />
           <Metric label="Novos (30 dias)" value={String(metrics.newUsers30d)} />
+          <Metric
+            label="Confirmados sem assinatura"
+            value={String(metrics.usersWithoutSubscription)}
+            href="/admin/usuarios?status=none"
+          />
         </div>
       </Section>
 
       <Section title="Assinaturas (efetivas)">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
-            label="Assinantes efetivos"
+            label="Assinaturas ativas (efetivas)"
             value={String(metrics.activeSubscriberUsers)}
           />
           <Metric
-            label="MRR estimado pelo catálogo"
+            label="Renovação cancelada (acesso vigente)"
+            value={String(metrics.cancelingWithAccessCount)}
+            href="/admin/usuarios?canceling=1"
+          />
+          <Metric
+            label="Pagamento em atraso (past_due)"
+            value={String(metrics.pastDueSubscriptions)}
+            href="/admin/usuarios?past_due=1"
+          />
+          <Metric
+            label="Assinaturas encerradas"
+            value={String(metrics.canceledSubscriptions)}
+          />
+          <Metric
+            label="MRR estimado pelo preço de catálogo"
             value={formatPriceBRL(metrics.mrrCatalogBrlCents)}
-            hint="Não é receita recebida da Stripe."
+            hint="Estimativa pelo catálogo — não é receita recebida da Stripe."
           />
           <Metric
             label="Receita real recebida"
             value={formatRevenueBrl(metrics.realRevenueBrlCents)}
-            hint="Ainda não integrada ao painel."
+            hint="Ainda não integrada."
           />
           <Metric
-            label="Assinaturas past_due"
-            value={String(metrics.pastDueSubscriptions)}
-          />
-          <Metric
-            label="Usuários com assinaturas ativas duplicadas"
+            label="Usuários com assinaturas duplicadas"
             value={String(metrics.usersWithDuplicateSubscriptions)}
+            href="/admin/usuarios?duplicates=1"
           />
         </div>
         <ul className="mt-4 space-y-2 text-sm">
@@ -98,6 +168,7 @@ export default async function AdminHomePage() {
           <Metric
             label="Checkouts pendentes"
             value={String(metrics.checkoutsPending)}
+            href="/admin/usuarios?checkout_pending=1"
           />
           <Metric
             label="Pendentes/expirados ou cancelados"
@@ -106,14 +177,22 @@ export default async function AdminHomePage() {
           <Metric
             label="Checkout stuck (>30 min)"
             value={String(metrics.checkoutsStuckOver30m)}
+            href="/admin/usuarios?checkout_pending=1"
           />
           <Metric
             label="payment_events received"
             value={String(metrics.paymentEventsReceived)}
+            href="/admin/eventos?status=received"
+          />
+          <Metric
+            label="received presos (>3 min)"
+            value={String(metrics.paymentEventsReceivedStuck)}
+            href="/admin/eventos?status=received_stuck"
           />
           <Metric
             label="payment_events failed"
             value={String(metrics.paymentEventsFailed)}
+            href="/admin/eventos?status=failed"
           />
           <Metric
             label="payment_events processed"
@@ -192,6 +271,70 @@ export default async function AdminHomePage() {
   );
 }
 
+function buildAlerts(metrics: {
+  paymentEventsReceivedStuck: number;
+  paymentEventsFailed: number;
+  pastDueSubscriptions: number;
+  checkoutsStuckOver30m: number;
+  usersWithDuplicateSubscriptions: number;
+}) {
+  const alerts: Array<{
+    key: string;
+    level: "P0" | "P1";
+    message: string;
+    href: string;
+    cta: string;
+  }> = [];
+
+  if (metrics.paymentEventsReceivedStuck > 0) {
+    alerts.push({
+      key: "received_stuck",
+      level: "P0",
+      message: `${metrics.paymentEventsReceivedStuck} payment_events em received há mais de 3 minutos (lease estourado).`,
+      href: "/admin/eventos?status=received_stuck",
+      cta: "Ver eventos",
+    });
+  }
+  if (metrics.paymentEventsFailed > 0) {
+    alerts.push({
+      key: "failed",
+      level: "P0",
+      message: `${metrics.paymentEventsFailed} payment_events com status failed.`,
+      href: "/admin/eventos?status=failed",
+      cta: "Ver falhas",
+    });
+  }
+  if (metrics.pastDueSubscriptions > 0) {
+    alerts.push({
+      key: "past_due",
+      level: "P1",
+      message: `${metrics.pastDueSubscriptions} assinatura(s) past_due.`,
+      href: "/admin/usuarios?past_due=1",
+      cta: "Ver usuários",
+    });
+  }
+  if (metrics.checkoutsStuckOver30m > 0) {
+    alerts.push({
+      key: "checkout_stuck",
+      level: "P1",
+      message: `${metrics.checkoutsStuckOver30m} checkout(s) pendente(s) há mais de 30 minutos.`,
+      href: "/admin/usuarios?checkout_pending=1",
+      cta: "Ver checkouts",
+    });
+  }
+  if (metrics.usersWithDuplicateSubscriptions > 0) {
+    alerts.push({
+      key: "duplicates",
+      level: "P1",
+      message: `${metrics.usersWithDuplicateSubscriptions} usuário(s) com assinaturas ativas duplicadas.`,
+      href: "/admin/usuarios?duplicates=1",
+      cta: "Ver duplicidades",
+    });
+  }
+
+  return alerts;
+}
+
 function Section({
   title,
   children,
@@ -211,17 +354,53 @@ function Metric({
   label,
   value,
   hint,
+  href,
 }: {
   label: string;
   value: string;
   hint?: string;
+  href?: string;
 }) {
-  return (
-    <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
+  const body = (
+    <>
       <p className="text-xs uppercase tracking-wide text-ink-soft">{label}</p>
       <p className="mt-2 font-display text-2xl text-ink">{value}</p>
       {hint ? <p className="mt-1 text-xs text-ink-soft">{hint}</p> : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="block rounded-2xl border border-border/70 bg-card/60 p-4 transition hover:border-ink/30"
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
+      {body}
     </div>
+  );
+}
+
+function OpLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-md border border-border/70 bg-card/50 px-3 py-1.5 text-ink hover:bg-sand-50"
+    >
+      {children}
+    </Link>
   );
 }
 

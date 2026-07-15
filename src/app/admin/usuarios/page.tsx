@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   AdminMetricsError,
   getAdminUsers,
+  subscriptionStatusLabelPt,
 } from "@/lib/admin";
 
 export default async function AdminUsuariosPage({
@@ -15,6 +16,8 @@ export default async function AdminUsuariosPage({
     onboarding?: string;
     duplicates?: string;
     past_due?: string;
+    canceling?: string;
+    checkout_pending?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -42,6 +45,8 @@ export default async function AdminUsuariosPage({
           : "any",
       duplicatesOnly: params.duplicates === "1",
       pastDueOnly: params.past_due === "1",
+      cancelingOnly: params.canceling === "1",
+      checkoutPendingOnly: params.checkout_pending === "1",
     });
   } catch (error) {
     if (error instanceof AdminMetricsError) {
@@ -58,6 +63,8 @@ export default async function AdminUsuariosPage({
   if (params.onboarding) qs.set("onboarding", params.onboarding);
   if (params.duplicates === "1") qs.set("duplicates", "1");
   if (params.past_due === "1") qs.set("past_due", "1");
+  if (params.canceling === "1") qs.set("canceling", "1");
+  if (params.checkout_pending === "1") qs.set("checkout_pending", "1");
 
   function pageHref(p: number) {
     const next = new URLSearchParams(qs);
@@ -70,7 +77,8 @@ export default async function AdminUsuariosPage({
       <div>
         <h1 className="font-display text-3xl text-ink">Usuários</h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Busca e filtros server-side. Sem texto de conversas.
+          Busca e filtros server-side. Sem texto de conversas. Atualizado em{" "}
+          {new Date().toLocaleString("pt-BR")}.
         </p>
       </div>
 
@@ -105,10 +113,10 @@ export default async function AdminUsuariosPage({
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
           >
             <option value="any">Qualquer</option>
-            <option value="active">active</option>
-            <option value="trialing">trialing</option>
-            <option value="past_due">past_due</option>
-            <option value="none">sem assinatura</option>
+            <option value="active">Ativa</option>
+            <option value="trialing">Em teste</option>
+            <option value="past_due">Pagamento em atraso</option>
+            <option value="none">Sem assinatura</option>
           </select>
         </label>
         <label className="text-sm">
@@ -139,7 +147,25 @@ export default async function AdminUsuariosPage({
             value="1"
             defaultChecked={params.past_due === "1"}
           />
-          Só past_due
+          Só pagamento em atraso
+        </label>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="canceling"
+            value="1"
+            defaultChecked={params.canceling === "1"}
+          />
+          Cancelando no fim do período
+        </label>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="checkout_pending"
+            value="1"
+            defaultChecked={params.checkout_pending === "1"}
+          />
+          Checkout pendente
         </label>
         <button
           type="submit"
@@ -166,7 +192,7 @@ export default async function AdminUsuariosPage({
                   </span>
                 </span>
                 <span className="text-ink-soft">
-                  {new Date(user.createdAt).toLocaleDateString("pt-BR")}
+                  {new Date(user.createdAt).toLocaleString("pt-BR")}
                   <span className="block text-xs">
                     Onboarding:{" "}
                     {user.onboardingCompleted == null
@@ -177,9 +203,10 @@ export default async function AdminUsuariosPage({
                   </span>
                 </span>
                 <span className="text-ink-soft">
-                  {user.planKey ?? "—"} · {user.subscriptionStatus ?? "sem assinatura"}
+                  {user.planKey ?? "—"} ·{" "}
+                  {subscriptionStatusLabelPt(user.subscriptionStatus)}
                   {user.hasDuplicateSubscriptions ? " · duplicada" : ""}
-                  {user.isPastDue ? " · past_due" : ""}
+                  {user.isPastDue ? " · atraso" : ""}
                 </span>
                 <span className="text-ink-soft">
                   Uso mês: R${" "}

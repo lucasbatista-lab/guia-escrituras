@@ -12,6 +12,7 @@ import { getBudgetConfig } from "@/lib/usage";
 import { currentYearMonth } from "@/lib/utils";
 import { getTraditionPolicy } from "@/lib/theology";
 import { AdminMetricsError, maskUserId } from "./metrics";
+import { assertAdminServiceAccess } from "./require-admin";
 import { logger } from "@/lib/logging/logger";
 
 function admin() {
@@ -92,6 +93,10 @@ export interface AdminUserListFilters {
   onboardingCompleted?: "any" | "yes" | "no";
   duplicatesOnly?: boolean;
   pastDueOnly?: boolean;
+  /** Active/trialing with cancel_at_period_end via Stripe. */
+  cancelingOnly?: boolean;
+  /** Users with signup_intent still in checkout_created. */
+  checkoutPendingOnly?: boolean;
 }
 
 export interface AdminUserRow {
@@ -111,9 +116,47 @@ export interface AdminUserRow {
   isPastDue: boolean;
 }
 
+async function findUserIdsCancelingWithAccess(): Promise<string[]> {
+  try {
+    const { getStripeClient } = await import("@/lib/stripe/client");
+    const { assertStripeConfigured } = await import("@/lib/stripe/config");
+    assertStripeConfigured();
+    const stripe = getStripeClient();
+    const customerIds = new Set<string>();
+    for (const status of ["active", "trialing"] as const) {
+      let startingAfter: string | undefined;
+      for (let page = 0; page < 5; page += 1) {
+        const list = await stripe.subscriptions.list({
+          status,
+          limit: 100,
+          starting_after: startingAfter,
+        });
+        for (const sub of list.data) {
+          if (!sub.cancel_at_period_end) continue;
+          const customerId =
+            typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+          if (customerId) customerIds.add(customerId);
+        }
+        if (!list.has_more || list.data.length === 0) break;
+        startingAfter = list.data[list.data.length - 1]?.id;
+      }
+    }
+    if (customerIds.size === 0) return [];
+    const client = admin();
+    const { data } = await client
+      .from("billing_customers")
+      .select("user_id")
+      .in("stripe_customer_id", [...customerIds]);
+    return (data ?? []).map((r) => r.user_id as string);
+  } catch {
+    return [];
+  }
+}
+
 export async function getAdminUsers(
   params: AdminUserListFilters = {},
 ): Promise<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }> {
+  await assertAdminServiceAccess();
   const client = admin();
   const page = Math.max(1, params.page ?? 1);
   const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 25));
@@ -121,21 +164,66 @@ export async function getAdminUsers(
 
   let candidateIds: string[] | null = null;
 
+  if (params.cancelingOnly) {
+    candidateIds = await findUserIdsCancelingWithAccess();
+    if (candidateIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+  }
+
+  if (params.checkoutPendingOnly) {
+    const { data: pendingIntents } = await client
+      .from("signup_intents")
+      .select("user_id")
+      .eq("status", "checkout_created")
+      .not("user_id", "is", null)
+      .limit(500);
+    const pendingIds = [
+      ...new Set(
+        (pendingIntents ?? [])
+          .map((r) => r.user_id as string | null)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    if (pendingIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+    if (candidateIds) {
+      const allowed = new Set(pendingIds);
+      candidateIds = candidateIds.filter((id) => allowed.has(id));
+      if (candidateIds.length === 0) {
+        return { rows: [], total: 0, page, pageSize };
+      }
+    } else {
+      candidateIds = pendingIds;
+    }
+  }
+
   if (q) {
+    let fromQuery: string[];
     if (isUuid(q)) {
-      candidateIds = [q];
+      fromQuery = [q];
     } else if (q.includes("@")) {
-      candidateIds = await findUserIdsByEmail(q);
+      fromQuery = await findUserIdsByEmail(q);
     } else {
       const { data: byName } = await client
         .from("profiles")
         .select("id")
         .ilike("display_name", `%${q}%`)
         .limit(200);
-      candidateIds = (byName ?? []).map((r) => r.id as string);
+      fromQuery = (byName ?? []).map((r) => r.id as string);
     }
-    if (candidateIds.length === 0) {
+    if (fromQuery.length === 0) {
       return { rows: [], total: 0, page, pageSize };
+    }
+    if (candidateIds) {
+      const allowed = new Set(fromQuery);
+      candidateIds = candidateIds.filter((id) => allowed.has(id));
+      if (candidateIds.length === 0) {
+        return { rows: [], total: 0, page, pageSize };
+      }
+    } else {
+      candidateIds = fromQuery;
     }
   }
 
@@ -365,6 +453,7 @@ export interface AdminUserDetail {
 export async function getAdminUserDetail(
   userId: string,
 ): Promise<AdminUserDetail | null> {
+  await assertAdminServiceAccess();
   if (!isUuid(userId)) return null;
   const client = admin();
 

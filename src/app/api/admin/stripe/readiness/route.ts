@@ -17,7 +17,9 @@ export async function GET() {
   try {
     await requireAdminUser();
     const report = await evaluateStripeReadiness();
-    return NextResponse.json(report);
+    return NextResponse.json(report, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     const client = toClientError(error);
     logger.warn("stripe_readiness_denied_or_failed", {
@@ -27,7 +29,10 @@ export async function GET() {
     });
     return NextResponse.json(
       { code: client.code, message: client.message, requestId },
-      { status: client.status },
+      {
+        status: client.status,
+        headers: { "Cache-Control": "no-store" },
+      },
     );
   }
 }

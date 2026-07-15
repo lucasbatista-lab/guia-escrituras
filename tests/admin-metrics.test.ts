@@ -176,7 +176,7 @@ describe("admin pages source contracts", () => {
     const source = await import("node:fs/promises").then((fs) =>
       fs.readFile("src/app/admin/page.tsx", "utf8"),
     );
-    expect(source).toContain("MRR estimado pelo catálogo");
+    expect(source).toContain("MRR estimado pelo preço de catálogo");
     expect(source).toContain("Receita real recebida");
     expect(source).toContain("payment_events failed");
     expect(source).toContain("Checkout stuck");

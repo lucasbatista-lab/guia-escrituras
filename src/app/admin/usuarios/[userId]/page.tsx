@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AdminMetricsError, getAdminUserDetail } from "@/lib/admin";
+import {
+  AdminMetricsError,
+  getAdminUserDetail,
+  paymentProcessingStatusLabelPt,
+  subscriptionStatusLabelPt,
+} from "@/lib/admin";
 import { formatPriceBRL } from "@/lib/entitlements";
 
 export default async function AdminUsuarioDetailPage({
@@ -51,7 +56,10 @@ export default async function AdminUsuarioDetailPage({
         />
         <Item label="Tradição" value={detail.traditionLabel ?? "—"} />
         <Item label="Plano efetivo" value={detail.planName ?? detail.planKey ?? "—"} />
-        <Item label="Status" value={detail.subscriptionStatus ?? "sem assinatura"} />
+        <Item
+          label="Status"
+          value={subscriptionStatusLabelPt(detail.subscriptionStatus)}
+        />
         <Item
           label="Período / validade"
           value={
@@ -121,8 +129,8 @@ export default async function AdminUsuarioDetailPage({
                 key={`${e.type}-${e.createdAt}`}
                 className="rounded-lg border border-border/60 px-3 py-2"
               >
-                {e.type} · {e.processingStatus} ·{" "}
-                {new Date(e.createdAt).toLocaleString("pt-BR")}
+                {e.type} · {paymentProcessingStatusLabelPt(e.processingStatus)}{" "}
+                · {new Date(e.createdAt).toLocaleString("pt-BR")}
               </li>
             ))}
           </ul>
