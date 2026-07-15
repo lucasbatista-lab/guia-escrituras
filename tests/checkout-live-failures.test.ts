@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   checkoutFailureMessage,
+  extractSafeStripeErrorDiagnostics,
   mapStripeCheckoutError,
+  sanitizeStripeErrorMessage,
   shortCheckoutRef,
 } from "@/lib/stripe/checkout-errors";
 import { preflightCheckoutPlan } from "@/lib/stripe/checkout-preflight";
@@ -69,6 +71,131 @@ describe("checkout failure mapping", () => {
     expect(shortCheckoutRef("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")).toBe(
       "aaaaaaaa",
     );
+  });
+
+  it("preserves safe type/code/param without changing public codes", () => {
+    const mapped = mapStripeCheckoutError({
+      type: "invalid_request_error",
+      code: "parameter_invalid_empty",
+      param: "success_url",
+      message: "Invalid success_url",
+    });
+    expect(mapped.code).toBe("checkout_failed");
+    expect(mapped.providerCode).toBe("parameter_invalid_empty");
+    expect(mapped.stripeType).toBe("invalid_request_error");
+    expect(mapped.stripeCode).toBe("parameter_invalid_empty");
+    expect(mapped.stripeParam).toBe("success_url");
+    expect(checkoutFailureMessage(mapped.code)).toBe(
+      "Não foi possível iniciar o pagamento seguro. Tente novamente.",
+    );
+  });
+});
+
+describe("stripe checkout session create diagnostics", () => {
+  it("extracts safe Stripe fields from the primary error", () => {
+    const diagnostics = extractSafeStripeErrorDiagnostics({
+      type: "invalid_request_error",
+      rawType: "invalid_request_error",
+      code: "url_invalid",
+      param: "cancel_url",
+      statusCode: 400,
+      requestId: "req_diag_123",
+      requestLogUrl: "https://dashboard.stripe.com/logs/req_diag_123",
+      doc_url: "https://stripe.com/docs/error-codes/url-invalid",
+      message: "Not a valid URL",
+    });
+    expect(diagnostics).toEqual({
+      stripe_type: "invalid_request_error",
+      stripe_raw_type: "invalid_request_error",
+      stripe_code: "url_invalid",
+      stripe_param: "cancel_url",
+      stripe_status_code: 400,
+      stripe_request_id: "req_diag_123",
+      stripe_request_log_url: "https://dashboard.stripe.com/logs/req_diag_123",
+      stripe_doc_url: "https://stripe.com/docs/error-codes/url-invalid",
+      stripe_message_safe: "Not a valid URL",
+    });
+  });
+
+  it("falls back to error.raw for missing fields", () => {
+    const diagnostics = extractSafeStripeErrorDiagnostics({
+      message: "wrapper",
+      raw: {
+        type: "card_error",
+        code: "card_declined",
+        param: "payment_method",
+        status_code: 402,
+        request_id: "req_from_raw",
+        request_log_url: "https://dashboard.stripe.com/logs/req_from_raw",
+        doc_url: "https://stripe.com/docs/error-codes/card-declined",
+        message: "Your card was declined.",
+      },
+    });
+    expect(diagnostics.stripe_type).toBe("card_error");
+    expect(diagnostics.stripe_code).toBe("card_declined");
+    expect(diagnostics.stripe_param).toBe("payment_method");
+    expect(diagnostics.stripe_status_code).toBe(402);
+    expect(diagnostics.stripe_request_id).toBe("req_from_raw");
+    expect(diagnostics.stripe_request_log_url).toContain("req_from_raw");
+    expect(diagnostics.stripe_doc_url).toContain("card-declined");
+    expect(diagnostics.stripe_message_safe).toBe("wrapper");
+  });
+
+  it("sanitizes emails, Stripe IDs, and secrets in messages", () => {
+    const sanitized = sanitizeStripeErrorMessage(
+      "No such customer: cus_Abc123 for user@example.com with price_Live999 and sk_live_SECRETTOKEN and whsec_abc123",
+    );
+    expect(sanitized).toBeTruthy();
+    expect(sanitized!.length).toBeLessThanOrEqual(300);
+    expect(sanitized).toContain("[email]");
+    expect(sanitized).toContain("[id]");
+    expect(sanitized).toContain("[redacted]");
+    expect(sanitized).not.toMatch(/cus_Abc123/);
+    expect(sanitized).not.toMatch(/price_Live999/);
+    expect(sanitized).not.toMatch(/user@example\.com/);
+    expect(sanitized).not.toMatch(/sk_live_/);
+    expect(sanitized).not.toMatch(/whsec_/);
+  });
+
+  it("masks cs_/sub_/prod_/pm_/pi_/in_/evt_ ids and truncates to 300 chars", () => {
+    const long = `cs_test_session sub_123 prod_456 pm_789 pi_abc in_def evt_ghi ${"x".repeat(400)}`;
+    const sanitized = sanitizeStripeErrorMessage(long)!;
+    expect(sanitized.length).toBe(300);
+    expect(sanitized).toContain("[id]");
+    expect(sanitized).not.toMatch(/\b(?:cs|sub|prod|pm|pi|in|evt)_[A-Za-z0-9]/);
+  });
+
+  it("never registers secrets and keeps public failure message unchanged", () => {
+    const diagnostics = extractSafeStripeErrorDiagnostics({
+      type: "api_error",
+      code: "secret_leak_test",
+      message:
+        "bad sk_test_51Leak and Bearer tok_abc and email test@amemchat.com.br for cus_secret",
+      raw: {
+        message: "also whsec_secretvalue",
+      },
+    });
+    expect(diagnostics.stripe_message_safe).not.toMatch(
+      /sk_test_|whsec_|Bearer\s|@amemchat|cus_secret/,
+    );
+    expect(JSON.stringify(diagnostics)).not.toMatch(
+      /sk_test_|whsec_|Bearer\s|cus_secret|test@amemchat/,
+    );
+    expect(checkoutFailureMessage("checkout_failed")).toBe(
+      "Não foi possível iniciar o pagamento seguro. Tente novamente.",
+    );
+  });
+
+  it("does not create Checkout or touch the network", () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    extractSafeStripeErrorDiagnostics({
+      code: "url_invalid",
+      type: "invalid_request_error",
+    });
+    sanitizeStripeErrorMessage("hello");
+    mapStripeCheckoutError({ code: "url_invalid" });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
   });
 });
 
@@ -469,5 +596,7 @@ describe("source contracts — no RSC 500 path", () => {
     expect(checkout).toContain("allow_promotion_codes: true");
     expect(checkout).toContain("preflightCheckoutPlan");
     expect(checkout).toContain("stripe_checkout_failed");
+    expect(checkout).toContain("stripe_checkout_session_create_rejected");
+    expect(checkout).toContain("extractSafeStripeErrorDiagnostics");
   });
 });

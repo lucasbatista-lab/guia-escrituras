@@ -37,9 +37,12 @@ export {
 } from "./checkout";
 export {
   checkoutFailureMessage,
+  extractSafeStripeErrorDiagnostics,
   mapStripeCheckoutError,
+  sanitizeStripeErrorMessage,
   shortCheckoutRef,
   type CheckoutFailureCode,
+  type SafeStripeErrorDiagnostics,
 } from "./checkout-errors";
 export { preflightCheckoutPlan } from "./checkout-preflight";
 export { handleStripeWebhookEvent } from "./webhook";

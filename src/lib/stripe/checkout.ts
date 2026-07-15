@@ -25,6 +25,7 @@ import {
 import { preflightCheckoutPlan } from "./checkout-preflight";
 import {
   checkoutFailureMessage,
+  extractSafeStripeErrorDiagnostics,
   mapStripeCheckoutError,
   shortCheckoutRef,
   type CheckoutFailureCode,
@@ -221,6 +222,23 @@ export async function createSubscriptionCheckout(
         },
       });
     } catch (error) {
+      // Temporary diagnostics — safe fields only (no IDs/emails/secrets/payload).
+      const diagnostics = extractSafeStripeErrorDiagnostics(error);
+      logger.error("stripe_checkout_session_create_rejected", {
+        requestId,
+        stage: "create_session",
+        mode,
+        planKey,
+        stripe_type: diagnostics.stripe_type,
+        stripe_raw_type: diagnostics.stripe_raw_type,
+        stripe_code: diagnostics.stripe_code,
+        stripe_param: diagnostics.stripe_param,
+        stripe_status_code: diagnostics.stripe_status_code,
+        stripe_request_id: diagnostics.stripe_request_id,
+        stripe_request_log_url: diagnostics.stripe_request_log_url,
+        stripe_doc_url: diagnostics.stripe_doc_url,
+        stripe_message_safe: diagnostics.stripe_message_safe,
+      });
       const mapped = mapStripeCheckoutError(error);
       return fail(requestId, mapped.code, "create_session", {
         planKey,
