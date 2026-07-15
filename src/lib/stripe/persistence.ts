@@ -5,6 +5,18 @@ import type { SubscriptionStatus } from "@/lib/billing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { transitionReferralStatus } from "@/lib/referrals";
 import { logger } from "@/lib/logging/logger";
+import {
+  claimPaymentEvent,
+  createSupabasePaymentEventClaimStore,
+} from "./payment-event-claim";
+
+export {
+  claimPaymentEvent,
+  PAYMENT_EVENT_LEASE_MS,
+  PAYMENT_EVENT_MAX_ATTEMPTS,
+  type ClaimPaymentEventResult,
+  type PaymentEventClaimStore,
+} from "./payment-event-claim";
 
 export function mapStripeSubscriptionStatus(
   stripeStatus: string,
@@ -59,41 +71,27 @@ export async function upsertSubscriptionFromStripe(input: {
   }
 }
 
+/** @deprecated Prefer claimPaymentEvent — kept for narrow compatibility. */
 export async function recordPaymentEvent(input: {
   providerEventId: string;
   eventType: string;
   objectId?: string | null;
 }): Promise<"new" | "duplicate" | "retry_failed"> {
-  const admin = createAdminClient();
-  const { data: existing } = await admin
-    .from("payment_events")
-    .select("id, processing_status, attempt_count")
-    .eq("provider_event_id", input.providerEventId)
-    .maybeSingle();
-
-  if (existing) {
-    if (existing.processing_status === "processed") return "duplicate";
-    if (existing.processing_status === "failed") {
-      await admin
-        .from("payment_events")
-        .update({
-          processing_status: "received",
-          attempt_count: (existing.attempt_count ?? 0) + 1,
-          last_error_code: null,
-        })
-        .eq("id", existing.id);
-      return "retry_failed";
-    }
-    return "duplicate";
+  const result = await claimPaymentEvent(
+    {
+      providerEventId: input.providerEventId,
+      eventType: input.eventType,
+      objectId: input.objectId,
+    },
+    createSupabasePaymentEventClaimStore(),
+  );
+  if (result === "claimed") {
+    // Distinguish first insert vs reclaim is not needed by callers of this shim.
+    return "new";
   }
-
-  await admin.from("payment_events").insert({
-    provider_event_id: input.providerEventId,
-    event_type: input.eventType,
-    object_id: input.objectId ?? null,
-    processing_status: "received",
-  });
-  return "new";
+  if (result === "duplicate") return "duplicate";
+  // in_flight / exhausted map to duplicate for the old API shape.
+  return "duplicate";
 }
 
 export async function markPaymentEvent(
@@ -161,4 +159,16 @@ export async function updateReferralOnInvoicePaid(
       logger.info("referral_reward_pending", { requestId, userId });
     }
   }
+}
+
+export async function lookupUserIdByStripeCustomerId(
+  customerId: string,
+): Promise<string | null> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("billing_customers")
+    .select("user_id")
+    .eq("stripe_customer_id", customerId)
+    .maybeSingle();
+  return (data?.user_id as string | undefined) ?? null;
 }

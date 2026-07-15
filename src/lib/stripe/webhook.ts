@@ -1,50 +1,72 @@
 import "server-only";
 
 import type Stripe from "stripe";
-import type { PlanKey } from "@/lib/entitlements";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { logger } from "@/lib/logging/logger";
+import { maskStripeId, maskUserId } from "@/lib/logging/mask";
 import { createRequestId } from "@/lib/utils";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  claimPaymentEvent,
+  type ClaimPaymentEventResult,
+} from "./payment-event-claim";
+import {
+  extractStripeCustomerId,
+  extractStripePriceId,
+  planKeyFromMetadata,
+  resolvePlanKeyFromPriceAndMetadata,
+  resolveUserIdForStripeCustomer,
+  WebhookBindingError,
+} from "./webhook-binding";
+import {
+  lookupUserIdByStripeCustomerId,
   mapStripeSubscriptionStatus,
   markPaymentEvent,
-  recordPaymentEvent,
   updateReferralOnInvoicePaid,
   upsertSubscriptionFromStripe,
 } from "./persistence";
 
-function planKeyFromMetadata(
-  metadata: Stripe.Metadata | null | undefined,
-): PlanKey | null {
-  const key = metadata?.plan_key?.trim();
-  if (
-    key === "essencial" ||
-    key === "caminho" ||
-    key === "profundo" ||
-    key === "particular"
-  ) {
-    return key;
-  }
-  return null;
+export type StripeWebhookHandleResult =
+  | "ok"
+  | "duplicate"
+  | "in_flight"
+  | "exhausted"
+  | "rejected";
+
+function subscriptionPriceId(
+  subscription: Stripe.Subscription,
+): string | null {
+  const item = subscription.items?.data?.[0];
+  if (!item) return null;
+  return extractStripePriceId(item.price);
 }
 
 export async function handleStripeWebhookEvent(
   event: Stripe.Event,
-): Promise<void> {
+): Promise<StripeWebhookHandleResult> {
   const requestId = createRequestId();
-  const recordState = await recordPaymentEvent({
+  const objectId =
+    typeof event.data.object === "object" &&
+    event.data.object &&
+    "id" in event.data.object
+      ? String((event.data.object as { id: string }).id)
+      : null;
+
+  const claim: ClaimPaymentEventResult = await claimPaymentEvent({
     providerEventId: event.id,
     eventType: event.type,
-    objectId:
-      typeof event.data.object === "object" &&
-      event.data.object &&
-      "id" in event.data.object
-        ? String((event.data.object as { id: string }).id)
-        : null,
+    objectId,
   });
 
-  if (recordState === "duplicate") {
-    return;
+  if (claim === "duplicate") return "duplicate";
+  if (claim === "in_flight") return "in_flight";
+  if (claim === "exhausted") {
+    logger.error("stripe_webhook_attempts_exhausted", {
+      requestId,
+      eventType: event.type,
+      eventIdPrefix:
+        typeof event.id === "string" ? event.id.slice(0, 8) : undefined,
+    });
+    return "exhausted";
   }
 
   try {
@@ -52,12 +74,14 @@ export async function handleStripeWebhookEvent(
       case "checkout.session.completed":
         await handleCheckoutCompleted(
           event.data.object as Stripe.Checkout.Session,
+          requestId,
         );
         break;
       case "customer.subscription.created":
       case "customer.subscription.updated":
         await handleSubscriptionUpsert(
           event.data.object as Stripe.Subscription,
+          requestId,
         );
         break;
       case "customer.subscription.deleted":
@@ -75,57 +99,116 @@ export async function handleStripeWebhookEvent(
         break;
       default:
         await markPaymentEvent(event.id, "ignored");
-        return;
+        return "ok";
     }
     await markPaymentEvent(event.id, "processed");
+    return "ok";
   } catch (error) {
-    const code = error instanceof Error ? error.message : "unknown";
-    logger.error("stripe_webhook_failed", { requestId, eventType: event.type, code });
+    if (error instanceof WebhookBindingError) {
+      logger.error("stripe_webhook_binding_rejected", {
+        requestId,
+        eventType: event.type,
+        code: error.code,
+        eventIdPrefix:
+          typeof event.id === "string" ? event.id.slice(0, 8) : undefined,
+      });
+      await markPaymentEvent(event.id, "failed", error.code);
+      if (!error.retryable) {
+        // Permanent mismatch — do not grant; ACK so Stripe stops retrying.
+        return "rejected";
+      }
+      throw error;
+    }
+
+    const code = error instanceof Error ? error.message.slice(0, 120) : "unknown";
+    logger.error("stripe_webhook_failed", {
+      requestId,
+      eventType: event.type,
+      code,
+      eventIdPrefix:
+        typeof event.id === "string" ? event.id.slice(0, 8) : undefined,
+    });
     await markPaymentEvent(event.id, "failed", code);
     throw error;
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const userId = session.metadata?.user_id;
-  const planKey = planKeyFromMetadata(session.metadata);
-  const intentId = session.metadata?.signup_intent_id;
-  if (!userId || !planKey) return;
+async function handleCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+  requestId: string,
+) {
+  const customerId = extractStripeCustomerId(session.customer);
+  const userId = await resolveUserIdForStripeCustomer({
+    customerId,
+    metadataUserId: session.metadata?.user_id ?? null,
+    lookupUserIdByCustomerId: lookupUserIdByStripeCustomerId,
+  });
+
+  logger.info("stripe_checkout_completed_bound", {
+    requestId,
+    userId: maskUserId(userId),
+    customerId: maskStripeId(customerId),
+    sessionId: maskStripeId(session.id),
+  });
+
+  const intentId = session.metadata?.signup_intent_id?.trim() || null;
+  if (!intentId) return;
 
   const admin = createAdminClient();
-  if (intentId) {
-    await admin
-      .from("signup_intents")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", intentId);
+  const { data, error } = await admin
+    .from("signup_intents")
+    .update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", intentId)
+    .eq("user_id", userId)
+    .select("id");
+
+  if (error) {
+    throw new Error("intent_update_failed");
+  }
+  if (!data || data.length === 0) {
+    // Intent missing or belongs to another user — do not complete wrong intent.
+    throw new WebhookBindingError("user_mismatch");
   }
 }
 
-async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata?.user_id;
-  const planKey = planKeyFromMetadata(subscription.metadata);
-  if (!userId || !planKey) return;
+async function handleSubscriptionUpsert(
+  subscription: Stripe.Subscription,
+  requestId: string,
+) {
+  const customerId = extractStripeCustomerId(subscription.customer);
+  const userId = await resolveUserIdForStripeCustomer({
+    customerId,
+    metadataUserId: subscription.metadata?.user_id ?? null,
+    lookupUserIdByCustomerId: lookupUserIdByStripeCustomerId,
+  });
 
-  const customerId =
-    typeof subscription.customer === "string"
-      ? subscription.customer
-      : subscription.customer?.id;
-
-  if (!customerId) return;
+  const planKey = resolvePlanKeyFromPriceAndMetadata({
+    priceId: subscriptionPriceId(subscription),
+    metadataPlanKey: planKeyFromMetadata(subscription.metadata),
+  });
 
   const periodEnd = subscription.items.data[0]?.current_period_end;
+
   await upsertSubscriptionFromStripe({
     userId,
     planKey,
-    stripeCustomerId: customerId,
+    stripeCustomerId: customerId!,
     stripeSubscriptionId: subscription.id,
     status: mapStripeSubscriptionStatus(subscription.status),
     currentPeriodEnd: periodEnd
       ? new Date(periodEnd * 1000).toISOString()
       : null,
+  });
+
+  logger.info("stripe_subscription_upsert_bound", {
+    requestId,
+    userId: maskUserId(userId),
+    customerId: maskStripeId(customerId),
+    subscriptionId: maskStripeId(subscription.id),
+    planKey,
   });
 }
 
@@ -156,31 +239,18 @@ async function handleInvoicePaid(
   invoice: Stripe.Invoice,
   requestId: string,
 ) {
-  const userId = invoice.metadata?.user_id;
-  if (!userId && invoice.customer) {
-    const admin = createAdminClient();
-    const customerId =
-      typeof invoice.customer === "string"
-        ? invoice.customer
-        : invoice.customer.id;
-    const { data: billing } = await admin
-      .from("billing_customers")
-      .select("user_id")
-      .eq("stripe_customer_id", customerId)
-      .maybeSingle();
-    if (billing?.user_id) {
-      await updateReferralOnInvoicePaid(
-        billing.user_id,
-        invoiceSequenceNumber(invoice),
-        requestId,
-      );
-    }
-    return;
-  }
+  const customerId = extractStripeCustomerId(invoice.customer);
+  const userId = await resolveUserIdForStripeCustomer({
+    customerId,
+    metadataUserId: invoice.metadata?.user_id ?? null,
+    lookupUserIdByCustomerId: lookupUserIdByStripeCustomerId,
+  });
 
-  if (userId) {
-    await updateReferralOnInvoicePaid(userId, invoiceSequenceNumber(invoice), requestId);
-  }
+  await updateReferralOnInvoicePaid(
+    userId,
+    invoiceSequenceNumber(invoice),
+    requestId,
+  );
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {

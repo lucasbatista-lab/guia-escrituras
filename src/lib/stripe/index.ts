@@ -45,7 +45,10 @@ export {
   type SafeStripeErrorDiagnostics,
 } from "./checkout-errors";
 export { preflightCheckoutPlan } from "./checkout-preflight";
-export { handleStripeWebhookEvent } from "./webhook";
+export {
+  handleStripeWebhookEvent,
+  type StripeWebhookHandleResult,
+} from "./webhook";
 export { createCustomerPortalSession } from "./portal";
 export {
   cancelSubscriptionRenewal,
@@ -58,4 +61,15 @@ export {
   recordPaymentEvent,
   markPaymentEvent,
   updateReferralOnInvoicePaid,
+  claimPaymentEvent,
+  PAYMENT_EVENT_LEASE_MS,
+  PAYMENT_EVENT_MAX_ATTEMPTS,
 } from "./persistence";
+export {
+  WebhookBindingError,
+  resolveUserIdForStripeCustomer,
+  resolvePlanKeyFromPriceAndMetadata,
+  planKeyFromConfiguredPriceId,
+  extractStripeCustomerId,
+  extractStripePriceId,
+} from "./webhook-binding";

@@ -56,7 +56,16 @@ export async function POST(request: Request) {
   }
 
   try {
-    await handleStripeWebhookEvent(event);
+    const result = await handleStripeWebhookEvent(event);
+    if (result === "in_flight") {
+      // Another worker holds the lease — do not ACK; Stripe may retry later.
+      return NextResponse.json({ error: "in_flight" }, { status: 409 });
+    }
+    if (result === "exhausted") {
+      // Cap reached — keep non-2xx so operators notice via Stripe dashboard.
+      return NextResponse.json({ error: "attempts_exhausted" }, { status: 500 });
+    }
+    // ok | duplicate | rejected(permanent binding) → ACK
     return NextResponse.json({ received: true });
   } catch {
     return NextResponse.json({ error: "processing_failed" }, { status: 500 });
