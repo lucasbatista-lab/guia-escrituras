@@ -5,6 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { InlineNotice } from "@/components/platform/inline-notice";
 import { Button } from "@/components/ui/button";
 import type { ChatResponsePayload } from "@/lib/ai/chat-schema";
+import {
+  hasRenderableFollowUpQuestion,
+  hasRenderableInterpretationNotice,
+} from "@/lib/ai/normalize-assistant-presentation";
 import { formatBiblicalReference } from "@/lib/biblical";
 import { cn } from "@/lib/utils";
 
@@ -212,24 +216,7 @@ export function ChatPanel({
               {message.content}
             </p>
             {message.meta ? (
-              <div className="mt-3 space-y-2 border-t border-border/40 pt-3 text-sm text-ink-soft">
-                {message.meta.biblicalReferences.length > 0 ? (
-                  <p className="rounded-lg bg-sand-100/80 px-2.5 py-2 text-[13px] leading-relaxed text-ink">
-                    <span className="font-medium">Referências · </span>
-                    {message.meta.biblicalReferences
-                      .map((ref) => formatBiblicalReference(ref))
-                      .join(" · ")}
-                  </p>
-                ) : null}
-                <p className="text-xs leading-relaxed">
-                  {message.meta.interpretationNotice}
-                </p>
-                {message.meta.followUpQuestion ? (
-                  <p className="italic text-ink/90">
-                    {message.meta.followUpQuestion}
-                  </p>
-                ) : null}
-              </div>
+              <AssistantMetaFooter meta={message.meta} />
             ) : null}
           </article>
         ))}
@@ -297,6 +284,38 @@ export function ChatPanel({
           </p>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function AssistantMetaFooter({
+  meta,
+}: {
+  meta: NonNullable<UiMessage["meta"]>;
+}) {
+  const refs = meta.biblicalReferences ?? [];
+  const hasRefs = refs.length > 0;
+  const hasNotice = hasRenderableInterpretationNotice(meta.interpretationNotice);
+  const hasFollowUp = hasRenderableFollowUpQuestion(meta.followUpQuestion);
+  if (!hasRefs && !hasNotice && !hasFollowUp) return null;
+
+  const notice = meta.interpretationNotice?.trim() ?? "";
+  const followUp = meta.followUpQuestion?.trim() ?? "";
+
+  return (
+    <div className="mt-3 space-y-2 border-t border-border/40 pt-3 text-sm text-ink-soft">
+      {hasRefs ? (
+        <p className="rounded-lg bg-sand-100/80 px-2.5 py-2 text-[13px] leading-relaxed text-ink">
+          <span className="font-medium">Referências · </span>
+          {refs.map((ref) => formatBiblicalReference(ref)).join(" · ")}
+        </p>
+      ) : null}
+      {hasNotice ? (
+        <p className="text-xs leading-relaxed">{notice}</p>
+      ) : null}
+      {hasFollowUp ? (
+        <p className="italic text-ink/90">{followUp}</p>
+      ) : null}
     </div>
   );
 }

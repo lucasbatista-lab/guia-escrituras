@@ -103,6 +103,7 @@ describe("authenticated UX polish", () => {
     expect(chat).toContain("aria-live");
     expect(chat).toContain("Histórico");
     expect(chat).toContain("Experiência com inteligência artificial");
+    expect(chat).toContain("hasRenderableInterpretationNotice");
     expect(chat).not.toContain("groundingProvider");
     expect(chat).not.toContain("groundingCount");
     expect(chat).not.toMatch(/\bprovider\b/);
