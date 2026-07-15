@@ -38,6 +38,13 @@ export function safeSignUpMessage(code: SignUpClientCode): string {
   return SAFE_MESSAGES[code];
 }
 
+/**
+ * Public check-email copy after signup — identical for new and existing emails
+ * so the client cannot enumerate accounts.
+ */
+export const SIGNUP_CHECK_EMAIL_PUBLIC_MESSAGE =
+  "Confira seu e-mail para continuar. Caso já exista uma conta, você receberá as orientações disponíveis para esse endereço.";
+
 /** Mask local-part; never log a full email. */
 export function maskEmail(email: string): string {
   const trimmed = email.trim();

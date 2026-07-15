@@ -299,7 +299,7 @@ describe("signUpAction", () => {
     if (!result.ok) expect(result.code).toBe("email_invalid");
   });
 
-  it("maps auth failure and never reports ok", async () => {
+  it("treats existing email as enumeration-safe check-email success", async () => {
     process.env.APP_URL = "https://amem-chat.vercel.app";
     const { signUpAction } = await loadSignUpActionWithClient({
       auth: {
@@ -316,9 +316,33 @@ describe("signUpAction", () => {
 
     const result = await signUpAction(baseInput);
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.code).toBe("email_taken");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.needsEmailConfirmation).toBe(true);
+      expect(result.redirectTo).toContain("/confira-seu-email");
+      expect(JSON.stringify(result)).not.toContain("email_taken");
+      expect(JSON.stringify(result)).not.toContain("já está cadastrado");
+    }
+  });
+
+  it("soft-duplicate identities also stay enumeration-safe", async () => {
+    process.env.APP_URL = "https://amem-chat.vercel.app";
+    const { signUpAction } = await loadSignUpActionWithClient({
+      auth: {
+        signUp: vi.fn(async () => ({
+          data: {
+            user: { id: "u-dup", identities: [] },
+            session: null,
+          },
+          error: null,
+        })),
+      },
+    });
+
+    const result = await signUpAction(baseInput);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.redirectTo).toContain("/confira-seu-email");
     }
   });
 

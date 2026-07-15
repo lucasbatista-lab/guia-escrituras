@@ -12,6 +12,7 @@ export {
   safeSignUpMessage,
   safeResendMessage,
   maskEmail,
+  SIGNUP_CHECK_EMAIL_PUBLIC_MESSAGE,
 } from "./sign-up-errors";
 export { signUpAction } from "./sign-up-action";
 export { resendConfirmationAction } from "./resend-confirmation-action";

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { resendConfirmationAction } from "@/lib/auth/resend-confirmation-action";
 import { requestPasswordResetAction } from "@/lib/auth/password-reset-action";
+import { SIGNUP_CHECK_EMAIL_PUBLIC_MESSAGE } from "@/lib/auth/sign-up-errors";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -99,18 +100,27 @@ export function CheckEmailExperience({
         >
           Confira seu e-mail
         </h1>
-        {emailHint ? (
-          <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
-            {isRecovery
-              ? "Enviamos um link de recuperação para "
-              : "Enviamos um link de confirmação para "}
-            <span className="font-medium text-ink">{emailHint}</span>.
-          </p>
+        {isRecovery ? (
+          emailHint ? (
+            <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
+              Enviamos um link de recuperação para{" "}
+              <span className="font-medium text-ink">{emailHint}</span>.
+            </p>
+          ) : (
+            <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
+              Se o e-mail existir, enviamos um link para redefinir a senha.
+            </p>
+          )
         ) : (
           <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
-            {isRecovery
-              ? "Se o e-mail existir, enviamos um link para redefinir a senha."
-              : "Enviamos um link de confirmação para o e-mail informado."}
+            {SIGNUP_CHECK_EMAIL_PUBLIC_MESSAGE}
+            {emailHint ? (
+              <>
+                {" "}
+                Endereço indicado:{" "}
+                <span className="font-medium text-ink">{emailHint}</span>.
+              </>
+            ) : null}
           </p>
         )}
         {!isRecovery && planName ? (

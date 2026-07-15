@@ -89,6 +89,26 @@ function checkEmailPath(emailMasked: string, planKey: string | null): string {
   return `/confira-seu-email?${params.toString()}`;
 }
 
+/** Enumeration-safe success: never confirms whether the account already exists. */
+function checkEmailSoftSuccess(
+  requestId: string,
+  email: string,
+  planKey: string | null,
+): Extract<SignUpActionResult, { ok: true }> {
+  const emailMasked = maskEmail(email);
+  return {
+    ok: true,
+    needsEmailConfirmation: true,
+    redirectTo: checkEmailPath(
+      emailMasked,
+      planKey,
+    ) as `/confira-seu-email?${string}`,
+    requestId,
+    emailMasked,
+    planKey,
+  };
+}
+
 export async function signUpAction(input: {
   displayName: string;
   email: string;
@@ -222,6 +242,14 @@ export async function signUpAction(input: {
       emailMasked: maskEmail(parsed.data.email),
       hasIntent: Boolean(intentId),
     });
+    // Never reveal account existence to the client.
+    if (mapped.code === "email_taken") {
+      return checkEmailSoftSuccess(
+        requestId,
+        parsed.data.email,
+        selectedPlanKey,
+      );
+    }
     return {
       ok: false,
       code: mapped.code,
@@ -239,9 +267,15 @@ export async function signUpAction(input: {
     logger.warn("sign_up_duplicate_soft", {
       requestId,
       route: "signUpAction",
+      code: "email_taken",
       emailMasked: maskEmail(parsed.data.email),
     });
-    return fail("email_taken", requestId);
+    // Do not associate intent or set cookie — user is already registered.
+    return checkEmailSoftSuccess(
+      requestId,
+      parsed.data.email,
+      selectedPlanKey,
+    );
   }
 
   if (!data.user) {
