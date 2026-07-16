@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 const links = [
   { href: "/admin", label: "Visão geral" },
   { href: "/admin/usuarios", label: "Usuários" },
+  { href: "/admin/aquisicao", label: "Aquisição" },
   { href: "/admin/eventos", label: "Eventos" },
   { href: "/admin/uso", label: "Uso" },
   { href: "/admin/custos", label: "Custos" },

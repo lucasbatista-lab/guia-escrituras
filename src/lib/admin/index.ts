@@ -17,6 +17,13 @@ export {
   type StoredDailyReport,
 } from "./metrics";
 export {
+  getAdminAcquisitionReport,
+  parseAcquisitionPeriod,
+  type AcquisitionPeriodDays,
+  type AcquisitionBreakdownRow,
+  type AcquisitionReport,
+} from "./acquisition";
+export {
   getAdminUsers,
   getAdminUserDetail,
   type AdminUserRow,

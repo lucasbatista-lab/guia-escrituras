@@ -1,8 +1,10 @@
 import { updateSession } from "@/lib/supabase/proxy";
+import { applyAcquisitionCapture } from "@/lib/acquisition";
 import { type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+  const response = await updateSession(request);
+  return applyAcquisitionCapture(request, response);
 }
 
 export const config = {

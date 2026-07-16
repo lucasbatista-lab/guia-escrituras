@@ -10,6 +10,7 @@ import {
   validateCheckoutPlan,
   type SignupTrackingParams,
 } from "@/lib/signup-intents";
+import { resolveTrackingForSignupIntent } from "@/lib/acquisition";
 import { createRequestId } from "@/lib/utils";
 import { logger } from "@/lib/logging/logger";
 
@@ -48,10 +49,11 @@ export async function startPlanContinuationAction(input: {
       requestId,
     });
 
+    const tracking = await resolveTrackingForSignupIntent(input.tracking);
     const { token } = await createSignupIntentWithToken({
       selectedPlanKey: plan.planKey,
       userId: auth.userId,
-      tracking: input.tracking,
+      tracking,
       termsVersion,
       privacyVersion,
       termsAcceptedAt,

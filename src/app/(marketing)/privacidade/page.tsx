@@ -28,6 +28,12 @@ export default function PrivacidadePage() {
         Não armazenamos número de cartão em nossos servidores; pagamentos são
         processados pelo provedor de pagamentos.
       </p>
+      <p>
+        Usamos cookies first-party e parâmetros de campanha (UTM e código de
+        indicação) para entender a origem de visitas e cadastros — por exemplo,
+        qual link ou vídeo levou alguém até o Amém Chat. Esses dados não incluem
+        o conteúdo das conversas e servem à mensuração e melhoria do serviço.
+      </p>
     </LegalDocumentShell>
   );
 }

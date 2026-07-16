@@ -23,6 +23,7 @@ import {
   type SignupTrackingParams,
 } from "@/lib/signup-intents";
 import { setSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
+import { resolveTrackingForSignupIntent } from "@/lib/acquisition";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import { createRequestId } from "@/lib/utils";
@@ -166,9 +167,12 @@ export async function signUpAction(input: {
     selectedPlanKey = plan.planKey;
 
     try {
+      const tracking = await resolveTrackingForSignupIntent(
+        parsed.data.tracking,
+      );
       const { record, token } = await createSignupIntentWithToken({
         selectedPlanKey: plan.planKey,
-        tracking: parsed.data.tracking,
+        tracking,
         termsVersion,
         privacyVersion,
         termsAcceptedAt,
