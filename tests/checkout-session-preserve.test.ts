@@ -84,7 +84,9 @@ describe("checkout return — session preservation", () => {
     expect(client).toContain("Confirmando seu pagamento");
     expect(client).toContain("MAX_POLLS");
     expect(client).toContain("/personalizar");
-    expect(client).toContain("Ir para o início");
+    expect(client).toContain("Começar uma reflexão");
+    expect(client).toContain("Assinatura confirmada");
+    expect(client).toContain("Personalizar minha experiência");
   });
 
   it("proxy preserves checkout resume cookie and does not drop session on redirects", () => {
@@ -136,7 +138,7 @@ describe("checkout return — session preservation", () => {
     );
     expect(client).toMatch(/MAX_POLLS\s*=\s*\d+/);
     expect(client).toContain("stopped.current = true");
-    expect(client).toContain("prefers-reduced-motion");
+    expect(client).toContain("Stay on confirmation");
   });
 
   it("login redirect for missing session does not treat webhook lag as logout cause", () => {

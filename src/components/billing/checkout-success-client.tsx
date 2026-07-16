@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FocusPageTitle } from "@/components/a11y/focus-page-title";
 import { Button } from "@/components/ui/button";
 
@@ -15,20 +15,6 @@ type PollStatus =
 
 const POLL_INTERVAL_MS = 2500;
 const MAX_POLLS = 24; // ~60s
-
-function subscribeReducedMotion(onStoreChange: () => void) {
-  const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-  mq.addEventListener("change", onStoreChange);
-  return () => mq.removeEventListener("change", onStoreChange);
-}
-
-function getReducedMotionSnapshot() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function getReducedMotionServerSnapshot() {
-  return false;
-}
 
 const COPY: Record<
   Exclude<PollStatus, "active" | "unauthenticated">,
@@ -48,24 +34,35 @@ const COPY: Record<
   },
 };
 
+function primaryCtaLabel(nextPath: string) {
+  if (nextPath === "/personalizar") {
+    return "Personalizar minha experiência";
+  }
+  return "Começar uma reflexão";
+}
+
+function activeBody(nextPath: string) {
+  if (nextPath === "/personalizar") {
+    return "Agora, ajuste sua experiência para receber reflexões mais alinhadas à forma como você vive a fé.";
+  }
+  return "Sua assinatura está ativa. Você já pode começar uma reflexão no Amém Chat.";
+}
+
 export function CheckoutSuccessClient({
   initialStatus,
+  initialNextPath = null,
 }: {
-  initialStatus: "processing" | "sync_error" | "forbidden";
+  initialStatus: "processing" | "sync_error" | "forbidden" | "active";
+  initialNextPath?: "/personalizar" | "/inicio" | null;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<PollStatus>(initialStatus);
   const [polls, setPolls] = useState(0);
-  const [nextPath, setNextPath] = useState<string | null>(null);
-  const stopped = useRef(false);
-  const reduceMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotionSnapshot,
-    getReducedMotionServerSnapshot,
-  );
+  const [nextPath, setNextPath] = useState<string | null>(initialNextPath);
+  const stopped = useRef(initialStatus === "active" || initialStatus === "forbidden");
 
   useEffect(() => {
-    if (initialStatus === "forbidden") return;
+    if (initialStatus === "forbidden" || initialStatus === "active") return;
     if (stopped.current) return;
 
     let cancelled = false;
@@ -103,9 +100,7 @@ export function CheckoutSuccessClient({
           setStatus("active");
           setNextPath(data.nextPath);
           stopped.current = true;
-          if (!reduceMotion) {
-            router.replace(data.nextPath);
-          }
+          // Stay on confirmation — no auto-redirect so the next step is clear.
           return;
         }
 
@@ -141,7 +136,7 @@ export function CheckoutSuccessClient({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [initialStatus, reduceMotion, router]);
+  }, [initialStatus, router]);
 
   if (status === "active" && nextPath) {
     return (
@@ -149,16 +144,31 @@ export function CheckoutSuccessClient({
         <FocusPageTitle className="font-display text-3xl text-ink">
           Assinatura confirmada
         </FocusPageTitle>
-        <p className="text-sm text-ink-soft" aria-live="polite" role="status">
-          Tudo certo. Seguindo para o próximo passo…
+        <p className="text-base leading-relaxed text-ink" aria-live="polite" role="status">
+          {activeBody(nextPath)}
         </p>
-        <Button asChild className="min-h-11 w-full bg-ink hover:bg-ink/90">
-          <Link href={nextPath}>
-            {nextPath === "/personalizar"
-              ? "Personalizar minha experiência"
-              : "Ir para o início"}
-          </Link>
+        <Button asChild className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto sm:min-w-[16rem]">
+          <Link href={nextPath}>{primaryCtaLabel(nextPath)}</Link>
         </Button>
+        <p className="text-sm text-ink-soft">
+          {nextPath === "/inicio" ? (
+            <>
+              <Link
+                href="/conversar"
+                className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                Ir para o Amém Chat
+              </Link>
+              {" · "}
+            </>
+          ) : null}
+          <Link
+            href="/conta"
+            className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            Ver minha conta
+          </Link>
+        </p>
       </div>
     );
   }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { InlineNotice } from "@/components/platform/inline-notice";
 import { ProgressSteps } from "@/components/platform/progress-steps";
 import {
+  PERSONALIZATION_DEPTH_NOTE,
   PERSONALIZATION_DEPTHS,
   PERSONALIZATION_STYLES,
   PERSONALIZATION_TRADITIONS,
@@ -186,7 +187,7 @@ export function PersonalizationForm() {
       </fieldset>
 
       <fieldset className="space-y-3">
-        <legend className="text-sm font-medium text-ink">Profundidade</legend>
+        <legend className="text-sm font-medium text-ink">Profundidade padrão</legend>
         {PERSONALIZATION_DEPTHS.map((depth) => (
           <ChoiceCard
             key={depth.key}
@@ -198,6 +199,9 @@ export function PersonalizationForm() {
             description={depth.description}
           />
         ))}
+        <p className="text-xs leading-relaxed text-ink-soft">
+          {PERSONALIZATION_DEPTH_NOTE}
+        </p>
       </fieldset>
 
       {allowsSaints ? (

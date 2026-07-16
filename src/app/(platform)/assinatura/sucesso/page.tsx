@@ -32,16 +32,16 @@ export default async function AssinaturaSucessoPage({
     redirect(view.resumePath);
   }
 
-  if (view.kind === "active") {
-    redirect(view.nextPath);
-  }
-
   const initialStatus =
     view.kind === "forbidden"
       ? "forbidden"
       : view.kind === "sync_error"
         ? "sync_error"
-        : "processing";
+        : view.kind === "active"
+          ? "active"
+          : "processing";
+
+  const initialNextPath = view.kind === "active" ? view.nextPath : null;
 
   const auth = await getAuthUserContext();
   const shareUrl = auth
@@ -51,17 +51,20 @@ export default async function AssinaturaSucessoPage({
   return (
     <main className="mx-auto max-w-lg px-4 py-16">
       <PurchaseJourneySteps current="pagamento" className="mb-8" />
-      <CheckoutSuccessClient initialStatus={initialStatus} />
+      <CheckoutSuccessClient
+        initialStatus={initialStatus}
+        initialNextPath={initialNextPath}
+      />
       {shareUrl && initialStatus !== "forbidden" ? (
-        <aside className="mt-10 border-t border-border/60 pt-8">
-          <h2 className="font-display text-lg text-ink">
+        <aside className="mt-12 border-t border-border/50 pt-8 opacity-90">
+          <h2 className="text-sm font-medium text-ink-soft">
             Talvez alguém próximo também esteja precisando de clareza e
             acolhimento.
           </h2>
-          <p className="mt-2 text-sm text-ink-soft">
+          <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">
             Se quiser, compartilhe o Amém Chat com uma mensagem pronta.
           </p>
-          <ShareInvite shareUrl={shareUrl} className="mt-4" />
+          <ShareInvite shareUrl={shareUrl} className="mt-3" variant="compact" />
         </aside>
       ) : null}
       {/* Fallback links if JS is unavailable */}

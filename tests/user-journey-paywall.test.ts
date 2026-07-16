@@ -255,9 +255,7 @@ describe("Portuguese personalization labels", () => {
       "page.tsx",
     );
     expect(page).toContain("Personalize sua experiência");
-    expect(page).toContain(
-      "Conte-nos como você prefere receber suas reflexões.",
-    );
+    expect(page).toContain("tradição, estilo e profundidade");
   });
 });
 

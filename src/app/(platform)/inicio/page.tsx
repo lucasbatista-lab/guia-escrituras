@@ -17,17 +17,13 @@ import {
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
+import { THEME_SHORTCUTS } from "@/lib/journey/theme-shortcuts";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const THEME_SHORTCUTS = [
-  { label: "Ansiedade", prompt: "Estou ansioso(a) e preciso de paz." },
-  { label: "Decisões", prompt: "Preciso de sabedoria para uma decisão importante." },
-  { label: "Família", prompt: "Quero refletir sobre uma situação na família." },
-  { label: "Perdão", prompt: "Estou lutando com perdão e reconciliação." },
-  { label: "Recomeços", prompt: "Sinto que preciso de um recomeço." },
-] as const;
+const RESPONSE_FORMAT_HINT =
+  "As respostas costumam combinar reflexão bíblica, interpretação e sugestões práticas — sempre sem afirmar revelação divina.";
 
 async function loadDisplayName(userId: string): Promise<string | null> {
   try {
@@ -42,6 +38,35 @@ async function loadDisplayName(userId: string): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+function ThemeShortcutsSection({ headingId }: { headingId: string }) {
+  return (
+    <section aria-labelledby={headingId}>
+      <h2 id={headingId} className="font-display text-lg text-ink">
+        Temas para começar
+      </h2>
+      <p className="mt-1 text-sm text-ink-soft">
+        Escolha um tema para preencher o campo — você pode editar o texto antes
+        de enviar.
+      </p>
+      <ul className="mt-4 flex flex-wrap gap-2">
+        {THEME_SHORTCUTS.map((theme) => (
+          <li key={theme.label}>
+            <Link
+              href={`/conversar?tema=${encodeURIComponent(theme.prompt)}`}
+              className="inline-flex min-h-11 items-center rounded-full border border-border/70 bg-card/70 px-3.5 py-2 text-sm text-ink transition hover:border-wine/30 hover:bg-wine/[0.04] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {theme.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 text-xs leading-relaxed text-ink-soft">
+        {RESPONSE_FORMAT_HINT}
+      </p>
+    </section>
+  );
 }
 
 export default async function InicioPage() {
@@ -193,7 +218,61 @@ export default async function InicioPage() {
   }
 
   // active_ready | canceling_at_period_end
-  const isFirstReadyVisit = !resume;
+  if (!resume) {
+    return (
+      <div className="space-y-8">
+        <PlatformPageHeader
+          title={greeting}
+          description={
+            state === "canceling_at_period_end"
+              ? "Sua renovação está cancelada, mas o acesso continua até o fim do período."
+              : undefined
+          }
+          actions={
+            plan ? (
+              <PlanStatusBadge label={`Plano ${plan.name}`} tone="neutral" />
+            ) : null
+          }
+        />
+
+        <section aria-labelledby="first-reflection-heading" className="space-y-4">
+          <h2
+            id="first-reflection-heading"
+            className="font-display text-2xl text-ink sm:text-3xl"
+          >
+            O que está pesando hoje?
+          </h2>
+          <p className="max-w-xl text-base leading-relaxed text-ink-soft">
+            Você pode escrever com suas próprias palavras ou começar por um dos
+            temas abaixo. Não é necessário formular uma pergunta perfeita.
+          </p>
+          <p className="max-w-xl text-sm leading-relaxed text-ink-soft">
+            Você pode falar sobre trabalho, dinheiro, família, relacionamentos,
+            culpa, ansiedade, decisões ou silêncio espiritual.
+          </p>
+          <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
+            <Link href="/conversar">Escrever minha situação</Link>
+          </Button>
+        </section>
+
+        <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
+
+        <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/conta">Ver assinatura</Link>
+          </Button>
+          <Link
+            href="/conversas"
+            className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            Ver conversas anteriores
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const latest = resume;
 
   return (
     <div className="space-y-8">
@@ -202,9 +281,7 @@ export default async function InicioPage() {
         description={
           state === "canceling_at_period_end"
             ? "Sua renovação está cancelada, mas o acesso continua até o fim do período. Traga sua situação com calma."
-            : isFirstReadyVisit
-              ? "Tudo pronto. Sua personalização foi salva — você já pode começar."
-              : "Traga sua situação e receba uma reflexão baseada nas Escrituras."
+            : "Traga sua situação e receba uma reflexão baseada nas Escrituras."
         }
         actions={
           plan ? (
@@ -213,109 +290,63 @@ export default async function InicioPage() {
         }
       />
 
-      {isFirstReadyVisit ? (
-        <StatusCard
-          tone="success"
-          title="Tudo pronto para a primeira reflexão"
-          body="Plano ativo, preferências salvas. Escolha um tema ou escreva com as próprias palavras."
-        />
-      ) : null}
-
-      {resume ? (
-        <section
-          aria-labelledby="resume-heading"
-          className="rounded-2xl border border-wine/25 bg-gradient-to-br from-wine/[0.07] via-card/80 to-sand-100/80 p-6 sm:p-7"
+      <section
+        aria-labelledby="resume-heading"
+        className="rounded-2xl border border-wine/25 bg-gradient-to-br from-wine/[0.07] via-card/80 to-sand-100/80 p-6 sm:p-7"
+      >
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+          Continuar
+        </p>
+        <h2
+          id="resume-heading"
+          className="mt-2 font-display text-xl text-ink sm:text-2xl"
         >
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-            Continuar
-          </p>
-          <h2
-            id="resume-heading"
-            className="mt-2 font-display text-xl text-ink sm:text-2xl"
+          Continue de onde parou
+        </h2>
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+          Retome a conversa mantendo o contexto que já foi construído.
+        </p>
+        <div className="mt-4 rounded-xl border border-border/60 bg-card/70 px-4 py-3">
+          <p className="font-medium text-ink">{latest.title}</p>
+          <time
+            dateTime={latest.updatedAt}
+            className="mt-1 block text-xs text-ink-soft"
           >
-            Continue de onde parou
-          </h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Retome a conversa mantendo o contexto que já foi construído.
-          </p>
-          <div className="mt-4 rounded-xl border border-border/60 bg-card/70 px-4 py-3">
-            <p className="font-medium text-ink">{resume.title}</p>
-            <time
-              dateTime={resume.updatedAt}
-              className="mt-1 block text-xs text-ink-soft"
-            >
-              {formatConversationActivity(resume.updatedAt)}
-            </time>
-            {resume.preview ? (
-              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">
-                {resume.preview}
-              </p>
-            ) : null}
-          </div>
-          <Button asChild className="mt-6 min-h-11 bg-ink hover:bg-ink/90">
-            <Link href={`/conversar?c=${resume.conversationId}`}>
-              Retomar conversa
-            </Link>
-          </Button>
-        </section>
-      ) : null}
+            {formatConversationActivity(latest.updatedAt)}
+          </time>
+          {latest.preview ? (
+            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">
+              {latest.preview}
+            </p>
+          ) : null}
+        </div>
+        <Button asChild className="mt-6 min-h-11 bg-ink hover:bg-ink/90">
+          <Link href={`/conversar?c=${latest.conversationId}`}>
+            Retomar conversa
+          </Link>
+        </Button>
+      </section>
 
       <PrimaryActionCard
-        title={
-          isFirstReadyVisit
-            ? "Começar minha primeira reflexão"
-            : "Começar uma nova reflexão"
-        }
-        body={
-          isFirstReadyVisit
-            ? "Uma conversa guiada pelas Escrituras, no tom que você escolheu."
-            : "Abra uma conversa nova quando quiser trazer outro tema."
-        }
+        title="Começar uma nova reflexão"
+        body="Abra uma conversa nova quando quiser trazer outro tema — você não precisa continuar só a anterior."
         href="/conversar"
-        cta={
-          isFirstReadyVisit
-            ? "Começar minha primeira reflexão"
-            : "Começar uma nova reflexão"
-        }
-        tone={isFirstReadyVisit ? "emphasis" : "default"}
+        cta="Começar uma nova reflexão"
+        tone="default"
       />
 
-      <section aria-labelledby="theme-shortcuts-heading">
-        <h2
-          id="theme-shortcuts-heading"
-          className="font-display text-lg text-ink"
-        >
-          Por onde começar
-        </h2>
-        <p className="mt-1 text-sm text-ink-soft">
-          Atalhos opcionais — você também pode escrever com as próprias palavras.
-        </p>
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {THEME_SHORTCUTS.map((theme) => (
-            <li key={theme.label}>
-              <Link
-                href={`/conversar?tema=${encodeURIComponent(theme.prompt)}`}
-                className="inline-flex min-h-11 items-center rounded-full border border-border/70 bg-card/70 px-3.5 py-2 text-sm text-ink transition hover:border-wine/30 hover:bg-wine/[0.04] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                {theme.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
 
       <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
         <Button asChild variant="outline" className="min-h-11">
           <Link href="/conta">Ver assinatura</Link>
         </Button>
-        {resume ? (
-          <Link
-            href="/conversas"
-            className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            Ver conversas anteriores
-          </Link>
-        ) : null}
+        <Link
+          href="/conversas"
+          className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          Ver conversas anteriores
+        </Link>
       </div>
     </div>
   );

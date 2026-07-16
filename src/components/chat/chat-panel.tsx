@@ -22,8 +22,11 @@ interface UiMessage {
   >;
 }
 
-const WELCOME =
-  "Traga sua situação com calma. Vamos refletir à luz das Escrituras.";
+const EMPTY_EXAMPLE =
+  "Estou com medo de tomar uma decisão profissional errada e preciso organizar minhas prioridades.";
+
+const RESPONSE_FORMAT_HINT =
+  "As respostas costumam combinar reflexão bíblica, interpretação e sugestões práticas — sempre sem afirmar revelação divina.";
 
 export function ChatPanel({
   initialConversationId = null,
@@ -43,15 +46,7 @@ export function ChatPanel({
 }) {
   const hasHistory = Boolean(initialMessages && initialMessages.length > 0);
   const [messages, setMessages] = useState<UiMessage[]>(
-    hasHistory
-      ? initialMessages!
-      : [
-          {
-            id: "welcome",
-            role: "assistant",
-            content: WELCOME,
-          },
-        ],
+    hasHistory ? initialMessages! : [],
   );
   const [input, setInput] = useState(initialDraft?.trim() ?? "");
   const [conversationId, setConversationId] = useState<string | null>(
@@ -142,13 +137,22 @@ export function ChatPanel({
 
       if (!response.ok) {
         const code = "code" in data ? data.code : undefined;
-        if (response.status === 402 || code === "subscription_required") {
+        if (response.status === 401 || code === "unauthorized") {
+          setError(
+            "Sua sessão expirou. Entre novamente para continuar.",
+          );
+        } else if (response.status === 402 || code === "subscription_required") {
           setError(
             "Sua assinatura não está ativa no momento. Revise em Conta para continuar.",
           );
         } else if (response.status === 429 || code === "rate_limited") {
           setError(
             "Você enviou várias mensagens em pouco tempo. Aguarde um momento e tente de novo.",
+          );
+        } else if (code === "budget_exceeded") {
+          setError(
+            ("message" in data && data.message) ||
+              "Você atingiu a margem de uso por enquanto. Tente novamente mais tarde.",
           );
         } else if (code === "deep_response_not_entitled") {
           setError(
@@ -161,7 +165,7 @@ export function ChatPanel({
         } else {
           setError(
             ("message" in data && data.message) ||
-              "Não foi possível responder agora. Tente novamente em instantes.",
+              "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
           );
         }
         return;
@@ -187,7 +191,9 @@ export function ChatPanel({
         },
       ]);
     } catch {
-      setError("Falha de conexão. Verifique a internet e tente novamente.");
+      setError(
+        "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
+      );
     } finally {
       setLoading(false);
     }
@@ -195,6 +201,7 @@ export function ChatPanel({
 
   const profileBits = [traditionLabel, depthLabel].filter(Boolean).join(" · ");
   const deepenActive = canDeepen && preferDeep;
+  const showEmptyState = !hasHistory && messages.length === 0;
 
   return (
     <div className="flex min-h-[calc(100dvh-8.5rem)] flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-[0_8px_30px_rgba(44,36,28,0.04)] sm:min-h-[70vh]">
@@ -226,17 +233,34 @@ export function ChatPanel({
         aria-live="polite"
         aria-relevant="additions"
       >
-        {!hasHistory && messages.length === 1 ? (
-          <p className="text-sm text-ink-soft">
-            Esta será sua primeira reflexão. Escreva com as próprias palavras.
+        {showEmptyState ? (
+          <div className="max-w-[40rem] space-y-4">
+            <h2 className="font-display text-xl text-ink sm:text-2xl">
+              Escreva o que você está vivendo
+            </h2>
+            <p className="text-sm leading-relaxed text-ink-soft">
+              Não precisa organizar tudo antes. Conte a situação com suas
+              próprias palavras, e o Amém Chat ajudará a refletir à luz das
+              Escrituras e a pensar em próximos passos possíveis.
+            </p>
+            <ul className="space-y-1.5 text-sm text-ink-soft">
+              <li>Diga o que aconteceu.</li>
+              <li>Conte o que mais está pesando.</li>
+              <li>Explique que tipo de clareza você procura.</li>
+            </ul>
+            <p className="rounded-xl border border-border/50 bg-sand-50/60 px-3.5 py-3 text-sm italic leading-relaxed text-ink-soft">
+              Exemplo: {EMPTY_EXAMPLE}
+            </p>
+            <p className="text-xs leading-relaxed text-ink-soft">
+              {RESPONSE_FORMAT_HINT}
+            </p>
             {canDeepen ? (
-              <>
-                {" "}
+              <p className="text-xs leading-relaxed text-ink-soft">
                 Em situações complexas, você pode ativar “Aprofundar esta
                 resposta” antes de enviar.
-              </>
+              </p>
             ) : null}
-          </p>
+          </div>
         ) : null}
 
         {messages.map((message) => (
@@ -337,7 +361,7 @@ export function ChatPanel({
 
         <div className="flex gap-2">
           <label htmlFor="chat-input" className="sr-only">
-            Sua mensagem
+            Conte o que você está vivendo
           </label>
           <textarea
             id="chat-input"
@@ -350,7 +374,7 @@ export function ChatPanel({
                 void send();
               }
             }}
-            placeholder="Compartilhe sua situação…"
+            placeholder="Conte o que você está vivendo…"
             aria-invalid={Boolean(error)}
             aria-describedby={
               error
@@ -359,7 +383,7 @@ export function ChatPanel({
                   ? `${deepenHelpId} chat-composer-hint`
                   : "chat-composer-hint"
             }
-            className="min-h-[3.25rem] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:text-sm"
+            className="min-h-[3.25rem] max-h-40 flex-1 resize-none overflow-y-auto rounded-xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:text-sm"
             maxLength={4000}
             disabled={loading}
           />

@@ -165,7 +165,7 @@ describe("resume UI contracts", () => {
     expect(page).toContain("Retomar conversa");
     expect(page).toContain("loadLatestResumePreview");
     expect(page).toContain("force-dynamic");
-    expect(page).toContain("`/conversar?c=${resume.conversationId}`");
+    expect(page).toContain("`/conversar?c=${latest.conversationId}`");
     expect(page).toContain("Começar uma nova reflexão");
     expect(page).not.toContain("memória permanente");
     expect(page).not.toContain("a IA se lembra");

@@ -83,8 +83,8 @@ describe("launch premium conversion", () => {
 
   it("first paid entry and support address are clear", () => {
     const inicio = read("src", "app", "(platform)", "inicio", "page.tsx");
-    expect(inicio).toContain("Começar minha primeira reflexão");
-    expect(inicio).toContain("Tudo pronto");
+    expect(inicio).toContain("O que está pesando hoje?");
+    expect(inicio).toContain("Escrever minha situação");
     delete process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
     delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
     expect(getSupportEmail()).toBe("amemchatbr@gmail.com");

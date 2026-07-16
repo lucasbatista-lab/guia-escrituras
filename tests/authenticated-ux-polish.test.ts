@@ -33,42 +33,43 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Personalizar minha experiência");
     expect(page).toContain("Seu plano está ativo");
     expect(page).toContain("Começar uma nova reflexão");
+    expect(page).toContain("O que está pesando hoje?");
+    expect(page).toContain("Escrever minha situação");
     expect(page).toContain("ProgressSteps");
     expect(page).toContain("Plano");
     expect(page).toContain("Conta");
     expect(page).toContain("Pagamento");
     expect(page).toContain("Personalização");
     expect(page).toContain("Primeira reflexão");
-    expect(page).toContain("Começar minha primeira reflexão");
-    expect(page).toContain("Tudo pronto");
     expect(page).toContain("Continue de onde parou");
     expect(page).toContain("Retomar conversa");
-    expect(page).toContain("Ansiedade");
-    expect(page).toContain("Perdão");
+    expect(page).toContain("THEME_SHORTCUTS");
     expect(page).toContain("journeyAllowsChat");
     expect(page).not.toMatch(JARGON);
     expect(publicCopy(page)).not.toMatch(/\bentitlements\b/i);
     expect(page).not.toContain("acesso limitado");
     expect(page).not.toContain("Stripe");
     // Chat shortcuts only after allowsChat gate
-    const readyIdx = page.indexOf("Começar minha primeira reflexão");
+    const readyIdx = page.indexOf("O que está pesando hoje?");
     const gateIdx = page.indexOf("allowsChat");
     expect(gateIdx).toBeGreaterThan(-1);
     expect(readyIdx).toBeGreaterThan(-1);
+    const themes = read("src", "lib", "journey", "theme-shortcuts.ts");
+    expect(themes).toContain("Ansiedade e decisões");
+    expect(themes).toContain("Perdão e família");
   });
 
   it("personalizar avoids internal keys and uses guided copy", () => {
     const page = read("src", "app", "(platform)", "personalizar", "page.tsx");
     const form = read("src", "components", "auth", "onboarding-form.tsx");
     expect(page).toContain("Personalize sua experiência");
-    expect(page).toContain(
-      "Conte-nos como você prefere receber suas reflexões.",
-    );
+    expect(page).toContain("tradição, estilo e profundidade");
     expect(form).toContain("Salvar e começar");
     expect(form).toContain("ProgressSteps");
     expect(form).toContain("PERSONALIZATION_TRADITIONS");
     expect(form).toContain("PERSONALIZATION_STYLES");
     expect(form).toContain("PERSONALIZATION_DEPTHS");
+    expect(form).toContain("PERSONALIZATION_DEPTH_NOTE");
     expect(form).not.toContain("<select");
     expect(form).not.toContain("Concluir onboarding");
     expect(form).not.toMatch(/>\s*ecumenical\s*</);

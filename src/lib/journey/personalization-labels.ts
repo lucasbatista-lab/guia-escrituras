@@ -8,19 +8,19 @@ export const PERSONALIZATION_TRADITIONS = [
     key: "ecumenical",
     label: "Cristã ecumênica",
     description:
-      "Foco no que cristãos compartilham: Escrituras, graça e discipulado, com linguagem cuidadosa.",
+      "Uma abordagem cristã ampla, sem priorizar uma denominação específica.",
   },
   {
     key: "evangelical",
     label: "Evangélica",
     description:
-      "Ênfase nas Escrituras, graça e aplicação prática, sem devoção a santos.",
+      "Referências e linguagem alinhadas à tradição evangélica.",
   },
   {
     key: "catholic",
     label: "Católica",
     description:
-      "Escrituras com sensibilidade à tradição católica, quando você permitir.",
+      "Referências e linguagem alinhadas à tradição católica.",
   },
 ] as const;
 
@@ -46,16 +46,22 @@ export const PERSONALIZATION_DEPTHS = [
   {
     key: "brief",
     label: "Breve",
-    description: "Resposta curta, com o essencial.",
+    description: "Uma resposta mais direta, para organizar o próximo passo.",
   },
   {
     key: "balanced",
     label: "Equilibrada",
-    description: "Equilíbrio entre acolhimento e profundidade.",
+    description:
+      "Reflexão bíblica e aplicação prática com mais contexto.",
   },
   {
     key: "deep",
     label: "Profunda",
-    description: "Reflexão mais longa, com aplicação cuidadosa.",
+    description:
+      "Uma reflexão mais desenvolvida dentro das respostas comuns.",
   },
 ] as const;
+
+/** Distinguishes profile default depth from on-demand chat_deep. */
+export const PERSONALIZATION_DEPTH_NOTE =
+  "A profundidade padrão organiza o estilo das respostas comuns. No plano Profundo, também existe a opção de aprofundar uma mensagem específica.";

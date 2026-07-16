@@ -13,6 +13,7 @@ import {
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
+import { sanitizeThemeDraft } from "@/lib/journey/theme-shortcuts";
 
 export default async function ConversarPage({
   searchParams,
@@ -34,10 +35,7 @@ export default async function ConversarPage({
   const conversationParam = Array.isArray(raw) ? raw[0] : raw;
   const temaRaw = params.tema;
   const temaParam = Array.isArray(temaRaw) ? temaRaw[0] : temaRaw;
-  const initialDraft =
-    typeof temaParam === "string" && temaParam.trim().length > 0
-      ? temaParam.trim().slice(0, 400)
-      : undefined;
+  const initialDraft = sanitizeThemeDraft(temaParam);
 
   const traditionLabel = traditionLabelPt(
     auth.spiritualProfile.traditionKey,
