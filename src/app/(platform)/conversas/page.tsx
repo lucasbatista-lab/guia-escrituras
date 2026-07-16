@@ -4,19 +4,21 @@ import { EmptyState } from "@/components/platform/empty-state";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
+import {
+  conversationTitleLabel,
+  formatConversationActivity,
+} from "@/lib/conversations/resume";
 import { getRepositories } from "@/lib/database/repositories";
 import {
   getRequiredDestinationForState,
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
+import { cn } from "@/lib/utils";
 
-function sanitizePreview(title: string | null): string {
-  const raw = (title ?? "").replace(/\s+/g, " ").trim();
-  if (!raw) return "Conversa sem título";
-  // Avoid dumping long sensitive content in list previews.
-  return raw.length > 72 ? `${raw.slice(0, 72).trim()}…` : raw;
-}
+export const dynamic = "force-dynamic";
+
+const LIST_LIMIT = 30;
 
 export default async function ConversasPage() {
   const auth = await getAuthUserContext();
@@ -32,7 +34,7 @@ export default async function ConversasPage() {
   let rows: Array<{ id: string; title: string | null; updatedAt: string }> = [];
   try {
     const repos = getRepositories();
-    const list = await repos.conversations.listForUser(auth.userId, 30);
+    const list = await repos.conversations.listForUser(auth.userId, LIST_LIMIT);
     rows = list.map((c) => ({
       id: c.id,
       title: c.title,
@@ -57,35 +59,50 @@ export default async function ConversasPage() {
       {rows.length === 0 ? (
         <EmptyState
           title="Nenhuma conversa ainda"
-          description="Quando você começar a conversar, suas reflexões aparecerão aqui."
+          description="Quando você iniciar uma conversa, ela ficará disponível aqui para ser retomada."
           actionHref="/conversar"
           actionLabel="Começar uma reflexão"
         />
       ) : (
         <ul className="space-y-3">
-          {rows.map((row) => (
-            <li key={row.id}>
-              <Link
-                href={`/conversar?c=${row.id}`}
-                className="block rounded-2xl border border-border/70 bg-card/70 px-4 py-4 transition hover:border-wine/25 hover:bg-card focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-medium text-ink">
-                    {sanitizePreview(row.title)}
-                  </h2>
-                  <time
-                    dateTime={row.updatedAt}
-                    className="shrink-0 text-xs text-ink-soft"
-                  >
-                    {new Date(row.updatedAt).toLocaleDateString("pt-BR")}
-                  </time>
-                </div>
-                <p className="mt-1.5 text-sm text-ink-soft">
-                  Abrir conversa
-                </p>
-              </Link>
-            </li>
-          ))}
+          {rows.map((row, index) => {
+            const isLatest = index === 0;
+            return (
+              <li key={row.id}>
+                <Link
+                  href={`/conversar?c=${row.id}`}
+                  className={cn(
+                    "block rounded-2xl border px-4 py-4 transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-5",
+                    isLatest
+                      ? "border-wine/30 bg-wine/[0.04] hover:border-wine/40"
+                      : "border-border/70 bg-card/70 hover:border-wine/25 hover:bg-card",
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      {isLatest ? (
+                        <p className="mb-1 text-xs font-medium uppercase tracking-[0.12em] text-wine">
+                          Mais recente
+                        </p>
+                      ) : null}
+                      <h2 className="font-medium text-ink">
+                        {conversationTitleLabel(row.title)}
+                      </h2>
+                    </div>
+                    <time
+                      dateTime={row.updatedAt}
+                      className="shrink-0 text-xs text-ink-soft"
+                    >
+                      {formatConversationActivity(row.updatedAt)}
+                    </time>
+                  </div>
+                  <p className="mt-1.5 text-sm text-ink-soft">
+                    {isLatest ? "Retomar conversa" : "Abrir conversa"}
+                  </p>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -7,14 +7,19 @@ import { ProgressSteps } from "@/components/platform/progress-steps";
 import { StatusCard } from "@/components/platform/status-card";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
+import {
+  formatConversationActivity,
+  loadLatestResumePreview,
+} from "@/lib/conversations/resume";
 import { getPlanByKey } from "@/lib/entitlements";
 import {
   firstNameFromDisplayName,
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
-import { getRepositories } from "@/lib/database/repositories";
 import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 const THEME_SHORTCUTS = [
   { label: "Ansiedade", prompt: "Estou ansioso(a) e preciso de paz." },
@@ -54,17 +59,12 @@ export default async function InicioPage() {
   const plan = auth.planKey ? getPlanByKey(auth.planKey) : null;
   const allowsChat = journeyAllowsChat(state);
 
-  let recentConversation: { id: string; title: string | null } | null = null;
+  let resume = null;
   if (allowsChat) {
     try {
-      const repos = getRepositories();
-      const list = await repos.conversations.listForUser(auth.userId, 1);
-      const first = list[0];
-      if (first) {
-        recentConversation = { id: first.id, title: first.title };
-      }
+      resume = await loadLatestResumePreview(auth.userId);
     } catch {
-      recentConversation = null;
+      resume = null;
     }
   }
 
@@ -193,7 +193,7 @@ export default async function InicioPage() {
   }
 
   // active_ready | canceling_at_period_end
-  const isFirstReadyVisit = !recentConversation;
+  const isFirstReadyVisit = !resume;
 
   return (
     <div className="space-y-8">
@@ -221,28 +221,63 @@ export default async function InicioPage() {
         />
       ) : null}
 
+      {resume ? (
+        <section
+          aria-labelledby="resume-heading"
+          className="rounded-2xl border border-wine/25 bg-gradient-to-br from-wine/[0.07] via-card/80 to-sand-100/80 p-6 sm:p-7"
+        >
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+            Continuar
+          </p>
+          <h2
+            id="resume-heading"
+            className="mt-2 font-display text-xl text-ink sm:text-2xl"
+          >
+            Continue de onde parou
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+            Retome a conversa mantendo o contexto que já foi construído.
+          </p>
+          <div className="mt-4 rounded-xl border border-border/60 bg-card/70 px-4 py-3">
+            <p className="font-medium text-ink">{resume.title}</p>
+            <time
+              dateTime={resume.updatedAt}
+              className="mt-1 block text-xs text-ink-soft"
+            >
+              {formatConversationActivity(resume.updatedAt)}
+            </time>
+            {resume.preview ? (
+              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">
+                {resume.preview}
+              </p>
+            ) : null}
+          </div>
+          <Button asChild className="mt-6 min-h-11 bg-ink hover:bg-ink/90">
+            <Link href={`/conversar?c=${resume.conversationId}`}>
+              Retomar conversa
+            </Link>
+          </Button>
+        </section>
+      ) : null}
+
       <PrimaryActionCard
         title={
           isFirstReadyVisit
             ? "Começar minha primeira reflexão"
-            : "Começar uma reflexão"
+            : "Começar uma nova reflexão"
         }
         body={
-          recentConversation?.title
-            ? `Continuar: ${recentConversation.title}`
-            : "Uma conversa guiada pelas Escrituras, no tom que você escolheu."
+          isFirstReadyVisit
+            ? "Uma conversa guiada pelas Escrituras, no tom que você escolheu."
+            : "Abra uma conversa nova quando quiser trazer outro tema."
         }
-        href={
-          recentConversation
-            ? `/conversar?c=${recentConversation.id}`
-            : "/conversar"
-        }
+        href="/conversar"
         cta={
           isFirstReadyVisit
             ? "Começar minha primeira reflexão"
-            : "Começar uma reflexão"
+            : "Começar uma nova reflexão"
         }
-        tone="emphasis"
+        tone={isFirstReadyVisit ? "emphasis" : "default"}
       />
 
       <section aria-labelledby="theme-shortcuts-heading">
@@ -273,7 +308,7 @@ export default async function InicioPage() {
         <Button asChild variant="outline" className="min-h-11">
           <Link href="/conta">Ver assinatura</Link>
         </Button>
-        {recentConversation ? (
+        {resume ? (
           <Link
             href="/conversas"
             className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"

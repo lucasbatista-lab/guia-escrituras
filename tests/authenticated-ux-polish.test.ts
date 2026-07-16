@@ -32,7 +32,7 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Escolher meu plano");
     expect(page).toContain("Personalizar minha experiência");
     expect(page).toContain("Seu plano está ativo");
-    expect(page).toContain("Começar uma reflexão");
+    expect(page).toContain("Começar uma nova reflexão");
     expect(page).toContain("ProgressSteps");
     expect(page).toContain("Plano");
     expect(page).toContain("Conta");
@@ -41,6 +41,8 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Primeira reflexão");
     expect(page).toContain("Começar minha primeira reflexão");
     expect(page).toContain("Tudo pronto");
+    expect(page).toContain("Continue de onde parou");
+    expect(page).toContain("Retomar conversa");
     expect(page).toContain("Ansiedade");
     expect(page).toContain("Perdão");
     expect(page).toContain("journeyAllowsChat");
@@ -118,6 +120,7 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Nova reflexão");
     expect(page).toContain("EmptyState");
     expect(page).toContain("listForUser");
+    expect(page).toContain("Retomar conversa");
     expect(page).not.toContain("listRecent");
     expect(page).not.toMatch(JARGON);
   });

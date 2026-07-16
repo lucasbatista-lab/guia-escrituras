@@ -63,6 +63,15 @@ class MemoryConversations implements ConversationRepository {
     messages.set(row.id, []);
     return row;
   }
+
+  async touchForUser(conversationId: string, userId: string) {
+    const row = conversations.get(conversationId);
+    if (!row || row.userId !== userId) return;
+    conversations.set(conversationId, {
+      ...row,
+      updatedAt: new Date().toISOString(),
+    });
+  }
 }
 
 class MemoryMessages implements MessageRepository {
@@ -71,6 +80,15 @@ class MemoryMessages implements MessageRepository {
       (m) => m.userId === userId,
     );
     return list.slice(-limit);
+  }
+
+  async findLatestUserMessage(conversationId: string, userId: string) {
+    const list = (messages.get(conversationId) ?? []).filter(
+      (m) => m.userId === userId && m.role === "user",
+    );
+    const last = list[list.length - 1];
+    if (!last) return null;
+    return { content: last.content, createdAt: last.createdAt };
   }
 
   async findByRequestId(
@@ -133,6 +151,13 @@ class MemoryMessages implements MessageRepository {
     const list = messages.get(input.conversationId) ?? [];
     list.push(row);
     messages.set(input.conversationId, list);
+    const conversation = conversations.get(input.conversationId);
+    if (conversation && conversation.userId === input.userId) {
+      conversations.set(input.conversationId, {
+        ...conversation,
+        updatedAt: new Date().toISOString(),
+      });
+    }
     return row;
   }
 
@@ -163,6 +188,13 @@ class MemoryMessages implements MessageRepository {
     const list = messages.get(input.conversationId) ?? [];
     list.push(row);
     messages.set(input.conversationId, list);
+    const conversation = conversations.get(input.conversationId);
+    if (conversation && conversation.userId === input.userId) {
+      conversations.set(input.conversationId, {
+        ...conversation,
+        updatedAt: new Date().toISOString(),
+      });
+    }
     return row;
   }
 }

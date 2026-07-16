@@ -80,6 +80,8 @@ export interface ConversationRepository {
     personaKey: string;
     title?: string;
   }): Promise<ConversationRecord>;
+  /** Bump activity timestamp for ownership-validated conversation. */
+  touchForUser(conversationId: string, userId: string): Promise<void>;
 }
 
 export interface MessageRepository {
@@ -88,6 +90,11 @@ export interface MessageRepository {
     userId: string,
     limit: number,
   ): Promise<MessageRecord[]>;
+  /** Latest user message only — for resume previews (no full history). */
+  findLatestUserMessage(
+    conversationId: string,
+    userId: string,
+  ): Promise<Pick<MessageRecord, "content" | "createdAt"> | null>;
   /** Returns existing message if request_id already stored (idempotent). */
   findByRequestId(
     userId: string,

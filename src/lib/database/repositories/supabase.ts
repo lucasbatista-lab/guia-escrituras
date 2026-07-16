@@ -70,6 +70,22 @@ async function userClient() {
   return client;
 }
 
+async function bumpConversationActivity(
+  conversationId: string,
+  userId: string,
+): Promise<void> {
+  try {
+    const supabase = await userClient();
+    await supabase
+      .from("conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", conversationId)
+      .eq("user_id", userId);
+  } catch {
+    // Best-effort activity bump — never fail the chat turn.
+  }
+}
+
 class SupabaseSpiritualProfiles implements SpiritualProfileRepository {
   async getByUserId(userId: string) {
     const supabase = await userClient();
@@ -162,6 +178,19 @@ class SupabaseConversations implements ConversationRepository {
     }
     return mapConversation(data);
   }
+
+  async touchForUser(conversationId: string, userId: string) {
+    const supabase = await userClient();
+    const { error } = await supabase
+      .from("conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", conversationId)
+      .eq("user_id", userId);
+    if (error) {
+      // Activity bump is best-effort — never fail the chat turn.
+      return;
+    }
+  }
 }
 
 class SupabaseMessages implements MessageRepository {
@@ -178,6 +207,32 @@ class SupabaseMessages implements MessageRepository {
       throw new AppError(error.message, "db_error", 500, "Erro ao carregar mensagens.");
     }
     return (data ?? []).map(mapMessage).reverse();
+  }
+
+  async findLatestUserMessage(conversationId: string, userId: string) {
+    const supabase = await userClient();
+    const { data, error } = await supabase
+      .from("messages")
+      .select("content, created_at")
+      .eq("conversation_id", conversationId)
+      .eq("user_id", userId)
+      .eq("role", "user")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      throw new AppError(
+        error.message,
+        "db_error",
+        500,
+        "Erro ao carregar mensagem.",
+      );
+    }
+    if (!data) return null;
+    return {
+      content: data.content as string,
+      createdAt: data.created_at as string,
+    };
   }
 
   async findByRequestId(
@@ -264,6 +319,7 @@ class SupabaseMessages implements MessageRepository {
         "Não foi possível salvar sua mensagem.",
       );
     }
+    await bumpConversationActivity(input.conversationId, input.userId);
     return mapMessage(data);
   }
 
@@ -313,6 +369,7 @@ class SupabaseMessages implements MessageRepository {
         "A resposta foi gerada, mas não pôde ser salva completamente.",
       );
     }
+    await bumpConversationActivity(input.conversationId, input.userId);
     return mapMessage(data);
   }
 }

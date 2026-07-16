@@ -4,6 +4,8 @@ import {
   resolveUserJourneyState,
 } from "@/lib/journey";
 
+export const dynamic = "force-dynamic";
+
 export default async function PlatformLayout({
   children,
 }: {
