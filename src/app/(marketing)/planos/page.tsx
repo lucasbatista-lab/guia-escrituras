@@ -69,6 +69,9 @@ export default async function PlanosPage() {
         </div>
 
         <p className="mt-10 max-w-2xl text-sm text-ink-soft">
+          A profundidade do perfil define o estilo das respostas comuns. A
+          resposta aprofundada sob demanda é um modo especial por mensagem,
+          disponível no Profundo (e no Particular quando provisionado).{" "}
           Recursos ainda em construção aparecem em cada cartão como “Em
           desenvolvimento” e não fazem parte da promessa ativa.{" "}
           <TrackingLink

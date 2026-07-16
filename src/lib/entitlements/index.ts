@@ -17,3 +17,7 @@ export {
   type EntitlementResolution,
   type EntitlementResolutionInput,
 } from "./resolve";
+export {
+  canUseDeepResponseOnDemand,
+  DEEP_RESPONSE_NOT_ENTITLED_MESSAGE,
+} from "./deep-response";

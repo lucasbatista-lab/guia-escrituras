@@ -100,9 +100,12 @@ describe("purchase experience — honest plan cards", () => {
     }
     const profundo = getPlanByKey("profundo");
     expect(profundo?.upcomingBenefits?.join(" ")).toMatch(/áudio|audio/i);
-    expect(profundo?.upcomingBenefits?.some((b) =>
+    expect(profundo?.displayBenefits?.some((b) =>
       /resposta aprofundada/i.test(b),
     )).toBe(true);
+    expect(profundo?.upcomingBenefits?.some((b) =>
+      /resposta aprofundada/i.test(b),
+    )).toBe(false);
     expect(profundo?.displayBenefits.join(" ")).toMatch(/margem/i);
     expect(profundo?.tagline).toMatch(/intens/i);
   });

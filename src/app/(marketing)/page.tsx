@@ -103,7 +103,7 @@ const faq = [
   },
   {
     q: "Qual a diferença entre as profundidades?",
-    a: "Breve traz clareza direta; Equilibrada une reflexão e aplicação; Profunda desenvolve mais o tema. Você escolhe no perfil.",
+    a: "Breve, Equilibrada e Profunda no perfil definem o estilo das respostas comuns. Separadamente, o plano Profundo oferece “Aprofundar esta resposta” sob demanda — uma análise mais desenvolvida só naquela mensagem, sem alterar sua preferência salva.",
   },
   {
     q: "Posso cancelar?",

@@ -73,8 +73,14 @@ describe("plan promises — catalog honesty", () => {
     expect(active).not.toMatch(/suporte prioritário|suporte prioritario/);
     expect(active).not.toMatch(/áudio|audio/);
     expect(active).not.toMatch(/memória estendida/);
+    expect(plan.displayBenefits.some((b) =>
+      /resposta aprofundada/i.test(b),
+    )).toBe(true);
     expect(plan.upcomingBenefits?.some((b) =>
       /resposta aprofundada/i.test(b),
+    )).toBe(false);
+    expect(plan.upcomingBenefits?.some((b) =>
+      /perspectivas bíblicas/i.test(b),
     )).toBe(true);
   });
 

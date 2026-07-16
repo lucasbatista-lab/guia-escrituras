@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { brand } from "@/config/brand";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
-import { getPlanByKey } from "@/lib/entitlements";
+import { getPlanByKey, canUseDeepResponseOnDemand } from "@/lib/entitlements";
 import {
   preferredDepthLabelPt,
   responseStyleLabelPt,
@@ -85,6 +85,7 @@ export default async function ContaPage() {
   }
 
   const personalizationDone = auth.spiritualProfile.onboardingCompleted;
+  const hasDeepOnDemand = canUseDeepResponseOnDemand(auth.planKey);
 
   return (
     <div className="space-y-8">
@@ -212,6 +213,11 @@ export default async function ContaPage() {
                   ? "A renovação automática está desativada. Você mantém o acesso até a data indicada."
                   : "Renovação automática indisponível para este tipo de assinatura."}
             </p>
+            {hasDeepOnDemand ? (
+              <p className="mt-3 text-sm text-ink-soft">
+                Resposta aprofundada sob demanda disponível no chat.
+              </p>
+            ) : null}
             {level !== "normal" ? (
               <div className="mt-4">
                 <InlineNotice tone="info">

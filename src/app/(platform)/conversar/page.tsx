@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
+import { canUseDeepResponseOnDemand } from "@/lib/entitlements";
 import { isUuid } from "@/lib/navigation/safe-next-path";
 import {
   preferredDepthLabelPt,
@@ -44,6 +45,7 @@ export default async function ConversarPage({
   const depthLabel = preferredDepthLabelPt(
     auth.spiritualProfile.preferredDepth,
   );
+  const canDeepen = canUseDeepResponseOnDemand(auth.planKey);
 
   if (!conversationParam?.trim()) {
     return (
@@ -51,6 +53,7 @@ export default async function ConversarPage({
         traditionLabel={traditionLabel}
         depthLabel={depthLabel}
         initialDraft={initialDraft}
+        canDeepen={canDeepen}
       />
     );
   }
@@ -61,6 +64,7 @@ export default async function ConversarPage({
         traditionLabel={traditionLabel}
         depthLabel={depthLabel}
         initialDraft={initialDraft}
+        canDeepen={canDeepen}
       />
     );
   }
@@ -108,6 +112,7 @@ export default async function ConversarPage({
       initialMessages={initialMessages}
       traditionLabel={traditionLabel}
       depthLabel={depthLabel}
+      canDeepen={canDeepen}
     />
   );
 }

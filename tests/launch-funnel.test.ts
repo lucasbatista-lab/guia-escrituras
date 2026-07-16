@@ -108,9 +108,12 @@ describe("launch benefits honesty", () => {
     expect(profundo.upcomingBenefits?.some((b) => /memória ampliada/i.test(b))).toBe(
       true,
     );
-    expect(profundo.upcomingBenefits?.some((b) =>
+    expect(profundo.displayBenefits.some((b) =>
       /resposta aprofundada/i.test(b),
     )).toBe(true);
+    expect(profundo.upcomingBenefits?.some((b) =>
+      /resposta aprofundada/i.test(b),
+    )).toBe(false);
 
     const caminho = getPlanByKey("caminho")!;
     expect(caminho.displayBenefits.join(" ")).toMatch(/frequente/i);

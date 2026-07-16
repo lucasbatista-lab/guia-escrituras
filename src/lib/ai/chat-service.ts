@@ -9,7 +9,12 @@ import type { ChatRequestInput, ChatResponsePayload } from "@/lib/ai/chat-schema
 import type { AuthUserContext } from "@/lib/auth";
 import { requiresRealOpenAiForChat } from "@/config/runtime";
 import { getRepositories } from "@/lib/database/repositories";
-import { resolveEntitlements } from "@/lib/entitlements";
+import {
+  canUseDeepResponseOnDemand,
+  DEEP_RESPONSE_NOT_ENTITLED_MESSAGE,
+  resolveEntitlements,
+} from "@/lib/entitlements";
+
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
 import { theologyPolicyResolver } from "@/lib/theology";
@@ -85,12 +90,14 @@ export async function runChatTurn(input: {
     );
   }
 
-  if (body.preferDeep && !entitlements.has("chat_deep")) {
+  // preferDeep is per-turn only — never mutates profile preferredDepth.
+  // Authorization uses effective planKey from auth (subscription), not client.
+  if (body.preferDeep && !canUseDeepResponseOnDemand(auth.planKey)) {
     throw new AppError(
-      "deep_not_allowed",
-      "deep_not_allowed",
+      "deep_response_not_entitled",
+      "deep_response_not_entitled",
       403,
-      "Conversas profundas não estão disponíveis no seu plano.",
+      DEEP_RESPONSE_NOT_ENTITLED_MESSAGE,
     );
   }
 

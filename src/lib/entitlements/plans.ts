@@ -73,9 +73,9 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "Maior margem de uso mensal",
       "Maior tolerância para uso frequente ao longo do dia",
       "Histórico, memória e personalização já existentes",
+      "Resposta aprofundada sob demanda — escolha quando uma situação precisa de uma análise mais desenvolvida",
     ],
     upcomingBenefits: [
-      "Resposta aprofundada sob demanda",
       "Perspectivas bíblicas adicionais",
       "Memória ampliada entre sessões",
       "Recursos em áudio",
@@ -107,6 +107,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     displayBenefits: [
       "Acompanhamento sob medida, com alinhamento prévio",
       "Valor de referência sujeito a avaliação conjunta",
+      "Resposta aprofundada sob demanda, quando o acesso estiver provisionado",
     ],
     upcomingBenefits: [
       "Possibilidades avaliadas após alinhamento: concierge, WhatsApp e recursos avançados",

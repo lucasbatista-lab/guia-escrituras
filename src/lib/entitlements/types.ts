@@ -36,7 +36,7 @@ export interface PlanDefinition {
 export const ENTITLEMENT_LABELS: Record<EntitlementKey, string> = {
   chat_standard: "Conversas com orientação bíblica",
   chat_frequent: "Uso frequente ao longo do mês",
-  chat_deep: "Conversas profundas com maior contexto",
+  chat_deep: "Resposta aprofundada sob demanda",
   short_memory: "Memória curta da conversa",
   extended_memory: "Memória estendida entre sessões",
   multiple_personas: "Múltiplas perspectivas mentoras",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { InlineNotice } from "@/components/platform/inline-notice";
 import { Button } from "@/components/ui/button";
 import type { ChatResponsePayload } from "@/lib/ai/chat-schema";
@@ -31,12 +31,15 @@ export function ChatPanel({
   traditionLabel,
   depthLabel,
   initialDraft,
+  canDeepen = false,
 }: {
   initialConversationId?: string | null;
   initialMessages?: UiMessage[];
   traditionLabel?: string;
   depthLabel?: string;
   initialDraft?: string;
+  /** Server-resolved: Profundo / Particular provisioned only. */
+  canDeepen?: boolean;
 }) {
   const hasHistory = Boolean(initialMessages && initialMessages.length > 0);
   const [messages, setMessages] = useState<UiMessage[]>(
@@ -58,6 +61,13 @@ export function ChatPanel({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stickToBottom, setStickToBottom] = useState(true);
+  const [preferDeep, setPreferDeep] = useState(false);
+  /** Keep preferDeep for retries of the same failed send. */
+  const pendingDeepRef = useRef(false);
+  const [sendingDeep, setSendingDeep] = useState(false);
+
+  const deepenId = useId();
+  const deepenHelpId = useId();
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -90,6 +100,16 @@ export function ChatPanel({
     setLoading(true);
     setStickToBottom(true);
     const requestId = pendingRequestId ?? crypto.randomUUID();
+    const isRetry = Boolean(pendingRequestId);
+    const useDeep = canDeepen
+      ? isRetry
+        ? pendingDeepRef.current
+        : preferDeep
+      : false;
+    if (!isRetry) {
+      pendingDeepRef.current = useDeep;
+    }
+    setSendingDeep(useDeep);
     setPendingRequestId(requestId);
 
     const userMessage: UiMessage = {
@@ -112,6 +132,7 @@ export function ChatPanel({
           conversationId,
           personaKey: "jesus",
           requestId,
+          preferDeep: useDeep,
         }),
       });
 
@@ -129,6 +150,14 @@ export function ChatPanel({
           setError(
             "Você enviou várias mensagens em pouco tempo. Aguarde um momento e tente de novo.",
           );
+        } else if (code === "deep_response_not_entitled") {
+          setError(
+            ("message" in data && data.message) ||
+              "A resposta aprofundada sob demanda está disponível no plano Profundo.",
+          );
+          setPreferDeep(false);
+          pendingDeepRef.current = false;
+          setSendingDeep(false);
         } else {
           setError(
             ("message" in data && data.message) ||
@@ -141,6 +170,9 @@ export function ChatPanel({
       const payload = data as ChatResponsePayload;
       setConversationId(payload.conversationId);
       setPendingRequestId(null);
+      pendingDeepRef.current = false;
+      setPreferDeep(false);
+      setSendingDeep(false);
       setMessages((prev) => [
         ...prev,
         {
@@ -162,6 +194,7 @@ export function ChatPanel({
   }
 
   const profileBits = [traditionLabel, depthLabel].filter(Boolean).join(" · ");
+  const deepenActive = canDeepen && preferDeep;
 
   return (
     <div className="flex min-h-[calc(100dvh-8.5rem)] flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-[0_8px_30px_rgba(44,36,28,0.04)] sm:min-h-[70vh]">
@@ -196,6 +229,13 @@ export function ChatPanel({
         {!hasHistory && messages.length === 1 ? (
           <p className="text-sm text-ink-soft">
             Esta será sua primeira reflexão. Escreva com as próprias palavras.
+            {canDeepen ? (
+              <>
+                {" "}
+                Em situações complexas, você pode ativar “Aprofundar esta
+                resposta” antes de enviar.
+              </>
+            ) : null}
           </p>
         ) : null}
 
@@ -227,7 +267,9 @@ export function ChatPanel({
             role="status"
             aria-live="polite"
           >
-            Preparando uma reflexão…
+            {sendingDeep
+              ? "Preparando uma reflexão aprofundada…"
+              : "Preparando uma reflexão…"}
           </p>
         ) : null}
         <div ref={bottomRef} />
@@ -239,6 +281,60 @@ export function ChatPanel({
             <InlineNotice tone="error">{error}</InlineNotice>
           </div>
         ) : null}
+
+        {canDeepen ? (
+          <div
+            className={cn(
+              "mb-3 rounded-xl border px-3 py-2.5",
+              deepenActive
+                ? "border-wine/40 bg-wine/5"
+                : "border-border/70 bg-sand-50/50",
+            )}
+          >
+            <div className="flex items-start gap-3">
+              <input
+                id={deepenId}
+                type="checkbox"
+                checked={preferDeep}
+                onChange={(e) => setPreferDeep(e.target.checked)}
+                disabled={loading}
+                aria-describedby={deepenHelpId}
+                className="mt-1 h-4 w-4 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <div className="min-w-0">
+                <label
+                  htmlFor={deepenId}
+                  className="block text-sm font-medium text-ink"
+                >
+                  Aprofundar esta resposta
+                  {deepenActive ? (
+                    <span className="ml-2 text-xs font-normal text-wine">
+                      · ativo nesta mensagem
+                    </span>
+                  ) : null}
+                </label>
+                <p
+                  id={deepenHelpId}
+                  className="mt-0.5 text-xs leading-relaxed text-ink-soft"
+                >
+                  Usa uma análise mais extensa para esta mensagem e consome mais
+                  da sua margem de uso.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="mb-3 text-xs leading-relaxed text-ink-soft">
+            Resposta aprofundada sob demanda está disponível no plano Profundo.{" "}
+            <Link
+              href="/planos"
+              className="text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              Conhecer o Profundo
+            </Link>
+          </p>
+        )}
+
         <div className="flex gap-2">
           <label htmlFor="chat-input" className="sr-only">
             Sua mensagem
@@ -257,7 +353,11 @@ export function ChatPanel({
             placeholder="Compartilhe sua situação…"
             aria-invalid={Boolean(error)}
             aria-describedby={
-              error ? "chat-error" : "chat-composer-hint"
+              error
+                ? "chat-error"
+                : canDeepen
+                  ? `${deepenHelpId} chat-composer-hint`
+                  : "chat-composer-hint"
             }
             className="min-h-[3.25rem] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:text-sm"
             maxLength={4000}
