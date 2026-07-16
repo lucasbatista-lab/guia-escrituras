@@ -12,8 +12,21 @@ import { getBudgetConfig } from "@/lib/usage";
 import { currentYearMonth } from "@/lib/utils";
 import { getTraditionPolicy } from "@/lib/theology";
 import { AdminMetricsError, maskUserId } from "./metrics";
+import {
+  ADMIN_QUERY_MAX_PAGES,
+  ADMIN_QUERY_PAGE_SIZE,
+  collectColumnPaginated,
+  fetchAllRowsPaginated,
+  intersectIdSets,
+  paginateSortedIds,
+} from "./paginate";
 import { assertAdminServiceAccess } from "./require-admin";
 import { logger } from "@/lib/logging/logger";
+import {
+  buildUserSubscriptionViews,
+  matchesAdminUserFilters,
+  type AdminUserFilterMatchInput,
+} from "./user-filter-index";
 
 function admin() {
   try {
@@ -65,7 +78,7 @@ async function findUserIdsByEmail(query: string): Promise<string[]> {
   const needle = query.trim().toLowerCase();
   const ids: string[] = [];
   const perPage = 200;
-  const maxPages = 10;
+  const maxPages = ADMIN_QUERY_MAX_PAGES;
 
   for (let page = 1; page <= maxPages; page += 1) {
     const { data, error } = await client.auth.admin.listUsers({
@@ -125,7 +138,7 @@ async function findUserIdsCancelingWithAccess(): Promise<string[]> {
     const customerIds = new Set<string>();
     for (const status of ["active", "trialing"] as const) {
       let startingAfter: string | undefined;
-      for (let page = 0; page < 5; page += 1) {
+      for (let page = 0; page < ADMIN_QUERY_MAX_PAGES; page += 1) {
         const list = await stripe.subscriptions.list({
           status,
           limit: 100,
@@ -143,14 +156,163 @@ async function findUserIdsCancelingWithAccess(): Promise<string[]> {
     }
     if (customerIds.size === 0) return [];
     const client = admin();
-    const { data } = await client
-      .from("billing_customers")
-      .select("user_id")
-      .in("stripe_customer_id", [...customerIds]);
-    return (data ?? []).map((r) => r.user_id as string);
+    const { values } = await collectColumnPaginated<{ user_id: string }, string>(
+      (from, to) =>
+        client
+          .from("billing_customers")
+          .select("user_id")
+          .in("stripe_customer_id", [...customerIds])
+          .range(from, to),
+      (row) => row.user_id as string,
+    );
+    return [...new Set(values)];
   } catch {
     return [];
   }
+}
+
+async function fetchLiveAndPastDueCandidates(): Promise<{
+  live: SubscriptionCandidate[];
+  pastDueUserIds: Set<string>;
+}> {
+  const client = admin();
+  const [livePage, pastDuePage] = await Promise.all([
+    fetchAllRowsPaginated<Record<string, unknown>>(
+      (from, to) =>
+        client
+          .from("subscriptions")
+          .select(
+            "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
+          )
+          .in("status", ["active", "trialing"])
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, to),
+      { pageSize: ADMIN_QUERY_PAGE_SIZE, maxPages: ADMIN_QUERY_MAX_PAGES },
+    ),
+    fetchAllRowsPaginated<{ user_id: string }>(
+      (from, to) =>
+        client
+          .from("subscriptions")
+          .select("user_id")
+          .eq("status", "past_due")
+          .order("user_id", { ascending: true })
+          .range(from, to),
+      { pageSize: ADMIN_QUERY_PAGE_SIZE, maxPages: ADMIN_QUERY_MAX_PAGES },
+    ),
+  ]);
+
+  return {
+    live: livePage.rows.map((row) => mapSubRow(row)),
+    pastDueUserIds: new Set(pastDuePage.rows.map((r) => r.user_id as string)),
+  };
+}
+
+async function fetchOnboardingByUser(): Promise<Map<string, boolean>> {
+  const client = admin();
+  const { rows } = await fetchAllRowsPaginated<{
+    user_id: string;
+    onboarding_completed: boolean | null;
+  }>(
+    (from, to) =>
+      client
+        .from("spiritual_profiles")
+        .select("user_id, onboarding_completed")
+        .order("user_id", { ascending: true })
+        .range(from, to),
+    { pageSize: ADMIN_QUERY_PAGE_SIZE, maxPages: ADMIN_QUERY_MAX_PAGES },
+  );
+  const map = new Map<string, boolean>();
+  for (const row of rows) {
+    map.set(row.user_id, Boolean(row.onboarding_completed));
+  }
+  return map;
+}
+
+async function fetchCheckoutPendingUserIds(): Promise<string[]> {
+  const client = admin();
+  const { values } = await collectColumnPaginated<
+    { user_id: string | null },
+    string
+  >(
+    (from, to) =>
+      client
+        .from("signup_intents")
+        .select("user_id")
+        .eq("status", "checkout_created")
+        .not("user_id", "is", null)
+        .order("updated_at", { ascending: false })
+        .range(from, to),
+    (row) => row.user_id,
+  );
+  return [...new Set(values)];
+}
+
+async function fetchProfileCreatedAtMap(
+  userIds: string[],
+): Promise<Map<string, { createdAt: string; displayName: string | null }>> {
+  const client = admin();
+  const map = new Map<
+    string,
+    { createdAt: string; displayName: string | null }
+  >();
+  if (userIds.length === 0) return map;
+
+  const chunkSize = 100;
+  for (let i = 0; i < userIds.length; i += chunkSize) {
+    const chunk = userIds.slice(i, i + chunkSize);
+    const { data, error } = await client
+      .from("profiles")
+      .select("id, display_name, created_at")
+      .in("id", chunk);
+    if (error) {
+      throw new AppError("admin_query_failed", "admin_query_failed", 500);
+    }
+    for (const row of data ?? []) {
+      map.set(row.id as string, {
+        createdAt: row.created_at as string,
+        displayName: (row.display_name as string | null) ?? null,
+      });
+    }
+  }
+  return map;
+}
+
+async function fetchAllProfileIdsOrdered(): Promise<
+  Array<{ id: string; createdAt: string; displayName: string | null }>
+> {
+  const client = admin();
+  const { rows } = await fetchAllRowsPaginated<{
+    id: string;
+    display_name: string | null;
+    created_at: string;
+  }>(
+    (from, to) =>
+      client
+        .from("profiles")
+        .select("id, display_name, created_at")
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(from, to),
+    { pageSize: ADMIN_QUERY_PAGE_SIZE, maxPages: ADMIN_QUERY_MAX_PAGES },
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    createdAt: r.created_at,
+    displayName: r.display_name,
+  }));
+}
+
+function hasDerivedFilters(filters: AdminUserFilterMatchInput): boolean {
+  return (
+    Boolean(filters.planKey && filters.planKey !== "any") ||
+    Boolean(filters.subscriptionStatus && filters.subscriptionStatus !== "any") ||
+    Boolean(
+      filters.onboardingCompleted && filters.onboardingCompleted !== "any",
+    ) ||
+    Boolean(filters.duplicatesOnly) ||
+    Boolean(filters.pastDueOnly)
+  );
 }
 
 export async function getAdminUsers(
@@ -162,41 +324,30 @@ export async function getAdminUsers(
   const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 25));
   const q = params.q?.trim() ?? "";
 
-  let candidateIds: string[] | null = null;
+  const filterMatch: AdminUserFilterMatchInput = {
+    planKey: params.planKey,
+    subscriptionStatus: params.subscriptionStatus,
+    onboardingCompleted: params.onboardingCompleted,
+    duplicatesOnly: params.duplicatesOnly,
+    pastDueOnly: params.pastDueOnly,
+  };
+
+  let restriction: Set<string> | null = null;
 
   if (params.cancelingOnly) {
-    candidateIds = await findUserIdsCancelingWithAccess();
-    if (candidateIds.length === 0) {
+    const cancelingIds = await findUserIdsCancelingWithAccess();
+    if (cancelingIds.length === 0) {
       return { rows: [], total: 0, page, pageSize };
     }
+    restriction = intersectIdSets(restriction, cancelingIds);
   }
 
   if (params.checkoutPendingOnly) {
-    const { data: pendingIntents } = await client
-      .from("signup_intents")
-      .select("user_id")
-      .eq("status", "checkout_created")
-      .not("user_id", "is", null)
-      .limit(500);
-    const pendingIds = [
-      ...new Set(
-        (pendingIntents ?? [])
-          .map((r) => r.user_id as string | null)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
+    const pendingIds = await fetchCheckoutPendingUserIds();
     if (pendingIds.length === 0) {
       return { rows: [], total: 0, page, pageSize };
     }
-    if (candidateIds) {
-      const allowed = new Set(pendingIds);
-      candidateIds = candidateIds.filter((id) => allowed.has(id));
-      if (candidateIds.length === 0) {
-        return { rows: [], total: 0, page, pageSize };
-      }
-    } else {
-      candidateIds = pendingIds;
-    }
+    restriction = intersectIdSets(restriction, pendingIds);
   }
 
   if (q) {
@@ -206,57 +357,201 @@ export async function getAdminUsers(
     } else if (q.includes("@")) {
       fromQuery = await findUserIdsByEmail(q);
     } else {
-      const { data: byName } = await client
-        .from("profiles")
-        .select("id")
-        .ilike("display_name", `%${q}%`)
-        .limit(200);
-      fromQuery = (byName ?? []).map((r) => r.id as string);
+      const { values } = await collectColumnPaginated<{ id: string }, string>(
+        (from, to) =>
+          client
+            .from("profiles")
+            .select("id")
+            .ilike("display_name", `%${q}%`)
+            .order("created_at", { ascending: false })
+            .range(from, to),
+        (row) => row.id,
+      );
+      fromQuery = values;
     }
     if (fromQuery.length === 0) {
       return { rows: [], total: 0, page, pageSize };
     }
-    if (candidateIds) {
-      const allowed = new Set(fromQuery);
-      candidateIds = candidateIds.filter((id) => allowed.has(id));
-      if (candidateIds.length === 0) {
+    restriction = intersectIdSets(restriction, fromQuery);
+  }
+
+  const derived = hasDerivedFilters(filterMatch);
+  const largeRestriction = Boolean(restriction && restriction.size > 100);
+
+  // Fast path: no derived filters and small (or empty) restriction — SQL count + page.
+  if (!derived && !largeRestriction) {
+    let profilesQuery = client
+      .from("profiles")
+      .select("id, display_name, created_at", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
+
+    if (restriction) {
+      const ids = [...restriction];
+      if (ids.length === 0) {
         return { rows: [], total: 0, page, pageSize };
       }
+      profilesQuery = profilesQuery.in("id", ids);
+    }
+
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    const { data: profiles, count, error } = await profilesQuery.range(from, to);
+    if (error) {
+      throw new AppError("admin_query_failed", "admin_query_failed", 500);
+    }
+
+    const pageIds = (profiles ?? []).map((p) => p.id as string);
+    const rows = await enrichAdminUserRows(
+      pageIds,
+      new Map(
+        (profiles ?? []).map((p) => [
+          p.id as string,
+          {
+            createdAt: p.created_at as string,
+            displayName: (p.display_name as string | null) ?? null,
+          },
+        ]),
+      ),
+    );
+
+    return {
+      rows,
+      total: count ?? 0,
+      page,
+      pageSize,
+    };
+  }
+
+  // Derived filters or large restriction: index subscriptions/onboarding with
+  // paginated reads, then paginate matching profile ids deterministically.
+  const [{ live, pastDueUserIds }, onboardingByUser] = await Promise.all([
+    fetchLiveAndPastDueCandidates(),
+    fetchOnboardingByUser(),
+  ]);
+  const views = buildUserSubscriptionViews(live, pastDueUserIds);
+
+  // status=none / onboarding=no need the profile catalog (users without sub rows).
+  const needsCatalog =
+    params.subscriptionStatus === "none" ||
+    params.onboardingCompleted === "no" ||
+    (!derived && largeRestriction);
+
+  const matched: Array<{
+    id: string;
+    createdAt: string;
+    displayName: string | null;
+  }> = [];
+
+  if (needsCatalog) {
+    const catalog = await fetchAllProfileIdsOrdered();
+    for (const p of catalog) {
+      if (restriction && !restriction.has(p.id)) continue;
+      if (derived) {
+        const view = views.get(p.id);
+        if (
+          !matchesAdminUserFilters(
+            view,
+            onboardingByUser.get(p.id) ?? null,
+            filterMatch,
+          )
+        ) {
+          continue;
+        }
+      }
+      matched.push({
+        id: p.id,
+        createdAt: p.createdAt,
+        displayName: p.displayName,
+      });
+    }
+  } else {
+    // Positive subscription/onboarding filters — candidate universe from indexes.
+    let candidateIds: string[];
+    if (restriction) {
+      candidateIds = [...restriction];
+    } else if (params.onboardingCompleted === "yes") {
+      candidateIds = [...onboardingByUser.entries()]
+        .filter(([, done]) => done)
+        .map(([id]) => id);
     } else {
-      candidateIds = fromQuery;
+      candidateIds = [...views.keys()];
+    }
+
+    const profileMeta = await fetchProfileCreatedAtMap(candidateIds);
+    for (const id of candidateIds) {
+      const view = views.get(id);
+      if (
+        derived &&
+        !matchesAdminUserFilters(
+          view,
+          onboardingByUser.get(id) ?? null,
+          filterMatch,
+        )
+      ) {
+        continue;
+      }
+      const meta = profileMeta.get(id);
+      if (!meta) continue;
+      matched.push({
+        id,
+        createdAt: meta.createdAt,
+        displayName: meta.displayName,
+      });
     }
   }
 
-  let profilesQuery = client
-    .from("profiles")
-    .select("id, display_name, created_at", { count: "exact" })
-    .order("created_at", { ascending: false });
+  matched.sort((a, b) => {
+    const t = b.createdAt.localeCompare(a.createdAt);
+    if (t !== 0) return t;
+    return b.id.localeCompare(a.id);
+  });
 
-  if (candidateIds) {
-    profilesQuery = profilesQuery.in("id", candidateIds);
-  }
+  const { pageIds, total } = paginateSortedIds(
+    matched.map((m) => m.id),
+    page,
+    pageSize,
+  );
 
-  // Fetch a wider window when filters need post-processing
-  const needsPostFilter =
-    Boolean(params.planKey && params.planKey !== "any") ||
-    Boolean(params.subscriptionStatus && params.subscriptionStatus !== "any") ||
-    Boolean(params.onboardingCompleted && params.onboardingCompleted !== "any") ||
-    Boolean(params.duplicatesOnly) ||
-    Boolean(params.pastDueOnly);
+  const displayMap = new Map(
+    matched
+      .filter((m) => pageIds.includes(m.id))
+      .map((m) => [
+        m.id,
+        { createdAt: m.createdAt, displayName: m.displayName },
+      ] as const),
+  );
 
-  const fetchSize = needsPostFilter ? 200 : pageSize;
-  const from = needsPostFilter ? 0 : (page - 1) * pageSize;
-  const to = from + fetchSize - 1;
+  const rows = await enrichAdminUserRows(pageIds, displayMap, {
+    views,
+    onboardingByUser,
+  });
 
-  const { data: profiles, count, error } = await profilesQuery.range(from, to);
-  if (error) throw new AppError("admin_query_failed", "admin_query_failed", 500);
+  return { rows, total, page, pageSize };
+}
 
-  const ids = (profiles ?? []).map((p) => p.id as string);
-  if (ids.length === 0) {
-    return { rows: [], total: count ?? 0, page, pageSize };
-  }
-
+async function enrichAdminUserRows(
+  ids: string[],
+  profileMeta: Map<string, { createdAt: string; displayName: string | null }>,
+  preloaded?: {
+    views: Map<
+      string,
+      {
+        planKey: PlanKey | null;
+        subscriptionStatus: string | null;
+        hasDuplicateSubscriptions: boolean;
+        isPastDue: boolean;
+      }
+    >;
+    onboardingByUser: Map<string, boolean>;
+  },
+): Promise<AdminUserRow[]> {
+  if (ids.length === 0) return [];
+  const client = admin();
   const yearMonth = currentYearMonth();
+
+  // List view: no Auth getUserById per row (no migration for bulk auth.users).
+  // Email appears on detail; list shows profile display_name or userIdMask.
   const [
     subsResult,
     spiritualResult,
@@ -264,17 +559,21 @@ export async function getAdminUsers(
     usageLastResult,
     intentsResult,
   ] = await Promise.all([
-    client
-      .from("subscriptions")
-      .select(
-        "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
-      )
-      .in("user_id", ids)
-      .in("status", ["active", "trialing", "past_due", "canceled"]),
-    client
-      .from("spiritual_profiles")
-      .select("user_id, onboarding_completed")
-      .in("user_id", ids),
+    preloaded
+      ? Promise.resolve({ data: null as null })
+      : client
+          .from("subscriptions")
+          .select(
+            "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
+          )
+          .in("user_id", ids)
+          .in("status", ["active", "trialing", "past_due", "canceled"]),
+    preloaded
+      ? Promise.resolve({ data: null as null })
+      : client
+          .from("spiritual_profiles")
+          .select("user_id, onboarding_completed")
+          .in("user_id", ids),
     client
       .from("usage_monthly")
       .select("user_id, used_brl_cents, request_count")
@@ -294,19 +593,24 @@ export async function getAdminUsers(
   ]);
 
   const byUser = new Map<string, SubscriptionCandidate[]>();
-  for (const row of subsResult.data ?? []) {
-    const candidate = mapSubRow(row as Record<string, unknown>);
-    const list = byUser.get(candidate.userId) ?? [];
-    list.push(candidate);
-    byUser.set(candidate.userId, list);
+  if (!preloaded) {
+    for (const row of subsResult.data ?? []) {
+      const candidate = mapSubRow(row as Record<string, unknown>);
+      const list = byUser.get(candidate.userId) ?? [];
+      list.push(candidate);
+      byUser.set(candidate.userId, list);
+    }
   }
 
-  const onboardingByUser = new Map<string, boolean>();
-  for (const row of spiritualResult.data ?? []) {
-    onboardingByUser.set(
-      row.user_id as string,
-      Boolean(row.onboarding_completed),
-    );
+  const onboardingByUser =
+    preloaded?.onboardingByUser ?? new Map<string, boolean>();
+  if (!preloaded) {
+    for (const row of spiritualResult.data ?? []) {
+      onboardingByUser.set(
+        row.user_id as string,
+        Boolean(row.onboarding_completed),
+      );
+    }
   }
 
   const monthlyByUser = new Map<
@@ -341,13 +645,33 @@ export async function getAdminUsers(
     });
   }
 
-  const authInfos = await Promise.all(
-    ids.map(async (id) => [id, await lookupAuthUser(id)] as const),
-  );
-  const authByUser = new Map(authInfos);
+  return ids.map((id) => {
+    const meta = profileMeta.get(id);
+    const utm = utmByUser.get(id);
+    const monthly = monthlyByUser.get(id);
 
-  let rows: AdminUserRow[] = (profiles ?? []).map((p) => {
-    const id = p.id as string;
+    if (preloaded?.views) {
+      const view = preloaded.views.get(id);
+      return {
+        userId: id,
+        userIdMask: maskUserId(id),
+        email: null,
+        displayName: meta?.displayName ?? null,
+        createdAt: meta?.createdAt ?? "",
+        onboardingCompleted: onboardingByUser.has(id)
+          ? (onboardingByUser.get(id) ?? null)
+          : null,
+        planKey: view?.planKey ?? null,
+        subscriptionStatus: view?.subscriptionStatus ?? null,
+        monthlyUsedBrlCents: monthly?.usedBrlCents ?? 0,
+        lastActivityAt: lastActivityByUser.get(id) ?? null,
+        utmSource: utm?.source ?? null,
+        utmCampaign: utm?.campaign ?? null,
+        hasDuplicateSubscriptions: view?.hasDuplicateSubscriptions ?? false,
+        isPastDue: view?.isPastDue ?? false,
+      };
+    }
+
     const list = byUser.get(id) ?? [];
     const resolved = resolveEffectiveSubscription(
       list.filter((s) => s.status === "active" || s.status === "trialing"),
@@ -356,17 +680,13 @@ export async function getAdminUsers(
       (s) => s.status === "active" || s.status === "trialing",
     ).length;
     const pastDue = list.some((s) => s.status === "past_due");
-    const auth = authByUser.get(id);
-    const utm = utmByUser.get(id);
-    const monthly = monthlyByUser.get(id);
 
     return {
       userId: id,
       userIdMask: maskUserId(id),
-      email: auth?.email ?? null,
-      displayName:
-        (p.display_name as string | null) ?? auth?.displayName ?? null,
-      createdAt: p.created_at as string,
+      email: null,
+      displayName: meta?.displayName ?? null,
+      createdAt: meta?.createdAt ?? "",
       onboardingCompleted: onboardingByUser.has(id)
         ? (onboardingByUser.get(id) ?? null)
         : null,
@@ -382,34 +702,6 @@ export async function getAdminUsers(
       isPastDue: pastDue,
     };
   });
-
-  if (params.planKey && params.planKey !== "any") {
-    rows = rows.filter((r) => r.planKey === params.planKey);
-  }
-  if (params.subscriptionStatus && params.subscriptionStatus !== "any") {
-    rows = rows.filter(
-      (r) => (r.subscriptionStatus ?? "none") === params.subscriptionStatus,
-    );
-  }
-  if (params.onboardingCompleted === "yes") {
-    rows = rows.filter((r) => r.onboardingCompleted === true);
-  } else if (params.onboardingCompleted === "no") {
-    rows = rows.filter((r) => r.onboardingCompleted !== true);
-  }
-  if (params.duplicatesOnly) {
-    rows = rows.filter((r) => r.hasDuplicateSubscriptions);
-  }
-  if (params.pastDueOnly) {
-    rows = rows.filter((r) => r.isPastDue);
-  }
-
-  const total = needsPostFilter ? rows.length : (count ?? rows.length);
-  if (needsPostFilter) {
-    const start = (page - 1) * pageSize;
-    rows = rows.slice(start, start + pageSize);
-  }
-
-  return { rows, total, page, pageSize };
 }
 
 export interface AdminUserDetail {

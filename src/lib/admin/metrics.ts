@@ -11,6 +11,11 @@ import {
 } from "@/lib/billing/effective-subscription";
 import { PAYMENT_EVENT_LEASE_MS } from "@/lib/stripe/payment-event-claim";
 import { maskStripeId } from "./labels";
+import {
+  ADMIN_QUERY_MAX_PAGES,
+  ADMIN_QUERY_PAGE_SIZE,
+  fetchAllRowsPaginated,
+} from "./paginate";
 import { assertAdminServiceAccess } from "./require-admin";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -207,7 +212,8 @@ async function countCancelingWithAccess(): Promise<number | null> {
     let count = 0;
     for (const status of ["active", "trialing"] as const) {
       let startingAfter: string | undefined;
-      for (let page = 0; page < 5; page += 1) {
+      // Page until Stripe reports no more — never invent a zero on truncation.
+      for (let page = 0; page < ADMIN_QUERY_MAX_PAGES; page += 1) {
         const list = await stripe.subscriptions.list({
           status,
           limit: 100,
@@ -224,6 +230,46 @@ async function countCancelingWithAccess(): Promise<number | null> {
   } catch {
     return null;
   }
+}
+
+/** Live subscription rows with PostgREST-safe pagination (no silent 1000 cut). */
+export async function fetchLiveSubscriptionCandidates(
+  client: SupabaseClient,
+): Promise<{
+  candidates: SubscriptionCandidate[];
+  partial: boolean;
+}> {
+  const { rows, partial } = await fetchAllRowsPaginated<Record<string, unknown>>(
+    (from, to) =>
+      client
+        .from("subscriptions")
+        .select(
+          "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
+        )
+        .in("status", ["active", "trialing"])
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to),
+    { pageSize: ADMIN_QUERY_PAGE_SIZE, maxPages: ADMIN_QUERY_MAX_PAGES },
+  );
+  return {
+    candidates: rows.map((row) => mapSubRow(row)),
+    partial,
+  };
+}
+
+async function countReferralStatus(
+  client: SupabaseClient,
+  status: string,
+): Promise<number> {
+  const { count, error } = await client
+    .from("referral_attributions")
+    .select("id", { count: "exact", head: true })
+    .eq("status", status);
+  if (error) {
+    throw new AppError("admin_query_failed", "admin_query_failed", 500);
+  }
+  return count ?? 0;
 }
 
 export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
@@ -246,7 +292,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     profilesToday,
     profiles7,
     profiles30,
-    subscriptions,
+    liveSubscriptions,
     canceledSubs,
     intentsStarted,
     intentsCompleted,
@@ -258,7 +304,10 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     eventsReceivedStuck,
     eventsFailed,
     eventsProcessed,
-    referrals,
+    referralsAttributed,
+    referralsFirstPayment,
+    referralsSecondPayment,
+    referralsRewardPending,
     usageToday,
     usage30,
     cancelingWithAccessCount,
@@ -276,12 +325,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
       .from("profiles")
       .select("id", { count: "exact", head: true })
       .gte("created_at", d30),
-    client
-      .from("subscriptions")
-      .select(
-        "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
-      )
-      .in("status", ["active", "trialing"]),
+    fetchLiveSubscriptionCandidates(client),
     client
       .from("subscriptions")
       .select("id", { count: "exact", head: true })
@@ -328,17 +372,18 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
       .from("payment_events")
       .select("id", { count: "exact", head: true })
       .eq("processing_status", "processed"),
-    client.from("referral_attributions").select("status"),
+    countReferralStatus(client, "attributed"),
+    countReferralStatus(client, "first_payment_confirmed"),
+    countReferralStatus(client, "second_payment_confirmed"),
+    countReferralStatus(client, "reward_pending"),
     aggregateUsageEventsPaginated(client, { sinceIso: today }),
     aggregateUsageEventsPaginated(client, { sinceIso: d30 }),
     countCancelingWithAccess(),
   ]);
 
-  const candidates = (subscriptions.data ?? []).map((row) =>
-    mapSubRow(row as Record<string, unknown>),
+  const { effective, usersWithDuplicates } = selectEffectiveSubscriptionsByUser(
+    liveSubscriptions.candidates,
   );
-  const { effective, usersWithDuplicates } =
-    selectEffectiveSubscriptionsByUser(candidates);
 
   const planCounts = new Map<PlanKey, number>();
   let mrr = 0;
@@ -357,7 +402,6 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
   const totalUsers = profiles.count ?? 0;
   const usersWithoutSubscription = Math.max(0, totalUsers - effective.length);
 
-  const refStatuses = referrals.data ?? [];
   const avgLatency =
     usage30.latencySamples > 0
       ? Math.round(usage30.latencySumMs / usage30.latencySamples)
@@ -397,17 +441,10 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     aiAvgLatencyMs30d: avgLatency,
     aiErrors30d: usage30.errors,
     aiMetricsPartial: usageToday.partial || usage30.partial,
-    referralsAttributed: refStatuses.filter((r) => r.status === "attributed")
-      .length,
-    referralsFirstPayment: refStatuses.filter(
-      (r) => r.status === "first_payment_confirmed",
-    ).length,
-    referralsSecondPayment: refStatuses.filter(
-      (r) => r.status === "second_payment_confirmed",
-    ).length,
-    referralsRewardPending: refStatuses.filter(
-      (r) => r.status === "reward_pending",
-    ).length,
+    referralsAttributed,
+    referralsFirstPayment,
+    referralsSecondPayment,
+    referralsRewardPending,
   };
 }
 
