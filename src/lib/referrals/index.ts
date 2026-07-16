@@ -11,3 +11,4 @@ export {
   markEligibleAfterSecondPayment,
   transitionReferralStatus,
 } from "./rules";
+export { ensureReferralCodeForUser } from "./ensure-code";

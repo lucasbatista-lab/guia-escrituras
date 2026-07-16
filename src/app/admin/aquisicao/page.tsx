@@ -137,6 +137,18 @@ export default async function AdminAquisicaoPage({
           label="Indicações → assinatura"
           value={report.referralSubscriptions}
         />
+        <MetricCard
+          label="Cadastros via share"
+          value={report.shareSignups}
+        />
+        <MetricCard
+          label="Assinaturas via share"
+          value={report.shareSubscriptions}
+        />
+        <MetricCard
+          label="Ref sem assinatura"
+          value={report.referralWithoutSubscription}
+        />
       </div>
 
       {report.totalSignups === 0 ? (
@@ -148,6 +160,10 @@ export default async function AdminAquisicaoPage({
           <BreakdownTable title="Por utm_source" rows={report.bySource} />
           <BreakdownTable title="Por utm_campaign" rows={report.byCampaign} />
           <BreakdownTable title="Por utm_content" rows={report.byContent} />
+          <BreakdownTable
+            title="Compartilhamentos/indicações (utm_content em share)"
+            rows={report.byShareContent}
+          />
         </div>
       )}
     </div>

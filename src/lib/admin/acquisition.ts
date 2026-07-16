@@ -35,9 +35,17 @@ export interface AcquisitionReport {
   attributedConversionPct: number | null;
   referralSignups: number;
   referralSubscriptions: number;
+  /** Cadastros com utm_source=share (compartilhamento/indicação orgânica). */
+  shareSignups: number;
+  /** Assinaturas completed originadas por share. */
+  shareSubscriptions: number;
+  /** Referrals (ref) sem assinatura completed no período. */
+  referralWithoutSubscription: number;
   bySource: AcquisitionBreakdownRow[];
   byCampaign: AcquisitionBreakdownRow[];
   byContent: AcquisitionBreakdownRow[];
+  /** Breakdown de utm_content apenas para utm_source=share. */
+  byShareContent: AcquisitionBreakdownRow[];
 }
 
 type IntentRow = {
@@ -147,6 +155,7 @@ export async function getAdminAcquisitionReport(
   const bySource = new Map<string, AcquisitionBreakdownRow>();
   const byCampaign = new Map<string, AcquisitionBreakdownRow>();
   const byContent = new Map<string, AcquisitionBreakdownRow>();
+  const byShareContent = new Map<string, AcquisitionBreakdownRow>();
 
   let totalSignups = 0;
   let attributedSignups = 0;
@@ -156,6 +165,9 @@ export async function getAdminAcquisitionReport(
   let attributedSubscriptions = 0;
   let referralSignups = 0;
   let referralSubscriptions = 0;
+  let shareSignups = 0;
+  let shareSubscriptions = 0;
+  let referralWithoutSubscription = 0;
 
   for (const row of rows) {
     totalSignups += 1;
@@ -176,6 +188,14 @@ export async function getAdminAcquisitionReport(
     if (row.referral_code?.trim()) {
       referralSignups += 1;
       if (row.status === "completed") referralSubscriptions += 1;
+      else referralWithoutSubscription += 1;
+    }
+
+    const isShare = (row.utm_source ?? "").trim().toLowerCase() === "share";
+    if (isShare) {
+      shareSignups += 1;
+      if (row.status === "completed") shareSubscriptions += 1;
+      bump(byShareContent, row.utm_content ?? "(sem content)", row);
     }
 
     if (attributed) {
@@ -201,9 +221,13 @@ export async function getAdminAcquisitionReport(
         : null,
     referralSignups,
     referralSubscriptions,
+    shareSignups,
+    shareSubscriptions,
+    referralWithoutSubscription,
     bySource: finalizeRows(bySource),
     byCampaign: finalizeRows(byCampaign),
     byContent: finalizeRows(byContent),
+    byShareContent: finalizeRows(byShareContent),
   };
 }
 

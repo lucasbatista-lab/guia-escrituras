@@ -4,7 +4,9 @@ import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
 import { PlanCards } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { ShareInvite } from "@/components/share/share-invite";
 import { PERSONALIZATION_DEPTHS } from "@/lib/journey/personalization-labels";
+import { buildVisitorShareUrl } from "@/lib/share/resolve-server";
 import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
 
@@ -482,6 +484,16 @@ export default function HomePage() {
               <Button asChild size="lg" variant="outline" className="min-h-11">
                 <a href="#demonstracao">Ver uma reflexão de exemplo</a>
               </Button>
+            </div>
+            <div className="mx-auto mt-10 max-w-md border-t border-wine/15 pt-8 text-left">
+              <p className="text-center text-sm text-ink-soft">
+                Conhece alguém que gostaria dessa proposta?
+              </p>
+              <ShareInvite
+                shareUrl={buildVisitorShareUrl("home_final_cta")}
+                variant="compact"
+                className="mt-4"
+              />
             </div>
           </div>
         </section>

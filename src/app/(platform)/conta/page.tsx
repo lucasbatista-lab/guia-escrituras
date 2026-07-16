@@ -5,6 +5,7 @@ import { InlineNotice } from "@/components/platform/inline-notice";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { PlatformSection } from "@/components/platform/section";
 import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
+import { ShareInvite } from "@/components/share/share-invite";
 import { Button } from "@/components/ui/button";
 import { brand } from "@/config/brand";
 import { getAuthUserContext } from "@/lib/auth";
@@ -15,6 +16,7 @@ import {
   responseStyleLabelPt,
   traditionLabelPt,
 } from "@/lib/profile/labels-pt";
+import { resolveUserShareUrl } from "@/lib/share/resolve-server";
 import { getAccountBillingView } from "@/lib/stripe/subscription-management";
 import {
   evaluateMonthlyBudget,
@@ -56,7 +58,7 @@ export default async function ContaPage() {
   const supportEmail = brand.supportEmail;
   const profileMeta = await loadProfileMeta(auth.userId);
 
-  const [billing, monthlyUsage] = await Promise.all([
+  const [billing, monthlyUsage, shareUrl] = await Promise.all([
     plan ? getAccountBillingView(auth.userId) : Promise.resolve(null),
     budgetConfig
       ? (async () => {
@@ -71,6 +73,7 @@ export default async function ContaPage() {
           }
         })()
       : Promise.resolve(null),
+    resolveUserShareUrl(auth.userId, "account_share"),
   ]);
 
   let level: "normal" | "elevated" | "near_limit" | "blocked" = "normal";
@@ -244,6 +247,13 @@ export default async function ContaPage() {
             </p>
           </div>
         )}
+      </PlatformSection>
+
+      <PlatformSection
+        title="Compartilhe com alguém"
+        description="Conhece alguém que poderia se beneficiar de uma reflexão baseada nas Escrituras? Envie o Amém Chat com uma mensagem pronta."
+      >
+        <ShareInvite shareUrl={shareUrl} />
       </PlatformSection>
 
       <PlatformSection

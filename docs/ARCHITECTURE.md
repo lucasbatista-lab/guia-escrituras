@@ -55,6 +55,12 @@ Sem free / trial recorrente / chat anônimo real.
 | preview | só com `DEMO_MODE=true` |
 | production | proibidos |
 
+## Indicação e compartilhamento orgânico
+
+- Links de share usam `utm_source=share` (+ `organic_user` para visitante ou `user` + `ref` para autenticado).
+- O mesmo `referral_code` entra em `referral_attributions`; autoindicação e `referred_user_id` unique já bloqueiam abuso.
+- Compartilhar **não** implica recompensa financeira. Elegibilidade futura (se publicada) reutiliza os códigos atuais; partner/affiliate devem manter `utm_medium` distinto (ex.: `commercial`).
+
 ## O que ainda é mock
 
 Métricas admin, relatório diário ilustrativo, trechos bíblicos de demonstração, Stripe, pagamento de indicações.

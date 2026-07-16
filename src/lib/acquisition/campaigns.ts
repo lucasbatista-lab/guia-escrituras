@@ -10,11 +10,19 @@
  * YouTube Shorts:
  *   ?utm_source=youtube&utm_medium=organic_social&utm_campaign=launch_jul26&utm_content=video_01
  *
- * User share:
- *   ?utm_source=share&utm_medium=user&utm_campaign=invite&ref=CODIGO
+ * Organic visitor share (no personal code):
+ *   ?utm_source=share&utm_medium=organic_user&utm_campaign=invite&utm_content=home_final_cta
  *
- * Partner / commercial:
+ * Authenticated user share (personal referral_code):
+ *   ?utm_source=share&utm_medium=user&utm_campaign=invite&utm_content=account_share&ref=CODIGO
+ *
+ * Partner / commercial (keep medium distinct from user share):
  *   ?utm_source=partner&utm_medium=commercial&utm_campaign=NOME&ref=CODIGO
+ *
+ * Share ≠ reward: organic sharing does not imply commission, balance, or payout.
+ * Future eligibility (if published) can reuse the same referral_codes /
+ * referral_attributions without changing links already shared. Affiliate/partner
+ * traffic must continue using a distinct utm_medium (e.g. commercial).
  */
 
 export const LAUNCH_CAMPAIGN_EXAMPLES = [
@@ -40,10 +48,18 @@ export const LAUNCH_CAMPAIGN_EXAMPLES = [
     utm_content: "video_01",
   },
   {
-    channel: "share",
+    channel: "share_visitor",
+    utm_source: "share",
+    utm_medium: "organic_user",
+    utm_campaign: "invite",
+    utm_content: "home_final_cta",
+  },
+  {
+    channel: "share_user",
     utm_source: "share",
     utm_medium: "user",
     utm_campaign: "invite",
+    utm_content: "account_share",
     refPlaceholder: "<codigo>",
   },
   {
