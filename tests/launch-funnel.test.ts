@@ -99,13 +99,24 @@ describe("launch benefits honesty", () => {
       expect(active).not.toMatch(/jornadas de leitura/);
       expect(active).not.toMatch(/memória estendida/);
       expect(active).not.toMatch(/múltiplas perspectivas/);
+      expect(active).not.toMatch(/conversas profundas/);
+      expect(active).not.toMatch(/suporte prioritário|suporte prioritario/);
     }
 
     const profundo = getPlanByKey("profundo")!;
     expect(profundo.upcomingBenefits?.join(" ").toLowerCase()).toMatch(/áudio|audio/);
-    expect(profundo.upcomingBenefits?.some((b) => /memória estendida/i.test(b))).toBe(
+    expect(profundo.upcomingBenefits?.some((b) => /memória ampliada/i.test(b))).toBe(
       true,
     );
+    expect(profundo.upcomingBenefits?.some((b) =>
+      /resposta aprofundada/i.test(b),
+    )).toBe(true);
+
+    const caminho = getPlanByKey("caminho")!;
+    expect(caminho.displayBenefits.join(" ")).toMatch(/frequente/i);
+    expect(caminho.upcomingBenefits?.some((b) =>
+      /jornadas de leitura/i.test(b),
+    )).toBe(true);
   });
 
   it("particular is request-access only", () => {
@@ -196,6 +207,10 @@ describe("UTM and referral preservation", () => {
     const cards = readSrc("src", "components", "marketing", "plan-cards.tsx");
     const chrome = readSrc("src", "components", "marketing", "site-chrome.tsx");
     expect(cards).toContain("TrackingLink");
+    expect(cards).toContain("Disponível agora");
+    expect(cards).toContain("Em desenvolvimento");
+    expect(cards).toContain("Seu plano atual");
+    expect(cards).toContain("Troca de plano em breve");
     expect(chrome).toContain("TrackingLink");
     expect(chrome).toContain("marketing-mobile-nav");
   });

@@ -71,3 +71,8 @@ export {
   loadUserSubscriptions,
   userHasBillingCustomer,
 } from "./subscription-lookup";
+export {
+  assessCheckoutEligibility,
+  type CheckoutBlockReason,
+  type CheckoutEligibility,
+} from "./checkout-guard";

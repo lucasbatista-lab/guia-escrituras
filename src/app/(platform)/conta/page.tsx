@@ -233,6 +233,14 @@ export default async function ContaPage() {
                 }
               />
             </div>
+            <p className="mt-4 text-sm text-ink-soft">
+              <Link
+                href="/planos"
+                className="text-ink underline underline-offset-4"
+              >
+                Ver diferenças entre planos
+              </Link>
+            </p>
           </>
         ) : (
           <div role="status" aria-live="polite">

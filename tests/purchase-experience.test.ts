@@ -94,22 +94,30 @@ describe("purchase experience — honest plan cards", () => {
       expect(active).not.toMatch(/respostas em áudio|respostas em audio/);
       expect(active).not.toMatch(/jornadas de leitura/);
       expect(active).not.toMatch(/múltiplas perspectivas|multiplas perspectivas/);
+      expect(active).not.toMatch(/conversas profundas/);
+      expect(active).not.toMatch(/suporte prioritário|suporte prioritario/);
+      expect(active).not.toMatch(/memória estendida|memoria estendida/);
     }
     const profundo = getPlanByKey("profundo");
     expect(profundo?.upcomingBenefits?.join(" ")).toMatch(/áudio|audio/i);
-    expect(profundo?.displayBenefits.join(" ")).toMatch(/profund/i);
-    expect(profundo?.displayBenefits.join(" ")).toMatch(/orçamento/i);
+    expect(profundo?.upcomingBenefits?.some((b) =>
+      /resposta aprofundada/i.test(b),
+    )).toBe(true);
+    expect(profundo?.displayBenefits.join(" ")).toMatch(/margem/i);
+    expect(profundo?.tagline).toMatch(/intens/i);
   });
 
   it("planos page explains renewal, cancellation and flexible use", () => {
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
     expect(planos).toContain("Assinatura mensal com renovação automática");
     expect(planos).toContain("Cancelamento da renovação");
-    expect(planos).toContain("orçamento do plano");
+    expect(planos).toContain("uso justo");
     expect(planos).toContain("Checkout seguro");
     expect(planos).toContain("frequência");
-    expect(planos).toContain("ponto de entrada");
+    expect(planos).toContain("uso moderado");
     expect(planos).toContain("recomendação principal");
+    const cards = read("src", "components", "marketing", "plan-cards.tsx");
+    expect(cards).toContain("Disponível agora");
   });
 });
 

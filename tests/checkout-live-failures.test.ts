@@ -277,6 +277,7 @@ async function loadCheckoutWithMocks(options: {
   intent?: unknown;
   stripe: unknown;
   customerId?: string;
+  subscriptions?: unknown[];
 }) {
   vi.resetModules();
 
@@ -326,6 +327,10 @@ async function loadCheckoutWithMocks(options: {
     }),
   }));
 
+  vi.doMock("@/lib/billing/subscription-lookup", () => ({
+    loadUserSubscriptions: vi.fn(async () => options.subscriptions ?? []),
+  }));
+
   vi.doMock("@/lib/stripe/billing-customer", async () => {
     const actual = await vi.importActual<
       typeof import("@/lib/stripe/billing-customer")
@@ -351,6 +356,7 @@ describe("createSubscriptionCheckout failure handling", () => {
     vi.doUnmock("@/lib/auth/session");
     vi.doUnmock("@/lib/signup-intents");
     vi.doUnmock("@/lib/supabase/admin");
+    vi.doUnmock("@/lib/billing/subscription-lookup");
     vi.doUnmock("@/lib/stripe/billing-customer");
     const { setStripeClientForTests } = await import("@/lib/stripe/client");
     setStripeClientForTests(null);
@@ -595,6 +601,8 @@ describe("source contracts — no RSC 500 path", () => {
     const checkout = read("src", "lib", "stripe", "checkout.ts");
     expect(checkout).toContain("allow_promotion_codes: true");
     expect(checkout).toContain("preflightCheckoutPlan");
+    expect(checkout).toContain("assessCheckoutEligibility");
+    expect(checkout).toContain("subscription_guard");
     expect(checkout).toContain("stripe_checkout_failed");
     expect(checkout).toContain("stripe_checkout_session_create_rejected");
     expect(checkout).toContain("extractSafeStripeErrorDiagnostics");

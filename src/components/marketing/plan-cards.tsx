@@ -2,6 +2,7 @@ import {
   PLAN_DEFINITIONS,
   formatPriceBRL,
   type PlanDefinition,
+  type PlanKey,
 } from "@/lib/entitlements";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,13 @@ import { cn } from "@/lib/utils";
 export function PlanCards({
   className,
   compact = false,
+  currentPlanKey = null,
+  hasActiveSubscription = false,
 }: {
   className?: string;
   compact?: boolean;
+  currentPlanKey?: PlanKey | null;
+  hasActiveSubscription?: boolean;
 }) {
   return (
     <div
@@ -23,26 +28,58 @@ export function PlanCards({
       )}
     >
       {PLAN_DEFINITIONS.map((plan) => (
-        <PlanCard key={plan.key} plan={plan} />
+        <PlanCard
+          key={plan.key}
+          plan={plan}
+          isCurrentPlan={hasActiveSubscription && currentPlanKey === plan.key}
+          hasActiveSubscription={hasActiveSubscription}
+        />
       ))}
     </div>
   );
 }
 
-function PlanCard({ plan }: { plan: PlanDefinition }) {
-  const href =
-    plan.ctaType === "request_access"
-      ? "/mensagens-personalizadas"
-      : `/cadastro?plan=${plan.key}`;
+function PlanCard({
+  plan,
+  isCurrentPlan,
+  hasActiveSubscription,
+}: {
+  plan: PlanDefinition;
+  isCurrentPlan: boolean;
+  hasActiveSubscription: boolean;
+}) {
+  const checkoutHref = `/cadastro?plan=${plan.key}`;
+  const requestHref = "/mensagens-personalizadas";
+
+  let ctaHref = plan.ctaType === "request_access" ? requestHref : checkoutHref;
+  let ctaLabel = plan.ctaLabel;
+  let ctaDisabled = false;
+
+  if (hasActiveSubscription && plan.ctaType === "checkout") {
+    if (isCurrentPlan) {
+      ctaHref = "/conta";
+      ctaLabel = "Seu plano atual";
+      ctaDisabled = true;
+    } else {
+      ctaHref = "/conta";
+      ctaLabel = "Troca de plano em breve";
+      ctaDisabled = true;
+    }
+  }
 
   return (
     <article
       className={cn(
         "flex flex-col rounded-2xl border border-border/80 bg-card/70 p-6 shadow-sm backdrop-blur-sm",
         plan.highlighted && "border-gold/40 ring-1 ring-gold/30",
+        isCurrentPlan && "border-wine/40 ring-1 ring-wine/20",
       )}
     >
-      {plan.highlighted ? (
+      {isCurrentPlan ? (
+        <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-wine">
+          Seu plano atual
+        </p>
+      ) : plan.highlighted ? (
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-gold">
           Mais escolhido
         </p>
@@ -57,14 +94,22 @@ function PlanCard({ plan }: { plan: PlanDefinition }) {
           /mês
         </span>
       </p>
-      <ul className="mt-5 flex-1 space-y-2.5 text-sm text-ink-soft">
-        {plan.displayBenefits.map((benefit) => (
-          <li key={benefit} className="flex gap-2">
-            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine/70" />
-            <span>{benefit}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-5 flex-1">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink">
+          Disponível agora
+        </p>
+        <ul className="mt-2 space-y-2.5 text-sm text-ink-soft">
+          {plan.displayBenefits.map((benefit) => (
+            <li key={benefit} className="flex gap-2">
+              <span
+                className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine/70"
+                aria-hidden
+              />
+              <span>{benefit}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
       {plan.upcomingBenefits && plan.upcomingBenefits.length > 0 ? (
         <div className="mt-4 border-t border-border/60 pt-4">
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
@@ -72,29 +117,50 @@ function PlanCard({ plan }: { plan: PlanDefinition }) {
           </p>
           <ul className="mt-2 space-y-1.5 text-xs text-ink-soft/90">
             {plan.upcomingBenefits.map((item) => (
-              <li key={item}>· {item}</li>
+              <li key={item} className="flex gap-2">
+                <span className="text-ink-soft/50" aria-hidden>
+                  ·
+                </span>
+                <span>{item}</span>
+              </li>
             ))}
           </ul>
         </div>
       ) : null}
-      <Button
-        asChild
-        className={cn(
-          "mt-6 w-full",
-          plan.ctaType === "request_access"
-            ? "bg-wine hover:bg-wine-soft"
-            : plan.highlighted
-              ? "bg-ink hover:bg-ink/90"
-              : "",
-        )}
-        variant={
-          plan.highlighted || plan.ctaType === "request_access"
-            ? "default"
-            : "outline"
-        }
-      >
-        <TrackingLink href={href}>{plan.ctaLabel}</TrackingLink>
-      </Button>
+      {ctaDisabled ? (
+        <Button
+          asChild
+          className={cn(
+            "mt-6 w-full",
+            isCurrentPlan ? "pointer-events-none opacity-80" : "",
+          )}
+          variant="outline"
+          aria-disabled={isCurrentPlan}
+        >
+          <TrackingLink href={ctaHref} tabIndex={isCurrentPlan ? -1 : undefined}>
+            {ctaLabel}
+          </TrackingLink>
+        </Button>
+      ) : (
+        <Button
+          asChild
+          className={cn(
+            "mt-6 w-full",
+            plan.ctaType === "request_access"
+              ? "bg-wine hover:bg-wine-soft"
+              : plan.highlighted
+                ? "bg-ink hover:bg-ink/90"
+                : "",
+          )}
+          variant={
+            plan.highlighted || plan.ctaType === "request_access"
+              ? "default"
+              : "outline"
+          }
+        >
+          <TrackingLink href={ctaHref}>{ctaLabel}</TrackingLink>
+        </Button>
+      )}
     </article>
   );
 }

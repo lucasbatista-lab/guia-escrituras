@@ -1,6 +1,8 @@
 import "server-only";
 
 import { getAuthUserContext } from "@/lib/auth/session";
+import { assessCheckoutEligibility } from "@/lib/billing/checkout-guard";
+import { loadUserSubscriptions } from "@/lib/billing/subscription-lookup";
 import {
   getContinuationViewState,
   getContinuationViewStateForUser,
@@ -125,6 +127,18 @@ export async function createSubscriptionCheckout(
 
     if (!intent || intent.userId !== auth.userId) {
       return fail(requestId, "invalid_intent", "intent", { planKey, mode });
+    }
+
+    stage = "subscription_guard";
+    const subscriptions = await loadUserSubscriptions(auth.userId, {
+      useAdmin: true,
+    });
+    const eligibility = assessCheckoutEligibility(subscriptions);
+    if (!eligibility.eligible) {
+      return fail(requestId, "existing_subscription", "subscription_guard", {
+        planKey,
+        mode,
+      });
     }
 
     stage = "preflight";

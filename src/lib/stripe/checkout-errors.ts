@@ -9,6 +9,7 @@ export type CheckoutFailureCode =
   | "forbidden"
   | "expired"
   | "used"
+  | "existing_subscription"
   | "price_unavailable"
   | "stripe_account_unavailable"
   | "stripe_temporary"
@@ -19,6 +20,7 @@ export type CheckoutStage =
   | "auth"
   | "config"
   | "intent"
+  | "subscription_guard"
   | "preflight"
   | "reuse_session"
   | "customer"
@@ -34,6 +36,8 @@ const USER_MESSAGES: Record<CheckoutFailureCode, string> = {
   forbidden: "Esta continuação pertence a outra conta.",
   expired: "Este link de continuação expirou. Escolha o plano novamente.",
   used: "Este passo já foi utilizado. Veja o status na sua conta.",
+  existing_subscription:
+    "Você já possui uma assinatura vinculada a esta conta. Gerencie sua assinatura antes de iniciar uma nova contratação.",
   price_unavailable:
     "O plano selecionado não está disponível para cobrança agora. Tente novamente em instantes.",
   stripe_account_unavailable:

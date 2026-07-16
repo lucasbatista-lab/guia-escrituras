@@ -47,9 +47,9 @@ describe("launch premium conversion", () => {
     expect(essencial?.priceMonthlyCents).toBe(3800);
     expect(caminho?.highlighted).toBe(true);
     expect(caminho?.ctaLabel).toBe("Começar com Caminho");
-    expect(profundo?.displayBenefits.join(" ")).toMatch(/profund/i);
+    expect(profundo?.displayBenefits.join(" ")).toMatch(/margem/i);
     expect(profundo?.displayBenefits.join(" ").toLowerCase()).not.toMatch(
-      /whatsapp|áudio|audio|jornadas de leitura/,
+      /whatsapp|áudio|audio|jornadas de leitura|conversas profundas|suporte prioritário/,
     );
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
     expect(planos).toContain("recomendação principal");
