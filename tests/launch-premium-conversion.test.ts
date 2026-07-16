@@ -15,16 +15,17 @@ describe("launch premium conversion", () => {
   it("home hero keeps primary CTA, starting price and trust microcopy", () => {
     const home = read("src", "app", "(marketing)", "page.tsx");
     expect(home).toContain("brand.tagline");
-    expect(home).toContain("Escolher meu plano");
+    expect(home).toContain("Começar com a minha situação");
     expect(home).toContain("Ver uma reflexão de exemplo");
     expect(home).toContain("ESSENCIAL_PRICE_LABEL");
-    expect(home).toContain("A partir de");
+    expect(home).toContain("Planos a partir de");
     expect(home).toContain("R$ 38");
     expect(home).toContain("Pagamento seguro");
-    expect(home).toContain("Cancelamento pelo Amém Chat");
-    expect(home).toContain("Personalização pela tradição cristã");
+    expect(home).toContain("Cancele quando quiser");
+    expect(home).toContain("Tradição ecumênica, evangélica ou católica");
     expect(home).toContain("inteligência artificial");
-    const hero = home.slice(0, home.indexOf("Veja uma reflexão de exemplo"));
+    const hero = home.slice(0, home.indexOf('id="demo-heading"'));
+    expect(hero).toContain("Não é Jesus");
     expect(hero).not.toMatch(/Não afirma ser Jesus/);
     expect(home.toLowerCase()).not.toMatch(/depoimento|testemunho|milhares de/);
   });
@@ -32,7 +33,7 @@ describe("launch premium conversion", () => {
   it("demo stays local with visible references and no API", () => {
     const demo = read("src", "components", "marketing", "chat-demo.tsx");
     expect(demo).toContain("Sem chamada à API");
-    expect(demo).toContain("Referência:");
+    expect(demo).toContain("Referências ·");
     expect(demo).toContain("exemplo local");
     expect(demo).not.toContain("fetch(");
     expect(demo).not.toContain("/api/chat");

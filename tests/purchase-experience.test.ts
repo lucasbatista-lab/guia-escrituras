@@ -20,17 +20,18 @@ describe("purchase experience — home copy & flow order", () => {
 
   it("follows the conversion section order", () => {
     const markers = [
-      "Escolher meu plano",
-      "Ver uma reflexão de exemplo",
+      'href="#demonstracao"',
+      "Começar com a minha situação",
       'id="demo-heading"',
-      "Situações em que o Amém Chat pode ajudar",
+      "Situações reais que você pode trazer",
+      "Como o Amém Chat transforma situação em reflexão",
       "Como começar",
-      "Benefícios disponíveis hoje",
-      "Tradições",
-      "Planos",
-      "Transparência e segurança",
+      "Profundidades e tradições",
+      "Segurança, privacidade e limites",
+      "Assinatura mensal com renovação automática",
       "Perguntas frequentes",
-      "Pronto para começar?",
+      "Estamos começando",
+      "Pronto para trazer a sua situação?",
     ];
     let last = -1;
     for (const marker of markers) {
@@ -40,17 +41,18 @@ describe("purchase experience — home copy & flow order", () => {
     }
   });
 
-  it("keeps CTAs and reduces defensive AI spam in hero", () => {
-    expect(home).toContain("Escolher meu plano");
+  it("keeps CTAs and short hero transparency without defensive spam", () => {
+    expect(home).toContain("Começar com a minha situação");
     expect(home).toContain("Ver uma reflexão de exemplo");
     expect(home).toContain("#demonstracao");
-    expect(home).toContain("A partir de");
+    expect(home).toContain("Planos a partir de");
     expect(home).toContain("Pagamento seguro");
-    expect(home).toContain("Cancelamento pelo Amém Chat");
-    expect(home).toContain("Personalização pela tradição cristã");
-    // AI disclaimer lives in transparency section, not piled into hero
-    const heroEnd = home.indexOf("Veja uma reflexão de exemplo");
+    expect(home).toContain("Cancele quando quiser");
+    expect(home).toContain("Tradição ecumênica, evangélica ou católica");
+    // Short transparency line is allowed; long "Não afirma" stays out of hero spam
+    const heroEnd = home.indexOf('id="demo-heading"');
     const hero = home.slice(0, heroEnd);
+    expect(hero).toContain("Não é Jesus");
     expect(hero).not.toMatch(/Não afirma ser Jesus/);
     expect(home).toContain("Transparência sobre IA");
     expect(home).toContain("inteligência artificial");

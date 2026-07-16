@@ -1,30 +1,69 @@
+import type { ReactNode } from "react";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
 import { PlanCards } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { PERSONALIZATION_DEPTHS } from "@/lib/journey/personalization-labels";
 import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
 
 /** Starting price for Essencial — kept in sync with plan catalog (R$ 38/mês). */
 const ESSENCIAL_PRICE_LABEL = "R$ 38";
 
+const DEPTH_BLURBS: Record<string, string> = {
+  brief: "Clareza direta",
+  balanced: "Reflexão e aplicação",
+  deep: "Análise mais desenvolvida",
+};
+
 const situations = [
   {
-    title: "Quando a ansiedade aperta",
-    body: "Traga o que está pesando e receba uma reflexão que combina Escrituras, clareza e um próximo passo possível.",
+    quote: "Tenho contas vencendo e preciso de forças para continuar.",
+    note: "Pressão financeira sem culpa mágica — clareza e um passo possível.",
   },
   {
-    title: "Quando a decisão é difícil",
-    body: "Organize o dilema com luz bíblica — sem atalhos mágicos e sem pressão para comprar nada.",
+    quote: "Não sei se devo aceitar essa oportunidade.",
+    note: "Decisão com luz das Escrituras, sem atalho sobrenatural.",
   },
   {
-    title: "Quando a relação magoa",
-    body: "Família, perdão e reconciliação com tom pastoral, honesto e cuidadoso.",
+    quote: "Quero perdoar sem voltar a permitir que me machuquem.",
+    note: "Perdão com limites — verdade e cuidado juntos.",
   },
   {
-    title: "Quando é hora de recomeçar",
-    body: "Um espaço sereno para nombrar falhas, pedir força e dar o primeiro passo com esperança prática.",
+    quote: "Sinto vergonha de repetir o mesmo erro.",
+    note: "Recomeço honesto, sem negar consequências.",
+  },
+  {
+    quote: "Meus projetos avançam, mas tenho medo de não prosperar.",
+    note: "Trabalho e propósito com serenidade prática.",
+  },
+  {
+    quote: "Parece que Deus está em silêncio.",
+    note: "Lamento e presença — sem fingir que está tudo bem.",
+  },
+  {
+    quote: "Estou cansado e não consigo organizar meus pensamentos.",
+    note: "Ansiedade acolhida com próximos passos concretos.",
+  },
+  {
+    quote: "Preciso tomar uma decisão no relacionamento.",
+    note: "Relação e discernimento com tom cuidadoso.",
+  },
+];
+
+const pillars = [
+  {
+    title: "1. Sua situação",
+    body: "Você escreve com suas próprias palavras o que está vivendo.",
+  },
+  {
+    title: "2. Escrituras e contexto",
+    body: "O Amém Chat busca referências relacionadas ao tema e considera a tradição cristã escolhida.",
+  },
+  {
+    title: "3. Reflexão e próximos passos",
+    body: "Você recebe acolhimento, interpretação claramente identificada e sugestões práticas para organizar o próximo passo.",
   },
 ];
 
@@ -43,245 +82,407 @@ const steps = [
   },
   {
     title: "4. Personalize e converse",
-    body: "Escolha a tradição e o tom das reflexões — depois traga sua situação.",
+    body: "Escolha a tradição e a profundidade — depois traga sua situação.",
   },
-];
-
-const whatYouGet = [
-  "Conversas com orientação baseada nas Escrituras",
-  "Tradição espiritual no perfil (ecumênica, evangélica ou católica)",
-  "Memória da conversa em andamento",
-  "Uso flexível dentro do orçamento do plano escolhido",
-  "Cancelamento da renovação pela própria conta no Amém Chat",
 ];
 
 const faq = [
   {
-    q: "A plataforma afirma ser Jesus?",
-    a: "Não. É uma experiência de inteligência artificial baseada nas Escrituras — nunca apresentada como voz divina. Detalhes em Transparência sobre IA.",
+    q: "O Amém Chat diz falar em nome de Jesus?",
+    a: "Não. É inteligência artificial baseada nas Escrituras — nunca apresentada como voz divina ou revelação. Detalhes em Transparência sobre IA.",
   },
   {
-    q: "Como funciona o pagamento?",
-    a: "Assinatura mensal com renovação automática. O checkout é processado pela Stripe. Você confirma o e-mail primeiro e só então conclui a assinatura.",
+    q: "Como as respostas são criadas?",
+    a: "A partir da sua mensagem, referências selecionadas ao tema, da tradição que você escolhe e de um formato de reflexão com passos práticos. Não é aconselhamento pastoral ao vivo.",
   },
   {
-    q: "Posso cancelar facilmente?",
+    q: "Posso falar sobre dinheiro, trabalho e relacionamentos?",
+    a: "Sim. São temas comuns. Em saúde mental grave, direito ou emergência, busque profissionais adequados — a ferramenta não substitui isso.",
+  },
+  {
+    q: "Qual a diferença entre as profundidades?",
+    a: "Breve traz clareza direta; Equilibrada une reflexão e aplicação; Profunda desenvolve mais o tema. Você escolhe no perfil.",
+  },
+  {
+    q: "Posso cancelar?",
     a: "Sim. A renovação automática pode ser cancelada pela sua conta no Amém Chat, com acesso até o fim do período já pago.",
   },
   {
-    q: "Substitui aconselhamento profissional?",
-    a: "Não. Em temas de saúde, direito ou saúde mental, a orientação é buscar profissionais adequados.",
+    q: "Minhas conversas ficam públicas?",
+    a: "Não. O uso das conversas segue a Política de Privacidade — não há publicação pública do seu diálogo na plataforma.",
   },
 ];
+
+function SectionShell({
+  children,
+  className = "",
+  tone = "plain",
+}: {
+  children: ReactNode;
+  className?: string;
+  tone?: "plain" | "sand" | "card";
+}) {
+  const toneClass =
+    tone === "sand"
+      ? "bg-sand-100/60"
+      : tone === "card"
+        ? "border-y border-border/50 bg-card/40"
+        : "";
+  return (
+    <section className={`${toneClass} ${className}`.trim()}>{children}</section>
+  );
+}
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
       <main>
+        {/* 1–2. Hero + demonstração (demo ao lado no desktop, abaixo no mobile) */}
         <section className="relative overflow-hidden">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.12),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.08),_transparent_50%)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.16),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.10),_transparent_50%)]"
           />
-          <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-6 sm:px-6 lg:pb-16 lg:pt-10">
-            <div className="animate-fade-up max-w-2xl">
-              <p className="font-display text-4xl leading-[1.1] tracking-tight text-ink sm:text-5xl lg:text-[3.4rem]">
-                {brand.name}
+          <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pb-12 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12 lg:pb-16 lg:pt-10">
+            <div className="animate-fade-up max-w-xl">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft sm:text-sm">
+                {brand.name} · Reflexões cristãs com inteligência artificial
               </p>
-              <h1 className="mt-5 max-w-xl text-balance font-display text-2xl leading-snug text-ink sm:text-3xl">
+              <p className="mt-4 font-display text-2xl leading-snug tracking-tight text-wine sm:text-3xl">
                 {brand.tagline}
+              </p>
+              <h1 className="mt-5 text-balance font-display text-3xl leading-[1.15] text-ink sm:text-4xl lg:text-[2.65rem]">
+                Quando a ansiedade aperta, traga o que pesa — e encontre clareza
+                à luz das Escrituras.
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-ink-soft sm:text-lg">
-                Quando a mente aperta e faltam palavras, traga o que pesa de
-                verdade. Receba uma reflexão clara, pastoral e ancorada nas
-                Escrituras — com inteligência artificial transparente e a
-                tradição cristã que você escolhe.
+                Uma reflexão personalizada para sua situação, considerando a
+                tradição cristã que você escolhe e oferecendo também próximos
+                passos possíveis para a vida real.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="min-h-11 bg-ink hover:bg-ink/90">
-                  <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="min-h-11">
+              <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-soft">
+                Não é Jesus, aconselhamento pastoral ou revelação divina. É uma
+                ferramenta de reflexão baseada nas Escrituras.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Button
+                  asChild
+                  size="lg"
+                  className="min-h-11 bg-ink hover:bg-ink/90"
+                >
                   <a href="#demonstracao">Ver uma reflexão de exemplo</a>
                 </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="min-h-11 border-ink/20"
+                >
+                  <TrackingLink href="/planos">
+                    Começar com a minha situação
+                  </TrackingLink>
+                </Button>
               </div>
-              <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
-                <li>Pagamento seguro</li>
-                <li>Cancelamento pelo Amém Chat</li>
-                <li>Personalização pela tradição cristã</li>
-              </ul>
               <p className="mt-3 text-sm font-medium text-ink">
-                A partir de {ESSENCIAL_PRICE_LABEL}/mês · assinatura mensal
+                Planos a partir de {ESSENCIAL_PRICE_LABEL}/mês
               </p>
-              <p className="mt-2 max-w-md text-xs leading-relaxed text-ink-soft">
-                Renovação cancelável na sua conta · checkout processado pela
-                Stripe.
+              <ul className="mt-5 flex flex-wrap gap-x-3 gap-y-2 text-xs text-ink-soft">
+                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
+                  Baseado nas Escrituras
+                </li>
+                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
+                  Tradição ecumênica, evangélica ou católica
+                </li>
+                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
+                  Cancele quando quiser
+                </li>
+                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
+                  Pagamento seguro
+                </li>
+              </ul>
+            </div>
+
+            <div className="min-w-0">
+              <h2
+                id="demo-heading"
+                className="font-display text-2xl text-ink sm:text-3xl lg:text-2xl"
+              >
+                Veja uma reflexão de exemplo
+              </h2>
+              <p className="mt-2 max-w-xl text-sm text-ink-soft sm:text-base">
+                Uma demonstração do tipo de reflexão que você pode receber —
+                sem criar conta e sem chamar a API.
               </p>
+              <div className="mt-5">
+                <ChatDemo />
+              </div>
             </div>
           </div>
         </section>
 
-        <section
-          className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16"
-          aria-labelledby="demo-heading"
-        >
-          <h2 id="demo-heading" className="font-display text-3xl text-ink">
-            Veja uma reflexão de exemplo
-          </h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            Experimente situações reais abaixo — sem criar conta e sem chamar a
-            API.
-          </p>
-          <div className="mt-8 max-w-xl lg:max-w-2xl">
-            <ChatDemo />
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">
-            Situações em que o Amém Chat pode ajudar
-          </h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            Não promete soluções mágicas. Oferece clareza, companhia espiritual
-            e um próximo passo possível.
-          </p>
-          <div className="mt-10 grid gap-8 sm:grid-cols-2">
-            {situations.map((item) => (
-              <div key={item.title}>
-                <h3 className="font-display text-xl text-ink">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  {item.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">Como começar</h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            Do plano à primeira conversa, em passos claros.
-          </p>
-          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step) => (
-              <div key={step.title}>
-                <h3 className="font-display text-xl text-ink">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  {step.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">
-            Benefícios disponíveis hoje
-          </h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            O que já funciona na assinatura. Recursos em desenvolvimento não
-            entram nesta lista.
-          </p>
-          <ul className="mt-8 max-w-xl space-y-3 text-sm text-ink-soft">
-            {whatYouGet.map((item) => (
-              <li key={item} className="flex gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine/70" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">Tradições</h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            A tradição que você escolhe molda como as reflexões são
-            apresentadas — não apenas o tom.
-          </p>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {TRADITION_POLICIES.map((tradition) => (
-              <div
-                key={tradition.key}
-                className="rounded-2xl border border-border/70 bg-card/50 p-5"
-              >
-                <h3 className="font-display text-xl text-ink">
-                  {tradition.label}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  {tradition.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">Planos</h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            Assinatura mensal com renovação automática. Escolha o ritmo que cabe
-            na sua vida — frequência e profundidade variam por plano. Recursos
-            futuros aparecem separados como “Em desenvolvimento”.
-          </p>
-          <div className="mt-10">
-            <PlanCards />
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">
-            Transparência e segurança
-          </h2>
-          <p className="mt-3 max-w-2xl text-ink-soft">
-            O Amém Chat é inteligência artificial baseada nas Escrituras. Não
-            afirma ser Jesus, Deus ou revelação. Identidade clara, checkout
-            seguro e cancelamento sem labirinto — detalhes completos em{" "}
-            <TrackingLink
-              href="/transparencia-ia"
-              className="text-ink underline underline-offset-4"
-            >
-              Transparência sobre IA
-            </TrackingLink>
-            .
-          </p>
-          <ul className="mt-8 grid gap-4 text-sm text-ink-soft sm:grid-cols-2">
-            <li>Pagamento processado pela Stripe</li>
-            <li>Renovação cancelável na sua conta</li>
-            <li>Sem pressão de doação ou culpa na conversa</li>
-            <li>Referências bíblicas apresentadas por síntese</li>
-          </ul>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-display text-3xl text-ink">Perguntas frequentes</h2>
-          <div className="mt-8 space-y-6">
-            {faq.map((item) => (
-              <div key={item.q} className="border-b border-border/60 pb-6">
-                <h3 className="font-medium text-ink">{item.q}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  {item.a}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6">
-          <div className="rounded-3xl border border-border/70 bg-gradient-to-br from-sand-100/90 to-card px-6 py-12 text-center sm:px-10">
+        {/* 3. Situações reais */}
+        <SectionShell>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Pronto para começar?
+              Situações reais que você pode trazer
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              Não promete soluções mágicas nem substitui terapia, pastor ou
+              ajuda profissional. Oferece clareza, companhia espiritual e um
+              próximo passo possível.
+            </p>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              {situations.map((item) => (
+                <figure
+                  key={item.quote}
+                  className="rounded-2xl border border-border/70 bg-card/70 p-5 shadow-sm"
+                >
+                  <blockquote className="font-display text-lg leading-snug text-ink">
+                    “{item.quote}”
+                  </blockquote>
+                  <figcaption className="mt-3 text-sm leading-relaxed text-ink-soft">
+                    {item.note}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 4. Como o produto ajuda */}
+        <SectionShell tone="card">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Como o Amém Chat transforma situação em reflexão
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              Do que você vive às Escrituras — com interpretação identificada e
+              passos para a vida real.
+            </p>
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {pillars.map((pillar) => (
+                <div
+                  key={pillar.title}
+                  className="rounded-2xl border border-border/70 bg-background/80 p-5 shadow-sm"
+                >
+                  <h3 className="font-display text-xl text-ink">
+                    {pillar.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                    {pillar.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 5. Como começar */}
+        <SectionShell>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Como começar
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              Do plano à primeira conversa, em passos claros.
+            </p>
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {steps.map((step) => (
+                <div
+                  key={step.title}
+                  className="rounded-2xl border border-border/60 bg-card/50 p-5"
+                >
+                  <h3 className="font-display text-xl text-ink">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                    {step.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-10">
+              <Button asChild size="lg" variant="outline" className="min-h-11">
+                <TrackingLink href="/planos">Conhecer os planos</TrackingLink>
+              </Button>
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 6. Profundidades e tradições */}
+        <SectionShell tone="sand">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Profundidades e tradições
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              Você escolhe o ritmo da reflexão e a tradição que molda como ela é
+              apresentada — não apenas o tom.
+            </p>
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              {PERSONALIZATION_DEPTHS.map((depth) => (
+                <div
+                  key={depth.key}
+                  className="rounded-2xl border border-border/70 bg-card/80 p-5 shadow-sm"
+                >
+                  <h3 className="font-display text-xl text-ink">{depth.label}</h3>
+                  <p className="mt-1 text-sm font-medium text-wine">
+                    {DEPTH_BLURBS[depth.key] ?? depth.description}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                    {depth.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {TRADITION_POLICIES.map((tradition) => (
+                <div
+                  key={tradition.key}
+                  className="rounded-2xl border border-border/70 bg-card/60 p-5"
+                >
+                  <h3 className="font-display text-xl text-ink">
+                    {tradition.label}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                    {tradition.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 7. Segurança e limites */}
+        <SectionShell tone="card">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Segurança, privacidade e limites
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              O Amém Chat é inteligência artificial baseada nas Escrituras. Não
+              afirma ser Jesus, Deus ou revelação. Não substitui liderança
+              pastoral, terapia ou atendimento de emergência. Detalhes em{" "}
+              <TrackingLink
+                href="/transparencia-ia"
+                className="text-ink underline underline-offset-4"
+              >
+                Transparência sobre IA
+              </TrackingLink>
+              .
+            </p>
+            <ul className="mt-8 grid gap-3 text-sm text-ink-soft sm:grid-cols-2">
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Pagamento processado pela Stripe
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Renovação cancelável na sua conta
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Conversas privadas conforme a Política de Privacidade
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Referências bíblicas apresentadas por síntese
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Escolha de tradição cristã no perfil
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Sem pressão de doação ou culpa na conversa
+              </li>
+            </ul>
+          </div>
+        </SectionShell>
+
+        {/* 8. Planos */}
+        <SectionShell>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Planos
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              Assinatura mensal com renovação automática. Escolha o ritmo que
+              cabe na sua vida — a partir de {ESSENCIAL_PRICE_LABEL}/mês.
+              Recursos futuros aparecem separados como “Em desenvolvimento”.
+            </p>
+            <div className="mt-10">
+              <PlanCards />
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 9. FAQ */}
+        <SectionShell tone="sand">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Perguntas frequentes
+            </h2>
+            <div className="mt-8 space-y-6">
+              {faq.map((item) => (
+                <div
+                  key={item.q}
+                  className="rounded-2xl border border-border/60 bg-card/70 px-5 py-5 shadow-sm"
+                >
+                  <h3 className="font-medium text-ink">{item.q}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                    {item.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 10. Mensagem de lançamento */}
+        <SectionShell>
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+            <div className="rounded-3xl border border-border/70 bg-gradient-to-br from-sand-100/90 to-card px-6 py-10 sm:px-10">
+              <h2 className="font-display text-3xl text-ink">Estamos começando.</h2>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
+                O Amém Chat está em sua fase de lançamento. Os primeiros
+                assinantes ajudarão a aperfeiçoar uma ferramenta criada para
+                unir acolhimento, Escrituras e passos possíveis para a vida
+                real.
+              </p>
+              {brand.supportEmail ? (
+                <p className="mt-3 text-sm text-ink-soft">
+                  Dúvidas? Escreva para{" "}
+                  <a
+                    href={`mailto:${brand.supportEmail}`}
+                    className="text-ink underline underline-offset-4"
+                  >
+                    {brand.supportEmail}
+                  </a>
+                  .
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 11. CTA final */}
+        <section className="mx-auto max-w-6xl px-4 pb-20 pt-4 sm:px-6">
+          <div className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-12 text-center sm:px-10">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Pronto para trazer a sua situação?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-              Escolha o plano, confirme o e-mail e traga sua situação com a
-              tradição que faz sentido para você.
+              Escolha o plano, confirme o e-mail e converse com a tradição que
+              faz sentido para você — a partir de {ESSENCIAL_PRICE_LABEL}/mês.
             </p>
-            <Button
-              asChild
-              size="lg"
-              className="mt-8 min-h-11 bg-wine hover:bg-wine-soft"
-            >
-              <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
-            </Button>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="min-h-11 bg-wine hover:bg-wine-soft"
+              >
+                <TrackingLink href="/planos">
+                  Começar com a minha situação
+                </TrackingLink>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="min-h-11">
+                <a href="#demonstracao">Ver uma reflexão de exemplo</a>
+              </Button>
+            </div>
           </div>
         </section>
       </main>

@@ -12,49 +12,88 @@ function read(...parts: string[]) {
 describe("launch conversion home", () => {
   const home = read("src", "app", "(marketing)", "page.tsx");
   const demo = read("src", "components", "marketing", "chat-demo.tsx");
+  const plans = read("src", "lib", "entitlements", "plans.ts");
+  const stripeCheckout = read("src", "lib", "stripe", "checkout.ts");
+  const chatService = read("src", "lib", "ai", "chat-service.ts");
+  const adminMetrics = read("src", "lib", "admin", "metrics.ts");
 
-  it("keeps brand, tagline and conversion CTAs without legal overload in hero", () => {
+  it("keeps brand tagline and emotional hero hierarchy", () => {
     expect(home).toContain("brand.name");
     expect(home).toContain("brand.tagline");
-    expect(home).toContain("Escolher meu plano");
-    expect(home).toContain("#demonstracao");
+    expect(home).toContain("Quando a ansiedade aperta");
+    expect(home).toContain("clareza");
+    expect(home).toContain("Escrituras");
+    expect(home).toContain("Não é Jesus");
+    expect(home).toContain("revelação divina");
+  });
+
+  it("makes demo the primary cold-traffic CTA and conversion uses TrackingLink", () => {
+    expect(home).toContain('href="#demonstracao"');
     expect(home).toContain("Ver uma reflexão de exemplo");
+    expect(home).toContain("Começar com a minha situação");
+    expect(home).toContain("Conhecer os planos");
+    expect(home).toContain("TrackingLink");
+    expect(home).toContain('href="/planos"');
+    expect(home).toContain("R$ 38");
+    // Primary CTA block appears before secondary conversion wording in hero CTAs
+    const primaryIdx = home.indexOf("Ver uma reflexão de exemplo");
+    const secondaryIdx = home.indexOf("Começar com a minha situação");
+    expect(primaryIdx).toBeGreaterThan(-1);
+    expect(secondaryIdx).toBeGreaterThan(primaryIdx);
+  });
+
+  it("places ChatDemo before plans and keeps trust anchors", () => {
+    const demoIdx = home.indexOf("<ChatDemo");
+    const plansIdx = home.indexOf("<PlanCards");
+    expect(demoIdx).toBeGreaterThan(-1);
+    expect(plansIdx).toBeGreaterThan(demoIdx);
+    expect(home).toContain("Situações reais que você pode trazer");
+    expect(home).toContain("Tenho contas vencendo");
+    expect(home).toContain("Parece que Deus está em silêncio");
+    expect(home).toContain("Como o Amém Chat transforma situação em reflexão");
+    expect(home).toContain("Como começar");
+    expect(home).toContain("Profundidades e tradições");
+    expect(home).toContain("Segurança, privacidade e limites");
+    expect(home).toContain("Estamos começando");
     expect(home).toContain("Stripe");
     expect(home).toContain("cancel");
   });
 
-  it("includes essential conversion sections", () => {
-    expect(home).toContain("Situações em que o Amém Chat pode ajudar");
-    expect(home).toContain("Como começar");
-    expect(home).toContain("Benefícios disponíveis hoje");
-    expect(home).toContain("Tradições");
-    expect(home).toContain("Transparência e segurança");
-    expect(home).toContain("Planos");
-    expect(home).toContain("Perguntas frequentes");
-  });
-
-  it("does not sell unavailable capabilities as active", () => {
+  it("does not invent social proof, scarcity or unavailable features", () => {
     const lowered = home.toLowerCase();
-    expect(lowered).not.toMatch(/whatsapp/);
-    expect(lowered).not.toMatch(/respostas em áudio|respostas em audio/);
-    expect(lowered).not.toMatch(/jornadas de leitura/);
     expect(lowered).not.toMatch(/depoimento|testemunho/);
     expect(lowered).not.toMatch(/usuários ativos|milhares de/);
     expect(lowered).not.toMatch(/apenas hoje|últimas vagas|contagem regressiva/);
+    expect(lowered).not.toMatch(/garantia de/);
+    expect(lowered).not.toMatch(/whatsapp/);
+    expect(lowered).not.toMatch(/respostas em áudio|respostas em audio/);
+    expect(lowered).not.toMatch(/jornadas de leitura/);
   });
 
-  it("ships local interactive demo without API calls", () => {
+  it("ships local interactive demo without API or OpenAI calls", () => {
     expect(demo).toContain('"use client"');
-    expect(demo).toContain("Ansiedade");
-    expect(demo).toContain("Decisões");
-    expect(demo).toContain("Família");
-    expect(demo).toContain("Perdão");
-    expect(demo).toContain("Recomeços");
+    expect(demo).toContain("id=\"demonstracao\"");
+    expect(demo).toContain("Ansiedade e decisões");
+    expect(demo).toContain("Dinheiro e trabalho");
+    expect(demo).toContain("Perdão e família");
+    expect(demo).toContain("Culpa e recomeço");
+    expect(demo).toContain("Silêncio espiritual");
+    expect(demo).toContain(
+      "Estou com medo de tomar uma decisão errada e me arrepender",
+    );
     expect(demo).toContain("Sem chamada à API");
     expect(demo).not.toContain("fetch(");
     expect(demo).not.toContain("/api/chat");
+    expect(demo).not.toContain("openai");
+    expect(demo).toContain("TrackingLink");
     expect(demo).toContain('href="/planos"');
-    expect(demo).toContain("Escolher meu plano");
+  });
+
+  it("does not modify plans, stripe, chat or admin in this block", () => {
+    expect(plans).toContain("priceMonthlyCents: 3800");
+    expect(stripeCheckout).toContain("createSubscriptionCheckout");
+    expect(chatService).toContain("runChatTurn");
+    expect(adminMetrics).toContain("getAdminOverviewMetrics");
   });
 });
 
