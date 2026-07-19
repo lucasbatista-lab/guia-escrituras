@@ -26,6 +26,7 @@ Production / Preview:
 | `OPENAI_MODEL_DEFAULT` / `OPENAI_MODEL_DEEP` | recomendado |
 | `NEXT_PUBLIC_APP_URL` | sim (URL canônica) |
 | `USD_BRL_PLANNING_RATE` | recomendado |
+| `CRON_SECRET` | sim em production (relatório diário) |
 | `DEMO_MODE` | apenas preview, se quiser mocks |
 
 Em **production**, `DEMO_MODE` não libera mocks.
@@ -81,11 +82,12 @@ values ('<uuid>', 'caminho', 'active');
 5. Sem assinatura: chat retorna 402
 6. Com assinatura + OpenAI: conversa persiste em `messages` / `usage_events`
 7. `/admin` sem `admin_roles` → redirect `/inicio`
+8. Relatório diário: ver `docs/DAILY_REPORTS.md` (`CRON_SECRET`, cron 00:15 UTC)
 
-## O que ainda é mock
+## O que ainda é limitado / futuro
 
-- Métricas do painel admin (agregados ilustrativos)
-- Relatório diário interpretado com números mock até o cron
+- Receita em dinheiro Stripe no `daily_reports` (`revenueBrlCents` permanece null)
+- Códigos HTTP do chat (409/429/503) só em logs — sem coluna no banco
 - Fonte bíblica textual (trechos de demonstração)
-- Stripe checkout / webhooks
-- Pagamento de indicações
+- Pagamento de indicações (rewards)
+- Streaming no chat

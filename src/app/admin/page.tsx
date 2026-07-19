@@ -5,6 +5,10 @@ import {
   getAdminOverviewMetrics,
 } from "@/lib/admin/metrics";
 import { formatCancelingWithAccessMetric } from "@/lib/admin/format-canceling-metric";
+import {
+  alertLevelToLegacy,
+  buildOperationalAlerts,
+} from "@/lib/admin/operational-alerts";
 import { formatPriceBRL } from "@/lib/entitlements";
 import { StripeReadinessPanel } from "@/components/admin/stripe-readiness-panel";
 
@@ -19,7 +23,19 @@ export default async function AdminHomePage() {
     throw error;
   }
 
-  const alerts = buildAlerts(metrics);
+  const alerts = buildOperationalAlerts({
+    paymentEventsReceivedStuck: metrics.paymentEventsReceivedStuck,
+    paymentEventsFailed: metrics.paymentEventsFailed,
+    pastDueSubscriptions: metrics.pastDueSubscriptions,
+    checkoutsStuckOver30m: metrics.checkoutsStuckOver30m,
+    usersWithDuplicateSubscriptions: metrics.usersWithDuplicateSubscriptions,
+    cancelingWithAccessCount: metrics.cancelingWithAccessCount,
+    yesterdayReportPresent: metrics.yesterdayReportPresent,
+    yesterdayReportDate: metrics.yesterdayReportDate,
+    activeSubscriberUsers: metrics.activeSubscriberUsers,
+    aiRequestsToday: metrics.aiRequestsToday,
+    aiEstimatedCostBrlCentsToday: metrics.aiEstimatedCostBrlCentsToday,
+  });
   const cancelingLabel = formatCancelingWithAccessMetric(
     metrics.cancelingWithAccessCount,
   );
@@ -44,27 +60,35 @@ export default async function AdminHomePage() {
       {alerts.length > 0 ? (
         <Section title="Alertas operacionais">
           <ul className="space-y-2">
-            {alerts.map((alert) => (
-              <li key={alert.key}>
-                <Link
-                  href={alert.href}
-                  className={
-                    alert.level === "P0"
-                      ? "flex flex-col gap-1 rounded-lg border border-red-700/40 bg-red-50 px-3 py-3 text-sm text-red-950 sm:flex-row sm:items-center sm:justify-between"
-                      : "flex flex-col gap-1 rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-3 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between"
-                  }
-                >
-                  <span>
-                    <span className="font-medium">{alert.level}</span>
-                    {" · "}
-                    {alert.message}
-                  </span>
-                  <span className="text-xs underline underline-offset-2">
-                    {alert.cta}
-                  </span>
-                </Link>
-              </li>
-            ))}
+            {alerts.map((alert) => {
+              const legacy = alertLevelToLegacy(alert.level);
+              return (
+                <li key={alert.key}>
+                  <Link
+                    href={alert.href}
+                    className={
+                      alert.level === "critical"
+                        ? "flex flex-col gap-1 rounded-lg border border-red-700/40 bg-red-50 px-3 py-3 text-sm text-red-950 sm:flex-row sm:items-start sm:justify-between"
+                        : alert.level === "attention"
+                          ? "flex flex-col gap-1 rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-3 text-sm text-amber-950 sm:flex-row sm:items-start sm:justify-between"
+                          : "flex flex-col gap-1 rounded-lg border border-border/70 bg-sand-50 px-3 py-3 text-sm text-ink sm:flex-row sm:items-start sm:justify-between"
+                    }
+                  >
+                    <span>
+                      <span className="font-medium">{legacy}</span>
+                      {" · "}
+                      {alert.message}
+                      <span className="mt-1 block text-xs opacity-90">
+                        {alert.meaning} → {alert.investigate}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-xs underline underline-offset-2">
+                      {alert.cta}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </Section>
       ) : null}
@@ -320,71 +344,6 @@ export default async function AdminHomePage() {
       </Section>
     </div>
   );
-}
-
-function buildAlerts(metrics: {
-  paymentEventsReceivedStuck: number;
-  paymentEventsFailed: number;
-  pastDueSubscriptions: number;
-  checkoutsStuckOver30m: number;
-  usersWithDuplicateSubscriptions: number;
-  cancelingWithAccessCount: number | null;
-}) {
-  const alerts: Array<{
-    key: string;
-    level: "P0" | "P1";
-    message: string;
-    href: string;
-    cta: string;
-  }> = [];
-
-  if (metrics.paymentEventsReceivedStuck > 0) {
-    alerts.push({
-      key: "received_stuck",
-      level: "P0",
-      message: `${metrics.paymentEventsReceivedStuck} payment_events em received há mais de 3 minutos (lease estourado).`,
-      href: "/admin/eventos?status=received_stuck",
-      cta: "Ver eventos",
-    });
-  }
-  if (metrics.paymentEventsFailed > 0) {
-    alerts.push({
-      key: "failed",
-      level: "P0",
-      message: `${metrics.paymentEventsFailed} payment_events com status failed.`,
-      href: "/admin/eventos?status=failed",
-      cta: "Ver falhas",
-    });
-  }
-  if (metrics.pastDueSubscriptions > 0) {
-    alerts.push({
-      key: "past_due",
-      level: "P1",
-      message: `${metrics.pastDueSubscriptions} assinatura(s) past_due.`,
-      href: "/admin/usuarios?past_due=1",
-      cta: "Ver usuários",
-    });
-  }
-  if (metrics.checkoutsStuckOver30m > 0) {
-    alerts.push({
-      key: "checkout_stuck",
-      level: "P1",
-      message: `${metrics.checkoutsStuckOver30m} checkout(s) pendente(s) há mais de 30 minutos.`,
-      href: "/admin/usuarios?checkout_pending=1",
-      cta: "Ver checkouts",
-    });
-  }
-  if (metrics.usersWithDuplicateSubscriptions > 0) {
-    alerts.push({
-      key: "duplicates",
-      level: "P1",
-      message: `${metrics.usersWithDuplicateSubscriptions} usuário(s) com assinaturas ativas duplicadas.`,
-      href: "/admin/usuarios?duplicates=1",
-      cta: "Ver duplicidades",
-    });
-  }
-
-  return alerts;
 }
 
 function Section({

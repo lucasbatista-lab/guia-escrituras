@@ -43,3 +43,12 @@ export {
   maskStripeId,
 } from "./labels";
 export { assertAdminServiceAccess } from "./require-admin";
+export {
+  buildOperationalAlerts,
+  alertLevelToLegacy,
+  ALERT_MIN_SUBSCRIBERS_FOR_ACTIVITY,
+  ALERT_AI_COST_DAY_BRL_CENTS,
+  type OperationalAlert,
+  type OperationalAlertLevel,
+  type OperationalAlertInput,
+} from "./operational-alerts";

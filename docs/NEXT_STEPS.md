@@ -1,10 +1,9 @@
 # Next steps
 
-1. **Aplicar migration 004** após revisão humana (`docs/DEPLOYMENT.md`).  
-2. Configurar `SUPABASE_SECRET_KEY` na Vercel (necessário pós-004 para assistant/usage).  
-3. Criar primeiro admin em `admin_roles` + assinatura de teste.  
-4. Ligar Stripe Checkout + webhooks (sem plano gratuito).  
-5. Cron do relatório diário com `compute_daily_report_aggregates`.  
-6. Fonte bíblica licenciada.  
-7. Streaming no `/api/chat`.  
-8. Observabilidade com `request_id` e alertas 70/90/100%.
+1. Confirmar `CRON_SECRET` + cron Vercel em production (`docs/DAILY_REPORTS.md`).  
+2. Aplicar migration 004 em ambientes onde ainda faltare (`docs/DEPLOYMENT.md`) — **não faz parte deste bloco**.  
+3. Fonte bíblica licenciada.  
+4. Streaming no `/api/chat`.  
+5. Persistência estruturada de falhas de chat (409/429/503) se a operação precisar disso no admin (exigiria migration).  
+6. Receita real Stripe no relatório diário (ledger de pagamentos).  
+7. Observabilidade avançada de percentis / alertas externos (e-mail) — fora do escopo atual.

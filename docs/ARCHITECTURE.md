@@ -61,6 +61,6 @@ Sem free / trial recorrente / chat anônimo real.
 - O mesmo `referral_code` entra em `referral_attributions`; autoindicação e `referred_user_id` unique já bloqueiam abuso.
 - Compartilhar **não** implica recompensa financeira. Elegibilidade futura (se publicada) reutiliza os códigos atuais; partner/affiliate devem manter `utm_medium` distinto (ex.: `commercial`).
 
-## O que ainda é mock
+## O que ainda é limitado / futuro
 
-Métricas admin, relatório diário ilustrativo, trechos bíblicos de demonstração, Stripe, pagamento de indicações.
+Trechos bíblicos de demonstração; receita em dinheiro no daily report (`null`); falhas HTTP do chat só em logs; pagamento de indicações; streaming.

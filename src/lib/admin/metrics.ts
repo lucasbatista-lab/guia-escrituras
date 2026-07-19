@@ -18,6 +18,8 @@ import {
 } from "./paginate";
 import { assertAdminServiceAccess } from "./require-admin";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { yesterdayUtcDate } from "@/lib/reports/dates";
+import { normalizeDailyReportAggregates } from "@/lib/reports/daily-report";
 
 export class AdminMetricsError extends Error {
   constructor(message: string) {
@@ -207,6 +209,11 @@ export interface AdminOverviewMetrics {
   referralsFirstPayment: number;
   referralsSecondPayment: number;
   referralsRewardPending: number;
+  /** Whether daily_reports has a row for yesterday UTC. */
+  yesterdayReportPresent: boolean;
+  yesterdayReportDate: string;
+  /** Estimated AI cost for current UTC day (planning cents). */
+  aiEstimatedCostBrlCentsToday: number;
 }
 
 async function countCancelingWithAccess(): Promise<number | null> {
@@ -387,6 +394,13 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     countCancelingWithAccess(),
   ]);
 
+  const yesterdayReportDate = yesterdayUtcDate(now);
+  const yesterdayReport = await client
+    .from("daily_reports")
+    .select("report_date")
+    .eq("report_date", yesterdayReportDate)
+    .maybeSingle();
+
   const { effective, usersWithDuplicates } = selectEffectiveSubscriptionsByUser(
     liveSubscriptions.candidates,
   );
@@ -490,6 +504,9 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     referralsFirstPayment,
     referralsSecondPayment,
     referralsRewardPending,
+    yesterdayReportPresent: Boolean(yesterdayReport.data?.report_date),
+    yesterdayReportDate,
+    aiEstimatedCostBrlCentsToday: usageToday.costBrlCents,
   };
 }
 
@@ -511,7 +528,10 @@ export async function getStoredDailyReports(
 
   return (data ?? []).map((row) => ({
     reportDate: row.report_date as string,
-    aggregates: row.aggregates as DailyReportAggregates,
+    aggregates: normalizeDailyReportAggregates({
+      date: row.report_date as string,
+      ...(row.aggregates as object),
+    } as Parameters<typeof normalizeDailyReportAggregates>[0]),
   }));
 }
 

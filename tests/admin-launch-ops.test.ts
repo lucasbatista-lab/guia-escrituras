@@ -148,8 +148,10 @@ describe("admin UX contracts", () => {
     expect(page).toContain("/admin/eventos?status=failed");
     expect(page).toContain("/admin/eventos?status=received_stuck");
     expect(page).toContain("/admin/usuarios?checkout_pending=1");
-    expect(page).toContain("P0");
-    expect(page).toContain("P1");
+    expect(page).toContain("buildOperationalAlerts");
+    expect(page).toContain("alertLevelToLegacy");
+    expect(page).toContain("critical");
+    expect(page).toContain("attention");
     expect(page).not.toContain("messages");
     expect(page).not.toContain("OPENAI_API_KEY");
     expect(page).not.toContain("STRIPE_SECRET");

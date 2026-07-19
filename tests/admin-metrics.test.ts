@@ -208,9 +208,9 @@ describe("admin pages source contracts", () => {
     const source = await import("node:fs/promises").then((fs) =>
       fs.readFile("src/app/admin/relatorios/page.tsx", "utf8"),
     );
-    expect(source).toContain(
-      "Os relatórios automáticos ainda não foram configurados.",
-    );
+    expect(source).toContain("Nenhum daily_report armazenado ainda");
+    expect(source).toContain("CRON_SECRET");
+    expect(source).toContain("DailyReportGeneratePanel");
   });
 
   it("admin layout requires isAdmin without demo fallback", async () => {
