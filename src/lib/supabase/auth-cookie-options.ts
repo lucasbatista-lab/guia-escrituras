@@ -19,7 +19,9 @@ export function getAuthCookieOptions(): {
     secure,
   };
 
-  if (runtime === "production") {
+  // Only the real Vercel Production deployment shares Domain=.amemchat.com.br.
+  // Local `next start` (NODE_ENV=production, no VERCEL_ENV) must stay host-only.
+  if (process.env.VERCEL_ENV === "production") {
     return { ...base, domain: ".amemchat.com.br" };
   }
 

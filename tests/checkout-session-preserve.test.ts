@@ -95,7 +95,8 @@ describe("checkout return — session preservation", () => {
     expect(proxy).toContain("amem_checkout_return");
     expect(proxy).toContain("redirectPreservingCookies");
     expect(proxy).toContain("getUser");
-    expect(proxy).toContain('next", loginNextForRequest');
+    expect(proxy).toContain("loginNextForRequest");
+    expect(proxy).toContain("safeNextPath");
     expect(proxy).toContain("/assinatura/sucesso");
     // Must not only pass pathname (which drops query) for success page resume.
     expect(proxy).toContain('return "/assinatura/sucesso"');

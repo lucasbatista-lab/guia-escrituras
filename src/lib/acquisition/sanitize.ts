@@ -173,8 +173,15 @@ export function parseAcquisitionCookie(
 ): AcquisitionTouch | null {
   if (!raw?.trim()) return null;
   try {
-    const decoded = decodeURIComponent(raw.trim());
-    const parsed = JSON.parse(decoded) as unknown;
+    let text = raw.trim();
+    // Accept legacy encodeURIComponent wrappers (single or double) from older builds.
+    if (text.startsWith("%")) {
+      text = decodeURIComponent(text);
+      if (text.startsWith("%")) {
+        text = decodeURIComponent(text);
+      }
+    }
+    const parsed = JSON.parse(text) as unknown;
     if (!parsed || typeof parsed !== "object") return null;
     const obj = parsed as Record<string, unknown>;
     if (obj.v !== ACQ_COOKIE_VERSION) return null;
@@ -217,6 +224,7 @@ export function parseAcquisitionCookie(
   }
 }
 
+/** Raw JSON — Next ResponseCookies handles header encoding. */
 export function serializeAcquisitionCookie(touch: AcquisitionTouch): string {
-  return encodeURIComponent(JSON.stringify(touch));
+  return JSON.stringify(touch);
 }

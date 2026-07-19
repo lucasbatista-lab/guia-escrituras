@@ -19,7 +19,10 @@ export {
   parseAcquisitionCookie,
   serializeAcquisitionCookie,
 } from "./sanitize";
-export { applyAcquisitionCapture } from "./capture";
+export {
+  applyAcquisitionCapture,
+  acquisitionCookieOptions,
+} from "./capture";
 export { resolveTrackingForSignupIntent } from "./resolve-for-signup";
 export {
   LAUNCH_CAMPAIGN_EXAMPLES,

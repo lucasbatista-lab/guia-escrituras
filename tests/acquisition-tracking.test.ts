@@ -109,6 +109,23 @@ describe("acquisition cookies first/last", () => {
       ),
     ).toBeNull();
   });
+
+  it("reads raw JSON and legacy encodeURIComponent cookie payloads", () => {
+    const touch = touchFromSearchParams(
+      new URLSearchParams("utm_source=instagram&utm_campaign=launch_jul26"),
+      "/",
+    )!;
+    const raw = serializeAcquisitionCookie(touch);
+    expect(raw.startsWith("{")).toBe(true);
+    expect(parseAcquisitionCookie(raw)?.utm_source).toBe("instagram");
+    expect(parseAcquisitionCookie(encodeURIComponent(raw))?.utm_source).toBe(
+      "instagram",
+    );
+    expect(
+      parseAcquisitionCookie(encodeURIComponent(encodeURIComponent(raw)))
+        ?.utm_source,
+    ).toBe("instagram");
+  });
 });
 
 describe("acquisition merge for signup_intent", () => {
@@ -163,10 +180,13 @@ describe("campaign conventions", () => {
 describe("acquisition admin + wiring contracts", () => {
   it("proxy applies acquisition capture without stripping UTMs", async () => {
     const proxy = await import("node:fs/promises").then((fs) =>
-      fs.readFile("proxy.ts", "utf8"),
+      fs.readFile("src/proxy.ts", "utf8"),
     );
     expect(proxy).toContain("applyAcquisitionCapture");
     expect(proxy).toContain("updateSession");
+    expect(proxy).toContain("buildWwwToApexRedirectHref");
+    expect(proxy).toContain("308");
+    expect(proxy).toContain("src/proxy.ts");
   });
 
   it("signup and plan continuation merge cookie attribution", async () => {
