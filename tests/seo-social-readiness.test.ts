@@ -51,7 +51,7 @@ describe("SEO & social readiness — brand and metadata helpers", () => {
     expect(publicCanonicalPath("/")).toBe("/");
   });
 
-  it("public page metadata sets canonical and OG url without UTMs", () => {
+  it("public page metadata sets canonical, OG url, and social images", () => {
     process.env.VERCEL_ENV = "production";
     process.env.NODE_ENV = "production";
     delete process.env.NEXT_PUBLIC_APP_URL;
@@ -65,9 +65,35 @@ describe("SEO & social readiness — brand and metadata helpers", () => {
     expect(meta.openGraph?.url).toBe("https://amemchat.com.br/planos");
     expect(String(meta.openGraph?.url)).not.toContain("utm_");
     expect(meta.twitter?.card).toBe("summary_large_image");
+
+    const ogImages = meta.openGraph?.images;
+    expect(ogImages).toBeDefined();
+    const firstOg = Array.isArray(ogImages) ? ogImages[0] : ogImages;
+    expect(firstOg).toMatchObject({
+      url: "/opengraph-image",
+      width: 1200,
+      height: 630,
+      type: "image/png",
+    });
+
+    const twImages = meta.twitter?.images;
+    expect(twImages).toBeDefined();
+    const firstTw = Array.isArray(twImages) ? twImages[0] : twImages;
+    expect(firstTw).toMatchObject({
+      url: "/twitter-image",
+      width: 1200,
+      height: 630,
+    });
+
+    const resolvedOg = new URL("/opengraph-image", "https://amemchat.com.br").href;
+    const resolvedTw = new URL("/twitter-image", "https://amemchat.com.br").href;
+    expect(resolvedOg).toBe("https://amemchat.com.br/opengraph-image");
+    expect(resolvedTw).toBe("https://amemchat.com.br/twitter-image");
+    expect(resolvedOg).not.toMatch(/localhost|www\.amemchat|vercel\.app/);
+    expect(resolvedTw).not.toMatch(/localhost|www\.amemchat|vercel\.app/);
   });
 
-  it("metadataBase and home canonical use production apex", () => {
+  it("root layout and home wire explicit social images for crawlers", () => {
     process.env.VERCEL_ENV = "production";
     process.env.NODE_ENV = "production";
     delete process.env.NEXT_PUBLIC_APP_URL;
@@ -76,12 +102,16 @@ describe("SEO & social readiness — brand and metadata helpers", () => {
     expect(publicPageUrl("/")).toBe("https://amemchat.com.br");
 
     const layout = read("src", "app", "layout.tsx");
+    expect(layout).toContain("socialOpenGraphImages");
+    expect(layout).toContain("socialTwitterImages");
     expect(layout).toContain("metadataBase");
     expect(layout).toContain("brand.canonicalUrl");
     expect(layout).toContain("summary_large_image");
     expect(layout).not.toContain('canonical: "/"');
 
     const home = read("src", "app", "(marketing)", "page.tsx");
+    expect(home).toContain("socialOpenGraphImages");
+    expect(home).toContain("socialTwitterImages");
     expect(home).toContain('canonical: "/"');
     expect(home).toContain("brand.seoTitle");
     expect(home).toContain("brand.seoDescription");

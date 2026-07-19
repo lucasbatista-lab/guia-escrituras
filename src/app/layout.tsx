@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Fraunces, Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import { brand } from "@/config/brand";
-import { rootRobotsMetadata } from "@/lib/seo";
+import {
+  rootRobotsMetadata,
+  socialOpenGraphImages,
+  socialTwitterImages,
+} from "@/lib/seo";
 import "./globals.css";
 
 const display = Fraunces({
@@ -38,11 +42,13 @@ export const metadata: Metadata = {
     siteName: brand.name,
     title: brand.seoTitle,
     description: brand.seoDescription,
+    images: socialOpenGraphImages(),
   },
   twitter: {
     card: "summary_large_image",
     title: brand.seoTitle,
     description: brand.seoDescription,
+    images: socialTwitterImages(),
   },
   robots: rootRobotsMetadata(),
 };

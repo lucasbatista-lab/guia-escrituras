@@ -7,6 +7,10 @@ import { PlanCards } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { ShareInvite } from "@/components/share/share-invite";
 import { PERSONALIZATION_DEPTHS } from "@/lib/journey/personalization-labels";
+import {
+  socialOpenGraphImages,
+  socialTwitterImages,
+} from "@/lib/seo";
 import { buildVisitorShareUrl } from "@/lib/share/resolve-server";
 import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
@@ -19,11 +23,13 @@ export const metadata: Metadata = {
     title: brand.seoTitle,
     description: brand.seoDescription,
     url: brand.canonicalUrl,
+    images: socialOpenGraphImages(),
   },
   twitter: {
     card: "summary_large_image",
     title: brand.seoTitle,
     description: brand.seoDescription,
+    images: socialTwitterImages(),
   },
 };
 /** Starting price for Essencial — kept in sync with plan catalog (R$ 38/mês). */

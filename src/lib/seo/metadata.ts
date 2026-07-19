@@ -17,6 +17,42 @@ export function publicPageUrl(path: string): string {
 }
 
 /**
+ * Shared social card image (file routes /opengraph-image + /twitter-image).
+ * Must be set explicitly on page/layout openGraph objects: Next replaces
+ * nested openGraph when a child defines it, dropping file-based images.
+ */
+export const SOCIAL_IMAGE_ALT =
+  "Amém Chat — reflexões cristãs para situações reais";
+
+export const SOCIAL_OG_IMAGE = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  type: "image/png" as const,
+  alt: SOCIAL_IMAGE_ALT,
+};
+
+/** Relative paths resolved via metadataBase → absolute apex URLs. */
+export function socialOpenGraphImages(): NonNullable<
+  NonNullable<Metadata["openGraph"]>["images"]
+> {
+  return [SOCIAL_OG_IMAGE];
+}
+
+export function socialTwitterImages(): NonNullable<
+  NonNullable<Metadata["twitter"]>["images"]
+> {
+  return [
+    {
+      url: "/twitter-image",
+      width: 1200,
+      height: 630,
+      alt: SOCIAL_IMAGE_ALT,
+    },
+  ];
+}
+
+/**
  * Metadata for public marketing/legal pages.
  * Sets path-scoped canonical + OG url so root homepage values do not leak.
  */
@@ -38,11 +74,13 @@ export function buildPublicPageMetadata(input: {
       siteName: brand.name,
       locale: "pt_BR",
       type: "website",
+      images: socialOpenGraphImages(),
     },
     twitter: {
       card: "summary_large_image",
       title: `${input.title} · ${brand.name}`,
       description: input.description,
+      images: socialTwitterImages(),
     },
   };
 }
