@@ -193,11 +193,12 @@ describe("admin pages source contracts", () => {
     expect(source).toContain("/admin/usuarios/");
   });
 
-  it("user detail does not expose Stripe ids or message bodies", async () => {
+  it("user detail does not expose raw Stripe column names or message bodies", async () => {
     const source = await import("node:fs/promises").then((fs) =>
       fs.readFile("src/app/admin/usuarios/[userId]/page.tsx", "utf8"),
     );
     expect(source).toContain("getAdminUserDetail");
+    expect(source).toContain("stripeCustomerIdMasked");
     expect(source).not.toContain("stripe_customer_id");
     expect(source).not.toContain("stripe_subscription_id");
     expect(source).not.toContain("messages");

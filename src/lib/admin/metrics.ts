@@ -165,6 +165,12 @@ export interface AdminOverviewMetrics {
   newUsers7d: number;
   newUsers30d: number;
   activeSubscriberUsers: number;
+  /** Effective live subscribers currently in trialing status. */
+  trialingSubscriberUsers: number;
+  /** activeSubscriberUsers / totalUsers (0..1), null when no users. */
+  signupToSubscriberRate: number | null;
+  /** Top utm_source among effective subscribers (from signup_intents). */
+  subscribersByUtmSource: Array<{ source: string; count: number }>;
   /** Active/trialing with Stripe cancel_at_period_end (access until period end). null when Stripe lookup fails. */
   cancelingWithAccessCount: number | null;
   canceledSubscriptions: number;
@@ -385,6 +391,10 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     liveSubscriptions.candidates,
   );
 
+  const trialingSubscriberUsers = effective.filter(
+    (row) => row.status === "trialing",
+  ).length;
+
   const planCounts = new Map<PlanKey, number>();
   let mrr = 0;
   for (const row of effective) {
@@ -401,6 +411,38 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
 
   const totalUsers = profiles.count ?? 0;
   const usersWithoutSubscription = Math.max(0, totalUsers - effective.length);
+  const signupToSubscriberRate =
+    totalUsers > 0 ? effective.length / totalUsers : null;
+
+  // Origin of subscribers: latest signup_intent utm_source per effective user.
+  let subscribersByUtmSource: Array<{ source: string; count: number }> = [];
+  const effectiveUserIds = effective.map((e) => e.userId);
+  if (effectiveUserIds.length > 0) {
+    const sourceCounts = new Map<string, number>();
+    // Chunk .in() to stay within URL/body limits.
+    const chunkSize = 100;
+    for (let i = 0; i < effectiveUserIds.length; i += chunkSize) {
+      const chunk = effectiveUserIds.slice(i, i + chunkSize);
+      const { data: intents } = await client
+        .from("signup_intents")
+        .select("user_id, utm_source, updated_at")
+        .in("user_id", chunk)
+        .order("updated_at", { ascending: false });
+      const seen = new Set<string>();
+      for (const row of intents ?? []) {
+        const uid = row.user_id as string | null;
+        if (!uid || seen.has(uid)) continue;
+        seen.add(uid);
+        const source =
+          ((row.utm_source as string | null) ?? "").trim() || "(sem source)";
+        sourceCounts.set(source, (sourceCounts.get(source) ?? 0) + 1);
+      }
+    }
+    subscribersByUtmSource = [...sourceCounts.entries()]
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count || a.source.localeCompare(b.source))
+      .slice(0, 8);
+  }
 
   const avgLatency =
     usage30.latencySamples > 0
@@ -414,6 +456,9 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     newUsers7d: profiles7.count ?? 0,
     newUsers30d: profiles30.count ?? 0,
     activeSubscriberUsers: effective.length,
+    trialingSubscriberUsers,
+    signupToSubscriberRate,
+    subscribersByUtmSource,
     cancelingWithAccessCount,
     canceledSubscriptions: canceledSubs.count ?? 0,
     usersWithoutSubscription,

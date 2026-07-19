@@ -155,10 +155,12 @@ describe("admin UX contracts", () => {
     expect(page).not.toContain("STRIPE_SECRET");
   });
 
-  it("usuarios page wires canceling and checkout pending filters", async () => {
+  it("usuarios page wires canceling, checkout pending, utm and CSV", async () => {
     const page = await fs.readFile("src/app/admin/usuarios/page.tsx", "utf8");
     expect(page).toContain('name="canceling"');
     expect(page).toContain('name="checkout_pending"');
+    expect(page).toContain('name="utm"');
+    expect(page).toContain("/api/admin/usuarios/export");
     expect(page).toContain("subscriptionStatusLabelPt");
     expect(page).toContain("Sem texto de conversas");
     expect(page).not.toContain("from(\"messages\")");

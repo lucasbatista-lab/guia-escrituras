@@ -28,6 +28,12 @@ export default async function AdminUsuarioDetailPage({
   if (!detail) notFound();
 
   const serialized = JSON.stringify(detail);
+  const leaksSecret =
+    /sk_live_|sk_test_|whsec_|OPENAI_API_KEY/.test(serialized) ||
+    (detail.stripeCustomerIdMasked != null &&
+      serialized.includes("cus_") &&
+      !serialized.includes("…") &&
+      /cus_[A-Za-z0-9]{20,}/.test(serialized));
 
   return (
     <div className="space-y-6">
@@ -40,6 +46,17 @@ export default async function AdminUsuarioDetailPage({
         </h1>
         <p className="mt-1 text-sm text-ink-soft">{detail.email}</p>
         <p className="font-mono text-xs text-ink-soft">{detail.userIdMask}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-sm">
+        <OpLink href="/admin/eventos">Eventos de pagamento</OpLink>
+        <OpLink href="/admin/uso">Uso</OpLink>
+        <OpLink href="/admin/aquisicao">Aquisição</OpLink>
+        {detail.utmSource ? (
+          <OpLink href={`/admin/usuarios?utm=${encodeURIComponent(detail.utmSource)}`}>
+            Mesma origem ({detail.utmSource})
+          </OpLink>
+        ) : null}
       </div>
 
       <dl className="grid gap-3 rounded-xl border border-border/70 p-4 text-sm sm:grid-cols-2">
@@ -82,10 +99,30 @@ export default async function AdminUsuarioDetailPage({
         />
         <Item label="Cartão" value={detail.cardLabel ?? "—"} />
         <Item
+          label="Customer (mascarado)"
+          value={detail.stripeCustomerIdMasked ?? "—"}
+        />
+        <Item
+          label="Subscription (mascarado)"
+          value={detail.stripeSubscriptionIdMasked ?? "—"}
+        />
+        <Item
           label="Consumo do mês"
           value={formatPriceBRL(detail.monthlyUsedBrlCents)}
         />
         <Item label="Requests no mês" value={String(detail.monthlyRequests)} />
+        <Item label="Requests (7 dias)" value={String(detail.usageRequests7d)} />
+        <Item label="Requests (30 dias)" value={String(detail.usageRequests30d)} />
+        <Item label="Requests (total)" value={String(detail.usageRequestsTotal)} />
+        <Item label="Conversas" value={String(detail.conversationCount)} />
+        <Item
+          label="Última atividade"
+          value={
+            detail.lastActivityAt
+              ? new Date(detail.lastActivityAt).toLocaleString("pt-BR")
+              : "—"
+          }
+        />
         <Item label="Nível de franquia" value={detail.budgetLevel ?? "—"} />
         <Item
           label="Origem"
@@ -99,6 +136,9 @@ export default async function AdminUsuarioDetailPage({
       </dl>
 
       <p className="text-xs text-ink-soft">{detail.monthlyEstimatedCostNote}</p>
+      <p className="text-xs text-ink-soft">
+        Contagem de conversas e uso sem conteúdo de mensagens.
+      </p>
 
       <section>
         <h2 className="font-display text-xl text-ink">Flags operacionais</h2>
@@ -137,11 +177,8 @@ export default async function AdminUsuarioDetailPage({
         )}
       </section>
 
-      {/* Guard tests against leaking Stripe IDs or message bodies */}
       <span className="hidden" aria-hidden>
-        {serialized.includes("cus_") || serialized.includes("sub_")
-          ? "LEAK"
-          : "ok"}
+        {leaksSecret ? "LEAK" : "ok"}
       </span>
     </div>
   );
@@ -153,5 +190,16 @@ function Item({ label, value }: { label: string; value: string }) {
       <dt className="text-ink-soft">{label}</dt>
       <dd className="text-ink">{value}</dd>
     </div>
+  );
+}
+
+function OpLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-md border border-border/70 px-3 py-1.5 text-ink-soft hover:bg-sand-50 hover:text-ink"
+    >
+      {children}
+    </Link>
   );
 }

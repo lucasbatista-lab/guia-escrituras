@@ -117,6 +117,20 @@ export default async function AdminHomePage() {
             value={String(metrics.activeSubscriberUsers)}
           />
           <Metric
+            label="Em teste (trialing)"
+            value={String(metrics.trialingSubscriberUsers)}
+            href="/admin/usuarios?status=trialing"
+          />
+          <Metric
+            label="Conversão cadastro → assinatura"
+            value={
+              metrics.signupToSubscriberRate == null
+                ? "—"
+                : `${(metrics.signupToSubscriberRate * 100).toFixed(1)}%`
+            }
+            hint="Assinantes efetivos ÷ usuários totais."
+          />
+          <Metric
             label="Renovação cancelada (acesso vigente)"
             value={cancelingLabel}
             href="/admin/usuarios?canceling=1"
@@ -134,6 +148,7 @@ export default async function AdminHomePage() {
           <Metric
             label="Assinaturas encerradas"
             value={String(metrics.canceledSubscriptions)}
+            href="/admin/usuarios?status=canceled"
           />
           <Metric
             label="MRR estimado pelo preço de catálogo"
@@ -162,6 +177,33 @@ export default async function AdminHomePage() {
             </li>
           ))}
         </ul>
+      </Section>
+
+      <Section title="Origem dos assinantes">
+        {metrics.subscribersByUtmSource.length === 0 ? (
+          <p className="text-sm text-ink-soft">
+            Sem utm_source registrado nos signup_intents dos assinantes
+            efetivos.
+          </p>
+        ) : (
+          <ul className="space-y-2 text-sm">
+            {metrics.subscribersByUtmSource.map((row) => (
+              <li key={row.source}>
+                <Link
+                  href={
+                    row.source === "(sem source)"
+                      ? "/admin/usuarios"
+                      : `/admin/usuarios?utm=${encodeURIComponent(row.source)}`
+                  }
+                  className="flex justify-between rounded-lg border border-border/60 px-3 py-2 hover:bg-sand-50"
+                >
+                  <span className="text-ink">{row.source}</span>
+                  <span className="text-ink-soft">{row.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
 
       <Section title="Checkout e pagamento">

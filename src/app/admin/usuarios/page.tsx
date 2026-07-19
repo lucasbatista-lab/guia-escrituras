@@ -1,53 +1,23 @@
 import Link from "next/link";
 import {
   AdminMetricsError,
+  buildAdminUserListQuery,
   getAdminUsers,
+  parseAdminUserListSearchParams,
   subscriptionStatusLabelPt,
 } from "@/lib/admin";
 
 export default async function AdminUsuariosPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    page?: string;
-    q?: string;
-    plan?: string;
-    status?: string;
-    onboarding?: string;
-    duplicates?: string;
-    past_due?: string;
-    canceling?: string;
-    checkout_pending?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
-  const page = Number.parseInt(params.page ?? "1", 10) || 1;
-  const q = params.q?.trim() ?? "";
-  const planKey =
-    params.plan === "essencial" ||
-    params.plan === "caminho" ||
-    params.plan === "profundo" ||
-    params.plan === "particular"
-      ? params.plan
-      : "any";
+  const raw = await searchParams;
+  const filters = parseAdminUserListSearchParams(raw);
 
   let data;
   try {
-    data = await getAdminUsers({
-      page,
-      pageSize: 25,
-      q: q || undefined,
-      planKey,
-      subscriptionStatus: params.status || "any",
-      onboardingCompleted:
-        params.onboarding === "yes" || params.onboarding === "no"
-          ? params.onboarding
-          : "any",
-      duplicatesOnly: params.duplicates === "1",
-      pastDueOnly: params.past_due === "1",
-      cancelingOnly: params.canceling === "1",
-      checkoutPendingOnly: params.checkout_pending === "1",
-    });
+    data = await getAdminUsers(filters);
   } catch (error) {
     if (error instanceof AdminMetricsError) {
       return <p className="text-sm text-destructive">{error.message}</p>;
@@ -56,38 +26,45 @@ export default async function AdminUsuariosPage({
   }
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
-  const qs = new URLSearchParams();
-  if (q) qs.set("q", q);
-  if (planKey !== "any") qs.set("plan", planKey);
-  if (params.status) qs.set("status", params.status);
-  if (params.onboarding) qs.set("onboarding", params.onboarding);
-  if (params.duplicates === "1") qs.set("duplicates", "1");
-  if (params.past_due === "1") qs.set("past_due", "1");
-  if (params.canceling === "1") qs.set("canceling", "1");
-  if (params.checkout_pending === "1") qs.set("checkout_pending", "1");
+  const page = data.page;
+  const baseQs = buildAdminUserListQuery(filters);
+  const csvHref = `/api/admin/usuarios/export?${baseQs}`;
 
   function pageHref(p: number) {
-    const next = new URLSearchParams(qs);
-    next.set("page", String(p));
-    return `/admin/usuarios?${next.toString()}`;
+    const qs = buildAdminUserListQuery(filters, { page: String(p) });
+    return `/admin/usuarios?${qs}`;
   }
+
+  const createdFromValue = filters.createdFrom?.slice(0, 10) ?? "";
+  const createdToValue = filters.createdTo?.slice(0, 10) ?? "";
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl text-ink">Usuários</h1>
-        <p className="mt-2 text-sm text-ink-soft">
-          Busca e filtros server-side. Sem texto de conversas. Atualizado em{" "}
-          {new Date().toLocaleString("pt-BR")}.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-ink">Usuários</h1>
+          <p className="mt-2 text-sm text-ink-soft">
+            Busca e filtros server-side. Sem texto de conversas. Atualizado em{" "}
+            {new Date().toLocaleString("pt-BR")}.
+          </p>
+        </div>
+        <a
+          href={csvHref}
+          className="inline-flex min-h-11 items-center justify-center rounded-md border border-border px-3 py-2 text-sm text-ink hover:bg-sand-50"
+        >
+          Exportar CSV (máx. 500)
+        </a>
       </div>
 
-      <form className="grid gap-3 rounded-xl border border-border/70 p-4 sm:grid-cols-2 lg:grid-cols-3">
+      <form
+        method="get"
+        className="grid gap-3 rounded-xl border border-border/70 p-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
         <label className="text-sm">
           <span className="text-ink-soft">Busca (e-mail, nome ou UUID)</span>
           <input
             name="q"
-            defaultValue={q}
+            defaultValue={filters.q ?? ""}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
           />
         </label>
@@ -95,7 +72,7 @@ export default async function AdminUsuariosPage({
           <span className="text-ink-soft">Plano</span>
           <select
             name="plan"
-            defaultValue={planKey}
+            defaultValue={filters.planKey ?? "any"}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
           >
             <option value="any">Qualquer</option>
@@ -109,13 +86,14 @@ export default async function AdminUsuariosPage({
           <span className="text-ink-soft">Status</span>
           <select
             name="status"
-            defaultValue={params.status ?? "any"}
+            defaultValue={filters.subscriptionStatus ?? "any"}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
           >
             <option value="any">Qualquer</option>
             <option value="active">Ativa</option>
             <option value="trialing">Em teste</option>
             <option value="past_due">Pagamento em atraso</option>
+            <option value="canceled">Encerrada</option>
             <option value="none">Sem assinatura</option>
           </select>
         </label>
@@ -123,7 +101,7 @@ export default async function AdminUsuariosPage({
           <span className="text-ink-soft">Onboarding</span>
           <select
             name="onboarding"
-            defaultValue={params.onboarding ?? "any"}
+            defaultValue={filters.onboardingCompleted ?? "any"}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
           >
             <option value="any">Qualquer</option>
@@ -131,12 +109,61 @@ export default async function AdminUsuariosPage({
             <option value="no">Pendente</option>
           </select>
         </label>
+        <label className="text-sm">
+          <span className="text-ink-soft">Origem (utm_source)</span>
+          <input
+            name="utm"
+            defaultValue={filters.utmSource ?? ""}
+            placeholder="ex.: share, google"
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          <span className="text-ink-soft">Ordenação</span>
+          <select
+            name="sort"
+            defaultValue={filters.sort ?? "created_desc"}
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          >
+            <option value="created_desc">Cadastro mais recente</option>
+            <option value="created_asc">Cadastro mais antigo</option>
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className="text-ink-soft">Cadastro de</span>
+          <input
+            type="date"
+            name="created_from"
+            defaultValue={createdFromValue}
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          <span className="text-ink-soft">Cadastro até</span>
+          <input
+            type="date"
+            name="created_to"
+            defaultValue={createdToValue}
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          <span className="text-ink-soft">Por página</span>
+          <select
+            name="pageSize"
+            defaultValue={String(filters.pageSize ?? 25)}
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          >
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </label>
         <label className="flex items-center gap-2 text-sm text-ink">
           <input
             type="checkbox"
             name="duplicates"
             value="1"
-            defaultChecked={params.duplicates === "1"}
+            defaultChecked={Boolean(filters.duplicatesOnly)}
           />
           Só duplicadas
         </label>
@@ -145,7 +172,7 @@ export default async function AdminUsuariosPage({
             type="checkbox"
             name="past_due"
             value="1"
-            defaultChecked={params.past_due === "1"}
+            defaultChecked={Boolean(filters.pastDueOnly)}
           />
           Só pagamento em atraso
         </label>
@@ -154,7 +181,7 @@ export default async function AdminUsuariosPage({
             type="checkbox"
             name="canceling"
             value="1"
-            defaultChecked={params.canceling === "1"}
+            defaultChecked={Boolean(filters.cancelingOnly)}
           />
           Cancelando no fim do período
         </label>
@@ -163,13 +190,13 @@ export default async function AdminUsuariosPage({
             type="checkbox"
             name="checkout_pending"
             value="1"
-            defaultChecked={params.checkout_pending === "1"}
+            defaultChecked={Boolean(filters.checkoutPendingOnly)}
           />
           Checkout pendente
         </label>
         <button
           type="submit"
-          className="rounded-md bg-ink px-3 py-2 text-sm text-sand-50 sm:col-span-2 lg:col-span-3"
+          className="min-h-11 rounded-md bg-ink px-3 py-2 text-sm text-sand-50 sm:col-span-2 lg:col-span-3"
         >
           Filtrar
         </button>
@@ -192,7 +219,9 @@ export default async function AdminUsuariosPage({
                   </span>
                 </span>
                 <span className="text-ink-soft">
-                  {new Date(user.createdAt).toLocaleString("pt-BR")}
+                  {user.createdAt
+                    ? new Date(user.createdAt).toLocaleString("pt-BR")
+                    : "—"}
                   <span className="block text-xs">
                     Onboarding:{" "}
                     {user.onboardingCompleted == null
@@ -223,7 +252,8 @@ export default async function AdminUsuariosPage({
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <p className="text-ink-soft">
-          Total: {data.total} · Página {page} de {totalPages}
+          Total: {data.total} · Página {page} de {totalPages} ·{" "}
+          {data.pageSize} por página
         </p>
         <div className="flex gap-2">
           {page > 1 ? (

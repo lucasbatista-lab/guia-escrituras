@@ -27,6 +27,13 @@ import {
   matchesAdminUserFilters,
   type AdminUserFilterMatchInput,
 } from "./user-filter-index";
+import {
+  ADMIN_USER_CSV_MAX_ROWS,
+  type AdminUserListFilters,
+} from "./user-list-params";
+import { maskStripeId } from "./labels";
+
+export type { AdminUserListFilters } from "./user-list-params";
 
 function admin() {
   try {
@@ -95,21 +102,6 @@ async function findUserIdsByEmail(query: string): Promise<string[]> {
     if (users.length < perPage) break;
   }
   return ids;
-}
-
-export interface AdminUserListFilters {
-  page?: number;
-  pageSize?: number;
-  q?: string;
-  planKey?: PlanKey | "any";
-  subscriptionStatus?: string;
-  onboardingCompleted?: "any" | "yes" | "no";
-  duplicatesOnly?: boolean;
-  pastDueOnly?: boolean;
-  /** Active/trialing with cancel_at_period_end via Stripe. */
-  cancelingOnly?: boolean;
-  /** Users with signup_intent still in checkout_created. */
-  checkoutPendingOnly?: boolean;
 }
 
 export interface AdminUserRow {
@@ -303,6 +295,37 @@ async function fetchAllProfileIdsOrdered(): Promise<
   }));
 }
 
+async function findUserIdsByUtmSource(utmSource: string): Promise<string[]> {
+  const client = admin();
+  const { values } = await collectColumnPaginated<{ user_id: string | null }, string>(
+    (from, to) =>
+      client
+        .from("signup_intents")
+        .select("user_id")
+        .eq("utm_source", utmSource)
+        .not("user_id", "is", null)
+        .order("updated_at", { ascending: false })
+        .range(from, to),
+    (row) => row.user_id as string,
+  );
+  return [...new Set(values.filter(Boolean))];
+}
+
+async function fetchCanceledUserIds(): Promise<string[]> {
+  const client = admin();
+  const { values } = await collectColumnPaginated<{ user_id: string }, string>(
+    (from, to) =>
+      client
+        .from("subscriptions")
+        .select("user_id")
+        .eq("status", "canceled")
+        .order("user_id", { ascending: true })
+        .range(from, to),
+    (row) => row.user_id as string,
+  );
+  return [...new Set(values)];
+}
+
 function hasDerivedFilters(filters: AdminUserFilterMatchInput): boolean {
   return (
     Boolean(filters.planKey && filters.planKey !== "any") ||
@@ -315,18 +338,35 @@ function hasDerivedFilters(filters: AdminUserFilterMatchInput): boolean {
   );
 }
 
+function withinCreatedBounds(
+  createdAt: string,
+  createdFrom?: string,
+  createdTo?: string,
+): boolean {
+  if (createdFrom && createdAt < createdFrom) return false;
+  if (createdTo && createdAt > createdTo) return false;
+  return true;
+}
+
 export async function getAdminUsers(
   params: AdminUserListFilters = {},
 ): Promise<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }> {
   await assertAdminServiceAccess();
   const client = admin();
   const page = Math.max(1, params.page ?? 1);
-  const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 25));
+  const pageSizeCap = params.forExport ? ADMIN_USER_CSV_MAX_ROWS : 50;
+  const pageSize = Math.min(pageSizeCap, Math.max(1, params.pageSize ?? 25));
   const q = params.q?.trim() ?? "";
+  const sortAsc = params.sort === "created_asc";
+  const createdFrom = params.createdFrom;
+  const createdTo = params.createdTo;
+  const hasCreatedBounds = Boolean(createdFrom || createdTo);
+  const wantsCanceled = params.subscriptionStatus === "canceled";
 
   const filterMatch: AdminUserFilterMatchInput = {
     planKey: params.planKey,
-    subscriptionStatus: params.subscriptionStatus,
+    // canceled is applied via restriction — view index has no canceled status.
+    subscriptionStatus: wantsCanceled ? "any" : params.subscriptionStatus,
     onboardingCompleted: params.onboardingCompleted,
     duplicatesOnly: params.duplicatesOnly,
     pastDueOnly: params.pastDueOnly,
@@ -348,6 +388,22 @@ export async function getAdminUsers(
       return { rows: [], total: 0, page, pageSize };
     }
     restriction = intersectIdSets(restriction, pendingIds);
+  }
+
+  if (params.utmSource) {
+    const utmIds = await findUserIdsByUtmSource(params.utmSource);
+    if (utmIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+    restriction = intersectIdSets(restriction, utmIds);
+  }
+
+  if (wantsCanceled) {
+    const canceledIds = await fetchCanceledUserIds();
+    if (canceledIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+    restriction = intersectIdSets(restriction, canceledIds);
   }
 
   if (q) {
@@ -383,8 +439,15 @@ export async function getAdminUsers(
     let profilesQuery = client
       .from("profiles")
       .select("id, display_name, created_at", { count: "exact" })
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false });
+      .order("created_at", { ascending: sortAsc })
+      .order("id", { ascending: sortAsc });
+
+    if (createdFrom) {
+      profilesQuery = profilesQuery.gte("created_at", createdFrom);
+    }
+    if (createdTo) {
+      profilesQuery = profilesQuery.lte("created_at", createdTo);
+    }
 
     if (restriction) {
       const ids = [...restriction];
@@ -435,6 +498,7 @@ export async function getAdminUsers(
   const needsCatalog =
     params.subscriptionStatus === "none" ||
     params.onboardingCompleted === "no" ||
+    hasCreatedBounds ||
     (!derived && largeRestriction);
 
   const matched: Array<{
@@ -447,6 +511,7 @@ export async function getAdminUsers(
     const catalog = await fetchAllProfileIdsOrdered();
     for (const p of catalog) {
       if (restriction && !restriction.has(p.id)) continue;
+      if (!withinCreatedBounds(p.createdAt, createdFrom, createdTo)) continue;
       if (derived) {
         const view = views.get(p.id);
         if (
@@ -493,6 +558,7 @@ export async function getAdminUsers(
       }
       const meta = profileMeta.get(id);
       if (!meta) continue;
+      if (!withinCreatedBounds(meta.createdAt, createdFrom, createdTo)) continue;
       matched.push({
         id,
         createdAt: meta.createdAt,
@@ -502,9 +568,11 @@ export async function getAdminUsers(
   }
 
   matched.sort((a, b) => {
-    const t = b.createdAt.localeCompare(a.createdAt);
+    const t = sortAsc
+      ? a.createdAt.localeCompare(b.createdAt)
+      : b.createdAt.localeCompare(a.createdAt);
     if (t !== 0) return t;
-    return b.id.localeCompare(a.id);
+    return sortAsc ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id);
   });
 
   const { pageIds, total } = paginateSortedIds(
@@ -718,9 +786,17 @@ export interface AdminUserDetail {
   currentPeriodEnd: string | null;
   renewsAutomatically: boolean | null;
   cancelAtPeriodEnd: boolean | null;
+  /** Masked Stripe IDs for support — never full secrets. */
+  stripeCustomerIdMasked: string | null;
+  stripeSubscriptionIdMasked: string | null;
   cardLabel: string | null;
   monthlyUsedBrlCents: number;
   monthlyRequests: number;
+  usageRequests7d: number;
+  usageRequests30d: number;
+  usageRequestsTotal: number;
+  conversationCount: number;
+  lastActivityAt: string | null;
   monthlyEstimatedCostNote: string;
   budgetLevel: "normal" | "elevated" | "near_limit" | "blocked" | null;
   utmSource: string | null;
@@ -757,6 +833,10 @@ export async function getAdminUserDetail(
   if (!profile) return null;
 
   const yearMonth = currentYearMonth();
+  const now = Date.now();
+  const d7 = new Date(now - 7 * 86400000).toISOString();
+  const d30 = new Date(now - 30 * 86400000).toISOString();
+
   const [
     auth,
     spiritual,
@@ -764,6 +844,11 @@ export async function getAdminUserDetail(
     monthly,
     intents,
     referrals,
+    conversationsCount,
+    usage7,
+    usage30,
+    usageTotal,
+    lastUsage,
   ] = await Promise.all([
     lookupAuthUser(userId),
     client
@@ -796,6 +881,31 @@ export async function getAdminUserDetail(
       .select("referral_code, status")
       .eq("referred_user_id", userId)
       .limit(5),
+    client
+      .from("conversations")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+    client
+      .from("usage_events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", d7),
+    client
+      .from("usage_events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", d30),
+    client
+      .from("usage_events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+    client
+      .from("usage_events")
+      .select("created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const candidates = (subs.data ?? []).map((row) =>
@@ -888,6 +998,7 @@ export async function getAdminUserDetail(
     : null;
 
   const latestIntent = intents.data?.[0];
+  const effectiveSub = resolved?.subscription ?? null;
 
   return {
     userId,
@@ -905,12 +1016,19 @@ export async function getAdminUserDetail(
     subscriptionStatus: pastDue
       ? "past_due"
       : (resolved?.subscription.status ?? null),
-    currentPeriodEnd: resolved?.subscription.currentPeriodEnd ?? null,
+    currentPeriodEnd: effectiveSub?.currentPeriodEnd ?? null,
     renewsAutomatically,
     cancelAtPeriodEnd,
+    stripeCustomerIdMasked: maskStripeId(effectiveSub?.stripeCustomerId),
+    stripeSubscriptionIdMasked: maskStripeId(effectiveSub?.stripeSubscriptionId),
     cardLabel,
     monthlyUsedBrlCents: used,
     monthlyRequests: requests,
+    usageRequests7d: usage7.count ?? 0,
+    usageRequests30d: usage30.count ?? 0,
+    usageRequestsTotal: usageTotal.count ?? 0,
+    conversationCount: conversationsCount.count ?? 0,
+    lastActivityAt: (lastUsage.data?.created_at as string | null) ?? null,
     monthlyEstimatedCostNote:
       "Valores de uso mensal são franquia/estimativa interna — não fatura OpenAI nem receita Stripe.",
     budgetLevel,
@@ -927,5 +1045,97 @@ export async function getAdminUserDetail(
       blockedByLimit: budgetLevel === "blocked",
       pastDue,
     },
+  };
+}
+
+function csvEscape(value: string | number | null | undefined): string {
+  const raw = value == null ? "" : String(value);
+  if (/[",\n\r]/.test(raw)) {
+    return `"${raw.replace(/"/g, '""')}"`;
+  }
+  return raw;
+}
+
+/**
+ * Export filtered subscriber list as CSV (admin-only, capped, no message bodies).
+ */
+export async function exportAdminUsersCsv(
+  params: AdminUserListFilters = {},
+): Promise<{ csv: string; rowCount: number; truncated: boolean; filename: string }> {
+  await assertAdminServiceAccess();
+  const result = await getAdminUsers({
+    ...params,
+    page: 1,
+    pageSize: ADMIN_USER_CSV_MAX_ROWS,
+    forExport: true,
+  });
+
+  const truncated = result.total > result.rows.length;
+
+  // Optional email enrichment for support (bounded parallel lookups).
+  const emails = new Map<string, string | null>();
+  const batchSize = 8;
+  for (let i = 0; i < result.rows.length; i += batchSize) {
+    const slice = result.rows.slice(i, i + batchSize);
+    const looked = await Promise.all(
+      slice.map(async (row) => {
+        const auth = await lookupAuthUser(row.userId);
+        return [row.userId, auth.email] as const;
+      }),
+    );
+    for (const [id, email] of looked) emails.set(id, email);
+  }
+
+  const header = [
+    "user_id",
+    "user_id_mask",
+    "email",
+    "display_name",
+    "created_at",
+    "plan_key",
+    "subscription_status",
+    "onboarding_completed",
+    "utm_source",
+    "utm_campaign",
+    "monthly_used_brl_cents",
+    "last_activity_at",
+    "has_duplicate_subscriptions",
+    "is_past_due",
+  ];
+
+  const lines = [header.join(",")];
+  for (const row of result.rows) {
+    lines.push(
+      [
+        csvEscape(row.userId),
+        csvEscape(row.userIdMask),
+        csvEscape(emails.get(row.userId) ?? ""),
+        csvEscape(row.displayName),
+        csvEscape(row.createdAt),
+        csvEscape(row.planKey),
+        csvEscape(row.subscriptionStatus ?? "none"),
+        csvEscape(
+          row.onboardingCompleted == null
+            ? ""
+            : row.onboardingCompleted
+              ? "yes"
+              : "no",
+        ),
+        csvEscape(row.utmSource),
+        csvEscape(row.utmCampaign),
+        csvEscape(row.monthlyUsedBrlCents ?? 0),
+        csvEscape(row.lastActivityAt),
+        csvEscape(row.hasDuplicateSubscriptions ? "yes" : "no"),
+        csvEscape(row.isPastDue ? "yes" : "no"),
+      ].join(","),
+    );
+  }
+
+  const day = new Date().toISOString().slice(0, 10);
+  return {
+    csv: `${lines.join("\n")}\n`,
+    rowCount: result.rows.length,
+    truncated,
+    filename: `amemchat-usuarios-${day}.csv`,
   };
 }
