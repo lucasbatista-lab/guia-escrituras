@@ -1,10 +1,12 @@
 import { LegalDocumentShell } from "@/components/legal/legal-document-shell";
 import { getPrivacyVersion } from "@/config/legal";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildPublicPageMetadata({
   title: "Política de Privacidade",
   description: "Como o Amém Chat trata seus dados.",
-};
+  path: "/privacidade",
+});
 
 export default function PrivacidadePage() {
   return (

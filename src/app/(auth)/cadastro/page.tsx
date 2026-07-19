@@ -15,6 +15,9 @@ import {
   parseSignupSearchParams,
   validateCheckoutPlan,
 } from "@/lib/signup-intents";
+import { authEntryMetadata } from "@/lib/seo/auth-metadata";
+
+export const metadata = authEntryMetadata.cadastro;
 
 export default async function CadastroPage({
   searchParams,

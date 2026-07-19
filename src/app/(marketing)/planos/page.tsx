@@ -4,10 +4,14 @@ import { PlanCards } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { getAuthUserContext } from "@/lib/auth/session";
 import { isActiveSubscription } from "@/lib/billing";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: "Planos",
-};
+  description:
+    "Conheça os planos do Amém Chat: reflexão cristã com IA baseada nas Escrituras, com margens de uso claras e renovação mensal.",
+  path: "/planos",
+});
 
 export default async function PlanosPage() {
   const auth = await getAuthUserContext();

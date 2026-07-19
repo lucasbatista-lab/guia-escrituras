@@ -10,6 +10,9 @@ import {
   loadSignupIntentByToken,
   readSignupIntentCookie,
 } from "@/lib/signup-intents";
+import { authPrivateMetadata } from "@/lib/seo/auth-metadata";
+
+export const metadata = authPrivateMetadata("E-mail confirmado");
 
 export default async function EmailConfirmadoPage({
   searchParams,

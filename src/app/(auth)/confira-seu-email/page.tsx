@@ -4,6 +4,9 @@ import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-st
 import { brand } from "@/config/brand";
 import { getPlanByKey } from "@/lib/entitlements";
 import { isCheckoutPlanKey, validateCheckoutPlan } from "@/lib/signup-intents";
+import { authPrivateMetadata } from "@/lib/seo/auth-metadata";
+
+export const metadata = authPrivateMetadata("Confira seu e-mail");
 
 export default async function ConfiraSeuEmailPage({
   searchParams,

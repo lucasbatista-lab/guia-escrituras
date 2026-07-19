@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAuthUserContext } from "@/lib/auth";
+import { privateRobotsMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  ...privateRobotsMetadata,
+  title: "Admin",
+};
 
 const links = [
   { href: "/admin", label: "Visão geral" },

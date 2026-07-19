@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { brand } from "@/config/brand";
+import { authPrivateMetadata } from "@/lib/seo/auth-metadata";
+
+export const metadata = authPrivateMetadata("Recuperar senha");
 
 export default function RecuperarSenhaPage() {
   return (

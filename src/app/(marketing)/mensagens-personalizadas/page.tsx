@@ -4,10 +4,14 @@ import { SUPPORT_CHANNEL_PENDING } from "@/config/legal";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: "Mensagens personalizadas",
-};
+  description:
+    "O plano Particular do Amém Chat é um acompanhamento sob medida, habilitado sob solicitação — sem checkout automático.",
+  path: "/mensagens-personalizadas",
+});
 
 export default function MensagensPersonalizadasPage() {
   const supportEmail = brand.supportEmail;

@@ -81,13 +81,45 @@ describe("short-term chat rate limit", () => {
 });
 
 describe("SEO discoverability", () => {
-  it("robots disallows private areas and points to sitemap", () => {
-    const doc = robots();
-    const rule = Array.isArray(doc.rules) ? doc.rules[0] : doc.rules;
-    expect(rule?.disallow).toEqual(
-      expect.arrayContaining(["/admin", "/api", "/conta", "/conversar", "/auth"]),
-    );
-    expect(doc.sitemap).toMatch(/\/sitemap\.xml$/);
+  it("robots disallows private areas and points to sitemap in production", () => {
+    const original = { ...process.env };
+    try {
+      process.env.VERCEL_ENV = "production";
+      process.env.NODE_ENV = "production";
+      delete process.env.NEXT_PUBLIC_APP_URL;
+      delete process.env.APP_URL;
+      const doc = robots();
+      const rule = Array.isArray(doc.rules) ? doc.rules[0] : doc.rules;
+      expect(rule?.disallow).toEqual(
+        expect.arrayContaining([
+          "/admin",
+          "/api",
+          "/conta",
+          "/conversar",
+          "/auth",
+          "/confira-seu-email",
+          "/recuperar-senha",
+        ]),
+      );
+      expect(doc.sitemap).toBe("https://amemchat.com.br/sitemap.xml");
+      expect(doc.host).toBe("amemchat.com.br");
+    } finally {
+      process.env = { ...original };
+    }
+  });
+
+  it("robots blocks all crawling outside production", () => {
+    const original = { ...process.env };
+    try {
+      process.env.VERCEL_ENV = "preview";
+      process.env.NODE_ENV = "production";
+      const doc = robots();
+      const rule = Array.isArray(doc.rules) ? doc.rules[0] : doc.rules;
+      expect(rule?.disallow).toEqual("/");
+      expect(doc.sitemap).toBeUndefined();
+    } finally {
+      process.env = { ...original };
+    }
   });
 
   it("sitemap lists public routes only", () => {

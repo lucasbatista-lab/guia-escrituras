@@ -1,9 +1,11 @@
 import { LegalDocumentShell } from "@/components/legal/legal-document-shell";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildPublicPageMetadata({
   title: "Cancelamento",
   description: "Como cancelar sua assinatura no Amém Chat.",
-};
+  path: "/cancelamento",
+});
 
 export default function CancelamentoPage() {
   return (

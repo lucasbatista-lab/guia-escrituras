@@ -3,10 +3,14 @@ import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: "Como funciona",
-};
+  description:
+    "Entenda como o Amém Chat funciona: plano, conta, personalização e reflexões com inteligência artificial inspirada nas Escrituras.",
+  path: "/como-funciona",
+});
 
 const steps = [
   {

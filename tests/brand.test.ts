@@ -18,6 +18,10 @@ describe("brand config", () => {
     expect(brand.name).toBe("Amém Chat");
     expect(brand.tagline).toBe("Como Jesus responderia à sua situação?");
     expect(brand.description).toContain("Escrituras");
+    expect(brand.seoTitle).toContain("Amém Chat");
+    expect(brand.seoTitle).toContain("situações reais");
+    expect(brand.seoDescription).toMatch(/inteligência artificial/i);
+    expect(brand.seoDescription).not.toMatch(/fale diretamente com Jesus/i);
     expect(brand.supportEmail).toBe("amemchatbr@gmail.com");
   });
 

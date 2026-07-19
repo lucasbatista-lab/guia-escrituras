@@ -1,10 +1,17 @@
+import type { Metadata } from "next";
 import { PlatformNav } from "@/components/platform/platform-nav";
 import {
   getPlatformNavItemsForState,
   resolveUserJourneyState,
 } from "@/lib/journey";
+import { privateRobotsMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  ...privateRobotsMetadata,
+  title: "Espaço pessoal",
+};
 
 export default async function PlatformLayout({
   children,

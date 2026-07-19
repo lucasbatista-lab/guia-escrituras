@@ -5,6 +5,9 @@ import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 import { Button } from "@/components/ui/button";
 import { brand } from "@/config/brand";
 import { getAuthUserContext } from "@/lib/auth/session";
+import { authPrivateMetadata } from "@/lib/seo/auth-metadata";
+
+export const metadata = authPrivateMetadata("Redefinir senha");
 
 export default async function RedefinirSenhaPage({
   searchParams,

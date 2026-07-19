@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
@@ -10,6 +11,21 @@ import { buildVisitorShareUrl } from "@/lib/share/resolve-server";
 import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
 
+export const metadata: Metadata = {
+  title: { absolute: brand.seoTitle },
+  description: brand.seoDescription,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: brand.seoTitle,
+    description: brand.seoDescription,
+    url: brand.canonicalUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: brand.seoTitle,
+    description: brand.seoDescription,
+  },
+};
 /** Starting price for Essencial — kept in sync with plan catalog (R$ 38/mês). */
 const ESSENCIAL_PRICE_LABEL = "R$ 38";
 

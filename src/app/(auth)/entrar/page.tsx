@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { authEntryMetadata } from "@/lib/seo/auth-metadata";
+
+export const metadata = authEntryMetadata.entrar;
 
 export default function EntrarPage() {
   return (

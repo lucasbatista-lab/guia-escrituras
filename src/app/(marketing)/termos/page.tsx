@@ -1,10 +1,12 @@
 import { LegalDocumentShell } from "@/components/legal/legal-document-shell";
 import { getTermsVersion } from "@/config/legal";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildPublicPageMetadata({
   title: "Termos de Uso",
   description: "Termos de uso do Amém Chat.",
-};
+  path: "/termos",
+});
 
 export default function TermosPage() {
   return (

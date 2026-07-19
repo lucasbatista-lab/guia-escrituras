@@ -1,9 +1,11 @@
 import { LegalDocumentShell } from "@/components/legal/legal-document-shell";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildPublicPageMetadata({
   title: "Transparência sobre IA",
   description: "Como a inteligência artificial é usada no Amém Chat.",
-};
+  path: "/transparencia-ia",
+});
 
 export default function TransparenciaIaPage() {
   return (

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCanonicalSiteUrl } from "@/lib/auth/app-url";
 
+/** Public URLs only — no private/platform/admin/API routes. */
 const PUBLIC_PATHS = [
   "/",
   "/planos",
@@ -16,12 +17,9 @@ const PUBLIC_PATHS = [
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = getCanonicalSiteUrl();
-  const now = new Date();
+  const base = getCanonicalSiteUrl().replace(/\/$/, "");
   return PUBLIC_PATHS.map((path) => ({
     url: path === "/" ? base : `${base}${path}`,
-    lastModified: now,
-    changeFrequency: path === "/" || path === "/planos" ? "weekly" : "monthly",
     priority: path === "/" ? 1 : path === "/planos" ? 0.9 : 0.6,
   }));
 }

@@ -1,9 +1,11 @@
 import { LegalDocumentShell } from "@/components/legal/legal-document-shell";
+import { buildPublicPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildPublicPageMetadata({
   title: "Uso justo",
   description: "Limites de uso do Amém Chat.",
-};
+  path: "/uso-justo",
+});
 
 export default function UsoJustoPage() {
   return (

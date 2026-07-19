@@ -1,14 +1,13 @@
-/** Native share title — no conversation content, no divine claims. */
+/** Native share title — aligned with SEO/OG; no conversation content, no divine claims. */
 export const SHARE_TITLE =
-  "Amém Chat — reflexões cristãs para situações da vida real";
+  "Amém Chat — reflexões cristãs para situações reais";
 
 /**
  * Default share body. Does not promise divine answers, replace a pastor/therapy,
  * or use aggressive sales language. Never includes chat messages.
  */
 export const SHARE_TEXT =
-  "Encontrei o Amém Chat, um espaço de reflexões cristãs baseadas nas Escrituras para situações da vida real. Talvez faça sentido para você também:";
-
+  "Encontrei o Amém Chat, um espaço de reflexões cristãs com inteligência artificial inspirada nas Escrituras. Talvez faça sentido para você também:";
 export const SHARE_COPIED_FEEDBACK = "Link copiado";
 
 export function buildShareMessage(shareUrl: string): string {

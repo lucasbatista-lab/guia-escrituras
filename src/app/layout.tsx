@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import { brand } from "@/config/brand";
+import { rootRobotsMetadata } from "@/lib/seo";
 import "./globals.css";
 
 const display = Fraunces({
@@ -24,26 +25,26 @@ const chat = Source_Serif_4({
 
 export const metadata: Metadata = {
   metadataBase: new URL(brand.canonicalUrl),
+  applicationName: brand.name,
   title: {
-    default: brand.name,
+    default: brand.seoTitle,
     template: `%s · ${brand.name}`,
   },
-  description: `${brand.description} ${brand.tagline}`,
-  alternates: {
-    canonical: "/",
-  },
+  description: brand.seoDescription,
+  category: "religion",
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: brand.canonicalUrl,
     siteName: brand.name,
-    title: brand.name,
-    description: `${brand.description} ${brand.tagline}`,
+    title: brand.seoTitle,
+    description: brand.seoDescription,
   },
-  robots: {
-    index: true,
-    follow: true,
+  twitter: {
+    card: "summary_large_image",
+    title: brand.seoTitle,
+    description: brand.seoDescription,
   },
+  robots: rootRobotsMetadata(),
 };
 
 export default function RootLayout({
