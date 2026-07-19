@@ -20,6 +20,16 @@ import {
 } from "./conversation-memory";
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
+import { openAiFailureToAppError } from "@/lib/ai/openai-errors";
+
+export function getOpenAiRequestTimeoutMs(
+  env: NodeJS.ProcessEnv = process.env,
+): number {
+  const raw = Number(env.OPENAI_REQUEST_TIMEOUT_MS ?? "90000");
+  if (!Number.isFinite(raw) || raw < 10_000) return 90_000;
+  if (raw > 180_000) return 180_000;
+  return raw;
+}
 
 function extractOutputText(response: {
   output_text?: string;
@@ -59,7 +69,11 @@ export class OpenAiResponsesProvider implements AiProvider {
   private client: OpenAI;
 
   constructor(apiKey: string) {
-    this.client = new OpenAI({ apiKey });
+    this.client = new OpenAI({
+      apiKey,
+      timeout: getOpenAiRequestTimeoutMs(),
+      maxRetries: 0,
+    });
   }
 
   async generate(input: AiGenerateInput): Promise<AiGenerateResult> {
@@ -109,23 +123,33 @@ export class OpenAiResponsesProvider implements AiProvider {
       .filter(Boolean)
       .join("\n");
 
-    const response = await this.client.responses.create({
-      model: input.model,
-      input: [
-        { role: "system", content: system },
-        { role: "user", content: userPrompt },
-      ],
-      max_output_tokens: maxOutputTokens,
-      reasoning: { effort: reasoningEffort },
-      text: {
-        format: {
-          type: "json_schema",
-          name: "chat_reflection",
-          strict: true,
-          schema: AI_PROVIDER_JSON_SCHEMA,
+    let response;
+    try {
+      response = await this.client.responses.create({
+        model: input.model,
+        input: [
+          { role: "system", content: system },
+          { role: "user", content: userPrompt },
+        ],
+        max_output_tokens: maxOutputTokens,
+        reasoning: { effort: reasoningEffort },
+        text: {
+          format: {
+            type: "json_schema",
+            name: "chat_reflection",
+            strict: true,
+            schema: AI_PROVIDER_JSON_SCHEMA,
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      logger.error("openai_responses_create_failed", {
+        requestId: input.requestId,
+        failureType: error instanceof Error ? error.name : "unknown",
+        err: error instanceof Error ? error.message : "unknown",
+      });
+      throw openAiFailureToAppError(error);
+    }
 
     if (response.status === "incomplete") {
       const reason =

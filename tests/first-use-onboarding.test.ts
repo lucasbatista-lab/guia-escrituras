@@ -199,7 +199,9 @@ describe("first-use onboarding — chat empty state and composer", () => {
   });
 
   it("surfaces clear recovery copy for session and response failures", () => {
-    expect(panel).toContain(
+    expect(panel).toContain("resolveChatClientError");
+    const clientErrors = read("src", "lib", "ai", "chat-client-errors.ts");
+    expect(clientErrors).toContain(
       "Sua sessão expirou. Entre novamente para continuar.",
     );
     expect(panel).toContain(

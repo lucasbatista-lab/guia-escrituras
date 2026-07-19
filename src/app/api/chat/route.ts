@@ -64,7 +64,12 @@ export async function POST(request: Request) {
     const client = toClientError(error);
     logger.error("chat_route_error", {
       requestId,
+      route: "/api/chat",
       code: client.code,
+      status: client.status,
+      failureType: client.code,
+      flowStatus: "failed",
+      retryAfterSeconds: client.retryAfterSeconds ?? null,
       userId: maskUserId(
         error && typeof error === "object" && "userId" in error
           ? String((error as { userId?: string }).userId)

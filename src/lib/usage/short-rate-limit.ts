@@ -42,6 +42,15 @@ export type ShortRateLimitResult =
 /**
  * Short-term anti-burst using persisted distinct requestIds (user messages).
  * Callers must skip this when the same requestId is a retry.
+ *
+ * Defaults (identical for all paid plans — commercial daily/monthly quotas stay
+ * separate in budget.ts):
+ * - 5 distinct user messages / 60s
+ * - 20 distinct user messages / 600s
+ *
+ * Rationale: human reflective chat rarely exceeds ~1 msg / 10–15s; 5/min allows
+ * quick corrections without enabling scripted bursts. Plan budgets (daily burst +
+ * monthly BRL) remain the commercial caps.
  */
 export function evaluateShortRateLimit(input: {
   requestIdsInWindow: number;

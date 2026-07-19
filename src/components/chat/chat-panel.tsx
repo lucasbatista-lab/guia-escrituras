@@ -11,6 +11,10 @@ import {
 } from "@/lib/ai/normalize-assistant-presentation";
 import { formatBiblicalReference } from "@/lib/biblical";
 import { cn } from "@/lib/utils";
+import {
+  parseRetryAfterHeader,
+  resolveChatClientError,
+} from "@/lib/ai/chat-client-errors";
 
 interface UiMessage {
   id: string;
@@ -137,36 +141,30 @@ export function ChatPanel({
 
       if (!response.ok) {
         const code = "code" in data ? data.code : undefined;
-        if (response.status === 401 || code === "unauthorized") {
-          setError(
-            "Sua sessão expirou. Entre novamente para continuar.",
-          );
-        } else if (response.status === 402 || code === "subscription_required") {
-          setError(
-            "Sua assinatura não está ativa no momento. Revise em Conta para continuar.",
-          );
-        } else if (response.status === 429 || code === "rate_limited") {
-          setError(
-            "Você enviou várias mensagens em pouco tempo. Aguarde um momento e tente de novo.",
-          );
-        } else if (code === "budget_exceeded") {
-          setError(
-            ("message" in data && data.message) ||
-              "Você atingiu a margem de uso por enquanto. Tente novamente mais tarde.",
-          );
-        } else if (code === "deep_response_not_entitled") {
-          setError(
-            ("message" in data && data.message) ||
-              "A resposta aprofundada sob demanda está disponível no plano Profundo.",
-          );
+        const serverMessage =
+          "message" in data && typeof data.message === "string"
+            ? data.message
+            : undefined;
+        const view = resolveChatClientError({
+          status: response.status,
+          code,
+          message: serverMessage,
+          retryAfterSeconds: parseRetryAfterHeader(
+            response.headers.get("Retry-After"),
+          ),
+        });
+        setError(view.message);
+        // Always restore the draft so the user can retry or edit without losing text.
+        setInput(trimmed);
+        if (!view.keepPendingRequest) {
+          setPendingRequestId(null);
+          pendingDeepRef.current = false;
+          setSendingDeep(false);
+        }
+        if (view.clearDeepPreference) {
           setPreferDeep(false);
           pendingDeepRef.current = false;
           setSendingDeep(false);
-        } else {
-          setError(
-            ("message" in data && data.message) ||
-              "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
-          );
         }
         return;
       }
@@ -194,6 +192,7 @@ export function ChatPanel({
       setError(
         "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
       );
+      setInput(trimmed);
     } finally {
       setLoading(false);
     }

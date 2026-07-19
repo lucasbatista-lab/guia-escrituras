@@ -29,6 +29,11 @@ import {
   selectContextMessages,
 } from "@/lib/ai/conversation-memory";
 import { normalizeAssistantPresentation } from "@/lib/ai/normalize-assistant-presentation";
+import { tryAcquireChatTurnLock } from "@/lib/ai/chat-turn-lock";
+import {
+  mapOpenAiProviderError,
+  openAiFailureToAppError,
+} from "@/lib/ai/openai-errors";
 import {
   calculateTokenCost,
   evaluateDailyBurst,
@@ -111,11 +116,10 @@ export async function runChatTurn(input: {
   }
 
   const repos = getRepositories();
+  const turnStartedMs = Date.now();
 
   // Idempotency: if this request_id already produced an assistant message, return it.
   // Unique index messages_user_request_role_uidx also guards concurrent inserts (23505).
-  // Limitation: two in-flight requests with the same requestId may both call the AI
-  // before either persists; the second insert loses the race and we re-read.
   const existingAssistant = await repos.messages.findByRequestId(
     auth.userId,
     requestId,
@@ -128,6 +132,13 @@ export async function runChatTurn(input: {
     const budget = evaluateMonthlyBudget({
       usedBrlCents: monthly.usedBrlCents,
       config: budgetConfig,
+    });
+    logger.info("chat_turn_idempotent_hit", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      conversationId: existingAssistant.conversationId,
+      flowStatus: "idempotent_return",
+      durationMs: Date.now() - turnStartedMs,
     });
     return {
       answer: existingAssistant.content,
@@ -149,6 +160,26 @@ export async function runChatTurn(input: {
     };
   }
 
+  // Process-local single-flight: same requestId must not call the AI twice here.
+  // Cross-instance races still rely on unique indexes (documented limitation).
+  const turnLock = tryAcquireChatTurnLock(auth.userId, requestId);
+  if (!turnLock) {
+    logger.info("chat_turn_in_progress", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      flowStatus: "conflict_in_flight",
+      durationMs: Date.now() - turnStartedMs,
+    });
+    throw new AppError(
+      "turn_in_progress",
+      "turn_in_progress",
+      409,
+      "Sua reflexão já está sendo preparada. Aguarde um momento antes de enviar de novo.",
+      5,
+    );
+  }
+
+  try {
   const budgetConfig = getBudgetConfig(auth.planKey);
   const yearMonth = currentYearMonth();
   const monthly = await repos.usage.getMonthly(auth.userId, yearMonth);
@@ -162,7 +193,8 @@ export async function runChatTurn(input: {
       "budget_exceeded",
       "budget_exceeded",
       429,
-      budget.blockReason ?? "Limite mensal atingido.",
+      budget.blockReason ??
+        "Você atingiu a margem de uso do seu plano por enquanto. Tente novamente mais tarde.",
     );
   }
 
@@ -179,7 +211,7 @@ export async function runChatTurn(input: {
       "burst_exceeded",
       "burst_exceeded",
       429,
-      "Você atingiu o limite diário de segurança. Tente novamente amanhã.",
+      "Você chegou ao limite diário de segurança. Pode continuar amanhã.",
     );
   }
 
@@ -216,10 +248,44 @@ export async function runChatTurn(input: {
         "rate_limited",
         "rate_limited",
         429,
-        "Você está enviando mensagens rápido demais. Aguarde um momento e tente novamente.",
+        "Você enviou várias mensagens em pouco tempo. Aguarde um momento e tente novamente.",
         short.retryAfterSeconds,
       );
     }
+  }
+
+  // Re-check assistant under the lock (another instance may have finished).
+  const assistantUnderLock = await repos.messages.findByRequestId(
+    auth.userId,
+    requestId,
+    "assistant",
+  );
+  if (assistantUnderLock) {
+    logger.info("chat_turn_idempotent_hit", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      conversationId: assistantUnderLock.conversationId,
+      flowStatus: "idempotent_return_under_lock",
+      durationMs: Date.now() - turnStartedMs,
+    });
+    return {
+      answer: assistantUnderLock.content,
+      biblicalReferences: assistantUnderLock.biblicalReferences,
+      interpretationNotice:
+        "Resposta recuperada de uma solicitação anterior (idempotente).",
+      usage: {
+        level:
+          budget.level === "blocked" ? "near_limit" : budget.level,
+        label: usageLevelLabel(
+          budget.level === "blocked" ? "near_limit" : budget.level,
+        ),
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      requestId,
+      conversationId: assistantUnderLock.conversationId,
+      provider: "openai",
+    };
   }
 
   let conversation =
@@ -299,6 +365,8 @@ export async function runChatTurn(input: {
     logger.error("biblical_grounding_failed", {
       requestId,
       userId: maskUserId(auth.userId),
+      failureType: "biblical_grounding",
+      flowStatus: "failed",
       err: error instanceof Error ? error.message : "unknown",
     });
     if (error instanceof AppError) throw error;
@@ -341,18 +409,27 @@ export async function runChatTurn(input: {
       responseDepth,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      logger.error("ai_generate_failed", {
+        requestId,
+        userId: maskUserId(auth.userId),
+        failureType: error.code,
+        flowStatus: "failed",
+        durationMs: Date.now() - turnStartedMs,
+        err: error.message,
+      });
+      throw error;
+    }
+    const mapped = mapOpenAiProviderError(error);
     logger.error("ai_generate_failed", {
       requestId,
       userId: maskUserId(auth.userId),
+      failureType: mapped.failureType,
+      flowStatus: "failed",
+      durationMs: Date.now() - turnStartedMs,
       err: error instanceof Error ? error.message : "unknown",
     });
-    if (error instanceof AppError) throw error;
-    throw new AppError(
-      "ai_failed",
-      "ai_failed",
-      503,
-      "Não foi possível gerar a reflexão agora. Tente novamente.",
-    );
+    throw openAiFailureToAppError(error);
   }
 
   const presented = normalizeAssistantPresentation({
@@ -503,6 +580,9 @@ export async function runChatTurn(input: {
     summaryLength: sanitizeConversationMemory(result.conversationMemory ?? "")
       .length,
     depth: responseDepth,
+    flowStatus: "completed",
+    durationMs: Date.now() - turnStartedMs,
+    isIdempotentRetry,
   });
 
   return {
@@ -527,4 +607,7 @@ export async function runChatTurn(input: {
     conversationId: conversation.id,
     provider: result.provider,
   };
+  } finally {
+    turnLock.release();
+  }
 }
