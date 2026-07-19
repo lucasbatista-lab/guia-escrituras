@@ -19,6 +19,7 @@ pnpm dev
 pnpm lint
 pnpm test
 pnpm build
+pnpm launch:check
 ```
 
 ## Documentação
@@ -27,6 +28,9 @@ pnpm build
 - [Database](docs/DATABASE.md)
 - [AI & Theology](docs/AI_AND_THEOLOGY.md)
 - [Deployment](docs/DEPLOYMENT.md)
+- [Launch checklist](docs/LAUNCH_CHECKLIST.md)
+- [Production cutover runbook](docs/PRODUCTION_CUTOVER_RUNBOOK.md)
+- [Daily reports](docs/DAILY_REPORTS.md)
 - [Next steps](docs/NEXT_STEPS.md)
 
 ## Stack

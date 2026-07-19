@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   assessCheckoutEligibility,
   type SubscriptionCandidate,
@@ -118,10 +119,10 @@ describe("plan promises — catalog honesty", () => {
 });
 
 describe("plan promises — Stripe price IDs unchanged", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("maps checkout plans to env var names only", () => {
@@ -212,14 +213,14 @@ describe("checkout guard — assessCheckoutEligibility", () => {
 });
 
 describe("checkout guard — createSubscriptionCheckout integration", () => {
-  const originalEnv = { ...process.env };
+  const originalEnv = snapshotEnv();
 
   beforeEach(() => {
-    process.env = { ...originalEnv };
+    restoreEnv(originalEnv);
   });
 
   afterEach(() => {
-    process.env = { ...originalEnv };
+    restoreEnv(originalEnv);
     vi.restoreAllMocks();
     vi.resetModules();
     vi.doUnmock("@/lib/auth/session");

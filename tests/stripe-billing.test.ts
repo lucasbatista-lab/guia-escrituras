@@ -1,4 +1,5 @@
 import { describe, expect, it, afterEach } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   getStripePriceIdForPlan,
   StripeConfigError,
@@ -8,10 +9,10 @@ import { transitionReferralStatus } from "@/lib/referrals";
 import { PLAN_DEFINITIONS } from "@/lib/entitlements";
 
 describe("stripe config", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("maps plan keys to env price IDs", () => {
@@ -70,10 +71,10 @@ describe("no trial or free plan", () => {
 });
 
 describe("stripe webhook signature", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("rejects missing signature at route level", async () => {

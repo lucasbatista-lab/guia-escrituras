@@ -1,63 +1,112 @@
-# Launch checklist — Amém Chat (15/07/2026)
+# Launch checklist — Amém Chat
 
-Checklist manual de cutover. **Não incluir valores de secrets neste arquivo.**
+Checklist de cutover. **Não incluir valores de secrets neste arquivo.**
 
-## 1. Domínio e URLs
+Legenda de estado:
+- `[x]` implementado e testado **localmente**
+- `[ ]` depende de **produção** / configuração remota
+- `[ ]` depende de **verificação humana**
+- `[ ]` **pós-lançamento**
 
-- [ ] DNS `amemchat.com.br` apontando para a Vercel (A/CNAME conforme painel)
-- [ ] Redirecionamento externo **www → apex** (`www.amemchat.com.br` → `https://amemchat.com.br`)
-- [ ] `APP_URL` e `NEXT_PUBLIC_APP_URL` = `https://amemchat.com.br` (sem localhost, sem `*.vercel.app` visível ao cliente)
-- [ ] Confirmar canonical/OG/sitemap com a URL de produção
-- [ ] Cookies de auth/continuidade sem `Domain` www-bound (host-only no apex)
+Nada abaixo marcado como `[x]` significa “já validado em produção”.
 
-## 2. Supabase Auth
+---
+
+## 0. Código local (pré-cutover)
+
+- [x] Admin Operations V1 (lista, detalhe, CSV, proteção `/admin` e `/api/admin/*`)
+- [x] Chat Reliability & Rate Limit V1 (idempotência, retry, burst técnico)
+- [x] SEO, OG & Social Sharing Readiness V1 (canonical, robots, sitemap, OG)
+- [x] Launch Operations & Daily Reporting V1 (cron + relatório diário + auth `CRON_SECRET`)
+- [x] Histórico e reabertura de conversa
+- [x] Resposta Profundo on-demand
+- [x] Onboarding / personalização
+- [x] Checkout Stripe real (código) + prevenção de assinatura duplicada
+- [x] Cancelamento / reativação nativos (código)
+- [x] UTM / referral (código)
+- [x] Health sem exposição de secrets; logs mascarados
+- [x] Rotas privadas com noindex
+- [x] Relatórios/exports sem conteúdo de conversa
+- [x] Suíte de testes + lint + build verdes localmente
+- [x] Runbook: `docs/PRODUCTION_CUTOVER_RUNBOOK.md`
+- [x] `pnpm launch:check` (checagens estáticas locais)
+
+## 1. Domínio e URLs — depende de produção
+
+- [ ] DNS `amemchat.com.br` apontando para a Vercel
+- [ ] Redirecionamento **www → apex**
+- [ ] `APP_URL` e `NEXT_PUBLIC_APP_URL` = `https://amemchat.com.br` na Vercel
+- [ ] Canonical/OG/sitemap respondendo no domínio de produção
+- [ ] Cookies de auth sem `Domain` www-bound (host-only no apex)
+
+## 2. Supabase Auth — depende de produção
 
 - [ ] Site URL = origem de produção
 - [ ] Redirect URLs incluem `/auth/callback` e `/auth/confirm`
-- [ ] SMTP Resend (ou provedor) ativo para e-mails de confirmação/recuperação
+- [ ] SMTP (Resend ou equivalente) ativo no Supabase
 
-## 3. Resend / e-mail
+## 3. Resend / e-mail — depende de produção + humano
 
 - [ ] Domínio autenticado (SPF/DKIM)
-- [ ] **P0 antes de billing ao vivo:** `NEXT_PUBLIC_SUPPORT_EMAIL` configurado (nunca inventar fallback)
-- [ ] Templates aplicados conforme `docs/AUTH_EMAIL_TEMPLATES.md` (confirmação com `token_hash`)
-- [ ] Teste de e-mail de confirmação de cadastro
-- [ ] Teste de recuperação de senha
+- [ ] `NEXT_PUBLIC_SUPPORT_EMAIL` configurado na Vercel (P0 antes de billing ao vivo)
+- [ ] Templates conforme `docs/AUTH_EMAIL_TEMPLATES.md`
+- [ ] Teste humano: e-mail de confirmação de cadastro
+- [ ] Teste humano: recuperação de senha
 
-## 4. Stripe live
+## 4. Stripe live — depende de produção + humano
 
-- [ ] Conta Stripe ativada para live
-- [ ] Produtos/prices live alinhados aos planos (sem alterar preços de produto sem revisão)
+- [ ] Conta Stripe live ativada
+- [ ] Produtos/prices live alinhados (sem mudar preço de produto sem revisão)
 - [ ] `STRIPE_SECRET_KEY` live na Vercel
-- [ ] Webhook live apontando para `/api/webhooks/stripe`
+- [ ] Webhook live → `/api/webhooks/stripe`
 - [ ] `STRIPE_WEBHOOK_SECRET` live correspondente
-- [ ] Um teste real controlado de checkout + webhook
-- [ ] Cancelamento/reativação nativos verificados em live (ou sandbox espelhado previamente)
+- [ ] Pagamento real controlado + webhook
+- [ ] Cancelamento/reativação verificados em live
 
-## 5. OpenAI production
+## 5. OpenAI production — depende de produção + humano
 
-- [ ] `OPENAI_API_KEY` de produção
+- [ ] `OPENAI_API_KEY` de produção na Vercel
 - [ ] Modelos default/deep confirmados
-- [ ] Smoke de conversa com grounding bíblico
+- [ ] Smoke humano de conversa com grounding bíblico
 
-## 6. Smoke funcional (mobile + desktop)
+## 6. Cron / relatórios — depende de produção
 
-- [ ] Cadastro com plano Essencial/Caminho
-- [ ] Confirmação de e-mail
-- [ ] Personalização (tradição / estilo) + conversa
-- [ ] Checkout
-- [ ] Chat (nova conversa + reabrir histórico `/conversas` → `/conversar?c=`)
-- [ ] Cancelamento de renovação em `/conta`
-- [ ] Admin overview + busca de usuários (operadores)
+- [ ] `CRON_SECRET` na Vercel Production
+- [ ] Cron Vercel invocando `/api/cron/daily-report`
+- [ ] Relatório UTC gerado (cron ou manual em `/admin/relatorios`)
 
-## 7. Observabilidade
+## 7. Smoke funcional — verificação humana
+
+- [ ] Home mobile
+- [ ] Cadastro → confirmação → personalização → conversa
+- [ ] Mensagem seguinte + Profundo + histórico
+- [ ] Checkout → retorno → assinatura reconhecida
+- [ ] Cancelamento de renovação + reativação em `/conta`
+- [ ] Admin com operador; usuário comum bloqueado
+- [ ] CSV administrativo sem texto de conversa
+- [ ] WhatsApp/OG, robots, sitemap no domínio live
+
+## 8. Observabilidade — produção + humano
 
 - [ ] `/api/health` ok (sem secrets)
 - [ ] `/api/health/db` ok/latência
-- [ ] Admin mostra timestamp e avisos de métricas parciais/estimativas
+- [ ] Admin overview com timestamp e avisos de métricas parciais
 
-## 8. Rollback
+## 9. Rollback — pronto no papel; executar só se P0
 
-- [ ] Tag/commit de rollback conhecido no `main`
-- [ ] Plano para reverter env Stripe/OpenAI sem apagar dados
-- [ ] Contato operacional para incidente no dia do lançamento
+- [x] Procedimento documentado no runbook
+- [ ] Tag/commit de rollback conhecido no ambiente Vercel
+- [ ] Contato operacional no dia do lançamento
+
+## 10. Migration 004 — pós-lançamento / decisão independente
+
+- [ ] **Não aplicar** no cutover inicial
+- [ ] Revisar SQL e decidir em janela própria (`docs/DEPLOYMENT.md`)
+
+## 11. Pós-lançamento (não bloqueante)
+
+- [ ] Fonte bíblica licenciada
+- [ ] Streaming no `/api/chat`
+- [ ] Ledger de receita Stripe no daily report
+- [ ] Persistência estruturada de falhas HTTP do chat (exigiria migration)
+- [ ] Alertas externos (e-mail) de operação

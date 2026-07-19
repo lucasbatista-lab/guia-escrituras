@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   assertEventMatchesKeyMode,
   InvalidStripeKeyError,
@@ -86,7 +87,7 @@ describe("webhook livemode guard", () => {
   });
 
   it("does not record payment_event on mode mismatch path", async () => {
-    const original = { ...process.env };
+    const original = snapshotEnv();
     process.env.STRIPE_SECRET_KEY = "sk_live_testkey";
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
 
@@ -128,11 +129,11 @@ describe("webhook livemode guard", () => {
     vi.resetModules();
     vi.doUnmock("@/lib/stripe/webhook");
     vi.doUnmock("@/lib/stripe/client");
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("accepts matching live webhook after signature", async () => {
-    const original = { ...process.env };
+    const original = snapshotEnv();
     process.env.STRIPE_SECRET_KEY = "sk_live_testkey";
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
 
@@ -169,7 +170,7 @@ describe("webhook livemode guard", () => {
     vi.resetModules();
     vi.doUnmock("@/lib/stripe/webhook");
     vi.doUnmock("@/lib/stripe/client");
-    process.env = { ...original };
+    restoreEnv(original);
   });
 });
 
@@ -308,10 +309,10 @@ describe("billing customer remapping", () => {
 });
 
 describe("stripe readiness", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
     setStripeClientForTests(null);
     vi.restoreAllMocks();
   });

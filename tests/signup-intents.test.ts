@@ -1,4 +1,5 @@
 import { describe, expect, it, afterEach, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   buildCadastroHref,
   hashSignupIntentToken,
@@ -220,11 +221,11 @@ describe("buildCadastroHref", () => {
 });
 
 describe("signup intent service", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
   let memory: MemorySignupIntentRepository;
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
     setSignupIntentRepositoryForTests(null);
     setLegalConsentRepositoryForTests(null);
     vi.clearAllMocks();

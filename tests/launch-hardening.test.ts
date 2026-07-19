@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { AppError, toClientError } from "@/lib/safety";
 import {
   evaluateShortRateLimits,
@@ -82,7 +83,7 @@ describe("short-term chat rate limit", () => {
 
 describe("SEO discoverability", () => {
   it("robots disallows private areas and points to sitemap in production", () => {
-    const original = { ...process.env };
+    const original = snapshotEnv();
     try {
       process.env.VERCEL_ENV = "production";
       process.env.NODE_ENV = "production";
@@ -104,12 +105,12 @@ describe("SEO discoverability", () => {
       expect(doc.sitemap).toBe("https://amemchat.com.br/sitemap.xml");
       expect(doc.host).toBe("amemchat.com.br");
     } finally {
-      process.env = { ...original };
+      restoreEnv(original);
     }
   });
 
   it("robots blocks all crawling outside production", () => {
-    const original = { ...process.env };
+    const original = snapshotEnv();
     try {
       process.env.VERCEL_ENV = "preview";
       process.env.NODE_ENV = "production";
@@ -118,7 +119,7 @@ describe("SEO discoverability", () => {
       expect(rule?.disallow).toEqual("/");
       expect(doc.sitemap).toBeUndefined();
     } finally {
-      process.env = { ...original };
+      restoreEnv(original);
     }
   });
 
@@ -135,7 +136,7 @@ describe("SEO discoverability", () => {
   });
 
   it("canonical never falls back to localhost or vercel.app in production", () => {
-    const original = { ...process.env };
+    const original = snapshotEnv();
     try {
       process.env.VERCEL_ENV = "production";
       process.env.NODE_ENV = "production";
@@ -146,7 +147,7 @@ describe("SEO discoverability", () => {
       expect(getCanonicalSiteUrl()).not.toContain("localhost");
       expect(getCanonicalSiteUrl()).not.toContain("vercel.app");
     } finally {
-      process.env = { ...original };
+      restoreEnv(original);
     }
   });
 });
@@ -182,9 +183,9 @@ describe("flaky secrets/openai regression (suite isolation)", () => {
   });
 
   it("survives twelve consecutive isolated production gate checks", async () => {
-    const base = { ...process.env };
+    const base = snapshotEnv();
     for (let i = 0; i < 12; i += 1) {
-      process.env = { ...base };
+      restoreEnv(base);
       delete process.env.OPENAI_API_KEY;
       process.env.VERCEL_ENV = "production";
       process.env.NODE_ENV = "production";
@@ -193,6 +194,6 @@ describe("flaky secrets/openai regression (suite isolation)", () => {
       const { createAiProvider } = await import("@/lib/ai/gateway");
       expect(() => createAiProvider()).toThrow(/openai_unavailable/);
     }
-    process.env = { ...base };
+    restoreEnv(base);
   });
 });

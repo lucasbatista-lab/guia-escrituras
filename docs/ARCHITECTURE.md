@@ -6,7 +6,7 @@ Produto público: **Amém Chat** — *Como Jesus responderia à sua situação?*
 Descrição: *Seu guIA cristão, baseado nas Escrituras.*  
 Repositório interno: `guia-escrituras`.
 
-Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgres (`@supabase/ssr`), OpenAI Responses API (gateway), Zod, Vitest.
+Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgres (`@supabase/ssr`), OpenAI Responses API (gateway), Stripe (checkout/webhooks), Zod, Vitest.
 
 ## Fluxo de autenticação
 
@@ -21,14 +21,14 @@ Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgre
 1. Autenticar  
 2. Validar onboarding  
 3. Validar assinatura ativa + entitlements (**sem plano gratuito**)  
-4. Validar orçamento mensal e burst diário  
-5. Criar/localizar conversation  
+4. Validar orçamento mensal, burst diário e rate limit técnico curto  
+5. Criar/localizar conversation (histórico reabrível)  
 6. Salvar mensagem do usuário (`role=user`)  
-7. Gerar resposta via `AiProvider`  
+7. Gerar resposta via `AiProvider` (comum ou Profundo on-demand)  
 8. Salvar assistant via backend confiável (secret key)  
 9. Registrar `usage_events` (dedupe `user_id + request_id`)  
 10. Atualizar `usage_monthly`  
-11. Retornar JSON  
+11. Retornar JSON (idempotência / retry seguros)
 
 ## Gateway de IA
 
@@ -39,13 +39,27 @@ Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgre
 ## Entitlements e planos
 
 Únicos planos: Essencial (R$38), Caminho (R$58), Profundo (R$188), Particular (R$988 — Solicitar acesso).  
-Sem free / trial recorrente / chat anônimo real.
+Sem free / trial recorrente / chat anônimo real.  
+Checkout Stripe real no código; prevenção de assinatura duplicada; cancelamento/reativação nativos.
+
+## Admin e operações
+
+- Lista/detalhe/CSV de assinantes (sem conteúdo de conversa)
+- Métricas e alertas operacionais a partir de dados reais agregados (não mock)
+- Relatório diário UTC via cron (`CRON_SECRET`) + geração manual admin — ver `docs/DAILY_REPORTS.md`
+
+## SEO / social
+
+- Canonical apex `https://amemchat.com.br`
+- OG/Twitter metadata em páginas públicas
+- `robots.ts` / `sitemap.ts`; rotas privadas com noindex
 
 ## RLS e secret key
 
 - Fluxo normal do usuário: publishable/anon + cookies
-- Secret key (`SUPABASE_SECRET_KEY`) só em módulos `server-only` para writes administrativas (assistant, usage, summaries) após migration 004
-- Nunca logar chaves
+- Secret key (`SUPABASE_SECRET_KEY`) só em módulos `server-only` para writes administrativas (assistant, usage, summaries, cron)
+- Endurecimento adicional na migration **004** (ainda não aplicada no cutover)
+- Nunca logar chaves; health não expõe presença de secrets
 
 ## Runtime
 
@@ -63,4 +77,4 @@ Sem free / trial recorrente / chat anônimo real.
 
 ## O que ainda é limitado / futuro
 
-Trechos bíblicos de demonstração; receita em dinheiro no daily report (`null`); falhas HTTP do chat só em logs; pagamento de indicações; streaming.
+Trechos bíblicos de demonstração; receita em dinheiro no daily report (`null`); falhas HTTP do chat só em logs; pagamento de indicações; streaming; validação remota do cutover (DNS, Stripe live, e-mail real, cron real).

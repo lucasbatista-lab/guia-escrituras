@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { AppError } from "@/lib/safety";
@@ -305,7 +306,7 @@ describe("cron route surface", () => {
     expect(src).toContain('outcome');
     expect(src).not.toContain("stack");
 
-    const original = { ...process.env };
+    const original = snapshotEnv();
     try {
       process.env.VERCEL_ENV = "production";
       process.env.NODE_ENV = "production";
@@ -313,7 +314,7 @@ describe("cron route surface", () => {
       const rule = Array.isArray(doc.rules) ? doc.rules[0] : doc.rules;
       expect(rule?.disallow).toEqual(expect.arrayContaining(["/api", "/admin"]));
     } finally {
-      process.env = { ...original };
+      restoreEnv(original);
     }
 
     const urls = sitemap().map((e) => e.url).join(" ");

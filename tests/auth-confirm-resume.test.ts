@@ -1,4 +1,5 @@
 import { describe, expect, it, afterEach } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -192,11 +193,11 @@ describe("continuity cookie", () => {
 });
 
 describe("signup intent resume by user", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
   let memory: MemorySignupIntentRepository;
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
     setSignupIntentRepositoryForTests(null);
     setLegalConsentRepositoryForTests(null);
   });
@@ -470,9 +471,9 @@ describe("no token leakage in confirm logs", () => {
 });
 
 describe("signup with and without plan email next", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("with plan next is email-confirmado; without is planos", () => {

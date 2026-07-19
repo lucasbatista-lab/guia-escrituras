@@ -9,7 +9,7 @@
 
 ## Environment
 
-Set on Vercel (Production):
+Set on Vercel (Production) — **presence only; not yet assumed validated in production**:
 
 | Variable | Purpose |
 |----------|---------|
@@ -18,6 +18,9 @@ Set on Vercel (Production):
 | `APP_URL` / `NEXT_PUBLIC_APP_URL` | Canonical host (already required) |
 
 Do **not** commit secret values. `.env.example` lists only the name `CRON_SECRET=`.
+
+Implemented and tested locally: cron route, admin generate/backfill, overview alerts.  
+Still depends on remote `CRON_SECRET` + Vercel Cron invocation after deploy.
 
 No additional database migration is required for this block. It reuses:
 

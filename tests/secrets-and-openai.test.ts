@@ -1,24 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 
 /**
  * Deterministic env+module isolation. Do not rely on wall-clock timeouts or
  * mutable global module state leaking across cases.
  */
-function snapshotEnv() {
-  return { ...process.env };
-}
-
-function restoreEnv(snapshot: NodeJS.ProcessEnv) {
-  for (const key of Object.keys(process.env)) {
-    if (!(key in snapshot)) {
-      delete process.env[key];
-    }
-  }
-  for (const [key, value] of Object.entries(snapshot)) {
-    if (value === undefined) delete process.env[key];
-    else process.env[key] = value;
-  }
-}
 
 describe("secret key server-only module", () => {
   let envSnap: NodeJS.ProcessEnv;

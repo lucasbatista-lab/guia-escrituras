@@ -1,4 +1,5 @@
 import { describe, expect, it, afterEach } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   getSupabasePublishableKey,
   hasSupabasePublicEnv,
@@ -12,10 +13,10 @@ import {
 import { PLAN_DEFINITIONS } from "@/lib/entitlements";
 
 describe("supabase public keys", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("prefers publishable over anon", () => {
@@ -35,10 +36,10 @@ describe("supabase public keys", () => {
 });
 
 describe("runtime mocks", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("allows mocks in development", () => {

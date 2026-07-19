@@ -16,6 +16,7 @@ const eslintConfig = [
       "out/**",
       "coverage/**",
       "supabase/**",
+      "scripts/**",
     ],
   },
   ...nextVitals,

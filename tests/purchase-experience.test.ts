@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { getBrandConfig } from "@/config/brand";
 import {
   getSupportEmail,
@@ -147,10 +148,10 @@ describe("purchase experience — checkout continuation", () => {
 });
 
 describe("purchase experience — support email honesty", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("defaults to amemchatbr@gmail.com when env is unset", () => {
@@ -180,10 +181,10 @@ describe("purchase experience — support email honesty", () => {
 });
 
 describe("purchase experience — canonical domain", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("uses https://amemchat.com.br as production canonical", () => {

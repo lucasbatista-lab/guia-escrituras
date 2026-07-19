@@ -1,4 +1,5 @@
 import { describe, expect, it, afterEach } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   persistLegalConsent,
   setLegalConsentRepositoryForTests,
@@ -174,13 +175,13 @@ describe("persistLegalConsent", () => {
 });
 
 describe("completeIntentAfterConfirmation legal consent", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
   let intents: MemorySignupIntentRepository;
   let consents: MemoryLegalConsentRepository;
   let token: string;
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
     setSignupIntentRepositoryForTests(null);
     setLegalConsentRepositoryForTests(null);
   });
@@ -267,10 +268,10 @@ describe("completeIntentAfterConfirmation legal consent", () => {
 });
 
 describe("signUpAction config gate (deterministic)", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("detects missing public supabase env without importing server action", () => {

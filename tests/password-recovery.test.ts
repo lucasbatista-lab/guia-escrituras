@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -10,16 +11,16 @@ function read(...parts: string[]) {
   return readFileSync(join(process.cwd(), ...parts), "utf8");
 }
 
-const originalEnv = { ...process.env };
+const originalEnv = snapshotEnv();
 
 beforeEach(() => {
-  process.env = { ...originalEnv };
+  restoreEnv(originalEnv);
   process.env.APP_URL = "https://amemchat.com.br";
   process.env.NEXT_PUBLIC_APP_URL = "https://amemchat.com.br";
 });
 
 afterEach(() => {
-  process.env = { ...originalEnv };
+  restoreEnv(originalEnv);
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
 });

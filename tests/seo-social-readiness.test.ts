@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { getBrandConfig } from "@/config/brand";
 import { getCanonicalSiteUrl } from "@/lib/auth/app-url";
 import {
@@ -26,10 +27,10 @@ function read(...parts: string[]) {
 }
 
 describe("SEO & social readiness — brand and metadata helpers", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("exposes seo title/description without divine-voice claims", () => {
@@ -153,10 +154,10 @@ describe("SEO & social readiness — OG image and layouts", () => {
 });
 
 describe("SEO & social readiness — robots and sitemap", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("production robots allow public and block private routes", () => {
@@ -205,10 +206,10 @@ describe("SEO & social readiness — robots and sitemap", () => {
 });
 
 describe("SEO & social readiness — organic sharing", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("share title/text stay public and AI-honest", () => {

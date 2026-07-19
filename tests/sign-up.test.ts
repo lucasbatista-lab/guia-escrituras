@@ -1,4 +1,5 @@
 import { describe, expect, it, afterEach, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   getAppUrl,
   getEmailRedirectTo,
@@ -39,10 +40,10 @@ describe("normalizeSupabaseUrl", () => {
 });
 
 describe("getSupabaseUrl with broken production value", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("exposes a usable URL when env has tps:// typo", () => {
@@ -54,10 +55,10 @@ describe("getSupabaseUrl with broken production value", () => {
 });
 
 describe("getEmailRedirectTo", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("prefers APP_URL and points confirmation to /auth/confirm → planos", () => {
@@ -201,14 +202,14 @@ describe("signup UI guarantees", () => {
 });
 
 describe("signUpAction", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
     vi.resetModules();
     vi.clearAllMocks();
     vi.doUnmock("@/lib/supabase/keys");
     vi.doUnmock("@/lib/supabase/server");
+    restoreEnv(original);
   });
 
   async function loadSignUpActionWithClient(client: unknown) {
@@ -411,14 +412,14 @@ describe("signUpAction", () => {
 });
 
 describe("resendConfirmationAction", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
     vi.resetModules();
     vi.clearAllMocks();
     vi.doUnmock("@/lib/supabase/keys");
     vi.doUnmock("@/lib/supabase/server");
+    restoreEnv(original);
   });
 
   it("does not call real network and returns generic success message", async () => {

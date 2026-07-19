@@ -1,12 +1,13 @@
 import { describe, expect, it, afterEach } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { getBrandConfig } from "@/config/brand";
 import { getSupportEmail } from "@/config/legal";
 
 describe("brand config", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
   });
 
   it("defaults to Amém Chat", () => {

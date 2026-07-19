@@ -1,4 +1,5 @@
 import { describe, expect, it, afterEach, vi } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getAppUrl, getCanonicalSiteUrl } from "@/lib/auth/app-url";
@@ -10,10 +11,10 @@ function read(...parts: string[]) {
 }
 
 describe("checkout return — session preservation", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   afterEach(() => {
-    process.env = { ...original };
+    restoreEnv(original);
     vi.resetModules();
   });
 

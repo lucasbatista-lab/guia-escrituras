@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { snapshotEnv, restoreEnv } from "./helpers/env";
 import {
   getLegalEntityDocument,
   getLegalEntityName,
@@ -15,14 +16,14 @@ describe("legal versions", () => {
 });
 
 describe("optional legal entity", () => {
-  const original = { ...process.env };
+  const original = snapshotEnv();
 
   it("does not invent CNPJ or entity when unset", () => {
     delete process.env.NEXT_PUBLIC_LEGAL_ENTITY_NAME;
     delete process.env.NEXT_PUBLIC_LEGAL_ENTITY_DOCUMENT;
     expect(getLegalEntityName()).toBeNull();
     expect(getLegalEntityDocument()).toBeNull();
-    process.env = { ...original };
+    restoreEnv(original);
   });
 });
 
@@ -74,11 +75,11 @@ describe("home page honesty", () => {
 
 describe("support email honesty", () => {
   it("defaults to the live Amém Chat inbox when unset", async () => {
-    const original = { ...process.env };
+    const original = snapshotEnv();
     delete process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
     delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
     const { getSupportEmail } = await import("@/config/legal");
     expect(getSupportEmail()).toBe("amemchatbr@gmail.com");
-    process.env = { ...original };
+    restoreEnv(original);
   });
 });

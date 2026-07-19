@@ -1,9 +1,19 @@
 # Next steps
 
-1. Confirmar `CRON_SECRET` + cron Vercel em production (`docs/DAILY_REPORTS.md`).  
-2. Aplicar migration 004 em ambientes onde ainda faltare (`docs/DEPLOYMENT.md`) — **não faz parte deste bloco**.  
-3. Fonte bíblica licenciada.  
-4. Streaming no `/api/chat`.  
-5. Persistência estruturada de falhas de chat (409/429/503) se a operação precisar disso no admin (exigiria migration).  
-6. Receita real Stripe no relatório diário (ledger de pagamentos).  
-7. Observabilidade avançada de percentis / alertas externos (e-mail) — fora do escopo atual.
+## Cutover (agora)
+
+1. Seguir `docs/PRODUCTION_CUTOVER_RUNBOOK.md` (envs Vercel → deploy → smoke humano).  
+2. Completar itens abertos de `docs/LAUNCH_CHECKLIST.md` (produção + verificação humana).  
+3. Confirmar `CRON_SECRET` + cron Vercel em production (`docs/DAILY_REPORTS.md`).
+
+## Decisão independente (não bloqueia o cutover de código)
+
+4. Aplicar migration 004 somente após revisão explícita (`docs/DEPLOYMENT.md`) — **não faz parte do cutover inicial**.
+
+## Pós-lançamento (não bloqueante)
+
+5. Fonte bíblica licenciada.  
+6. Streaming no `/api/chat`.  
+7. Persistência estruturada de falhas de chat (409/429/503) se a operação precisar disso no admin (exigiria migration).  
+8. Receita real Stripe no relatório diário (ledger de pagamentos).  
+9. Observabilidade avançada de percentis / alertas externos (e-mail).
