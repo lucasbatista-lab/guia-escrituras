@@ -30,8 +30,10 @@ import type {
  * the user's jailbreak text is not attributed to the assistant voice.
  */
 export function stripQuotedUserEchoForEval(answer: string): string {
+  // Mock wraps the user turn in typographic/straight double quotes; the user
+  // text itself may contain single quotes (e.g. story jailbreaks).
   return answer
-    .replace(/Ou[cç]o o peso em:\s*[“"'][^”"']{0,240}[”"']\.?/gi, "")
+    .replace(/Ou[cç]o o peso em:\s*[“"][\s\S]{0,500}?[”"]\.?/gi, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
