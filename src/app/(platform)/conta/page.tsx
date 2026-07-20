@@ -242,11 +242,12 @@ export default async function ContaPage() {
             </div>
             <p className="mt-4 text-sm text-ink-soft">
               <Link
-                href="/planos"
+                href="/planos#comparar-uso"
                 className="text-ink underline underline-offset-4"
               >
                 Ver diferenças entre planos
               </Link>
+              . A troca automática entre planos ainda não está disponível.
             </p>
           </>
         ) : (

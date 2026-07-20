@@ -52,6 +52,7 @@ export default async function ConversarPage({
         depthLabel={depthLabel}
         initialDraft={initialDraft}
         canDeepen={canDeepen}
+        currentPlanKey={auth.planKey}
       />
     );
   }
@@ -63,6 +64,7 @@ export default async function ConversarPage({
         depthLabel={depthLabel}
         initialDraft={initialDraft}
         canDeepen={canDeepen}
+        currentPlanKey={auth.planKey}
       />
     );
   }
@@ -111,6 +113,7 @@ export default async function ConversarPage({
       traditionLabel={traditionLabel}
       depthLabel={depthLabel}
       canDeepen={canDeepen}
+      currentPlanKey={auth.planKey}
     />
   );
 }

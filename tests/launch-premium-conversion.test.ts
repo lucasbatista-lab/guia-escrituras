@@ -46,13 +46,13 @@ describe("launch premium conversion", () => {
     const profundo = getPlanByKey("profundo");
     expect(essencial?.priceMonthlyCents).toBe(3800);
     expect(caminho?.highlighted).toBe(true);
-    expect(caminho?.ctaLabel).toBe("Começar com Caminho");
-    expect(profundo?.displayBenefits.join(" ")).toMatch(/margem/i);
+    expect(caminho?.ctaLabel).toBe("Escolher o Caminho");
+    expect(profundo?.displayBenefits.join(" ")).toMatch(/aprofundar/i);
     expect(profundo?.displayBenefits.join(" ").toLowerCase()).not.toMatch(
       /whatsapp|áudio|audio|jornadas de leitura|conversas profundas|suporte prioritário/,
     );
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
-    expect(planos).toContain("recomendação principal");
+    expect(planos).toContain("comparar-uso");
     expect(planos).toContain("Stripe");
   });
 

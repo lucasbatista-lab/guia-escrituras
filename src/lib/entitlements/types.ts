@@ -26,6 +26,8 @@ export interface PlanDefinition {
   ctaType: PlanCtaType;
   ctaLabel: string;
   highlighted?: boolean;
+  /** Short “ideal for” line on plan cards. */
+  idealFor: string;
   entitlements: EntitlementKey[];
   /** Benefits available and billed as part of the active promise. */
   displayBenefits: string[];

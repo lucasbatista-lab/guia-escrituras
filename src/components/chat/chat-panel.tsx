@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { InlineNotice } from "@/components/platform/inline-notice";
 import { Button } from "@/components/ui/button";
 import type { ChatResponsePayload } from "@/lib/ai/chat-schema";
@@ -10,11 +10,17 @@ import {
   hasRenderableInterpretationNotice,
 } from "@/lib/ai/normalize-assistant-presentation";
 import { formatBiblicalReference } from "@/lib/biblical";
+import type { PlanKey } from "@/lib/entitlements";
+import { getPlanUpsellSuggestion } from "@/lib/marketing/plan-upsell";
 import { cn } from "@/lib/utils";
 import {
   parseRetryAfterHeader,
   resolveChatClientError,
 } from "@/lib/ai/chat-client-errors";
+import {
+  ChatPlanUpsell,
+  DeepUpsellHint,
+} from "@/components/chat/chat-plan-upsell";
 
 interface UiMessage {
   id: string;
@@ -39,6 +45,7 @@ export function ChatPanel({
   depthLabel,
   initialDraft,
   canDeepen = false,
+  currentPlanKey = null,
 }: {
   initialConversationId?: string | null;
   initialMessages?: UiMessage[];
@@ -47,6 +54,7 @@ export function ChatPanel({
   initialDraft?: string;
   /** Server-resolved: Profundo / Particular provisioned only. */
   canDeepen?: boolean;
+  currentPlanKey?: PlanKey | null;
 }) {
   const hasHistory = Boolean(initialMessages && initialMessages.length > 0);
   const [messages, setMessages] = useState<UiMessage[]>(
@@ -65,6 +73,31 @@ export function ChatPanel({
   const pendingDeepRef = useRef(false);
   const [sendingDeep, setSendingDeep] = useState(false);
   const [errorKind, setErrorKind] = useState<string | null>(null);
+
+  const upsellSuggestion = useMemo(() => {
+    if (!errorKind || !currentPlanKey) return null;
+    if (errorKind === "deep_not_entitled") {
+      return getPlanUpsellSuggestion({
+        currentPlanKey,
+        origin: "deep_not_entitled",
+      });
+    }
+    if (errorKind === "plan_limit") {
+      return getPlanUpsellSuggestion({
+        currentPlanKey,
+        origin: "usage_limit",
+        limitKind: "plan_limit",
+      });
+    }
+    if (errorKind === "daily_burst") {
+      return getPlanUpsellSuggestion({
+        currentPlanKey,
+        origin: "usage_limit",
+        limitKind: "daily_burst",
+      });
+    }
+    return null;
+  }, [currentPlanKey, errorKind]);
 
   const deepenId = useId();
   const deepenHelpId = useId();
@@ -308,6 +341,9 @@ export function ChatPanel({
         {error ? (
           <div className="mb-3 space-y-2" role="alert" aria-live="assertive">
             <InlineNotice tone="error">{error}</InlineNotice>
+            {upsellSuggestion ? (
+              <ChatPlanUpsell suggestion={upsellSuggestion} />
+            ) : null}
             <div className="flex flex-wrap gap-2">
               {errorKind === "auth" ? (
                 <Link
@@ -373,15 +409,7 @@ export function ChatPanel({
             </label>
           </div>
         ) : (
-          <p className="mb-3 text-xs leading-relaxed text-ink-soft">
-            Resposta aprofundada sob demanda está disponível no plano Profundo.{" "}
-            <Link
-              href="/planos"
-              className="text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              Conhecer o Profundo
-            </Link>
-          </p>
+          <DeepUpsellHint />
         )}
 
         <div className="flex gap-2">

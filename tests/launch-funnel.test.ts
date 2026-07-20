@@ -109,10 +109,10 @@ describe("launch benefits honesty", () => {
       true,
     );
     expect(profundo.displayBenefits.some((b) =>
-      /resposta aprofundada/i.test(b),
+      /aprofundar/i.test(b),
     )).toBe(true);
     expect(profundo.upcomingBenefits?.some((b) =>
-      /resposta aprofundada/i.test(b),
+      /aprofundar/i.test(b),
     )).toBe(false);
 
     const caminho = getPlanByKey("caminho")!;
@@ -210,10 +210,10 @@ describe("UTM and referral preservation", () => {
     const cards = readSrc("src", "components", "marketing", "plan-cards.tsx");
     const chrome = readSrc("src", "components", "marketing", "site-chrome.tsx");
     expect(cards).toContain("TrackingLink");
-    expect(cards).toContain("Disponível agora");
-    expect(cards).toContain("Em desenvolvimento");
+    expect(cards).toContain("Recomendado");
+    expect(cards).toContain("Comparar planos");
+    expect(cards).not.toContain("Em desenvolvimento");
     expect(cards).toContain("Seu plano atual");
-    expect(cards).toContain("Troca de plano em breve");
     expect(chrome).toContain("TrackingLink");
     expect(chrome).toContain("marketing-mobile-nav");
   });

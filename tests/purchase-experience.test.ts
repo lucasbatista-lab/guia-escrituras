@@ -29,7 +29,9 @@ describe("purchase experience — home copy & flow order", () => {
       "Como começar",
       "Profundidades e tradições",
       "Segurança, privacidade e limites",
-      "Assinatura mensal com renovação automática",
+      "{/* 8. Planos */}",
+      "Assinatura mensal a partir de",
+      "Comparar todos os planos",
       "Perguntas frequentes",
       "Estamos começando",
       "Pronto para trazer a sua situação?",
@@ -82,10 +84,10 @@ describe("purchase experience — honest plan cards", () => {
     expect(getPlanByKey("particular")?.priceMonthlyCents).toBe(98800);
   });
 
-  it("uses Começar com Essencial/Caminho/Profundo CTAs", () => {
-    expect(getPlanByKey("essencial")?.ctaLabel).toBe("Começar com Essencial");
-    expect(getPlanByKey("caminho")?.ctaLabel).toBe("Começar com Caminho");
-    expect(getPlanByKey("profundo")?.ctaLabel).toBe("Começar com Profundo");
+  it("uses ethical checkout CTAs", () => {
+    expect(getPlanByKey("essencial")?.ctaLabel).toBe("Começar com o Essencial");
+    expect(getPlanByKey("caminho")?.ctaLabel).toBe("Escolher o Caminho");
+    expect(getPlanByKey("profundo")?.ctaLabel).toBe("Quero o Profundo");
   });
 
   it("keeps upcoming features outside active benefits", () => {
@@ -102,12 +104,12 @@ describe("purchase experience — honest plan cards", () => {
     const profundo = getPlanByKey("profundo");
     expect(profundo?.upcomingBenefits?.join(" ")).toMatch(/áudio|audio/i);
     expect(profundo?.displayBenefits?.some((b) =>
-      /resposta aprofundada/i.test(b),
+      /aprofundar/i.test(b),
     )).toBe(true);
     expect(profundo?.upcomingBenefits?.some((b) =>
-      /resposta aprofundada/i.test(b),
+      /aprofundar/i.test(b),
     )).toBe(false);
-    expect(profundo?.displayBenefits.join(" ")).toMatch(/margem/i);
+    expect(profundo?.displayBenefits.join(" ")).toMatch(/aprofundar/i);
     expect(profundo?.tagline).toMatch(/intens/i);
   });
 
@@ -117,11 +119,10 @@ describe("purchase experience — honest plan cards", () => {
     expect(planos).toContain("Cancelamento da renovação");
     expect(planos).toContain("uso justo");
     expect(planos).toContain("Checkout seguro");
-    expect(planos).toContain("frequência");
-    expect(planos).toContain("uso moderado");
-    expect(planos).toContain("recomendação principal");
+    expect(planos).toContain("comparar-uso");
     const cards = read("src", "components", "marketing", "plan-cards.tsx");
-    expect(cards).toContain("Disponível agora");
+    expect(cards).toContain("Recomendado");
+    expect(cards).not.toContain("Disponível agora");
   });
 });
 

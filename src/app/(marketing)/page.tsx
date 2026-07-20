@@ -424,13 +424,21 @@ export default function HomePage() {
               Planos
             </h2>
             <p className="mt-3 max-w-2xl text-ink-soft">
-              Assinatura mensal com renovação automática. Escolha o ritmo que
-              cabe na sua vida — a partir de {ESSENCIAL_PRICE_LABEL}/mês.
-              Recursos futuros aparecem separados como “Em desenvolvimento”.
+              Assinatura mensal a partir de {ESSENCIAL_PRICE_LABEL}/mês.
+              Essencial para começar. Caminho é a escolha natural se você quer
+              voltar com frequência. Profundo inclui Aprofundar sob demanda.
             </p>
             <div className="mt-10">
-              <PlanCards />
+              <PlanCards compact />
             </div>
+            <p className="mt-6">
+              <TrackingLink
+                href="/planos"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
+              >
+                Comparar todos os planos
+              </TrackingLink>
+            </p>
           </div>
         </SectionShell>
 

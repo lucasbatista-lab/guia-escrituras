@@ -167,6 +167,7 @@ describe("first-use onboarding — themes", () => {
 
 describe("first-use onboarding — chat empty state and composer", () => {
   const panel = read("src", "components", "chat", "chat-panel.tsx");
+  const upsell = read("src", "components", "chat", "chat-plan-upsell.tsx");
 
   it("empty state explains how to write without a tutorial modal", () => {
     expect(panel).toContain("Escreva o que você está vivendo");
@@ -195,7 +196,9 @@ describe("first-use onboarding — chat empty state and composer", () => {
     expect(panel).toContain("useState(false)");
     expect(panel).toContain("Em situações complexas, você pode ativar");
     expect(panel).toContain("antes de enviar");
-    expect(panel).toContain("Conhecer o Profundo");
+    expect(panel).toContain("DeepUpsellHint");
+    expect(upsell).toContain("Conhecer o Profundo");
+    expect(upsell).toContain("/planos#aprofundar");
     expect(panel).not.toContain("setPreferDeep(true)");
   });
 

@@ -42,6 +42,9 @@ Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgre
 Sem free / trial recorrente / chat anônimo real.  
 Checkout Stripe real no código; prevenção de assinatura duplicada; cancelamento/reativação nativos.
 
+**Runtime ativo:** `chat_standard`, `chat_deep`. Demais flags no catálogo são reservadas (ver `docs/COMMERCIAL_PLANS.md`).  
+**Upsell V1:** diferenciação comercial + upsells contextuais éticos — sem troca de plano, sem alteração de preço/budget.
+
 ## Admin e operações
 
 - Lista/detalhe/CSV de assinantes (sem conteúdo de conversa)

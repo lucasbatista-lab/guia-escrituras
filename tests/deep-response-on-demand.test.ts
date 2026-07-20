@@ -335,11 +335,13 @@ describe("runChatTurn preferDeep entitlement", () => {
 describe("deep response UI and plan copy", () => {
   it("chat panel exposes deepen control only when canDeepen", () => {
     const panel = read("src", "components", "chat", "chat-panel.tsx");
+    const upsell = read("src", "components", "chat", "chat-plan-upsell.tsx");
     expect(panel).toContain("Aprofundar esta resposta");
     expect(panel).toContain("canDeepen");
     expect(panel).toContain("preferDeep: useDeep");
-    expect(panel).toContain("Conhecer o Profundo");
-    expect(panel).toContain('href="/planos"');
+    expect(panel).toContain("DeepUpsellHint");
+    expect(upsell).toContain("Conhecer o Profundo");
+    expect(upsell).toContain('href="/planos#aprofundar"');
     expect(panel).toContain("aria-describedby");
     expect(panel).toContain("consome mais");
   });
@@ -353,10 +355,10 @@ describe("deep response UI and plan copy", () => {
   it("Profundo lists on-demand deep as available now", () => {
     const profundo = getPlanByKey("profundo")!;
     expect(
-      profundo.displayBenefits.some((b) => /resposta aprofundada/i.test(b)),
+      profundo.displayBenefits.some((b) => /aprofundar/i.test(b)),
     ).toBe(true);
     expect(
-      profundo.upcomingBenefits?.some((b) => /resposta aprofundada/i.test(b)),
+      profundo.upcomingBenefits?.some((b) => /aprofundar/i.test(b)),
     ).toBe(false);
     expect(profundo.priceMonthlyCents).toBe(18800);
     expect(getPlanByKey("essencial")?.priceMonthlyCents).toBe(3800);
@@ -374,8 +376,10 @@ describe("deep response UI and plan copy", () => {
 
   it("planos page distinguishes profile depth from on-demand deepen", () => {
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
-    expect(planos).toContain("profundidade do perfil");
-    expect(planos).toContain("resposta aprofundada sob demanda");
+    const shared = read("src", "lib", "entitlements", "reserved.ts");
+    expect(shared).toContain("Profundidade de estilo");
+    expect(planos).toContain("O que é Aprofundar?");
+    expect(planos).toContain("SHARED_PLAN_INCLUDES");
   });
 
   it("does not alter Stripe checkout or webhook", () => {
