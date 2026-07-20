@@ -13,7 +13,9 @@ Migrations em `supabase/migrations/`.
 1. `20260712000001_foundation_schema.sql` — schema + RLS (não alterar)  
 2. `20260712000002_seed_catalog.sql` — catálogo (não alterar)  
 3. `20260712000003_daily_report_fn.sql` — agregados (não alterar)  
-4. `20260712000004_production_hardening.sql` — hardening (aplicar manualmente depois)
+4. `20260712000004_production_hardening.sql` — hardening (aplicar manualmente depois)  
+5. `20260712000005`–`007` — intents / billing / legal (ver cabeçalhos; aplicar conforme runbook)  
+6. `20260712000008_journey_progress.sql` — progresso de Jornadas (**criada; não aplicar até revisão** — `docs/READING_JOURNEYS_PERSISTENCE.md`)
 
 ## Migration 004 (resumo)
 

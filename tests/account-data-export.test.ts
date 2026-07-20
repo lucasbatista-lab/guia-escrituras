@@ -287,6 +287,8 @@ describe("owner data portability", () => {
       content: "Olá",
       requestId: "req-1",
     });
+    // Ensure distinct createdAt so export chronological order is stable under tie-break by id.
+    await new Promise((r) => setTimeout(r, 5));
     await repos.messages.insertAssistantMessage({
       conversationId: conversation.id,
       userId: "user-owner",

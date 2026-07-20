@@ -90,6 +90,10 @@ Manual (local, no external services): sign in with demo/mocks if enabled, open `
 - Estimated costs are operational estimates, not invoices.
 - Very large histories may hit the page cap and require support-assisted export.
 - This is **not** account deletion.
+- Journey progress (`journey_progress`) has a prepared export mapper in
+  `src/lib/journeys/progress/export-mapper.ts` but is **not** included in
+  `amem-chat-user-data-v1` until the migration is applied and export is
+  intentionally wired (`docs/READING_JOURNEYS_PERSISTENCE.md`).
 
 ## Export vs delete
 
