@@ -10,13 +10,12 @@
 
 4. Aplicar migration 004 somente após revisão explícita (`docs/DEPLOYMENT.md`) — **não faz parte do cutover inicial**.
 
-## Reading Journeys — persistência (fundação pronta, feature ainda não)
+## Reading Journeys — ativo (V1)
 
-5. Migration `20260712000008_journey_progress.sql` **criada e ainda não aplicada**.  
-6. Aplicar no Supabase após revisão humana (`docs/READING_JOURNEYS_PERSISTENCE.md`).  
-7. Confirmar postcheck read-only `supabase/postchecks/20260712000008_journey_progress_postcheck.sql`.  
-8. Implementar/publicar a feature de Jornadas (registry, UI, API).  
-9. Ativar entitlement `reading_journeys` e copy comercial **somente** após a feature completa.
+5. Migration `20260712000008_journey_progress.sql` aplicada em produção (revisão humana).  
+6. Postcheck read-only confirmado (`docs/READING_JOURNEYS_PERSISTENCE.md`).  
+7. Feature publicada: registry, UI (`/jornadas`), APIs, entitlement `reading_journeys`, export `journeyProgress`, copy comercial.  
+8. Ver `docs/READING_JOURNEYS.md` para limitações e processo editorial.
 
 ## Pós-lançamento (não bloqueante)
 

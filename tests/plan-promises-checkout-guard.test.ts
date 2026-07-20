@@ -51,15 +51,17 @@ describe("plan promises — catalog honesty", () => {
     expect(plan.upcomingBenefits).toBeUndefined();
   });
 
-  it("Caminho communicates frequent use without selling journeys as active", () => {
+  it("Caminho communicates frequent use and active journeys", () => {
     const plan = getPlanByKey("caminho")!;
     const active = plan.displayBenefits.join(" ").toLowerCase();
     expect(plan.idealFor).toMatch(/frequência/i);
     expect(plan.ctaLabel).toBe("Escolher o Caminho");
     expect(active).toMatch(/tudo do essencial/);
     expect(active).toMatch(/frequente/);
-    expect(active).not.toMatch(/jornadas de leitura/);
-    expect(plan.upcomingBenefits?.some((b) => /jornadas/i.test(b))).toBe(true);
+    expect(active).toMatch(/jornadas de leitura/);
+    expect(
+      plan.upcomingBenefits?.some((b) => /jornadas/i.test(b)) ?? false,
+    ).toBe(false);
   });
 
   it("Profundo communicates Aprofundar without false active extras", () => {

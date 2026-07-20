@@ -22,6 +22,10 @@ export {
   DEEP_RESPONSE_NOT_ENTITLED_MESSAGE,
 } from "./deep-response";
 export {
+  canUseReadingJourneys,
+  READING_JOURNEYS_NOT_ENTITLED_MESSAGE,
+} from "./reading-journeys";
+export {
   ACTIVE_ENTITLEMENT_KEYS,
   DEEPEN_FEATURE_DISCLAIMERS,
   DEEPEN_FEATURE_SUMMARY,

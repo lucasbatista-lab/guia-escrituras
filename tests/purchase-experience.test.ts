@@ -95,7 +95,9 @@ describe("purchase experience — honest plan cards", () => {
       const active = (plan.displayBenefits ?? []).join(" ").toLowerCase();
       expect(active).not.toMatch(/whatsapp/);
       expect(active).not.toMatch(/respostas em áudio|respostas em audio/);
-      expect(active).not.toMatch(/jornadas de leitura/);
+      if (plan.key !== "caminho") {
+        expect(active).not.toMatch(/jornadas de leitura/);
+      }
       expect(active).not.toMatch(/múltiplas perspectivas|multiplas perspectivas/);
       expect(active).not.toMatch(/conversas profundas/);
       expect(active).not.toMatch(/suporte prioritário|suporte prioritario/);

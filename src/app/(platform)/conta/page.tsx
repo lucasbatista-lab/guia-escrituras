@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { brand } from "@/config/brand";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
-import { getPlanByKey, canUseDeepResponseOnDemand } from "@/lib/entitlements";
+import { getPlanByKey, canUseDeepResponseOnDemand, canUseReadingJourneys } from "@/lib/entitlements";
+import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
 import {
   preferredDepthLabelPt,
   responseStyleLabelPt,
@@ -87,6 +88,20 @@ export default async function ContaPage() {
 
   const personalizationDone = auth.spiritualProfile.onboardingCompleted;
   const hasDeepOnDemand = canUseDeepResponseOnDemand(auth.planKey);
+  const hasJourneys = canUseReadingJourneys(auth.planKey);
+  const journeyProgressMap = hasJourneys
+    ? await loadJourneyProgressMap(auth.userId)
+    : null;
+  const journeyItems = journeyProgressMap
+    ? buildCatalogItems(journeyProgressMap)
+    : [];
+  const journeysStarted = journeyItems.filter((i) => i.progress?.isStarted).length;
+  const journeysCompleted = journeyItems.filter((i) => i.progress?.isCompleted)
+    .length;
+  const journeyStepsDone = journeyItems.reduce(
+    (sum, i) => sum + (i.progress?.completedStepIds.length ?? 0),
+    0,
+  );
 
   return (
     <div className="space-y-8">
@@ -159,6 +174,47 @@ export default async function ContaPage() {
         <Button asChild variant="outline" className="mt-5 min-h-11">
           <Link href="/personalizar">Alterar preferências</Link>
         </Button>
+      </PlatformSection>
+
+      <PlatformSection
+        title="Jornadas de leitura"
+        description={
+          hasJourneys
+            ? "Trilhas editoriais incluídas no seu plano — progresso salvo na sua conta."
+            : "Trilhas guiadas sobre temas reais da vida — disponíveis no Caminho e planos superiores."
+        }
+      >
+        {hasJourneys ? (
+          <>
+            <dl className="grid gap-4 text-sm sm:grid-cols-3">
+              <div>
+                <dt className="text-ink-soft">Iniciadas</dt>
+                <dd className="mt-0.5 text-base text-ink">{journeysStarted}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-soft">Concluídas</dt>
+                <dd className="mt-0.5 text-base text-ink">{journeysCompleted}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-soft">Etapas concluídas</dt>
+                <dd className="mt-0.5 text-base text-ink">{journeyStepsDone}</dd>
+              </div>
+            </dl>
+            <Button asChild variant="outline" className="mt-5 min-h-11">
+              <Link href="/jornadas">Abrir jornadas</Link>
+            </Button>
+          </>
+        ) : (
+          <p className="text-sm text-ink-soft">
+            <Link
+              href="/planos#comparar-uso"
+              className="text-ink underline underline-offset-4"
+            >
+              Comparar planos
+            </Link>{" "}
+            para ver como incluir Jornadas no seu acesso.
+          </p>
+        )}
       </PlatformSection>
 
       <PlatformSection title="Assinatura">

@@ -31,7 +31,6 @@ function read(...parts: string[]) {
 }
 
 const FORBIDDEN_ACTIVE = [
-  /jornadas de leitura/i,
   /respostas em áudio|respostas em audio/i,
   /whatsapp/i,
   /suporte prioritário|suporte prioritario/i,
@@ -88,6 +87,9 @@ describe("plan differentiation — catalog", () => {
       const active = (plan.displayBenefits ?? []).join(" ");
       for (const pattern of FORBIDDEN_ACTIVE) {
         expect(active, plan.key).not.toMatch(pattern);
+      }
+      if (plan.key === "essencial") {
+        expect(active).not.toMatch(/jornadas de leitura/i);
       }
       if (plan.upcomingBenefits) {
         for (const upcoming of plan.upcomingBenefits) {
@@ -291,7 +293,7 @@ describe("plan differentiation — conversion events", () => {
 
 describe("plan differentiation — roadmap separation", () => {
   it("lists roadmap items separately from purchasable benefits", () => {
-    expect(PLAN_ROADMAP_ITEMS.some((i) => /jornadas/i.test(i))).toBe(true);
+    expect(PLAN_ROADMAP_ITEMS.some((i) => /jornadas/i.test(i))).toBe(false);
     expect(PLAN_ROADMAP_ITEMS.some((i) => /áudio|audio/i.test(i))).toBe(true);
   });
 });

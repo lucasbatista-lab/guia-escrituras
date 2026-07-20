@@ -117,6 +117,17 @@ export interface UserDataExportUsageSummary {
   }>;
 }
 
+export interface UserDataExportJourneyProgress {
+  journeySlug: string;
+  version: number;
+  completedStepIds: string[];
+  currentStepId: string | null;
+  startedAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  status: "not_started" | "in_progress" | "completed";
+}
+
 export interface UserDataExportReferral {
   ownCode: string | null;
   attributionAsReferred: {
@@ -143,6 +154,7 @@ export interface UserDataExportDocument {
   subscription: UserDataExportSubscription | null;
   conversations: UserDataExportConversation[];
   usageSummary: UserDataExportUsageSummary;
+  journeyProgress: UserDataExportJourneyProgress[];
   referrals: UserDataExportReferral;
   notes: string[];
 }

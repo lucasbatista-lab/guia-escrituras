@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  ACTIVE_ENTITLEMENT_KEYS,
+  RESERVED_ENTITLEMENT_KEYS,
+} from "@/lib/entitlements/reserved";
+import {
   createJourneyProgressService,
   mapJourneyProgressListForExport,
   MemoryJourneyProgressRepository,
@@ -31,13 +35,6 @@ const TOTAL = [
   "step-6",
   "step-7",
 ];
-
-function ACTIVE_SET_SNIPPET(source: string): string {
-  const match = source.match(
-    /export const ACTIVE_ENTITLEMENT_KEYS = new Set<EntitlementKey>\(\[([\s\S]*?)\]\)/,
-  );
-  return match?.[1] ?? "";
-}
 
 describe("journey progress migration 008", () => {
   const sql = readFileSync(migrationPath, "utf8");
@@ -265,6 +262,7 @@ describe("journey progress export mapper (prepared, not live)", () => {
         startedAt: "2026-07-19T00:00:00.000Z",
         updatedAt: "2026-07-19T01:00:00.000Z",
         completedAt: null,
+        status: "in_progress",
       },
     ]);
     const json = JSON.stringify(mapped);
@@ -276,8 +274,8 @@ describe("journey progress export mapper (prepared, not live)", () => {
   });
 });
 
-describe("production isolation — foundation must not query the table live", () => {
-  it("export route and builder do not reference journey_progress", () => {
+describe("production export includes journey progress", () => {
+  it("wires journeyProgress into owner export", () => {
     const exportRoute = readFileSync(
       join(root, "src", "app", "api", "account", "export", "route.ts"),
       "utf8",
@@ -290,28 +288,20 @@ describe("production isolation — foundation must not query the table live", ()
       join(root, "src", "lib", "account", "export-types.ts"),
       "utf8",
     );
-    expect(exportRoute).not.toContain("journey_progress");
-    expect(exportBuilder).not.toContain("journey_progress");
-    expect(exportBuilder).not.toContain("getJourneyProgressRepository");
-    expect(exportTypes).not.toContain("journeyProgress");
+    expect(exportBuilder).toContain("getJourneyProgressRepository");
+    expect(exportTypes).toContain("journeyProgress");
+    expect(exportRoute).toContain("buildUserDataExport");
     expect(exportTypes).toContain("amem-chat-user-data-v1");
   });
 
-  it("does not activate reading_journeys or public journey routes", () => {
-    const reserved = readFileSync(
-      join(root, "src", "lib", "entitlements", "reserved.ts"),
-      "utf8",
-    );
-    expect(reserved).toContain('"reading_journeys"');
-    expect(reserved).toContain("RESERVED_ENTITLEMENT_KEYS");
-    expect(ACTIVE_SET_SNIPPET(reserved)).not.toContain("reading_journeys");
-    expect(ACTIVE_SET_SNIPPET(reserved)).toContain("chat_standard");
-    expect(ACTIVE_SET_SNIPPET(reserved)).toContain("chat_deep");
+  it("activates reading_journeys and public journey routes", () => {
+    expect(ACTIVE_ENTITLEMENT_KEYS.has("reading_journeys")).toBe(true);
+    expect(RESERVED_ENTITLEMENT_KEYS.has("reading_journeys")).toBe(false);
 
     const jornadaPage = readFileSync(
       join(root, "src", "app", "(platform)", "jornada", "page.tsx"),
       "utf8",
     );
-    expect(jornadaPage).toContain("Em breve");
+    expect(jornadaPage).toContain('redirect("/jornadas")');
   });
 });

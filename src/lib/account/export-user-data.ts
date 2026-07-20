@@ -24,6 +24,10 @@ import { getLegalConsentRepository } from "@/lib/legal/consent";
 import { maskStripeId } from "@/lib/logging/mask";
 import { AppError } from "@/lib/safety";
 import { getSignupIntentRepository } from "@/lib/signup-intents/repository";
+import {
+  getJourneyProgressRepository,
+  mapJourneyProgressListForExport,
+} from "@/lib/journeys/progress";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -340,6 +344,15 @@ async function loadSubscription(
   };
 }
 
+async function loadJourneyProgressForExport(userId: string) {
+  try {
+    const rows = await getJourneyProgressRepository().list(userId);
+    return mapJourneyProgressListForExport(rows);
+  } catch {
+    return [];
+  }
+}
+
 async function loadReferrals(userId: string): Promise<UserDataExportReferral> {
   const empty: UserDataExportReferral = {
     ownCode: null,
@@ -441,6 +454,7 @@ export async function buildUserDataExport(
     subscription,
     conversations,
     usageSummary,
+    journeyProgress,
     referrals,
   ] = await Promise.all([
     loadProfileRow(userId),
@@ -450,6 +464,7 @@ export async function buildUserDataExport(
     loadSubscription(userId),
     loadConversationsForExport(userId, repos),
     loadUsageSummary(userId, repos, now),
+    loadJourneyProgressForExport(userId),
     loadReferrals(userId),
   ]);
 
@@ -489,6 +504,7 @@ export async function buildUserDataExport(
     subscription,
     conversations,
     usageSummary,
+    journeyProgress,
     referrals,
     notes: [...USER_DATA_EXPORT_NOTES],
   };

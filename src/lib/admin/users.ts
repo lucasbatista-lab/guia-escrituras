@@ -797,6 +797,12 @@ export interface AdminUserDetail {
   usageRequestsTotal: number;
   conversationCount: number;
   lastActivityAt: string | null;
+  journeyProgress: {
+    journeysStarted: number;
+    journeysCompleted: number;
+    stepsCompleted: number;
+    lastJourneyActivityAt: string | null;
+  };
   monthlyEstimatedCostNote: string;
   budgetLevel: "normal" | "elevated" | "near_limit" | "blocked" | null;
   utmSource: string | null;
@@ -849,6 +855,7 @@ export async function getAdminUserDetail(
     usage30,
     usageTotal,
     lastUsage,
+    journeyRows,
   ] = await Promise.all([
     lookupAuthUser(userId),
     client
@@ -906,6 +913,12 @@ export async function getAdminUserDetail(
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    client
+      .from("journey_progress")
+      .select(
+        "journey_slug, completed_step_ids, completed_at, updated_at, started_at",
+      )
+      .eq("user_id", userId),
   ]);
 
   const candidates = (subs.data ?? []).map((row) =>
@@ -1000,6 +1013,22 @@ export async function getAdminUserDetail(
   const latestIntent = intents.data?.[0];
   const effectiveSub = resolved?.subscription ?? null;
 
+  const journeys = journeyRows.data ?? [];
+  const journeysStarted = journeys.filter(
+    (j) => j.started_at || (j.completed_step_ids as string[] | null)?.length,
+  ).length;
+  const journeysCompleted = journeys.filter((j) => j.completed_at).length;
+  const stepsCompleted = journeys.reduce(
+    (sum, j) => sum + ((j.completed_step_ids as string[] | null)?.length ?? 0),
+    0,
+  );
+  const lastJourneyActivityAt =
+    journeys
+      .map((j) => j.updated_at as string | null)
+      .filter(Boolean)
+      .sort()
+      .at(-1) ?? null;
+
   return {
     userId,
     userIdMask: maskUserId(userId),
@@ -1029,6 +1058,12 @@ export async function getAdminUserDetail(
     usageRequestsTotal: usageTotal.count ?? 0,
     conversationCount: conversationsCount.count ?? 0,
     lastActivityAt: (lastUsage.data?.created_at as string | null) ?? null,
+    journeyProgress: {
+      journeysStarted,
+      journeysCompleted,
+      stepsCompleted,
+      lastJourneyActivityAt,
+    },
     monthlyEstimatedCostNote:
       "Valores de uso mensal são franquia/estimativa interna — não fatura OpenAI nem receita Stripe.",
     budgetLevel,

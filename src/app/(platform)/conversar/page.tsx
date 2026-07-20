@@ -14,6 +14,8 @@ import {
   resolveUserJourneyState,
 } from "@/lib/journey";
 import { sanitizeThemeDraft } from "@/lib/journey/theme-shortcuts";
+import { buildJourneyStepChatPrefill } from "@/lib/journeys/chat-prefill";
+import { logJourneyOperationalEvent } from "@/lib/journeys/events";
 
 export default async function ConversarPage({
   searchParams,
@@ -35,7 +37,23 @@ export default async function ConversarPage({
   const conversationParam = Array.isArray(raw) ? raw[0] : raw;
   const temaRaw = params.tema;
   const temaParam = Array.isArray(temaRaw) ? temaRaw[0] : temaRaw;
-  const initialDraft = sanitizeThemeDraft(temaParam);
+  const jornadaRaw = params.jornada;
+  const etapaRaw = params.etapa;
+  const jornadaParam = Array.isArray(jornadaRaw) ? jornadaRaw[0] : jornadaRaw;
+  const etapaParam = Array.isArray(etapaRaw) ? etapaRaw[0] : etapaRaw;
+  const journeyPrefill = buildJourneyStepChatPrefill(jornadaParam, etapaParam);
+  const initialDraft = journeyPrefill ?? sanitizeThemeDraft(temaParam);
+
+  if (journeyPrefill && jornadaParam && etapaParam) {
+    logJourneyOperationalEvent({
+      event: "journey_chat_prefill_opened",
+      userId: auth.userId,
+      planKey: auth.planKey,
+      journeySlug: jornadaParam.trim(),
+      stepId: etapaParam.trim(),
+      origin: "conversar_page",
+    });
+  }
 
   const traditionLabel = traditionLabelPt(
     auth.spiritualProfile.traditionKey,

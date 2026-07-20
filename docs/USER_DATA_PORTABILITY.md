@@ -31,7 +31,7 @@ Headers:
 
 `exportVersion`: `amem-chat-user-data-v1`
 
-Top-level keys: `generatedAt`, `account`, `spiritualProfile`, `legalConsents`, `acquisition`, `subscription`, `conversations`, `usageSummary`, `referrals`, `notes`.
+Top-level keys: `generatedAt`, `account`, `spiritualProfile`, `legalConsents`, `acquisition`, `subscription`, `conversations`, `usageSummary`, `journeyProgress`, `referrals`, `notes`.
 
 Dates are ISO 8601. Monetary values use explicit cent fields (e.g. `priceMonthlyCents`, `estimatedCostBrlCents`). Missing optionals are `null`; empty collections are `[]`.
 
@@ -46,6 +46,7 @@ Dates are ISO 8601. Monetary values use explicit cent fields (e.g. `priceMonthly
 | Subscription | local `subscriptions` + plan catalog labels; provider ids **masked** |
 | Conversations / messages | own rows only; roles `user`/`assistant`; chronological |
 | Usage summary | totals, last 30 days, monthly rows; cost fields labeled as estimates |
+| Journey progress | `journey_progress` — slug, version, completed step ids, current step, timestamps, computed status; **no** personal reflection text |
 | Referrals | own code; attribution as referred; referrer reward statuses (no third-party emails) |
 
 ## Excluded
@@ -90,10 +91,7 @@ Manual (local, no external services): sign in with demo/mocks if enabled, open `
 - Estimated costs are operational estimates, not invoices.
 - Very large histories may hit the page cap and require support-assisted export.
 - This is **not** account deletion.
-- Journey progress (`journey_progress`) has a prepared export mapper in
-  `src/lib/journeys/progress/export-mapper.ts` but is **not** included in
-  `amem-chat-user-data-v1` until the migration is applied and export is
-  intentionally wired (`docs/READING_JOURNEYS_PERSISTENCE.md`).
+- Journey progress exports step ids and timestamps only — never stored answers to personal questions.
 
 ## Export vs delete
 

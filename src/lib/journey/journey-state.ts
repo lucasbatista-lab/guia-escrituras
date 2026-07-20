@@ -180,6 +180,7 @@ export function getPlatformNavItemsForState(
       return [
         ...base,
         { href: "/conversar", label: "Conversar" },
+        { href: "/jornadas", label: "Jornadas" },
         { href: "/conversas", label: "Conversas" },
         { href: "/conta", label: "Conta" },
       ];

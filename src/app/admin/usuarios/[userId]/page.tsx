@@ -116,6 +116,28 @@ export default async function AdminUsuarioDetailPage({
         <Item label="Requests (total)" value={String(detail.usageRequestsTotal)} />
         <Item label="Conversas" value={String(detail.conversationCount)} />
         <Item
+          label="Jornadas iniciadas"
+          value={String(detail.journeyProgress.journeysStarted)}
+        />
+        <Item
+          label="Jornadas concluídas"
+          value={String(detail.journeyProgress.journeysCompleted)}
+        />
+        <Item
+          label="Etapas de jornada"
+          value={String(detail.journeyProgress.stepsCompleted)}
+        />
+        <Item
+          label="Última atividade (jornadas)"
+          value={
+            detail.journeyProgress.lastJourneyActivityAt
+              ? new Date(
+                  detail.journeyProgress.lastJourneyActivityAt,
+                ).toLocaleString("pt-BR")
+              : "—"
+          }
+        />
+        <Item
           label="Última atividade"
           value={
             detail.lastActivityAt

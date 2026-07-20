@@ -7,6 +7,7 @@ import type { EntitlementKey } from "./types";
 export const ACTIVE_ENTITLEMENT_KEYS = new Set<EntitlementKey>([
   "chat_standard",
   "chat_deep",
+  "reading_journeys",
 ]);
 
 /**
@@ -18,7 +19,6 @@ export const RESERVED_ENTITLEMENT_KEYS = new Set<EntitlementKey>([
   "short_memory",
   "extended_memory",
   "multiple_personas",
-  "reading_journeys",
   "voice_responses",
   "priority_support",
   "human_concierge",
@@ -80,7 +80,6 @@ export const SHARED_PLAN_INCLUDES = [
 
 /** Roadmap items — never mixed into purchasable benefits on cards. */
 export const PLAN_ROADMAP_ITEMS = [
-  "Jornadas de leitura guiadas",
   "Perspectivas bíblicas adicionais",
   "Memória ampliada entre sessões",
   "Recursos em áudio",

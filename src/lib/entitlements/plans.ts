@@ -42,10 +42,9 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "Tudo do Essencial",
       "Flexibilidade para uso frequente ao longo da semana",
       "Mais espaço para conversas recorrentes ao longo do mês",
-      "Continuidade para acompanhar situações em andamento",
+      "Jornadas de leitura guiadas sobre temas reais da vida",
       "Uso flexível dentro da política de uso justo",
     ],
-    upcomingBenefits: ["Jornadas de leitura guiadas"],
   },
   {
     key: "profundo",

@@ -1,24 +1,14 @@
 import type { JourneyProgressRecord } from "./types";
-
-/**
- * Prepared export shape for a future USER_DATA_EXPORT_VERSION bump.
- * Not attached to the live export document in Persistence Foundation V1 —
- * production must not query journey_progress until the migration is applied
- * and the feature/export wiring is intentionally enabled.
- */
-export interface UserDataExportJourneyProgressPrepared {
-  journeySlug: string;
-  version: number;
-  completedStepIds: string[];
-  currentStepId: string | null;
-  startedAt: string;
-  updatedAt: string;
-  completedAt: string | null;
-}
+import type { UserDataExportJourneyProgress } from "@/lib/account/export-types";
 
 export function mapJourneyProgressForExport(
   row: JourneyProgressRecord,
-): UserDataExportJourneyProgressPrepared {
+): UserDataExportJourneyProgress {
+  const status = row.completedAt
+    ? "completed"
+    : row.completedStepIds.length > 0 || row.currentStepId
+      ? "in_progress"
+      : "not_started";
   return {
     journeySlug: row.journeySlug,
     version: row.version,
@@ -27,12 +17,13 @@ export function mapJourneyProgressForExport(
     startedAt: row.startedAt,
     updatedAt: row.updatedAt,
     completedAt: row.completedAt,
+    status,
   };
 }
 
 export function mapJourneyProgressListForExport(
   rows: JourneyProgressRecord[],
-): UserDataExportJourneyProgressPrepared[] {
+): UserDataExportJourneyProgress[] {
   return rows
     .slice()
     .sort((a, b) => a.journeySlug.localeCompare(b.journeySlug))

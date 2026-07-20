@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "launch:check": "node scripts/launch-check.cjs",
     "eval:theology": "node scripts/run-theology-eval.cjs",
-    "eval:theology:ci": "node scripts/run-theology-eval.cjs --ci"
+    "eval:theology:ci": "node scripts/run-theology-eval.cjs --ci",
+    "eval:theology:journeys": "node scripts/run-theology-journeys-eval.cjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",

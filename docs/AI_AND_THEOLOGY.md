@@ -40,7 +40,10 @@ Ver **`docs/THEOLOGY_EVALUATIONS.md`**.
 
 ```bash
 pnpm eval:theology
+pnpm eval:theology:journeys
 pnpm eval:theology:ci
 ```
+
+`eval:theology:journeys` validates the 21 editorial journey steps offline (registry only, no OpenAI). See `docs/READING_JOURNEYS.md`.
 
 Os avaliadores do harness **não** estão conectados a `/api/chat`. Servem para regressão editorial e planejamento de endurecimento futuro.

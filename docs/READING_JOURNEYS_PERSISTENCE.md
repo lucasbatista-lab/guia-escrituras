@@ -1,7 +1,8 @@
-# Reading Journeys — Persistence Foundation V1
+# Reading Journeys — Persistence (V1)
 
-Foundation only: schema, RLS, atomic RPCs, domain repository/service, export mapper.
-**Does not** activate `reading_journeys`, public copy, navigation, `/api/journeys`, or live export queries.
+Schema, RLS, atomic RPCs, domain repository/service, export mapper, and **live feature wiring** (routes, entitlement, export).
+
+See also `docs/READING_JOURNEYS.md` for editorial catalog and UX.
 
 ## Decision: dedicated table vs `preferences` JSONB
 
@@ -65,7 +66,7 @@ await service.completeStep({
 });
 ```
 
-## Application code (not wired to production)
+## Application code (wired in Reading Journeys MVP V1)
 
 | Module | Role |
 |--------|------|
@@ -73,13 +74,16 @@ await service.completeStep({
 | `memory-repository.ts` | Test double with atomic merge semantics |
 | `repository.ts` | Supabase + RPC (`server-only`) |
 | `service.ts` | Structural validation / orchestration |
-| `export-mapper.ts` | Pure mapper for a future export version |
+| `export-mapper.ts` | Pure mapper for `amem-chat-user-data-v1` |
+| `src/lib/journeys/registry.ts` + `journeys/*` | Editorial catalog (3×7 steps) |
+| `src/app/api/journeys/progress/*` | Authenticated progress APIs |
+| `src/app/(platform)/jornadas/*` | Catalog, journey, step pages |
 
-**Guarantees for auto-deploy on `main`:** no route, page, export builder, entitlement, or nav imports these repositories in a way that queries the table. Live `GET /api/account/export` is unchanged (`amem-chat-user-data-v1`).
+`GET /api/account/export` includes `journeyProgress` (additive field on `amem-chat-user-data-v1`).
 
-## Portability (prepared, not live)
+## Portability (live)
 
-`mapJourneyProgressListForExport` produces:
+`mapJourneyProgressListForExport` produces per journey:
 
 ```ts
 {
@@ -88,18 +92,18 @@ await service.completeStep({
 }
 ```
 
-Wire into `buildUserDataExport` only **after** migration apply + intentional export version bump. Empty list when no rows.
+Wire into `buildUserDataExport` via `loadJourneyProgressForExport`. Empty list when no rows. No personal reflection text.
 
-## Admin (future)
+## Admin
 
-Without personal content, admin can count:
+Without personal content, admin user detail shows:
 
 - journeys started (`started_at`)
 - steps completed (`cardinality(completed_step_ids)`)
 - journeys completed (`completed_at is not null`)
 - last journey activity (`max(updated_at)`)
 
-Not implemented in this block.
+Implemented in `src/lib/admin/users.ts` + admin user detail page. No admin edit/reset of progress.
 
 ## Privacy
 
@@ -111,10 +115,10 @@ Never: reflections, chat drafts, prompts, clinical notes, payment data, secrets.
 1. Review `supabase/migrations/20260712000008_journey_progress.sql`
 2. Apply in Supabase (SQL Editor paste **or** `pnpm exec supabase db push --linked` after review)
 3. Run postcheck (read-only): `supabase/postchecks/20260712000008_journey_progress_postcheck.sql`
-4. Confirm all postcheck booleans true / empty table
-5. Only then implement/publish Reading Journeys MVP (entitlement + UI + export wiring)
+4. Confirm postcheck booleans true / empty table (see note below on SQL Editor result sets)
+5. Ship Reading Journeys MVP (entitlement + UI + export) — **done on `main`**
 
-**This foundation commit must not apply the migration remotely.**
+**Postcheck note:** the file runs multiple read-only `SELECT`s. Supabase SQL Editor may show only the **last** result set (e.g. `[{"initially_empty": true}]`). Earlier checks still ran; for assertion-style failure use manual review or run statements individually.
 
 ## Emergency rollback (do not run unless required)
 
@@ -132,10 +136,10 @@ commit;
 
 ## Safe deploy sequence
 
-1. Ship foundation code (this block) — runtime does not query table  
+1. Ship foundation code — migration + RPCs  
 2. Apply migration + postcheck in Supabase  
 3. Ship Reading Journeys feature (registry, entitlement, routes, export)  
-4. Activate commercial copy only when feature is complete  
+4. Commercial copy reflects active Jornadas on Caminho/Profundo/Particular  
 
 ## Tests
 

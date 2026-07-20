@@ -8,6 +8,7 @@ Short reference for plan differentiation and ethical upsells (V1).
 |-----|--------|
 | `chat_standard` | Chat turn allowed |
 | `chat_deep` | `preferDeep` / Aprofundar on demand (Profundo, Particular when provisioned) |
+| `reading_journeys` | Guided reading journeys (`/jornadas`) — Caminho, Profundo, Particular |
 
 Defined in `src/lib/entitlements/reserved.ts` → `ACTIVE_ENTITLEMENT_KEYS`.
 
@@ -15,13 +16,14 @@ Defined in `src/lib/entitlements/reserved.ts` → `ACTIVE_ENTITLEMENT_KEYS`.
 
 Not enforced in product code today — must not appear as purchasable benefits:
 
-`chat_frequent`, `short_memory`, `extended_memory`, `multiple_personas`, `reading_journeys`, `voice_responses`, `priority_support`, `human_concierge`, `custom_content`, `whatsapp_access`, `fair_use_extended`.
+`chat_frequent`, `short_memory`, `extended_memory`, `multiple_personas`, `voice_responses`, `priority_support`, `human_concierge`, `custom_content`, `whatsapp_access`, `fair_use_extended`.
 
 ## What actually differentiates plans (no price/budget changes in upsell V1)
 
 1. **Stripe price** (Essencial R$38, Caminho R$58, Profundo R$188)
 2. **Internal usage budgets** (not shown publicly) — monthly fair-use + daily burst
 3. **Aprofundar** — Profundo (+ Particular when provisioned)
+4. **Jornadas de leitura guiadas** — Caminho, Profundo, Particular (`reading_journeys`)
 
 ## Public surfaces
 

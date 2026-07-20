@@ -21,5 +21,4 @@ export {
 export {
   mapJourneyProgressForExport,
   mapJourneyProgressListForExport,
-  type UserDataExportJourneyProgressPrepared,
 } from "./export-mapper";

@@ -8,6 +8,7 @@ export const PRIVATE_PLATFORM_PREFIXES = [
   "/conversar",
   "/conversas",
   "/jornada",
+  "/jornadas",
   "/conta",
   "/onboarding",
   "/personalizar",

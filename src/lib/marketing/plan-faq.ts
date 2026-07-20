@@ -29,4 +29,28 @@ export const PLAN_COMMERCIAL_FAQ = [
     q: "O Amém Chat fala literalmente em nome de Jesus?",
     a: "Não. O Amém Chat oferece reflexão cristã baseada nas Escrituras, com transparência sobre o uso de IA. Não afirma ser Jesus, não substitui igreja, aconselhamento profissional ou emergência.",
   },
+  {
+    q: "O que são as Jornadas de leitura?",
+    a: "São trilhas editoriais de sete etapas sobre temas reais — ansiedade, perdão, recomeço e outros. Cada etapa traz paráfrase bíblica, reflexão e uma ação prática. Não substituem terapia nem aconselhamento profissional.",
+  },
+  {
+    q: "Preciso completar uma etapa por dia?",
+    a: "Não. Você avança no seu ritmo. Não há sequência diária obrigatória nem penalidade por pausar.",
+  },
+  {
+    q: "As Jornadas substituem terapia ou aconselhamento?",
+    a: "Não. São material de reflexão espiritual. Se você precisa de apoio clínico, jurídico ou de emergência, procure ajuda humana qualificada.",
+  },
+  {
+    q: "Posso conversar sobre uma etapa no chat?",
+    a: "Sim. Em cada etapa há um atalho que preenche o campo de mensagem com um texto sugerido — você pode editar antes de enviar.",
+  },
+  {
+    q: "O progresso fica salvo?",
+    a: "Sim, para assinantes com acesso às Jornadas. Etapas concluídas e o ponto atual ficam na sua conta e podem ser exportados em Baixar meus dados.",
+  },
+  {
+    q: "Quais planos incluem Jornadas?",
+    a: "Caminho, Profundo e Particular. O Essencial mantém o chat completo; as Jornadas fazem parte dos planos com uso mais frequente.",
+  },
 ] as const;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { JourneysInicioCard } from "@/components/journeys/journeys-inicio-card";
 import { PrimaryActionCard } from "@/components/platform/primary-action-card";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
@@ -257,6 +258,8 @@ export default async function InicioPage() {
 
         <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
 
+        <JourneysInicioCard userId={auth.userId} planKey={auth.planKey} />
+
         <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
           <Button asChild variant="outline" className="min-h-11">
             <Link href="/conta">Ver assinatura</Link>
@@ -336,6 +339,8 @@ export default async function InicioPage() {
       />
 
       <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
+
+      <JourneysInicioCard userId={auth.userId} planKey={auth.planKey} />
 
       <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
         <Button asChild variant="outline" className="min-h-11">

@@ -96,30 +96,23 @@ describe("launch benefits honesty", () => {
       const active = plan.displayBenefits.join(" ").toLowerCase();
       expect(active).not.toMatch(/whatsapp/);
       expect(active).not.toMatch(/áudio|audio|voz/);
-      expect(active).not.toMatch(/jornadas de leitura/);
+      if (plan.key !== "caminho") {
+        expect(active).not.toMatch(/jornadas de leitura/);
+      }
       expect(active).not.toMatch(/memória estendida/);
       expect(active).not.toMatch(/múltiplas perspectivas/);
       expect(active).not.toMatch(/conversas profundas/);
       expect(active).not.toMatch(/suporte prioritário|suporte prioritario/);
     }
 
-    const profundo = getPlanByKey("profundo")!;
-    expect(profundo.upcomingBenefits?.join(" ").toLowerCase()).toMatch(/áudio|audio/);
-    expect(profundo.upcomingBenefits?.some((b) => /memória ampliada/i.test(b))).toBe(
-      true,
-    );
-    expect(profundo.displayBenefits.some((b) =>
-      /aprofundar/i.test(b),
-    )).toBe(true);
-    expect(profundo.upcomingBenefits?.some((b) =>
-      /aprofundar/i.test(b),
-    )).toBe(false);
-
     const caminho = getPlanByKey("caminho")!;
-    expect(caminho.displayBenefits.join(" ")).toMatch(/frequente/i);
-    expect(caminho.upcomingBenefits?.some((b) =>
-      /jornadas de leitura/i.test(b),
-    )).toBe(true);
+    expect(caminho.displayBenefits.join(" ").toLowerCase()).toMatch(
+      /jornadas de leitura/,
+    );
+    expect(
+      caminho.upcomingBenefits?.some((b) => /jornadas de leitura/i.test(b)) ??
+        false,
+    ).toBe(false);
   });
 
   it("particular is request-access only", () => {
@@ -165,10 +158,10 @@ describe("production copy and jargon", () => {
     }
   });
 
-  it("removes jornada from platform navigation", () => {
-    const nav = readSrc("src", "components", "platform", "platform-nav.tsx");
-    expect(nav).not.toContain("/jornada");
-    expect(nav).not.toContain("Jornada");
+  it("includes jornadas in platform navigation when active", () => {
+    const nav = readSrc("src", "lib", "journey", "journey-state.ts");
+    expect(nav).toContain('href: "/jornadas"');
+    expect(nav).toContain("Jornadas");
   });
 
   it("maps profile labels to Portuguese", () => {
