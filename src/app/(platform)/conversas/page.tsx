@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/platform/empty-state";
+import { InlineNotice } from "@/components/platform/inline-notice";
 import { PlatformPageHeader } from "@/components/platform/page-header";
+import { RefreshPageButton } from "@/components/platform/refresh-page-button";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import {
@@ -32,6 +34,7 @@ export default async function ConversasPage() {
   }
 
   let rows: Array<{ id: string; title: string | null; updatedAt: string }> = [];
+  let loadError = false;
   try {
     const repos = getRepositories();
     const list = await repos.conversations.listForUser(auth.userId, LIST_LIMIT);
@@ -41,6 +44,7 @@ export default async function ConversasPage() {
       updatedAt: c.updatedAt,
     }));
   } catch {
+    loadError = true;
     rows = [];
   }
 
@@ -56,7 +60,26 @@ export default async function ConversasPage() {
         }
       />
 
-      {rows.length === 0 ? (
+      {loadError ? (
+        <div
+          className="space-y-4 rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-5 sm:px-5"
+          role="alert"
+        >
+          <InlineNotice tone="error">
+            Não foi possível carregar suas conversas agora. Tente novamente em
+            instantes.
+          </InlineNotice>
+          <div className="flex flex-wrap gap-2">
+            <RefreshPageButton />
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href="/conversar">Começar uma reflexão</Link>
+            </Button>
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href="/inicio">Ir para o início</Link>
+            </Button>
+          </div>
+        </div>
+      ) : rows.length === 0 ? (
         <EmptyState
           title="Nenhuma conversa ainda"
           description="Quando você iniciar uma conversa, ela ficará disponível aqui para ser retomada."
@@ -72,7 +95,7 @@ export default async function ConversasPage() {
                 <Link
                   href={`/conversar?c=${row.id}`}
                   className={cn(
-                    "block rounded-2xl border px-4 py-4 transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-5",
+                    "block min-h-11 rounded-2xl border px-4 py-4 transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-5",
                     isLatest
                       ? "border-wine/30 bg-wine/[0.04] hover:border-wine/40"
                       : "border-border/70 bg-card/70 hover:border-wine/25 hover:bg-card",

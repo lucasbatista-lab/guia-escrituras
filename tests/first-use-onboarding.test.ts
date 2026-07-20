@@ -185,7 +185,8 @@ describe("first-use onboarding — chat empty state and composer", () => {
     expect(panel).toContain("Conte o que você está vivendo");
     expect(panel).toContain("htmlFor=\"chat-input\"");
     expect(panel).toContain("disabled={loading || !input.trim()}");
-    expect(panel).toContain("Enter para enviar");
+    expect(panel).toContain("Enter envia");
+    expect(panel).toContain("Shift+Enter");
     expect(panel).toContain("prefers-reduced-motion");
   });
 

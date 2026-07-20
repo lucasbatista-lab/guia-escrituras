@@ -35,7 +35,11 @@ export default function ComoFuncionaPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <main
+        id="conteudo-principal"
+        tabIndex={-1}
+        className="mx-auto max-w-3xl px-4 py-12 outline-none sm:px-6"
+      >
         <h1 className="font-display text-4xl text-ink">Como funciona</h1>
         <p className="mt-4 text-ink-soft leading-relaxed">
           {brand.name} — {brand.description} A pergunta central — “

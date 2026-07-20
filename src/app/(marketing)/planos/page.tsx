@@ -26,7 +26,11 @@ export default async function PlanosPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <main
+        id="conteudo-principal"
+        tabIndex={-1}
+        className="mx-auto max-w-6xl px-4 py-12 outline-none sm:px-6"
+      >
         <h1 className="font-display text-4xl text-ink">Planos</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Assinatura mensal com renovação automática. Cada plano oferece o mesmo

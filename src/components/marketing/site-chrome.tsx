@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { brand } from "@/config/brand";
 import { LEGAL_ROUTES } from "@/config/legal";
 import { TrackingLink } from "@/components/marketing/tracking-link";
@@ -16,15 +16,24 @@ const links = [
 export function SiteHeader({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <header
       className={cn(
-        "mx-auto w-full max-w-6xl px-4 py-5 sm:px-6",
+        "mx-auto w-full max-w-6xl px-4 pb-5 pt-safe sm:px-6",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-4">
-        <TrackingLink href="/" className="group">
+      <div className="flex items-center justify-between gap-4 pt-5">
+        <TrackingLink href="/" className="group min-h-11 py-1">
           <span className="font-display text-xl tracking-tight text-ink sm:text-2xl">
             {brand.name}
           </span>
@@ -37,7 +46,7 @@ export function SiteHeader({ className }: { className?: string }) {
             <TrackingLink
               key={link.href}
               href={link.href}
-              className="text-sm text-ink-soft transition hover:text-ink"
+              className="inline-flex min-h-11 items-center text-sm text-ink-soft transition hover:text-ink"
             >
               {link.label}
             </TrackingLink>
@@ -46,13 +55,13 @@ export function SiteHeader({ className }: { className?: string }) {
         <div className="flex items-center gap-2 sm:gap-3">
           <TrackingLink
             href="/entrar"
-            className="hidden text-sm text-ink-soft transition hover:text-ink sm:inline"
+            className="hidden min-h-11 items-center text-sm text-ink-soft transition hover:text-ink sm:inline-flex"
           >
             Entrar
           </TrackingLink>
           <TrackingLink
             href="/cadastro"
-            className="rounded-md bg-ink px-3.5 py-2 text-sm font-medium text-sand-50 transition hover:bg-ink/90"
+            className="inline-flex min-h-11 items-center rounded-md bg-ink px-3.5 py-2 text-sm font-medium text-sand-50 transition hover:bg-ink/90"
           >
             Criar conta
           </TrackingLink>
@@ -64,7 +73,6 @@ export function SiteHeader({ className }: { className?: string }) {
             aria-label={open ? "Fechar menu" : "Abrir menu"}
             onClick={() => setOpen((v) => !v)}
           >
-            <span className="sr-only">Menu</span>
             <span aria-hidden className="flex flex-col gap-1.5">
               <span className="block h-0.5 w-4 bg-ink" />
               <span className="block h-0.5 w-4 bg-ink" />
@@ -76,14 +84,14 @@ export function SiteHeader({ className }: { className?: string }) {
       {open ? (
         <nav
           id="marketing-mobile-nav"
-          className="mt-4 flex flex-col gap-3 border-t border-border/60 pt-4 md:hidden"
+          className="mt-4 flex flex-col border-t border-border/60 pt-2 md:hidden"
           aria-label="Menu mobile"
         >
           {links.map((link) => (
             <TrackingLink
               key={link.href}
               href={link.href}
-              className="text-sm text-ink"
+              className="flex min-h-11 items-center text-sm text-ink"
               onClick={() => setOpen(false)}
             >
               {link.label}
@@ -91,7 +99,7 @@ export function SiteHeader({ className }: { className?: string }) {
           ))}
           <TrackingLink
             href="/entrar"
-            className="text-sm text-ink-soft"
+            className="flex min-h-11 items-center text-sm text-ink-soft"
             onClick={() => setOpen(false)}
           >
             Entrar

@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3, Source_Serif_4 } from "next/font/google";
+import { SkipToContent } from "@/components/a11y/skip-to-content";
 import { brand } from "@/config/brand";
 import {
   rootRobotsMetadata,
@@ -53,6 +54,12 @@ export const metadata: Metadata = {
   robots: rootRobotsMetadata(),
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -63,6 +70,7 @@ export default function RootLayout({
       <body
         className={`${display.variable} ${sans.variable} ${chat.variable} font-sans`}
       >
+        <SkipToContent />
         {children}
       </body>
     </html>

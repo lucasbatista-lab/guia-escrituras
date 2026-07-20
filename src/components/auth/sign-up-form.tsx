@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,10 @@ export function SignUpForm({
   const [error, setError] = useState<string | null>(null);
   const [requestIdHint, setRequestIdHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const termsRef = useRef<HTMLButtonElement>(null);
+  const formErrorRef = useRef<HTMLParagraphElement>(null);
 
   const termsVersion = getTermsVersion();
   const privacyVersion = getPrivacyVersion();
@@ -52,6 +56,20 @@ export function SignUpForm({
     setCapsLockOn(event.getModifierState?.("CapsLock") ?? false);
   }
 
+  function focusFirstError(next: {
+    email?: string;
+    password?: string;
+    terms?: string;
+    form?: boolean;
+  }) {
+    queueMicrotask(() => {
+      if (next.email) emailRef.current?.focus();
+      else if (next.password) passwordRef.current?.focus();
+      else if (next.terms) termsRef.current?.focus();
+      else if (next.form) formErrorRef.current?.focus();
+    });
+  }
+
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
@@ -59,17 +77,22 @@ export function SignUpForm({
     setFieldError({});
 
     if (!termsAccepted) {
-      setFieldError({
-        terms: "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
-      });
+      const next = {
+        terms:
+          "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
+      };
+      setFieldError(next);
+      focusFirstError(next);
       return;
     }
 
     if (!checks.minLength || !checks.hasLetter || !checks.hasNumber) {
-      setFieldError({
+      const next = {
         password:
           "Use pelo menos 8 caracteres, incluindo letras e números.",
-      });
+      };
+      setFieldError(next);
+      focusFirstError(next);
       return;
     }
 
@@ -80,6 +103,7 @@ export function SignUpForm({
         setError(
           "Cadastro indisponível: configure o Supabase neste ambiente.",
         );
+        focusFirstError({ form: true });
         return;
       }
 
@@ -95,12 +119,16 @@ export function SignUpForm({
       if (!result.ok) {
         if (result.code === "email_invalid") {
           setFieldError({ email: result.message });
+          focusFirstError({ email: result.message });
         } else if (result.code === "password_weak") {
           setFieldError({ password: result.message });
+          focusFirstError({ password: result.message });
         } else if (result.code === "terms_required") {
           setFieldError({ terms: result.message });
+          focusFirstError({ terms: result.message });
         } else {
           setError(result.message);
+          focusFirstError({ form: true });
         }
         if (result.code === "unexpected" || result.code === "email_service_unavailable") {
           setRequestIdHint(result.requestId.slice(0, 8));
@@ -121,6 +149,7 @@ export function SignUpForm({
       setError(
         "Não foi possível criar a conta agora. Tente novamente em instantes.",
       );
+      focusFirstError({ form: true });
     } finally {
       setLoading(false);
     }
@@ -149,18 +178,21 @@ export function SignUpForm({
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
         <Input
+          ref={emailRef}
           id="email"
           name="email"
           type="email"
+          inputMode="email"
           autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
           aria-invalid={Boolean(fieldError.email)}
+          aria-describedby={fieldError.email ? "email-error" : undefined}
         />
         {fieldError.email ? (
-          <p className="text-sm text-destructive" role="alert">
+          <p id="email-error" className="text-sm text-destructive" role="alert">
             {fieldError.email}
           </p>
         ) : null}
@@ -169,6 +201,7 @@ export function SignUpForm({
         <Label htmlFor="password">Senha</Label>
         <div className="flex gap-2">
           <Input
+            ref={passwordRef}
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
@@ -181,11 +214,17 @@ export function SignUpForm({
             onKeyUp={onPasswordKey}
             disabled={loading}
             aria-invalid={Boolean(fieldError.password)}
+            aria-describedby={
+              fieldError.password
+                ? "password-error password-rules"
+                : "password-rules"
+            }
             className="flex-1"
           />
           <Button
             type="button"
             variant="outline"
+            className="min-h-11"
             onClick={() => setShowPassword((v) => !v)}
             aria-pressed={showPassword}
             disabled={loading}
@@ -193,7 +232,11 @@ export function SignUpForm({
             {showPassword ? "Ocultar" : "Mostrar"}
           </Button>
         </div>
-        <ul className="space-y-1 text-xs text-ink-soft" aria-live="polite">
+        <ul
+          id="password-rules"
+          className="space-y-1 text-xs text-ink-soft"
+          aria-live="polite"
+        >
           <li className={checks.minLength ? "text-ink" : undefined}>
             {checks.minLength ? "✓" : "○"} Pelo menos 8 caracteres
           </li>
@@ -210,20 +253,27 @@ export function SignUpForm({
           </p>
         ) : null}
         {fieldError.password ? (
-          <p className="text-sm text-destructive" role="alert">
+          <p
+            id="password-error"
+            className="text-sm text-destructive"
+            role="alert"
+          >
             {fieldError.password}
           </p>
         ) : null}
       </div>
 
-      <div className="flex items-start gap-3 rounded-md border border-border/70 px-3 py-3">
+      <div className="flex min-h-11 items-start gap-3 rounded-md border border-border/70 px-3 py-3">
         <Checkbox
+          ref={termsRef}
           id="terms"
           checked={termsAccepted}
           onCheckedChange={(checked) => setTermsAccepted(checked === true)}
           aria-required
           aria-invalid={Boolean(fieldError.terms)}
+          aria-describedby={fieldError.terms ? "terms-error" : undefined}
           disabled={loading}
+          className="mt-0.5 h-5 w-5"
         />
         <Label htmlFor="terms" className="text-sm leading-relaxed text-ink-soft">
           Li e aceito os{" "}
@@ -257,7 +307,12 @@ export function SignUpForm({
       ) : null}
 
       {error && (
-        <p className="text-sm text-destructive" role="alert">
+        <p
+          ref={formErrorRef}
+          tabIndex={-1}
+          className="text-sm text-destructive outline-none"
+          role="alert"
+        >
           {error}
           {requestIdHint ? (
             <span className="mt-1 block text-xs text-ink-soft">
@@ -269,8 +324,9 @@ export function SignUpForm({
 
       <Button
         type="submit"
-        className="w-full bg-ink hover:bg-ink/90"
+        className="min-h-11 w-full bg-ink hover:bg-ink/90"
         disabled={loading || !hasSupabaseEnv()}
+        aria-busy={loading}
       >
         {loading ? "Criando…" : "Criar conta"}
       </Button>

@@ -64,12 +64,14 @@ export function ChatPanel({
   /** Keep preferDeep for retries of the same failed send. */
   const pendingDeepRef = useRef(false);
   const [sendingDeep, setSendingDeep] = useState(false);
+  const [errorKind, setErrorKind] = useState<string | null>(null);
 
   const deepenId = useId();
   const deepenHelpId = useId();
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const prefersReducedMotion = useRef(false);
 
   useEffect(() => {
@@ -96,6 +98,7 @@ export function ChatPanel({
     if (!trimmed || loading) return;
 
     setError(null);
+    setErrorKind(null);
     setLoading(true);
     setStickToBottom(true);
     const requestId = pendingRequestId ?? crypto.randomUUID();
@@ -154,6 +157,7 @@ export function ChatPanel({
           ),
         });
         setError(view.message);
+        setErrorKind(view.kind);
         // Always restore the draft so the user can retry or edit without losing text.
         setInput(trimmed);
         if (!view.keepPendingRequest) {
@@ -192,6 +196,7 @@ export function ChatPanel({
       setError(
         "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
       );
+      setErrorKind("retryable");
       setInput(trimmed);
     } finally {
       setLoading(false);
@@ -203,7 +208,7 @@ export function ChatPanel({
   const showEmptyState = !hasHistory && messages.length === 0;
 
   return (
-    <div className="flex min-h-[calc(100dvh-8.5rem)] flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-[0_8px_30px_rgba(44,36,28,0.04)] sm:min-h-[70vh]">
+    <div className="chat-shell-min-h flex flex-col overflow-x-hidden overflow-y-hidden rounded-2xl border border-border/80 bg-card/80 shadow-[0_8px_30px_rgba(44,36,28,0.04)]">
       <header className="shrink-0 border-b border-border/70 px-4 py-3.5 sm:px-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -218,7 +223,7 @@ export function ChatPanel({
           </div>
           <Link
             href="/conversas"
-            className="shrink-0 rounded-md px-2 py-2 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-md px-2 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             Histórico
           </Link>
@@ -228,9 +233,10 @@ export function ChatPanel({
       <div
         ref={scrollerRef}
         onScroll={onScroll}
-        className="flex-1 space-y-4 overflow-y-auto px-4 py-5 font-chat sm:px-5"
+        className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto px-4 py-5 font-chat sm:px-5"
         aria-live="polite"
         aria-relevant="additions"
+        aria-atomic="false"
       >
         {showEmptyState ? (
           <div className="max-w-[40rem] space-y-4">
@@ -298,10 +304,30 @@ export function ChatPanel({
         <div ref={bottomRef} />
       </div>
 
-      <div className="sticky bottom-0 shrink-0 border-t border-border/70 bg-card/95 p-4 backdrop-blur-sm sm:p-5">
+      <div className="safe-composer-pad sticky bottom-0 shrink-0 border-t border-border/70 bg-card/95 p-4 backdrop-blur-sm sm:p-5">
         {error ? (
-          <div className="mb-3">
+          <div className="mb-3 space-y-2" role="alert" aria-live="assertive">
             <InlineNotice tone="error">{error}</InlineNotice>
+            <div className="flex flex-wrap gap-2">
+              {errorKind === "auth" ? (
+                <Link
+                  href="/entrar?next=/conversar"
+                  className="inline-flex min-h-11 items-center rounded-md border border-border px-3 text-sm text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  Entrar novamente
+                </Link>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11"
+                  disabled={loading || !input.trim()}
+                  onClick={() => void send()}
+                >
+                  Tentar de novo
+                </Button>
+              )}
+            </div>
           </div>
         ) : null}
 
@@ -314,7 +340,10 @@ export function ChatPanel({
                 : "border-border/70 bg-sand-50/50",
             )}
           >
-            <div className="flex items-start gap-3">
+            <label
+              htmlFor={deepenId}
+              className="flex min-h-11 cursor-pointer items-start gap-3"
+            >
               <input
                 id={deepenId}
                 type="checkbox"
@@ -322,29 +351,26 @@ export function ChatPanel({
                 onChange={(e) => setPreferDeep(e.target.checked)}
                 disabled={loading}
                 aria-describedby={deepenHelpId}
-                className="mt-1 h-4 w-4 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="mt-2 h-5 w-5 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
-              <div className="min-w-0">
-                <label
-                  htmlFor={deepenId}
-                  className="block text-sm font-medium text-ink"
-                >
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-ink">
                   Aprofundar esta resposta
                   {deepenActive ? (
                     <span className="ml-2 text-xs font-normal text-wine">
                       · ativo nesta mensagem
                     </span>
                   ) : null}
-                </label>
-                <p
+                </span>
+                <span
                   id={deepenHelpId}
-                  className="mt-0.5 text-xs leading-relaxed text-ink-soft"
+                  className="mt-0.5 block text-xs leading-relaxed text-ink-soft"
                 >
                   Usa uma análise mais extensa para esta mensagem e consome mais
                   da sua margem de uso.
-                </p>
-              </div>
-            </div>
+                </span>
+              </span>
+            </label>
           </div>
         ) : (
           <p className="mb-3 text-xs leading-relaxed text-ink-soft">
@@ -363,6 +389,7 @@ export function ChatPanel({
             Conte o que você está vivendo
           </label>
           <textarea
+            ref={inputRef}
             id="chat-input"
             rows={2}
             value={input}
@@ -382,7 +409,7 @@ export function ChatPanel({
                   ? `${deepenHelpId} chat-composer-hint`
                   : "chat-composer-hint"
             }
-            className="min-h-[3.25rem] max-h-40 flex-1 resize-none overflow-y-auto rounded-xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:text-sm"
+            className="min-h-[3.25rem] max-h-40 flex-1 resize-none overflow-y-auto rounded-xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             maxLength={4000}
             disabled={loading}
           />
@@ -390,16 +417,14 @@ export function ChatPanel({
             type="button"
             onClick={() => void send()}
             disabled={loading || !input.trim()}
-            className="min-h-[3.25rem] self-end bg-ink px-4 hover:bg-ink/90"
+            aria-busy={loading}
+            className="min-h-[3.25rem] min-w-11 self-end bg-ink px-4 hover:bg-ink/90"
           >
             {loading ? "Enviando…" : "Enviar"}
           </Button>
         </div>
-        <p
-          id="chat-composer-hint"
-          className="mt-2 hidden text-xs text-ink-soft sm:block"
-        >
-          Enter para enviar · Shift+Enter para nova linha
+        <p id="chat-composer-hint" className="mt-2 text-xs text-ink-soft">
+          Enter envia · Shift+Enter nova linha
         </p>
         {error ? (
           <p id="chat-error" className="sr-only">

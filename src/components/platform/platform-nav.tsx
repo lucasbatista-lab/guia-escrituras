@@ -62,11 +62,11 @@ export function PlatformNav({
     );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/70 bg-card/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-card/80 pt-safe backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
         <Link
           href="/inicio"
-          className="font-display text-lg tracking-tight text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="min-h-11 font-display text-lg leading-[2.75rem] tracking-tight text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           {brand.name}
         </Link>

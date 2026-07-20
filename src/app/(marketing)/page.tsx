@@ -161,7 +161,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main>
+      <main id="conteudo-principal" tabIndex={-1} className="outline-none">
         {/* 1–2. Hero + demonstração (demo ao lado no desktop, abaixo no mobile) */}
         <section className="relative overflow-hidden">
           <div

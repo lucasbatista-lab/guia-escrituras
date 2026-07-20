@@ -101,12 +101,14 @@ describe("authenticated UX polish", () => {
   it("chat UI hides technical fields and supports composer loading a11y", () => {
     const chat = read("src", "components", "chat", "chat-panel.tsx");
     expect(chat).toContain("Preparando uma reflexão");
-    expect(chat).toContain("Enter para enviar");
+    expect(chat).toContain("Enter envia");
+    expect(chat).toContain("Shift+Enter");
     expect(chat).toContain("prefers-reduced-motion");
     expect(chat).toContain("aria-live");
     expect(chat).toContain("Histórico");
     expect(chat).toContain("Experiência com inteligência artificial");
     expect(chat).toContain("hasRenderableInterpretationNotice");
+    expect(chat).toContain("Tentar de novo");
     expect(chat).not.toContain("groundingProvider");
     expect(chat).not.toContain("groundingCount");
     expect(chat).not.toMatch(/\bprovider\b/);
@@ -116,10 +118,12 @@ describe("authenticated UX polish", () => {
     expect(chat).not.toMatch(JARGON);
   });
 
-  it("conversas has empty state and Nova reflexão without loading all messages", () => {
+  it("conversas has empty state, error state and Nova reflexão without loading all messages", () => {
     const page = read("src", "app", "(platform)", "conversas", "page.tsx");
     expect(page).toContain("Nova reflexão");
     expect(page).toContain("EmptyState");
+    expect(page).toContain("loadError");
+    expect(page).toContain("RefreshPageButton");
     expect(page).toContain("listForUser");
     expect(page).toContain("Retomar conversa");
     expect(page).not.toContain("listRecent");
