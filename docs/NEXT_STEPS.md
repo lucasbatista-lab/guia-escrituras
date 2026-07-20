@@ -1,27 +1,45 @@
 # Next steps
 
-## Cutover (agora)
+## Concluído (2026-07-20)
 
-1. Seguir `docs/PRODUCTION_CUTOVER_RUNBOOK.md` (envs Vercel → deploy → smoke humano).  
-2. Completar itens abertos de `docs/LAUNCH_CHECKLIST.md` (produção + verificação humana).  
-3. Confirmar `CRON_SECRET` + cron Vercel em production (`docs/DAILY_REPORTS.md`).
+- Plan Differentiation & Ethical Upsell V1 (`5ab9cf2`)
+- Journey Progress Persistence Foundation (`13258e5`) + migration `20260712000008` **aplicada** em produção
+- Reading Journeys MVP V1 (`7113493`) + auto-deploy confirmado
+- Postcheck consolidado preferencial + runbook de retomada (docs desta noite)
 
-## Decisão independente (não bloqueia o cutover de código)
+## Pendente imediato (amanhã)
 
-4. Aplicar migration 004 somente após revisão explícita (`docs/DEPLOYMENT.md`) — **não faz parte do cutover inicial**.
+1. **Smoke autenticado** das Jornadas — seguir `docs/TOMORROW_LAUNCH_RUNBOOK.md`
+2. **Revisão pastoral humana** das 21 etapas (`docs/READING_JOURNEYS.md`)
+3. (Opcional) Rodar postcheck consolidado:  
+   `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`
 
-## Reading Journeys — ativo (V1)
+## Próximo bloco após smoke verde
 
-5. Migration `20260712000008_journey_progress.sql` aplicada em produção (revisão humana).  
-6. Postcheck read-only confirmado (`docs/READING_JOURNEYS_PERSISTENCE.md`).  
-7. Feature publicada: registry, UI (`/jornadas`), APIs, entitlement `reading_journeys`, export `journeyProgress`, copy comercial.  
-8. Ver `docs/READING_JOURNEYS.md` para limitações e processo editorial.
+4. **Admin Mobile Operations V1**
 
-## Pós-lançamento (não bloqueante)
+## Sequência sugerida depois
 
-10. Fonte bíblica licenciada.  
-11. Streaming no `/api/chat`.  
-12. Persistência estruturada de falhas de chat (409/429/503) se a operação precisar disso no admin (exigiria migration).  
-13. Receita real Stripe no relatório diário (ledger de pagamentos).  
-14. Observabilidade avançada de percentis / alertas externos (e-mail).  
-15. Exclusão de conta (após portabilidade V1 em `docs/USER_DATA_PORTABILITY.md`).
+5. Help Center & Support Intake V1  
+6. Acquisition Content Attribution V1  
+7. Autonomous Operations Runbook V1  
+8. Smoke de pagamento → só então Plan Change & Proration  
+
+## Cutover / ops contínuos
+
+- `docs/PRODUCTION_CUTOVER_RUNBOOK.md` / `docs/LAUNCH_CHECKLIST.md` conforme itens abertos  
+- Cron + `CRON_SECRET` — `docs/DAILY_REPORTS.md`  
+- Migration 004 só após revisão explícita (`docs/DEPLOYMENT.md`)
+
+## Pós-lançamento (não bloquear smoke de Jornadas)
+
+- Observabilidade agregada de Jornadas (funil a partir dos eventos já logados)
+- Novas jornadas editoriais (com eval + revisão humana)
+- Streaming no `/api/chat`
+- Exclusão de conta (após portabilidade — `docs/USER_DATA_PORTABILITY.md`)
+- Troca de plano / proration **após** smoke financeiro
+- Fonte bíblica licenciada; receita Stripe no relatório diário; alertas externos
+
+## Estado mestre
+
+`docs/END_OF_DAY_MASTER_REPORT_2026-07-20.md`

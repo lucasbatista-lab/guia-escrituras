@@ -114,11 +114,15 @@ Never: reflections, chat drafts, prompts, clinical notes, payment data, secrets.
 
 1. Review `supabase/migrations/20260712000008_journey_progress.sql`
 2. Apply in Supabase (SQL Editor paste **or** `pnpm exec supabase db push --linked` after review)
-3. Run postcheck (read-only): `supabase/postchecks/20260712000008_journey_progress_postcheck.sql`
-4. Confirm postcheck booleans true / empty table (see note below on SQL Editor result sets)
+3. Run postcheck (read-only). **Prefer** the consolidated one-liner:  
+   `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`  
+   (expect a single row with `overall_ok = true`).  
+   Legacy multi-result file still exists:  
+   `supabase/postchecks/20260712000008_journey_progress_postcheck.sql`
+4. Confirm postcheck booleans / `overall_ok` (consolidated) or review each result set (legacy)
 5. Ship Reading Journeys MVP (entitlement + UI + export) — **done on `main`**
 
-**Postcheck note:** the file runs multiple read-only `SELECT`s. Supabase SQL Editor may show only the **last** result set (e.g. `[{"initially_empty": true}]`). Earlier checks still ran; for assertion-style failure use manual review or run statements individually.
+**Postcheck note:** the legacy file runs multiple read-only `SELECT`s; Supabase SQL Editor may show only the **last** result set. Prefer the consolidated postcheck for tomorrow’s ops. Runtime app code does **not** depend on either postcheck file.
 
 ## Emergency rollback (do not run unless required)
 
