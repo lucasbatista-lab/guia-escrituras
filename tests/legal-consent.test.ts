@@ -45,6 +45,12 @@ class MemoryLegalConsentRepository implements LegalConsentRepository {
     );
     if (!existing) this.rows.push(input);
   }
+
+  async listByUserId(userId: string) {
+    return this.rows
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => a.acceptedAt.localeCompare(b.acceptedAt));
+  }
 }
 
 class MemorySignupIntentRepository implements SignupIntentRepository {
@@ -85,6 +91,45 @@ class MemorySignupIntentRepository implements SignupIntentRepository {
 
   async findById(id: string) {
     return this.rows.get(id) ?? null;
+  }
+
+  async findActionableByUserId(userId: string) {
+    return [...this.rows.values()]
+      .filter(
+        (r) =>
+          r.userId === userId &&
+          (r.status === "ready_for_checkout" ||
+            r.status === "awaiting_confirmation") &&
+          new Date(r.expiresAt).getTime() > Date.now(),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+  }
+
+  async findCheckoutCreatedByUserId(userId: string) {
+    return [...this.rows.values()]
+      .filter(
+        (r) =>
+          r.userId === userId &&
+          r.status === "checkout_created" &&
+          new Date(r.expiresAt).getTime() > Date.now(),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+  }
+
+  async listByUserId(userId: string) {
+    return [...this.rows.values()]
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => {
+        const byCreated = a.createdAt.localeCompare(b.createdAt);
+        if (byCreated !== 0) return byCreated;
+        return a.id.localeCompare(b.id);
+      });
   }
 
   async update(

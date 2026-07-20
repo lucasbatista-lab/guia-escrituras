@@ -14,6 +14,12 @@ export interface SpiritualProfileRecord {
   onboardingCompleted: boolean;
 }
 
+/** Spiritual profile plus timestamps for owner data export. */
+export interface SpiritualProfileExportRecord extends SpiritualProfileRecord {
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 export interface ConversationRecord {
   id: string;
   userId: string;
@@ -62,8 +68,20 @@ export interface UsageMonthlyRecord {
   requestCount: number;
 }
 
+/** Lightweight usage event fields for owner export summaries (no model/token dump). */
+export interface UsageEventExportRecord {
+  featureType: FeatureType;
+  estimatedCostBrlCents: number;
+  success: boolean;
+  createdAt: string;
+}
+
+export type UsageMonthlyExportRecord = UsageMonthlyRecord;
+
 export interface SpiritualProfileRepository {
   getByUserId(userId: string): Promise<SpiritualProfileRecord | null>;
+  /** Owner export snapshot including created/updated timestamps. */
+  getForExport(userId: string): Promise<SpiritualProfileExportRecord | null>;
   upsert(
     profile: SpiritualProfileRecord,
   ): Promise<SpiritualProfileRecord>;
@@ -75,6 +93,15 @@ export interface ConversationRepository {
     userId: string,
   ): Promise<ConversationRecord | null>;
   listForUser(userId: string, limit?: number): Promise<ConversationRecord[]>;
+  /**
+   * Stable-ordered page for owner export.
+   * Order: created_at ASC, id ASC. Caller assembles pages; never silent-truncate.
+   */
+  listPageForExport(
+    userId: string,
+    from: number,
+    to: number,
+  ): Promise<ConversationRecord[]>;
   create(input: {
     userId: string;
     personaKey: string;
@@ -89,6 +116,16 @@ export interface MessageRepository {
     conversationId: string,
     userId: string,
     limit: number,
+  ): Promise<MessageRecord[]>;
+  /**
+   * Stable-ordered page for owner export (chronological).
+   * Order: created_at ASC, id ASC. Only user/assistant roles.
+   */
+  listPageForExport(
+    conversationId: string,
+    userId: string,
+    from: number,
+    to: number,
   ): Promise<MessageRecord[]>;
   /** Latest user message only — for resume previews (no full history). */
   findLatestUserMessage(
@@ -139,6 +176,17 @@ export interface UsageRepository {
     addBrlCents: number;
   }): Promise<UsageMonthlyRecord>;
   countRequestsSince(userId: string, sinceIso: string): Promise<number>;
+  /** All monthly usage rows for the owner, year_month ASC. */
+  listMonthlyForExport(userId: string): Promise<UsageMonthlyExportRecord[]>;
+  /**
+   * Lightweight usage event page for owner export summaries.
+   * Order: created_at ASC, id ASC.
+   */
+  listEventPageForExport(
+    userId: string,
+    from: number,
+    to: number,
+  ): Promise<UsageEventExportRecord[]>;
 }
 
 export interface DataRepositories {

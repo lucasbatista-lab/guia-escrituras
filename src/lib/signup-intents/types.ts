@@ -58,6 +58,8 @@ export interface SignupIntentRepository {
   findById(id: string): Promise<SignupIntentRecord | null>;
   findActionableByUserId(userId: string): Promise<SignupIntentRecord[]>;
   findCheckoutCreatedByUserId(userId: string): Promise<SignupIntentRecord[]>;
+  /** All intents linked to the owner for data export (includes expired). */
+  listByUserId(userId: string): Promise<SignupIntentRecord[]>;
   update(
     id: string,
     patch: Partial<

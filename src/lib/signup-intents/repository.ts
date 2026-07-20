@@ -116,6 +116,18 @@ class SupabaseSignupIntentRepository implements SignupIntentRepository {
     return (data ?? []).map((row) => mapRow(row as Record<string, unknown>));
   }
 
+  async listByUserId(userId: string) {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("signup_intents")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((row) => mapRow(row as Record<string, unknown>));
+  }
+
   async update(
     id: string,
     patch: Partial<

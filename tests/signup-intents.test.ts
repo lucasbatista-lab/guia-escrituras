@@ -42,6 +42,12 @@ class MemoryLegalConsentRepository implements LegalConsentRepository {
       this.rows.push(input);
     }
   }
+
+  async listByUserId(userId: string) {
+    return this.rows
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => a.acceptedAt.localeCompare(b.acceptedAt));
+  }
 }
 
 class MemorySignupIntentRepository implements SignupIntentRepository {
@@ -111,6 +117,16 @@ class MemorySignupIntentRepository implements SignupIntentRepository {
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
       );
+  }
+
+  async listByUserId(userId: string) {
+    return [...this.rows.values()]
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => {
+        const byCreated = a.createdAt.localeCompare(b.createdAt);
+        if (byCreated !== 0) return byCreated;
+        return a.id.localeCompare(b.id);
+      });
   }
 
   async update(

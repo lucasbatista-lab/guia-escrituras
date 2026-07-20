@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DataExportPanel } from "@/components/account/data-export-panel";
 import { SubscriptionManagementPanel } from "@/components/account/subscription-management-panel";
 import { InlineNotice } from "@/components/platform/inline-notice";
 import { PlatformPageHeader } from "@/components/platform/page-header";
@@ -268,6 +269,13 @@ export default async function ContaPage() {
         description="Conhece alguém que poderia se beneficiar de uma reflexão baseada nas Escrituras? Envie o Amém Chat com uma mensagem pronta."
       >
         <ShareInvite shareUrl={shareUrl} />
+      </PlatformSection>
+
+      <PlatformSection
+        title="Seus dados"
+        description="Baixe uma cópia das informações associadas à sua conta, incluindo perfil, preferências, consentimentos e conversas."
+      >
+        <DataExportPanel />
       </PlatformSection>
 
       <PlatformSection

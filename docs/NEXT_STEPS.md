@@ -16,4 +16,5 @@
 6. Streaming no `/api/chat`.  
 7. Persistência estruturada de falhas de chat (409/429/503) se a operação precisar disso no admin (exigiria migration).  
 8. Receita real Stripe no relatório diário (ledger de pagamentos).  
-9. Observabilidade avançada de percentis / alertas externos (e-mail).
+9. Observabilidade avançada de percentis / alertas externos (e-mail).  
+10. Exclusão de conta (após portabilidade V1 em `docs/USER_DATA_PORTABILITY.md`).

@@ -12,8 +12,10 @@ import type {
   DataRepositories,
   MessageRecord,
   MessageRepository,
+  SpiritualProfileExportRecord,
   SpiritualProfileRecord,
   SpiritualProfileRepository,
+  UsageEventExportRecord,
   UsageEventInput,
   UsageMonthlyRecord,
   UsageRepository,
@@ -30,6 +32,16 @@ function mapSpiritual(row: Record<string, unknown>): SpiritualProfileRecord {
     preferredDepth: row.preferred_depth as SpiritualProfileRecord["preferredDepth"],
     saintsContentEnabled: Boolean(row.saints_content_enabled),
     onboardingCompleted: Boolean(row.onboarding_completed),
+  };
+}
+
+function mapSpiritualExport(
+  row: Record<string, unknown>,
+): SpiritualProfileExportRecord {
+  return {
+    ...mapSpiritual(row),
+    createdAt: (row.created_at as string | null) ?? null,
+    updatedAt: (row.updated_at as string | null) ?? null,
   };
 }
 
@@ -100,6 +112,19 @@ class SupabaseSpiritualProfiles implements SpiritualProfileRepository {
     return data ? mapSpiritual(data) : null;
   }
 
+  async getForExport(userId: string) {
+    const supabase = await userClient();
+    const { data, error } = await supabase
+      .from("spiritual_profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) {
+      throw new AppError(error.message, "db_error", 500, "Erro ao carregar perfil.");
+    }
+    return data ? mapSpiritualExport(data) : null;
+  }
+
   async upsert(profile: SpiritualProfileRecord) {
     const supabase = await userClient();
     const { data, error } = await supabase
@@ -157,6 +182,26 @@ class SupabaseConversations implements ConversationRepository {
     return (data ?? []).map(mapConversation);
   }
 
+  async listPageForExport(userId: string, from: number, to: number) {
+    const supabase = await userClient();
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to);
+    if (error) {
+      throw new AppError(
+        error.message,
+        "db_error",
+        500,
+        "Erro ao exportar conversas.",
+      );
+    }
+    return (data ?? []).map(mapConversation);
+  }
+
   async create(input: { userId: string; personaKey: string; title?: string }) {
     const supabase = await userClient();
     const { data, error } = await supabase
@@ -207,6 +252,33 @@ class SupabaseMessages implements MessageRepository {
       throw new AppError(error.message, "db_error", 500, "Erro ao carregar mensagens.");
     }
     return (data ?? []).map(mapMessage).reverse();
+  }
+
+  async listPageForExport(
+    conversationId: string,
+    userId: string,
+    from: number,
+    to: number,
+  ) {
+    const supabase = await userClient();
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .eq("user_id", userId)
+      .in("role", ["user", "assistant"])
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to);
+    if (error) {
+      throw new AppError(
+        error.message,
+        "db_error",
+        500,
+        "Erro ao exportar mensagens.",
+      );
+    }
+    return (data ?? []).map(mapMessage);
   }
 
   async findLatestUserMessage(conversationId: string, userId: string) {
@@ -536,6 +608,58 @@ class SupabaseUsage implements UsageRepository {
       throw new AppError(error.message, "db_error", 500, "Erro ao verificar limite diário.");
     }
     return count ?? 0;
+  }
+
+  async listMonthlyForExport(userId: string) {
+    const supabase = await userClient();
+    const { data, error } = await supabase
+      .from("usage_monthly")
+      .select("*")
+      .eq("user_id", userId)
+      .order("year_month", { ascending: true });
+    if (error) {
+      throw new AppError(
+        error.message,
+        "db_error",
+        500,
+        "Erro ao exportar uso mensal.",
+      );
+    }
+    return (data ?? []).map((row) => ({
+      userId,
+      yearMonth: row.year_month as string,
+      usedBrlCents: row.used_brl_cents as number,
+      requestCount: row.request_count as number,
+    }));
+  }
+
+  async listEventPageForExport(
+    userId: string,
+    from: number,
+    to: number,
+  ): Promise<UsageEventExportRecord[]> {
+    const supabase = await userClient();
+    const { data, error } = await supabase
+      .from("usage_events")
+      .select("feature_type, estimated_cost_brl_cents, success, created_at, id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to);
+    if (error) {
+      throw new AppError(
+        error.message,
+        "db_error",
+        500,
+        "Erro ao exportar eventos de uso.",
+      );
+    }
+    return (data ?? []).map((row) => ({
+      featureType: row.feature_type as UsageEventExportRecord["featureType"],
+      estimatedCostBrlCents: row.estimated_cost_brl_cents as number,
+      success: Boolean(row.success),
+      createdAt: row.created_at as string,
+    }));
   }
 }
 

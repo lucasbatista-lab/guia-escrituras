@@ -23,7 +23,14 @@ export default function PrivacidadePage() {
         e apenas na medida necessária.
       </p>
       <p>
-        Você pode solicitar informações ou exclusão pelo canal de suporte. Alguns
+        Você pode baixar uma cópia dos próprios dados na página Conta
+        (/conta), incluindo perfil, preferências, consentimentos e conversas.
+        Solicitações adicionais podem ser feitas pelo canal de suporte. A
+        exportação não inclui informações de pagamento completas mantidas pelo
+        Stripe. Baixar seus dados não equivale à exclusão da conta.
+      </p>
+      <p>
+        Você também pode solicitar exclusão pelo canal de suporte. Alguns
         registros de cobrança podem precisar ser mantidos por obrigação legal.
       </p>
       <p>

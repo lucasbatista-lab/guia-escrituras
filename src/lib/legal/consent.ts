@@ -19,6 +19,7 @@ export interface LegalConsentRecord {
   privacyVersion: string;
   acceptedAt: string;
   source: string;
+  createdAt?: string | null;
 }
 
 export interface LegalConsentRepository {
@@ -28,6 +29,8 @@ export interface LegalConsentRepository {
     privacyVersion: string,
   ): Promise<LegalConsentRecord | null>;
   upsert(input: LegalConsentRecord): Promise<void>;
+  /** All consents for the owner, accepted_at ASC. */
+  listByUserId(userId: string): Promise<LegalConsentRecord[]>;
 }
 
 class SupabaseLegalConsentRepository implements LegalConsentRepository {
@@ -56,6 +59,30 @@ class SupabaseLegalConsentRepository implements LegalConsentRepository {
       acceptedAt: data.accepted_at as string,
       source: data.source as string,
     };
+  }
+
+  async listByUserId(userId: string): Promise<LegalConsentRecord[]> {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("legal_consents")
+      .select(
+        "user_id, terms_version, privacy_version, accepted_at, source, created_at",
+      )
+      .eq("user_id", userId)
+      .order("accepted_at", { ascending: true });
+
+    if (error) {
+      throw new LegalConsentError(error.message);
+    }
+
+    return (data ?? []).map((row) => ({
+      userId: row.user_id as string,
+      termsVersion: row.terms_version as string,
+      privacyVersion: row.privacy_version as string,
+      acceptedAt: row.accepted_at as string,
+      source: row.source as string,
+      createdAt: (row.created_at as string | null) ?? null,
+    }));
   }
 
   async upsert(input: LegalConsentRecord): Promise<void> {

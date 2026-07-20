@@ -6,19 +6,34 @@ import type {
   DataRepositories,
   MessageRecord,
   MessageRepository,
+  SpiritualProfileExportRecord,
   SpiritualProfileRecord,
   SpiritualProfileRepository,
+  UsageEventExportRecord,
   UsageEventInput,
   UsageMonthlyRecord,
   UsageRepository,
 } from "./types";
 
-const spiritualStore = new Map<string, SpiritualProfileRecord>();
+const spiritualStore = new Map<string, SpiritualProfileExportRecord>();
 const conversations = new Map<string, ConversationRecord>();
 const messages = new Map<string, MessageRecord[]>();
 const summaries = new Map<string, ConversationSummaryRecord>();
-const usageEvents = new Map<string, UsageEventInput & { id: string }>();
+const usageEvents = new Map<
+  string,
+  UsageEventInput & { id: string; createdAt: string }
+>();
 const usageMonthly = new Map<string, UsageMonthlyRecord>();
+
+/** Clears in-memory persistence between tests. */
+export function resetMemoryRepositoriesForTests(): void {
+  spiritualStore.clear();
+  conversations.clear();
+  messages.clear();
+  summaries.clear();
+  usageEvents.clear();
+  usageMonthly.clear();
+}
 
 function monthlyKey(userId: string, yearMonth: string) {
   return `${userId}:${yearMonth}`;
@@ -26,11 +41,27 @@ function monthlyKey(userId: string, yearMonth: string) {
 
 class MemorySpiritualProfiles implements SpiritualProfileRepository {
   async getByUserId(userId: string) {
+    const row = spiritualStore.get(userId);
+    if (!row) return null;
+    const { createdAt: _c, updatedAt: _u, ...profile } = row;
+    void _c;
+    void _u;
+    return profile;
+  }
+
+  async getForExport(userId: string) {
     return spiritualStore.get(userId) ?? null;
   }
 
   async upsert(profile: SpiritualProfileRecord) {
-    spiritualStore.set(profile.userId, profile);
+    const now = new Date().toISOString();
+    const existing = spiritualStore.get(profile.userId);
+    const row: SpiritualProfileExportRecord = {
+      ...profile,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    };
+    spiritualStore.set(profile.userId, row);
     return profile;
   }
 }
@@ -47,6 +78,17 @@ class MemoryConversations implements ConversationRepository {
       .filter((c) => c.userId === userId)
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
       .slice(0, limit);
+  }
+
+  async listPageForExport(userId: string, from: number, to: number) {
+    const sorted = Array.from(conversations.values())
+      .filter((c) => c.userId === userId)
+      .sort((a, b) => {
+        const byCreated = a.createdAt.localeCompare(b.createdAt);
+        if (byCreated !== 0) return byCreated;
+        return a.id.localeCompare(b.id);
+      });
+    return sorted.slice(from, to + 1);
   }
 
   async create(input: { userId: string; personaKey: string; title?: string }) {
@@ -80,6 +122,25 @@ class MemoryMessages implements MessageRepository {
       (m) => m.userId === userId,
     );
     return list.slice(-limit);
+  }
+
+  async listPageForExport(
+    conversationId: string,
+    userId: string,
+    from: number,
+    to: number,
+  ) {
+    const list = (messages.get(conversationId) ?? [])
+      .filter(
+        (m) =>
+          m.userId === userId && (m.role === "user" || m.role === "assistant"),
+      )
+      .sort((a, b) => {
+        const byCreated = a.createdAt.localeCompare(b.createdAt);
+        if (byCreated !== 0) return byCreated;
+        return a.id.localeCompare(b.id);
+      });
+    return list.slice(from, to + 1);
   }
 
   async findLatestUserMessage(conversationId: string, userId: string) {
@@ -223,7 +284,11 @@ class MemoryUsage implements UsageRepository {
     if (usageEvents.has(key)) {
       return { inserted: false };
     }
-    usageEvents.set(key, { ...input, id: crypto.randomUUID() });
+    usageEvents.set(key, {
+      ...input,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    });
     return { inserted: true };
   }
 
@@ -256,13 +321,38 @@ class MemoryUsage implements UsageRepository {
   async countRequestsSince(userId: string, sinceIso: string) {
     let count = 0;
     for (const event of usageEvents.values()) {
-      if (event.userId === userId) {
-        // Memory store has no createdAt on events; approximate via success flag usage
-        void sinceIso;
+      if (event.userId === userId && event.createdAt >= sinceIso) {
         count += 1;
       }
     }
     return count;
+  }
+
+  async listMonthlyForExport(userId: string) {
+    return Array.from(usageMonthly.values())
+      .filter((row) => row.userId === userId)
+      .sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+  }
+
+  async listEventPageForExport(
+    userId: string,
+    from: number,
+    to: number,
+  ): Promise<UsageEventExportRecord[]> {
+    const sorted = Array.from(usageEvents.values())
+      .filter((event) => event.userId === userId)
+      .sort((a, b) => {
+        const byCreated = a.createdAt.localeCompare(b.createdAt);
+        if (byCreated !== 0) return byCreated;
+        return a.id.localeCompare(b.id);
+      })
+      .map((event) => ({
+        featureType: event.featureType,
+        estimatedCostBrlCents: event.estimatedCostBrlCents,
+        success: event.success,
+        createdAt: event.createdAt,
+      }));
+    return sorted.slice(from, to + 1);
   }
 }
 
