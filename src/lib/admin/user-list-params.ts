@@ -106,6 +106,7 @@ export function parseAdminUserListSearchParams(
     : 25;
 
   let q = (one("q") ?? "").trim();
+  q = q.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   if (q.length > ADMIN_USER_Q_MAX_LENGTH) {
     q = q.slice(0, ADMIN_USER_Q_MAX_LENGTH);
   }

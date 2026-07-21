@@ -11,6 +11,9 @@ export function safeNextPath(
   if (!trimmed.startsWith("/")) return fallback;
   if (trimmed.startsWith("//")) return fallback;
   if (trimmed.includes("\\")) return fallback;
+  if (trimmed.includes(":")) return fallback;
+  if (/[\u0000-\u001F\u007F]/.test(trimmed)) return fallback;
+  if (trimmed.length > 512) return fallback;
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) return fallback;
   if (trimmed.toLowerCase().startsWith("/\\")) return fallback;
   // Disallow embedding absolute URLs after the path
