@@ -174,13 +174,19 @@ describe("resume UI contracts", () => {
 
   it("conversas highlights latest and keeps list without full messages", () => {
     const page = read("src", "app", "(platform)", "conversas", "page.tsx");
-    expect(page).toContain("Mais recente");
-    expect(page).toContain("Retomar conversa");
-    expect(page).toContain("formatConversationActivity");
+    const list = read(
+      "src",
+      "components",
+      "conversations",
+      "conversation-history-list.tsx",
+    );
+    expect(list).toContain("Mais recente");
+    expect(list).toContain("Retomar conversa");
+    expect(list).toContain("formatConversationActivity");
     expect(page).toContain("listForUser");
     expect(page).not.toContain("listRecent");
     expect(page).toContain(
-      "Quando você iniciar uma conversa, ela ficará disponível aqui para ser retomada.",
+      "Quando você iniciar uma reflexão, ela ficará disponível aqui para retomar com calma",
     );
     expect(page).toContain("force-dynamic");
   });

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConversationHistoryList } from "@/components/conversations/conversation-history-list";
 import { EmptyState } from "@/components/platform/empty-state";
 import { InlineNotice } from "@/components/platform/inline-notice";
 import { PlatformPageHeader } from "@/components/platform/page-header";
@@ -7,22 +8,27 @@ import { RefreshPageButton } from "@/components/platform/refresh-page-button";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import {
-  conversationTitleLabel,
-  formatConversationActivity,
-} from "@/lib/conversations/resume";
+  HISTORY_LIST_DEFAULT_LIMIT,
+  HISTORY_PREVIEW_FETCH_CAP,
+  resolveHistoryListLimit,
+  type HistoryListItem,
+} from "@/lib/conversations/history-list";
+import { sanitizeConversationPreview } from "@/lib/conversations/resume";
 import { getRepositories } from "@/lib/database/repositories";
+import { canUseReadingJourneys } from "@/lib/entitlements";
 import {
   getRequiredDestinationForState,
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
-import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const LIST_LIMIT = 30;
-
-export default async function ConversasPage() {
+export default async function ConversasPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const auth = await getAuthUserContext();
   if (!auth) {
     redirect("/entrar?next=/conversas");
@@ -33,26 +39,59 @@ export default async function ConversasPage() {
     redirect(getRequiredDestinationForState(journey.state));
   }
 
-  let rows: Array<{ id: string; title: string | null; updatedAt: string }> = [];
+  const params = await searchParams;
+  const maisRaw = params.mais;
+  const maisParam = Array.isArray(maisRaw) ? maisRaw[0] : maisRaw;
+  const { limit, expanded } = resolveHistoryListLimit(maisParam);
+
+  let rows: HistoryListItem[] = [];
   let loadError = false;
   try {
     const repos = getRepositories();
-    const list = await repos.conversations.listForUser(auth.userId, LIST_LIMIT);
-    rows = list.map((c) => ({
+    const list = await repos.conversations.listForUser(auth.userId, limit);
+    const base = list.map((c) => ({
       id: c.id,
       title: c.title,
       updatedAt: c.updatedAt,
+      preview: null as string | null,
+    }));
+
+    const previewSlice = base.slice(0, HISTORY_PREVIEW_FETCH_CAP);
+    const previews = await Promise.all(
+      previewSlice.map(async (row) => {
+        try {
+          const latest = await repos.messages.findLatestUserMessage(
+            row.id,
+            auth.userId,
+          );
+          const snippet = latest?.content
+            ? sanitizeConversationPreview(latest.content)
+            : "";
+          return { id: row.id, preview: snippet || null };
+        } catch {
+          return { id: row.id, preview: null };
+        }
+      }),
+    );
+    const previewById = new Map(previews.map((p) => [p.id, p.preview]));
+    rows = base.map((row) => ({
+      ...row,
+      preview: previewById.get(row.id) ?? null,
     }));
   } catch {
     loadError = true;
     rows = [];
   }
 
+  const showLoadMore =
+    !expanded && !loadError && rows.length >= HISTORY_LIST_DEFAULT_LIMIT;
+  const canJourneys = canUseReadingJourneys(auth.planKey);
+
   return (
     <div className="space-y-8">
       <PlatformPageHeader
         title="Conversas"
-        description="Suas reflexões anteriores, privadas e visíveis só para você."
+        description="Retome reflexões anteriores quando quiser — privadas e visíveis só para você."
         actions={
           <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
             <Link href="/conversar">Nova reflexão</Link>
@@ -80,53 +119,33 @@ export default async function ConversasPage() {
           </div>
         </div>
       ) : rows.length === 0 ? (
-        <EmptyState
-          title="Nenhuma conversa ainda"
-          description="Quando você iniciar uma conversa, ela ficará disponível aqui para ser retomada."
-          actionHref="/conversar"
-          actionLabel="Começar uma reflexão"
-        />
+        <div className="space-y-4">
+          <EmptyState
+            title="Nenhuma conversa ainda"
+            description="Quando você iniciar uma reflexão, ela ficará disponível aqui para retomar com calma — sem precisar recomeçar do zero."
+            actionHref="/conversar"
+            actionLabel="Começar uma reflexão"
+          />
+          {canJourneys ? (
+            <div className="rounded-2xl border border-border/70 bg-card/60 px-4 py-4 sm:px-5">
+              <p className="font-medium text-ink">Prefere um caminho guiado?</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                As Jornadas de leitura ajudam a manter continuidade com etapas
+                claras — no seu ritmo.
+              </p>
+              <Button asChild variant="outline" className="mt-3 min-h-11">
+                <Link href="/jornadas">Ver Jornadas</Link>
+              </Button>
+            </div>
+          ) : null}
+        </div>
       ) : (
-        <ul className="space-y-3">
-          {rows.map((row, index) => {
-            const isLatest = index === 0;
-            return (
-              <li key={row.id}>
-                <Link
-                  href={`/conversar?c=${row.id}`}
-                  className={cn(
-                    "block min-h-11 rounded-2xl border px-4 py-4 transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-5",
-                    isLatest
-                      ? "border-wine/30 bg-wine/[0.04] hover:border-wine/40"
-                      : "border-border/70 bg-card/70 hover:border-wine/25 hover:bg-card",
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      {isLatest ? (
-                        <p className="mb-1 text-xs font-medium uppercase tracking-[0.12em] text-wine">
-                          Mais recente
-                        </p>
-                      ) : null}
-                      <h2 className="font-medium text-ink">
-                        {conversationTitleLabel(row.title)}
-                      </h2>
-                    </div>
-                    <time
-                      dateTime={row.updatedAt}
-                      className="shrink-0 text-xs text-ink-soft"
-                    >
-                      {formatConversationActivity(row.updatedAt)}
-                    </time>
-                  </div>
-                  <p className="mt-1.5 text-sm text-ink-soft">
-                    {isLatest ? "Retomar conversa" : "Abrir conversa"}
-                  </p>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <ConversationHistoryList
+          items={rows}
+          latestId={rows[0]?.id ?? null}
+          showLoadMore={showLoadMore}
+          loadMoreHref="/conversas?mais=1"
+        />
       )}
     </div>
   );
