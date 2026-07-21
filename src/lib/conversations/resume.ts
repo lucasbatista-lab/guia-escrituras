@@ -11,6 +11,9 @@ export {
   sanitizeConversationPreview,
   conversationTitleLabel,
   formatConversationActivity,
+  resumeReturnTone,
+  resumeReturnCopy,
+  type ResumeReturnTone,
 } from "@/lib/conversations/display";
 
 export interface ConversationResumePreview {

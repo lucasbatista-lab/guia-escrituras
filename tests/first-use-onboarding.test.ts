@@ -98,13 +98,14 @@ describe("first-use onboarding — /inicio contexts", () => {
   });
 
   it("returning account prioritizes resume then new reflection", () => {
-    expect(page).toContain("Continue de onde parou");
+    expect(page).toContain("resumeReturnCopy");
     expect(page).toContain("Começar uma nova reflexão");
     expect(page).toContain(
       "você não precisa continuar só a anterior",
     );
-    const resumeIdx = page.indexOf("Continue de onde parou");
+    const resumeIdx = page.indexOf('id="resume-heading"');
     const newIdx = page.indexOf("Começar uma nova reflexão");
+    expect(resumeIdx).toBeGreaterThan(-1);
     expect(newIdx).toBeGreaterThan(resumeIdx);
     expect(page).toContain("Ver conversas anteriores");
   });
@@ -140,7 +141,8 @@ describe("first-use onboarding — themes", () => {
     expect(conversar).toContain("sanitizeThemeDraft");
     expect(conversar).toContain("initialDraft");
     expect(conversar).not.toContain("conversations.create");
-    expect(panel).toContain("initialDraft?.trim()");
+    expect(panel).toContain("resolveInitialComposerInput");
+    expect(panel).toContain("urlDraft: initialDraft");
     expect(panel).not.toContain("autoSend");
     // Draft must not trigger send on mount
     expect(panel).not.toMatch(/useEffect\([^)]*\)\s*=>\s*\{[^}]*void send\(/);

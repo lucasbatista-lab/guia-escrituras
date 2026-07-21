@@ -66,6 +66,56 @@ export function formatConversationActivity(
   });
 }
 
+/**
+ * Deterministic resume tone from last activity age — no emotional/spiritual inference.
+ * - recent: under 3 days
+ * - few_days: 3–13 days
+ * - returning: 14+ days
+ */
+export type ResumeReturnTone = "recent" | "few_days" | "returning";
+
+export function resumeReturnTone(
+  iso: string,
+  now = new Date(),
+): ResumeReturnTone {
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return "recent";
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86_400_000);
+  if (diffDays < 3) return "recent";
+  if (diffDays < 14) return "few_days";
+  return "returning";
+}
+
+export function resumeReturnCopy(tone: ResumeReturnTone): {
+  eyebrow: string;
+  title: string;
+  body: string;
+  cta: string;
+} {
+  if (tone === "returning") {
+    return {
+      eyebrow: "Retomar",
+      title: "Seu histórico continua aqui",
+      body: "A última conversa ainda está disponível. Retome o fio ou comece uma reflexão nova — no seu ritmo.",
+      cta: "Retomar conversa",
+    };
+  }
+  if (tone === "few_days") {
+    return {
+      eyebrow: "Continuar",
+      title: "Continue de onde parou",
+      body: "Sua conversa recente ainda está aqui, com o contexto que já foi construído.",
+      cta: "Retomar conversa",
+    };
+  }
+  return {
+    eyebrow: "Continuar",
+    title: "Continue de onde parou",
+    body: "Retome a conversa mantendo o contexto que já foi construído.",
+    cta: "Retomar conversa",
+  };
+}
+
 function isSameLocalDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&

@@ -159,10 +159,13 @@ describe("loadLatestResumePreview", () => {
 });
 
 describe("resume UI contracts", () => {
-  it("inicio shows Continue de onde parou and safe CTA", () => {
+  it("inicio shows age-based resume copy and safe CTA", () => {
     const page = read("src", "app", "(platform)", "inicio", "page.tsx");
-    expect(page).toContain("Continue de onde parou");
-    expect(page).toContain("Retomar conversa");
+    const display = read("src", "lib", "conversations", "display.ts");
+    expect(page).toContain("resumeReturnCopy");
+    expect(page).toContain("resumeReturnTone");
+    expect(page).toContain("returnCopy.cta");
+    expect(display).toContain("Retomar conversa");
     expect(page).toContain("loadLatestResumePreview");
     expect(page).toContain("force-dynamic");
     expect(page).toContain("`/conversar?c=${latest.conversationId}`");

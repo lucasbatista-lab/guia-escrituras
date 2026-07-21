@@ -11,6 +11,8 @@ import { getAuthUserContext } from "@/lib/auth";
 import {
   formatConversationActivity,
   loadLatestResumePreview,
+  resumeReturnCopy,
+  resumeReturnTone,
 } from "@/lib/conversations/resume";
 import { getPlanByKey } from "@/lib/entitlements";
 import {
@@ -276,6 +278,7 @@ export default async function InicioPage() {
   }
 
   const latest = resume;
+  const returnCopy = resumeReturnCopy(resumeReturnTone(latest.updatedAt));
 
   return (
     <div className="space-y-8">
@@ -298,16 +301,16 @@ export default async function InicioPage() {
         className="rounded-2xl border border-wine/25 bg-gradient-to-br from-wine/[0.07] via-card/80 to-sand-100/80 p-6 sm:p-7"
       >
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-          Continuar
+          {returnCopy.eyebrow}
         </p>
         <h2
           id="resume-heading"
           className="mt-2 font-display text-xl text-ink sm:text-2xl"
         >
-          Continue de onde parou
+          {returnCopy.title}
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-          Retome a conversa mantendo o contexto que já foi construído.
+          {returnCopy.body}
         </p>
         <div className="mt-4 rounded-xl border border-border/60 bg-card/70 px-4 py-3">
           <p className="font-medium text-ink">{latest.title}</p>
@@ -325,7 +328,7 @@ export default async function InicioPage() {
         </div>
         <Button asChild className="mt-6 min-h-11 bg-ink hover:bg-ink/90">
           <Link href={`/conversar?c=${latest.conversationId}`}>
-            Retomar conversa
+            {returnCopy.cta}
           </Link>
         </Button>
       </section>

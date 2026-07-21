@@ -16,6 +16,11 @@ import {
   syncConversationUrl,
   type ChatUiMessage,
 } from "@/lib/conversations/chat-history-ui";
+import {
+  clearComposerDraft,
+  resolveInitialComposerInput,
+  writeComposerDraft,
+} from "@/lib/conversations/composer-draft";
 import type { PlanKey } from "@/lib/entitlements";
 import { getPlanUpsellSuggestion } from "@/lib/marketing/plan-upsell";
 import { cn } from "@/lib/utils";
@@ -58,7 +63,12 @@ export function ChatPanel({
   const [messages, setMessages] = useState<UiMessage[]>(
     hasHistory ? initialMessages! : [],
   );
-  const [input, setInput] = useState(initialDraft?.trim() ?? "");
+  const [input, setInput] = useState(() =>
+    resolveInitialComposerInput({
+      urlDraft: initialDraft,
+      conversationId: initialConversationId,
+    }),
+  );
   const [conversationId, setConversationId] = useState<string | null>(
     initialConversationId,
   );
@@ -112,6 +122,10 @@ export function ChatPanel({
       "(prefers-reduced-motion: reduce)",
     ).matches;
   }, []);
+
+  useEffect(() => {
+    writeComposerDraft(conversationId, input);
+  }, [conversationId, input]);
 
   const onScroll = useCallback(() => {
     const el = scrollerRef.current;
@@ -211,6 +225,8 @@ export function ChatPanel({
       }
 
       const payload = data as ChatResponsePayload;
+      clearComposerDraft(conversationId);
+      clearComposerDraft(payload.conversationId);
       setConversationId(payload.conversationId);
       syncConversationUrl(payload.conversationId);
       setPendingRequestId(null);
