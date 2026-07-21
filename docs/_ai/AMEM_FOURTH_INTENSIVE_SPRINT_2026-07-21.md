@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `2fee6a0`  
-**HEAD final:** `b1da4b209dbd1a9afb571757dc6828335c1a1b2e` (tip; carimbo de gates no commit seguinte se tip avançar)
+**HEAD final:** `59e4b57` (tip; fechamento substantivo `ebe9fe1`; gates em `b1da4b2`)
 
 ## F0 — Confirmação e regression review
 
