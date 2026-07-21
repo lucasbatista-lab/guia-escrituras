@@ -7,6 +7,7 @@ import { buildPublicPageMetadata } from "@/lib/seo";
 import {
   HELP_FAQ,
   SUPPORT_CATEGORIES,
+  SUPPORT_RESPONSE_NOTE,
   buildSupportMailto,
 } from "@/lib/support/help-center";
 
@@ -36,6 +37,7 @@ export default function AjudaPage() {
           operacional — não é aconselhamento pastoral, clínico ou jurídico, e
           não usamos WhatsApp para reflexões espirituais.
         </p>
+        <p className="mt-2 text-sm text-ink-soft">{SUPPORT_RESPONSE_NOTE}</p>
 
         <section className="mt-10 space-y-4" aria-labelledby="faq-heading">
           <h2 id="faq-heading" className="font-display text-2xl text-ink">

@@ -97,6 +97,16 @@ export const HELP_FAQ = [
     q: "O Amém Chat é Jesus falando?",
     a: "Não. É reflexão cristã com IA, baseada nas Escrituras. Não afirma ser Jesus, Deus, revelação ou autoridade pastoral.",
   },
+  {
+    category: "tecnico",
+    q: "A mensagem não enviou ou a página falhou",
+    a: "Atualize a página e tente de novo. Se o erro continuar, use a categoria Problema técnico abaixo — descreva horário e o que apareceu na tela, sem colar o conteúdo completo da conversa.",
+  },
+  {
+    category: "outro",
+    q: "Estou em crise — o suporte é aconselhamento?",
+    a: "Não. O Amém Chat e o e-mail de suporte não substituem emergência, CVV (188) nem cuidado pastoral/clínico presencial. Em risco imediato, busque ajuda humana local agora.",
+  },
 ] as const;
 
 /** Prefills mailto — never asks for spiritual conversation content. */
@@ -121,3 +131,8 @@ export function buildSupportMailto(categoryId: SupportCategoryId): string | null
   ].join("\n");
   return `mailto:${email}?subject=${encodeURIComponent(cat.subject)}&body=${encodeURIComponent(body)}`;
 }
+
+/** Honest support timing — not an SLA promise. */
+export const SUPPORT_RESPONSE_NOTE =
+  "Respondemos por e-mail em dias úteis, geralmente em até 2 dias úteis. Não é canal de emergência nem aconselhamento pastoral.";
+
