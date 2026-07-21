@@ -15,7 +15,7 @@ describe("launch premium conversion", () => {
   it("home hero keeps primary CTA, starting price and trust microcopy", () => {
     const home = read("src", "app", "(marketing)", "page.tsx");
     expect(home).toContain("brand.tagline");
-    expect(home).toContain("Começar com a minha situação");
+    expect(home).toContain("Ver planos e começar");
     expect(home).toContain("Ver uma reflexão de exemplo");
     expect(home).toContain("ESSENCIAL_PRICE_LABEL");
     expect(home).toContain("Planos a partir de");

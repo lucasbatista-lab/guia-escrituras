@@ -204,7 +204,7 @@ export default function HomePage() {
                   className="min-h-11 border-ink/20"
                 >
                   <TrackingLink href="/planos">
-                    Começar com a minha situação
+                    Ver planos e começar
                   </TrackingLink>
                 </Button>
               </div>
@@ -497,11 +497,12 @@ export default function HomePage() {
         <section className="mx-auto max-w-6xl px-4 pb-20 pt-4 sm:px-6">
           <div className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-12 text-center sm:px-10">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Pronto para trazer a sua situação?
+              Pronto para escolher um plano?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-              Escolha o plano, confirme o e-mail e converse com a tradição que
-              faz sentido para você — a partir de {ESSENCIAL_PRICE_LABEL}/mês.
+              Compare Essencial, Caminho e Profundo, confirme o e-mail e comece a
+              conversar com a tradição que faz sentido para você — a partir de{" "}
+              {ESSENCIAL_PRICE_LABEL}/mês.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
@@ -510,7 +511,7 @@ export default function HomePage() {
                 className="min-h-11 bg-wine hover:bg-wine-soft"
               >
                 <TrackingLink href="/planos">
-                  Começar com a minha situação
+                  Ver planos e começar
                 </TrackingLink>
               </Button>
               <Button asChild size="lg" variant="outline" className="min-h-11">

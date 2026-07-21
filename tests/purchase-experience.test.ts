@@ -22,7 +22,7 @@ describe("purchase experience — home copy & flow order", () => {
   it("follows the conversion section order", () => {
     const markers = [
       'href="#demonstracao"',
-      "Começar com a minha situação",
+      "Ver planos e começar",
       'id="demo-heading"',
       "Situações reais que você pode trazer",
       "Como o Amém Chat transforma situação em reflexão",
@@ -34,7 +34,7 @@ describe("purchase experience — home copy & flow order", () => {
       "Comparar todos os planos",
       "Perguntas frequentes",
       "Estamos começando",
-      "Pronto para trazer a sua situação?",
+      "Pronto para escolher um plano?",
     ];
     let last = -1;
     for (const marker of markers) {
@@ -45,7 +45,7 @@ describe("purchase experience — home copy & flow order", () => {
   });
 
   it("keeps CTAs and short hero transparency without defensive spam", () => {
-    expect(home).toContain("Começar com a minha situação");
+    expect(home).toContain("Ver planos e começar");
     expect(home).toContain("Ver uma reflexão de exemplo");
     expect(home).toContain("#demonstracao");
     expect(home).toContain("Planos a partir de");

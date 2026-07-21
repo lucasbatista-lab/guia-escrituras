@@ -26,7 +26,7 @@ export default async function PersonalizarPage() {
       <PurchaseJourneySteps current="personalizacao" />
       <PlatformPageHeader
         title="Personalize sua experiência"
-        description="Escolha tradição, estilo e profundidade — leva poucos instantes e deixa as reflexões mais alinhadas à forma como você vive a fé."
+        description="Escolha tradição, estilo e profundidade — leva poucos instantes. Você pode ajustar depois em Personalizar; nada disso bloqueia a primeira conversa para sempre."
       />
       <PersonalizationForm />
     </div>

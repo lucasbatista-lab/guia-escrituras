@@ -30,14 +30,14 @@ describe("launch conversion home", () => {
   it("makes demo the primary cold-traffic CTA and conversion uses TrackingLink", () => {
     expect(home).toContain('href="#demonstracao"');
     expect(home).toContain("Ver uma reflexão de exemplo");
-    expect(home).toContain("Começar com a minha situação");
+    expect(home).toContain("Ver planos e começar");
     expect(home).toContain("Conhecer os planos");
     expect(home).toContain("TrackingLink");
     expect(home).toContain('href="/planos"');
     expect(home).toContain("R$ 38");
     // Primary CTA block appears before secondary conversion wording in hero CTAs
     const primaryIdx = home.indexOf("Ver uma reflexão de exemplo");
-    const secondaryIdx = home.indexOf("Começar com a minha situação");
+    const secondaryIdx = home.indexOf("Ver planos e começar");
     expect(primaryIdx).toBeGreaterThan(-1);
     expect(secondaryIdx).toBeGreaterThan(primaryIdx);
   });
