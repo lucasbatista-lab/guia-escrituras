@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  mapJourneyCompleteError,
+  mapJourneyCompleteNetworkError,
+} from "@/lib/journeys/complete-client-errors";
 
 export function JourneyStepCompleteButton({
   journeySlug,
@@ -41,15 +45,23 @@ export function JourneyStepCompleteButton({
         cache: "no-store",
         body: JSON.stringify({ journeySlug, stepId }),
       });
-      const data = (await res.json()) as { message?: string };
+      const data = (await res.json()) as { message?: string; code?: string };
       if (!res.ok) {
-        setError(data.message ?? "Não foi possível salvar o progresso.");
+        setJustCompleted(false);
+        setError(
+          mapJourneyCompleteError({
+            status: res.status,
+            code: data.code,
+            message: data.message,
+          }),
+        );
         return;
       }
       setJustCompleted(true);
       router.refresh();
     } catch {
-      setError("Não foi possível salvar o progresso. Tente de novo.");
+      setJustCompleted(false);
+      setError(mapJourneyCompleteNetworkError());
     } finally {
       setLoading(false);
     }
