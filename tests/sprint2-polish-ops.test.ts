@@ -67,6 +67,26 @@ describe("observability redaction", () => {
     expect(String(out.long)).toContain("[truncated");
   });
 
+  it("redacts nested sensitive keys and email/stripe identifiers", () => {
+    const out = redactLogFields({
+      requestId: "r1",
+      email: "pessoa@example.com",
+      stripeCustomerId: "cus_1234567890",
+      data: {
+        content: "oração privada",
+        crisis: "relato",
+        ok: true,
+      },
+    });
+    expect(out.email).toBe("[redacted]");
+    expect(out.stripeCustomerId).toBe("[redacted]");
+    expect(out.data).toEqual({
+      content: "[redacted]",
+      crisis: "[redacted]",
+      ok: true,
+    });
+  });
+
   it("logger applies redaction before console output", () => {
     const spy = vi.spyOn(console, "info").mockImplementation(() => {});
     logger.info("unit_test_log", { message: "não deve aparecer", requestId: "r1" });

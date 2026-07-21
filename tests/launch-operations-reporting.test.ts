@@ -185,6 +185,21 @@ describe("operational alerts", () => {
     expect(alert?.href).toBe("/admin/usuarios?canceling=1");
     expect(alert?.level).toBe("info");
   });
+
+  it("does not invent canceling alert when count is null or zero", () => {
+    expect(
+      buildOperationalAlerts({
+        ...base,
+        cancelingWithAccessCount: null,
+      }).some((a) => a.key === "canceling_with_access"),
+    ).toBe(false);
+    expect(
+      buildOperationalAlerts({
+        ...base,
+        cancelingWithAccessCount: 0,
+      }).some((a) => a.key === "canceling_with_access"),
+    ).toBe(false);
+  });
 });
 
 describe("generateDailyReportForDate outcomes", () => {

@@ -28,26 +28,40 @@ export function maskToken(token: string | null | undefined): string | undefined 
 }
 
 const SENSITIVE_KEY =
-  /^(message|content|answer|prompt|body|text|password|token|authorization|cookie|spiritual|conversationMemory|followUpQuestion)$/i;
+  /^(message|content|answer|prompt|body|text|password|token|authorization|cookie|email|stripeCustomerId|stripeSubscriptionId|spiritual|conversationMemory|followUpQuestion|crisis|prayer|confession)$/i;
+
+function redactValue(key: string, value: unknown, depth: number): unknown {
+  if (SENSITIVE_KEY.test(key)) return "[redacted]";
+  if (typeof value === "string") {
+    if (value.length > 240) {
+      return `${value.slice(0, 80)}…[truncated ${value.length}]`;
+    }
+    return value;
+  }
+  if (value && typeof value === "object" && !Array.isArray(value) && depth < 1) {
+    return redactLogFields(value as Record<string, unknown>, depth + 1);
+  }
+  if (Array.isArray(value) && depth < 1) {
+    return value.map((item, index) =>
+      item && typeof item === "object" && !Array.isArray(item)
+        ? redactLogFields(item as Record<string, unknown>, depth + 1)
+        : redactValue(String(index), item, depth + 1),
+    );
+  }
+  return value;
+}
 
 /**
  * Strip or truncate fields that could contain spiritual conversation content
- * or secrets before structured logging.
+ * or secrets before structured logging. Recurses one level into nested objects.
  */
 export function redactLogFields(
   fields: Record<string, unknown>,
+  depth = 0,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(fields)) {
-    if (SENSITIVE_KEY.test(key)) {
-      out[key] = "[redacted]";
-      continue;
-    }
-    if (typeof value === "string" && value.length > 240) {
-      out[key] = `${value.slice(0, 80)}…[truncated ${value.length}]`;
-      continue;
-    }
-    out[key] = value;
+    out[key] = redactValue(key, value, depth);
   }
   return out;
 }
