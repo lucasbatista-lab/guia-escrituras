@@ -164,12 +164,14 @@ describe("resume UI contracts", () => {
     const display = read("src", "lib", "conversations", "display.ts");
     expect(page).toContain("resumeReturnCopy");
     expect(page).toContain("resumeReturnTone");
-    expect(page).toContain("returnCopy.cta");
+    expect(page).toContain("primary.cta");
+    expect(page).toContain("pickPrimaryReturnTarget");
     expect(display).toContain("Retomar conversa");
     expect(page).toContain("loadLatestResumePreview");
     expect(page).toContain("force-dynamic");
-    expect(page).toContain("`/conversar?c=${latest.conversationId}`");
+    expect(page).toContain("`/conversar?c=${resume.conversationId}`");
     expect(page).toContain("Começar uma nova reflexão");
+    expect(page).toContain("Última atividade");
     expect(page).not.toContain("memória permanente");
     expect(page).not.toContain("a IA se lembra");
     expect(page).not.toContain("listRecent");

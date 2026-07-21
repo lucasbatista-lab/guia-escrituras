@@ -43,7 +43,8 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Primeira reflexão");
     expect(page).toContain("Continue de onde parou");
     expect(page).toContain("resumeReturnCopy");
-    expect(page).toContain("returnCopy.cta");
+    expect(page).toContain("primary.cta");
+    expect(page).toContain("pickPrimaryReturnTarget");
     expect(page).toContain("THEME_SHORTCUTS");
     expect(page).toContain("journeyAllowsChat");
     expect(page).not.toMatch(JARGON);

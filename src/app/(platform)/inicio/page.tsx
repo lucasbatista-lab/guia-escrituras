@@ -9,6 +9,11 @@ import { StatusCard } from "@/components/platform/status-card";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import {
+  pickMostRecentInProgressJourney,
+  pickPrimaryReturnTarget,
+  type ReturnTargetCandidate,
+} from "@/lib/conversations/return-priority";
+import {
   formatConversationActivity,
   loadLatestResumePreview,
   resumeReturnCopy,
@@ -22,6 +27,9 @@ import {
   resolveUserJourneyState,
 } from "@/lib/journey";
 import { THEME_SHORTCUTS } from "@/lib/journey/theme-shortcuts";
+import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
+import { getJourneyBySlug } from "@/lib/journeys/registry";
+import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -91,6 +99,42 @@ export default async function InicioPage() {
       resume = await loadLatestResumePreview(auth.userId);
     } catch {
       resume = null;
+    }
+  }
+
+  let journeyCandidate: ReturnTargetCandidate | null = null;
+  if (allowsChat && canUseReadingJourneys(auth.planKey)) {
+    try {
+      const progressMap = await loadJourneyProgressMap(auth.userId);
+      const items = buildCatalogItems(progressMap);
+      const states = items
+        .map((i) => i.progress)
+        .filter((p): p is NonNullable<typeof p> => Boolean(p));
+      const latestJourney = pickMostRecentInProgressJourney(states);
+      if (latestJourney) {
+        const journey = getJourneyBySlug(latestJourney.journeySlug);
+        const nextStep = journey?.steps.find(
+          (s) => s.id === latestJourney.currentStepId,
+        );
+        if (journey && latestJourney.updatedAt) {
+          journeyCandidate = {
+            kind: "journey",
+            updatedAt: latestJourney.updatedAt,
+            title: journey.title,
+            subtitle: nextStep
+              ? `Próxima etapa: ${nextStep.title}`
+              : "Continuar no seu ritmo",
+            href: nextStep
+              ? `/jornadas/${journey.slug}/${nextStep.slug}`
+              : `/jornadas/${journey.slug}`,
+            cta: nextStep
+              ? `Continuar: ${nextStep.title}`
+              : "Continuar jornada",
+          };
+        }
+      }
+    } catch {
+      journeyCandidate = null;
     }
   }
 
@@ -219,7 +263,24 @@ export default async function InicioPage() {
   }
 
   // active_ready | canceling_at_period_end
-  if (!resume) {
+  const chatCandidate: ReturnTargetCandidate | null = resume
+    ? {
+        kind: "chat",
+        updatedAt: resume.updatedAt,
+        title: resume.title,
+        subtitle: resume.preview,
+        href: `/conversar?c=${resume.conversationId}`,
+        cta: resumeReturnCopy(resumeReturnTone(resume.updatedAt)).cta,
+      }
+    : null;
+
+  const returnSelection = pickPrimaryReturnTarget(
+    [chatCandidate, journeyCandidate].filter(
+      (c): c is ReturnTargetCandidate => Boolean(c),
+    ),
+  );
+
+  if (!returnSelection) {
     return (
       <div className="space-y-8">
         <PlatformPageHeader
@@ -275,8 +336,22 @@ export default async function InicioPage() {
     );
   }
 
-  const latest = resume;
-  const returnCopy = resumeReturnCopy(resumeReturnTone(latest.updatedAt));
+  const { primary, secondary } = returnSelection;
+  const primaryTone =
+    primary.kind === "chat" && resume
+      ? resumeReturnTone(resume.updatedAt)
+      : resumeReturnTone(primary.updatedAt);
+  const returnCopy = resumeReturnCopy(primaryTone);
+  const primaryEyebrow =
+    primary.kind === "journey" ? "Retomar jornada" : returnCopy.eyebrow;
+  const primaryTitle =
+    primary.kind === "journey"
+      ? "Continue a jornada de onde parou"
+      : returnCopy.title;
+  const primaryBody =
+    primary.kind === "journey"
+      ? "Sua trilha guiada continua disponível. Retome a etapa atual ou abra uma conversa livre quando quiser."
+      : returnCopy.body;
 
   return (
     <div className="space-y-8">
@@ -299,36 +374,50 @@ export default async function InicioPage() {
         className="rounded-2xl border border-wine/25 bg-gradient-to-br from-wine/[0.07] via-card/80 to-sand-100/80 p-6 sm:p-7"
       >
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-          {returnCopy.eyebrow}
+          {primaryEyebrow}
         </p>
         <h2
           id="resume-heading"
           className="mt-2 font-display text-xl text-ink sm:text-2xl"
         >
-          {returnCopy.title}
+          {primaryTitle}
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-          {returnCopy.body}
+          {primaryBody}
         </p>
         <div className="mt-4 rounded-xl border border-border/60 bg-card/70 px-4 py-3">
-          <p className="font-medium text-ink">{latest.title}</p>
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+            {primary.kind === "journey" ? "Jornada" : "Conversa"}
+          </p>
+          <p className="mt-1 font-medium text-ink">{primary.title}</p>
           <time
-            dateTime={latest.updatedAt}
+            dateTime={primary.updatedAt}
             className="mt-1 block text-xs text-ink-soft"
           >
-            {formatConversationActivity(latest.updatedAt)}
+            Última atividade · {formatConversationActivity(primary.updatedAt)}
           </time>
-          {latest.preview ? (
+          {primary.subtitle ? (
             <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">
-              {latest.preview}
+              {primary.subtitle}
             </p>
           ) : null}
         </div>
         <Button asChild className="mt-6 min-h-11 bg-ink hover:bg-ink/90">
-          <Link href={`/conversar?c=${latest.conversationId}`}>
-            {returnCopy.cta}
-          </Link>
+          <Link href={primary.href}>{primary.cta}</Link>
         </Button>
+        {secondary ? (
+          <p className="mt-4 text-sm text-ink-soft">
+            Também em andamento:{" "}
+            <Link
+              href={secondary.href}
+              className="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {secondary.kind === "journey"
+                ? secondary.title
+                : "Retomar conversa"}
+            </Link>
+          </p>
+        ) : null}
       </section>
 
       <PrimaryActionCard
@@ -338,8 +427,6 @@ export default async function InicioPage() {
         cta="Começar uma nova reflexão"
         tone="default"
       />
-
-      <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
 
       <JourneysInicioCard userId={auth.userId} planKey={auth.planKey} />
 

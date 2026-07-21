@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { pickMostRecentInProgressJourney } from "@/lib/conversations/return-priority";
 import type { PlanKey } from "@/lib/entitlements";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
 import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
@@ -19,9 +20,13 @@ export async function JourneysInicioCard({
   const items = buildCatalogItems(progressMap);
   const started = items.filter((i) => i.progress?.isStarted).length;
   const completed = items.filter((i) => i.progress?.isCompleted).length;
-  const inProgress = items.find(
-    (i) => i.progress?.isStarted && !i.progress.isCompleted,
-  );
+  const inProgressStates = items
+    .map((i) => i.progress)
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const inProgressState = pickMostRecentInProgressJourney(inProgressStates);
+  const inProgress = inProgressState
+    ? items.find((i) => i.journey.slug === inProgressState.journeySlug)
+    : undefined;
   const nextStep = inProgress
     ? inProgress.journey.steps.find(
         (s) => s.id === inProgress.progress?.currentStepId,
