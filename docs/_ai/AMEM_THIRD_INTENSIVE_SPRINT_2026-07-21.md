@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `6b7b0f5` (pós-reconciliação; tip anterior `b8f64fd`)  
-**HEAD final:** _(atualizado no fechamento)_
+**HEAD final:** _(preenchido no commit F13)_
 
 ## F0 — Reconciliação Git (`3a05e72` × `b8f64fd`)
 
@@ -71,3 +71,95 @@ Varredura: `em desenvolvimento` / `em breve` / `coming soon` / `TODO` / `FIXME` 
 ## Ordem de execução (blocos seguros)
 
 1. F0 ✓ · 2. F1 ✓ · 3. F2 Retenção · 4. F3 Profundo · 5. F4 Jornadas · 6. F5 Onboarding · 7. F6 Conversão · 8. F7 Admin · 9. F8 Suporte · 10. F9 Segurança · 11. F10 Perf · 12. F11 Testes · 13. F12 Prep humano · 14. F13 Docs/gates
+
+---
+
+## F2 — Retenção e continuidade V2
+
+- **Objetivo:** draft local + retorno após dias sem inferência espiritual  
+- **Evidência:** composer perdia texto ao sair; resume copy única  
+- **Arquivos:** `composer-draft.ts`, `chat-panel.tsx`, `display.ts`, `inicio/page.tsx`, `tests/retention-continuity-v2.test.ts`  
+- **Testes:** retention + conversation-resume + first-use  
+- **Commit:** `6759a6f`  
+- **Residual:** draft só sessionStorage; sem search server-side  
+
+## F3 — Profundo / Aprofundar
+
+- **Objetivo:** transparência do que será aprofundado + badge de resposta  
+- **Arquivos:** `chat-panel.tsx`, `chat-history-ui.ts`, testes deep/history  
+- **Commit:** `3abd2d2`  
+- **Residual:** flag `deepened` sessão-only (schema sem coluna)  
+
+## F4 — Jornadas V1.1
+
+- **Objetivo:** estado concluído da etapa + próxima ação  
+- **Arquivos:** `journey-step-complete-button.tsx`, `jornadas/.../[step]/page.tsx`, `tests/journeys-v1-1-ux.test.ts`  
+- **Commit:** `a4b2fad`  
+
+## F5 — Onboarding / ativação
+
+- **Objetivo:** CTAs honestos home → planos; personalizar sem fricção falsa  
+- **Before→After:** “Começar com a minha situação” → “Ver planos e começar”; final “Pronto para escolher um plano?”  
+- **Commit:** `30da905`  
+
+## F6 — Conversão / pricing V2
+
+- **Objetivo:** Caminho=Jornadas; Profundo=Aprofundar (sem preço/quota)  
+- **Arquivos:** `plans.ts`, `reserved.ts`, `plan-upsell.ts`  
+- **Commit:** `9f949ed`  
+
+## F7 — Admin Mobile Ops V1.2
+
+- **Objetivo:** alerta cancelando + filtros utm_medium/content  
+- **Arquivos:** `operational-alerts.ts`, `user-list-params.ts`, `users.ts`, `usuarios/page.tsx`  
+- **Commit:** `485be43`  
+
+## F8 — Suporte self-service V2
+
+- **Objetivo:** busca FAQ + agrupamento + mailto por categoria  
+- **Arquivos:** `help-center.ts`, `help-faq-search.tsx`, `ajuda/page.tsx`  
+- **Commit:** `b2337b0`  
+
+## F9 — Segurança local V2
+
+- **Objetivo:** `safeNextPath` rejeita `:` / controles / oversized; suite negativa  
+- **Arquivos:** `safe-next-path.ts`, `user-list-params.ts` (strip HTML em q), `tests/local-security-v2.test.ts`  
+- **Commit:** `27a380d`  
+- **Residual:** RLS 004 remoto não fingido  
+
+## F10 — Performance V2
+
+- **Objetivo:** loading boundaries + ShareInvite dynamic na home  
+- **Arquivos:** `jornadas/loading.tsx`, `conversas/loading.tsx`, `ajuda/loading.tsx`, home dynamic  
+- **Commit:** `4a28689`  
+- **Evidência:** chunk share separado do critical path; skeletons em rotas force-dynamic  
+
+## F11 — Testes V2
+
+- **Objetivo:** expandir `test:real-usage`  
+- **Antes:** 34 · **Depois:** **61**  
+- **Commit:** `38cfed0`  
+
+## F12 — Prep bloqueios humanos
+
+- **Doc:** `docs/_ai/AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md`  
+- **Commit:** `d509bb9`  
+- **Sem execução remota**  
+
+## Gates finais
+
+| Gate | Resultado |
+|------|-----------|
+| `pnpm test:real-usage` | PASS (**61**) |
+| `pnpm eval:theology:journeys` | PASS |
+| `pnpm eval:theology:ci` | PASS |
+| `pnpm launch:check` | PASS |
+| `pnpm lint` | PASS (0 erros, 5 warnings preexistentes) |
+| `pnpm test` | PASS (**848**) |
+| `pnpm build` | PASS |
+
+## Confirmações
+
+- `repositories/index.ts` **nunca** staged/commitado  
+- Sem migrations / Stripe / checkout / billing / preços / quotas / webhook / proration / deploy / remoto  
+- Playwright **não** instalado  

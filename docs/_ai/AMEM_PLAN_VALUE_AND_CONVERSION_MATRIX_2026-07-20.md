@@ -35,17 +35,22 @@ Hipótese vs evidência: padrões de mercado = **hipótese**; entitlements no re
 | Continuidade Jornadas no início | Caminho+ | **Ativo** | /inicio | Alto | Baixo | Baixo | Baixo | Baixo | Alto | Ess→Cam | sim |
 | Aprofundar (copy valor) | Profundo+ | **Ativo** | chat | Alto | — | Baixo | Baixo | Médio custo AI | Médio | Cam→Pro | sim |
 | Aquisição content admin | ops | **Ativo V1** | /admin/aquisicao | Médio | Baixo | Baixo | — | — | — | — | sim |
+| Draft local do composer | todos | **Ativo** (session) | /conversar | Alto | — | Baixo | Baixo | Baixo | Alto | — | sim |
+| Resume por idade | todos | **Ativo** | /inicio | Médio | — | Baixo | Baixo | Baixo | Alto | — | sim |
+| Etapa concluída Jornadas | Caminho+ | **Ativo V1.1** | /jornadas/.../step | Alto | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| Help FAQ search | todos | **Ativo V2** | /ajuda | Médio | Baixo | Baixo | Baixo | Baixo | Médio | — | sim |
+| Admin canceling + utm m/c | ops | **Ativo V1.2** | /admin | Médio | Baixo | Baixo | — | — | — | — | sim |
 
 ## Candidatos de implementação (sprint) — decisão
 
 | Ideia | Decisão | Motivo |
 |-------|---------|--------|
-| Help Center & Support Intake | **Feito** (+ V1.1) | M, testável, sem billing, mobile |
+| Help Center & Support Intake | **Feito** (+ V1.1 + V2 search) | M, testável, sem billing, mobile |
 | Crisis intercept | **Feito** | P1 segurança |
-| Admin mobile | **Feito** (+ attention V1.1) | Ops |
-| Histórico retenção | **Feito** | Retorno ao produto |
-| Continuidade Jornadas + deepen copy | **Feito** | Valor Caminho/Profundo |
-| Aquisição content attribution | **Feito V1** | Admin medium/content |
+| Admin mobile | **Feito** (+ attention + V1.2 filters) | Ops |
+| Histórico retenção | **Feito** (+ draft/age) | Retorno ao produto |
+| Continuidade Jornadas + deepen UX | **Feito** | Valor Caminho/Profundo |
+| Aquisição content attribution | **Feito V1** | Admin medium/content filters V1.2 |
 | Memória ampliada / personas / áudio | **Adiado** | XL + risco teológico/custo |
 | Favoritos de mensagens | Adiado | Precisa schema/migration |
 | Novas jornadas editoriais | Adiado | Revisão pastoral humana |
