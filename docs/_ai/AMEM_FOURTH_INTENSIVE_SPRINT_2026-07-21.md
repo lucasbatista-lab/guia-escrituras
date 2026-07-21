@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `2fee6a0`  
-**HEAD final:** `59e4b57` (tip; fechamento substantivo `ebe9fe1`; gates em `b1da4b2`)
+**HEAD final:** `7662f8e` (tip; fechamento substantivo `ebe9fe1`; gates `b1da4b2`)
 
 ## F0 — Confirmação e regression review
 
