@@ -344,6 +344,10 @@ describe("deep response UI and plan copy", () => {
     expect(upsell).toContain('href="/planos#aprofundar"');
     expect(panel).toContain("aria-describedby");
     expect(panel).toMatch(/[Cc]onsome\s+mais/);
+    expect(panel).toContain("Será aprofundado:");
+    expect(panel).toContain("Aprofundar e enviar");
+    expect(panel).toContain("Resposta aprofundada · só nesta mensagem");
+    expect(panel).toContain("deepened: useDeep");
   });
 
   it("conversar page passes server-resolved canDeepen", () => {

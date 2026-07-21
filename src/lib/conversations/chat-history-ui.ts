@@ -10,6 +10,8 @@ export type ChatUiMessage = {
     biblicalReferences?: BiblicalReference[];
     interpretationNotice?: string;
     followUpQuestion?: string;
+    /** Session-only: this assistant turn used Aprofundar (not persisted). */
+    deepened?: boolean;
   };
 };
 
@@ -58,6 +60,7 @@ export function appendAssistantUiMessage(
     biblicalReferences?: BiblicalReference[];
     interpretationNotice?: string;
     followUpQuestion?: string;
+    deepened?: boolean;
   },
 ): ChatUiMessage[] {
   const id = assistantMessageId(input.requestId);
@@ -74,6 +77,7 @@ export function appendAssistantUiMessage(
         biblicalReferences: input.biblicalReferences,
         interpretationNotice: input.interpretationNotice,
         followUpQuestion: input.followUpQuestion,
+        deepened: input.deepened || undefined,
       },
     },
   ];

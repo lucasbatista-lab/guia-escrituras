@@ -240,6 +240,7 @@ export function ChatPanel({
           biblicalReferences: payload.biblicalReferences,
           interpretationNotice: payload.interpretationNotice,
           followUpQuestion: payload.followUpQuestion,
+          deepened: useDeep,
         }),
       );
     } catch {
@@ -332,6 +333,11 @@ export function ChatPanel({
             <p className="whitespace-pre-wrap text-[15px] leading-[1.65]">
               {message.content}
             </p>
+            {message.role === "assistant" && message.meta?.deepened ? (
+              <p className="mt-2 text-xs font-medium text-wine">
+                Resposta aprofundada · só nesta mensagem
+              </p>
+            ) : null}
             {message.meta ? (
               <AssistantMetaFooter meta={message.meta} />
             ) : null}
@@ -422,6 +428,17 @@ export function ChatPanel({
                   mais da sua margem de uso — só nesta resposta, sem alterar seu
                   perfil.
                 </span>
+                {deepenActive ? (
+                  <span className="mt-2 block rounded-lg border border-wine/20 bg-card/80 px-2.5 py-2 text-xs leading-relaxed text-ink">
+                    <span className="font-medium">Será aprofundado:</span>{" "}
+                    {input.trim()
+                      ? input.trim().length > 140
+                        ? `${input.trim().slice(0, 140).trim()}…`
+                        : input.trim()
+                      : "o texto que você escrever abaixo, nesta mensagem."}{" "}
+                    Desmarque a caixa se quiser uma resposta padrão.
+                  </span>
+                ) : null}
               </span>
             </label>
           </div>
@@ -465,7 +482,7 @@ export function ChatPanel({
             aria-busy={loading}
             className="min-h-[3.25rem] min-w-11 self-end bg-ink px-4 hover:bg-ink/90"
           >
-            {loading ? "Enviando…" : "Enviar"}
+            {loading ? "Enviando…" : deepenActive ? "Aprofundar e enviar" : "Enviar"}
           </Button>
         </div>
         <p id="chat-composer-hint" className="mt-2 text-xs text-ink-soft">

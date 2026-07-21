@@ -108,6 +108,21 @@ describe("chat history UI helpers", () => {
     expect(assistantMessageId("req-a")).toBe("req-a-assistant");
   });
 
+  it("marks deepened assistant turns in session meta only", () => {
+    const withDeep = appendAssistantUiMessage([], {
+      requestId: "req-deep",
+      answer: "ampla",
+      deepened: true,
+    });
+    expect(withDeep[0]?.meta?.deepened).toBe(true);
+    const plain = appendAssistantUiMessage([], {
+      requestId: "req-plain",
+      answer: "padrão",
+      deepened: false,
+    });
+    expect(plain[0]?.meta?.deepened).toBeUndefined();
+  });
+
   it("rolls back optimistic user bubble for non-retryable errors", () => {
     const prev = [
       { id: "other", role: "user" as const, content: "antes" },
