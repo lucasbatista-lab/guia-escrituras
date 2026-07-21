@@ -50,8 +50,8 @@ export function getPlanUpsellSuggestion(input: {
           ? "Limite diário do seu plano"
           : "Margem de uso do Essencial",
         body: isDaily
-          ? "Este limite diário é temporário — amanhã você pode continuar. Se você costuma voltar várias vezes por semana, o Caminho oferece mais flexibilidade para conversas recorrentes."
-          : "Você atingiu a margem de uso do Essencial por enquanto. Se o Amém Chat faz parte da sua rotina semanal, o Caminho foi pensado para uso mais frequente.",
+          ? "Este limite diário é temporário — amanhã você pode continuar. Se você costuma voltar várias vezes por semana, o Caminho inclui Jornadas guiadas e mais margem para conversas recorrentes."
+          : "Você atingiu a margem de uso do Essencial por enquanto. O Caminho foi pensado para rotina semanal: Jornadas guiadas e mais espaço para voltar ao chat.",
         ctaLabel: "Comparar com o Caminho",
         href: "/planos#comparar-uso",
       };

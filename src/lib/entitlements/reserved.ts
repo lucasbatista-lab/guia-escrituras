@@ -58,13 +58,14 @@ export const PLAN_USAGE_PROFILES: Record<
     example: "Quero conversar quando uma situação específica surgir.",
   },
   caminho: {
-    headline: "Uso frequente",
-    example: "Quero voltar várias vezes ao longo da semana.",
+    headline: "Uso frequente + Jornadas",
+    example:
+      "Quero voltar várias vezes na semana e seguir trilhas guiadas sobre temas reais.",
   },
   profundo: {
     headline: "Uso intenso + Aprofundar",
     example:
-      "Quero usar com frequência e aprofundar temas importantes quando precisar.",
+      "Quero usar com frequência e acionar Aprofundar quando a situação pedir mais detalhe.",
   },
 };
 

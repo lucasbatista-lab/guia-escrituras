@@ -24,8 +24,8 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     key: "caminho",
     name: "Caminho",
     tagline:
-      "Para quem quer voltar ao Amém Chat várias vezes por semana e ter mais margem para acompanhar situações ao longo do mês.",
-    idealFor: "Para quem quer voltar com frequência",
+      "Para quem quer Jornadas guiadas e voltar ao chat várias vezes na semana, com mais margem no mês.",
+    idealFor: "Para frequência semanal e Jornadas",
     priceMonthlyCents: 5800,
     currency: "BRL",
     ctaType: "checkout",
@@ -50,8 +50,8 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     key: "profundo",
     name: "Profundo",
     tagline:
-      "Para quem pretende usar o Amém Chat de forma intensa e quer ir além da primeira reflexão.",
-    idealFor: "Para quem quer ir além da primeira reflexão",
+      "Para uso intenso e Aprofundar sob demanda quando a situação pedir mais contexto e Escrituras.",
+    idealFor: "Para Aprofundar sob demanda",
     priceMonthlyCents: 18800,
     currency: "BRL",
     ctaType: "checkout",

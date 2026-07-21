@@ -73,7 +73,7 @@ describe("plan differentiation — catalog", () => {
     expect(
       plan.displayBenefits.some((b) => /aprofundar/i.test(b)),
     ).toBe(true);
-    expect(plan.idealFor).toMatch(/além da primeira reflexão/i);
+    expect(plan.idealFor).toMatch(/Aprofundar sob demanda/i);
   });
 
   it("uses updated checkout CTAs", () => {

@@ -67,7 +67,7 @@ describe("plan promises — catalog honesty", () => {
   it("Profundo communicates Aprofundar without false active extras", () => {
     const plan = getPlanByKey("profundo")!;
     const active = plan.displayBenefits.join(" ").toLowerCase();
-    expect(plan.idealFor).toMatch(/além da primeira reflexão/i);
+    expect(plan.idealFor).toMatch(/Aprofundar sob demanda/i);
     expect(plan.ctaLabel).toBe("Quero o Profundo");
     expect(active).not.toMatch(/suporte prioritário|suporte prioritario/);
     expect(active).not.toMatch(/áudio|audio/);
