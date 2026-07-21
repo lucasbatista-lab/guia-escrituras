@@ -157,6 +157,7 @@ export default async function AdminUsuarioDetailPage({
               .join(" / ") || "—"
           }
         />
+        <Item label="Conteúdo (utm_content)" value={detail.utmContent ?? "—"} />
         <Item label="Referral" value={detail.referralCode ?? "—"} />
       </dl>
 

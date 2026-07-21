@@ -126,9 +126,9 @@ export default async function AdminAquisicaoPage({
       <div>
         <h1 className="font-display text-3xl text-ink">Aquisição</h1>
         <p className="mt-2 max-w-2xl text-sm text-ink-soft">
-          Origem de cadastros via UTMs/`ref` gravados em signup_intents (atribuição
-          de conversão). First/last touch ficam nos cookies; sem conteúdo de
-          conversas.{" "}
+          Origem de cadastros via UTMs/`ref` gravados em signup_intents (funil de
+          conversão). “Assinaturas” = intent completed — não é receita Stripe.
+          First/last touch ficam nos cookies; sem conteúdo de conversas.{" "}
           {report.partial
             ? "Leitura parcial: limite de páginas atingido."
             : null}
@@ -200,8 +200,13 @@ export default async function AdminAquisicaoPage({
       ) : (
         <div className="space-y-10">
           <BreakdownTable title="Por utm_source" rows={report.bySource} />
+          <BreakdownTable title="Por utm_medium" rows={report.byMedium} />
           <BreakdownTable title="Por utm_campaign" rows={report.byCampaign} />
           <BreakdownTable title="Por utm_content" rows={report.byContent} />
+          <BreakdownTable
+            title="Por origem × conteúdo (source · content)"
+            rows={report.bySourceContent}
+          />
           <BreakdownTable
             title="Compartilhamentos/indicações (utm_content em share)"
             rows={report.byShareContent}

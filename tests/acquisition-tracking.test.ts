@@ -225,6 +225,9 @@ describe("acquisition admin + wiring contracts", () => {
     );
     expect(page).toContain("getAdminAcquisitionReport");
     expect(page).toContain("force-dynamic");
+    expect(page).toContain("byMedium");
+    expect(page).toContain("bySourceContent");
+    expect(page).toContain("não é receita Stripe");
     expect(page).not.toContain("messages");
     expect(layout).toContain("AdminMobileNav");
     expect(layout).toContain("isAdmin");
@@ -315,6 +318,8 @@ describe("getAdminAcquisitionReport", () => {
     expect(report.partial).toBe(false);
     expect(rangeCalls).toBeGreaterThanOrEqual(2);
     expect(report.bySource.some((r) => r.key === "instagram")).toBe(true);
+    expect(report.byMedium.length).toBeGreaterThan(0);
+    expect(report.bySourceContent.some((r) => r.key.includes("·"))).toBe(true);
     expect(report.byCampaign[0]?.key).toBe("launch_jul26");
     expect(report.subscriptions).toBeGreaterThan(0);
     expect(report.attributedConversionPct).not.toBeNull();

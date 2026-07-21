@@ -808,6 +808,7 @@ export interface AdminUserDetail {
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
+  utmContent: string | null;
   referralCode: string | null;
   paymentEventSummaries: Array<{
     type: string;
@@ -878,7 +879,7 @@ export async function getAdminUserDetail(
     client
       .from("signup_intents")
       .select(
-        "utm_source, utm_medium, utm_campaign, status, checkout_created_at, updated_at",
+        "utm_source, utm_medium, utm_campaign, utm_content, status, checkout_created_at, updated_at",
       )
       .eq("user_id", userId)
       .order("updated_at", { ascending: false })
@@ -1070,6 +1071,7 @@ export async function getAdminUserDetail(
     utmSource: (latestIntent?.utm_source as string | null) ?? null,
     utmMedium: (latestIntent?.utm_medium as string | null) ?? null,
     utmCampaign: (latestIntent?.utm_campaign as string | null) ?? null,
+    utmContent: (latestIntent?.utm_content as string | null) ?? null,
     referralCode: (referrals.data?.[0]?.referral_code as string | null) ?? null,
     paymentEventSummaries,
     flags: {

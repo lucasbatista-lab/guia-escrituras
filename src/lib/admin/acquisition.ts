@@ -42,8 +42,11 @@ export interface AcquisitionReport {
   /** Referrals (ref) sem assinatura completed no período. */
   referralWithoutSubscription: number;
   bySource: AcquisitionBreakdownRow[];
+  byMedium: AcquisitionBreakdownRow[];
   byCampaign: AcquisitionBreakdownRow[];
   byContent: AcquisitionBreakdownRow[];
+  /** Composite utm_source + utm_content for content attribution. */
+  bySourceContent: AcquisitionBreakdownRow[];
   /** Breakdown de utm_content apenas para utm_source=share. */
   byShareContent: AcquisitionBreakdownRow[];
 }
@@ -153,8 +156,10 @@ export async function getAdminAcquisitionReport(
   );
 
   const bySource = new Map<string, AcquisitionBreakdownRow>();
+  const byMedium = new Map<string, AcquisitionBreakdownRow>();
   const byCampaign = new Map<string, AcquisitionBreakdownRow>();
   const byContent = new Map<string, AcquisitionBreakdownRow>();
+  const bySourceContent = new Map<string, AcquisitionBreakdownRow>();
   const byShareContent = new Map<string, AcquisitionBreakdownRow>();
 
   let totalSignups = 0;
@@ -200,8 +205,12 @@ export async function getAdminAcquisitionReport(
 
     if (attributed) {
       bump(bySource, row.utm_source ?? "(sem source)", row);
+      bump(byMedium, row.utm_medium ?? "(sem medium)", row);
       bump(byCampaign, row.utm_campaign ?? "(sem campaign)", row);
       bump(byContent, row.utm_content ?? "(sem content)", row);
+      const sourceLabel = (row.utm_source ?? "").trim() || "(sem source)";
+      const contentLabel = (row.utm_content ?? "").trim() || "(sem content)";
+      bump(bySourceContent, `${sourceLabel} · ${contentLabel}`, row);
     }
   }
 
@@ -225,8 +234,10 @@ export async function getAdminAcquisitionReport(
     shareSubscriptions,
     referralWithoutSubscription,
     bySource: finalizeRows(bySource),
+    byMedium: finalizeRows(byMedium),
     byCampaign: finalizeRows(byCampaign),
     byContent: finalizeRows(byContent),
+    bySourceContent: finalizeRows(bySourceContent),
     byShareContent: finalizeRows(byShareContent),
   };
 }
