@@ -1,4 +1,26 @@
-/** Shared commercial FAQ — home and /planos. */
+/** Shared commercial FAQ — home, /planos, and honesty anchors for /ajuda. */
+
+export const PLAN_CHANGE_FAQ = {
+  q: "Posso trocar de plano?",
+  a: "A troca automática entre planos ainda não está disponível. Você pode comparar os planos agora; quando a troca estiver pronta, avisaremos na conta. Dúvidas urgentes podem ir ao suporte.",
+} as const;
+
+export const APROFUNDAR_FAQ = {
+  q: "O que é Aprofundar?",
+  a: "É um modo opcional por mensagem no plano Profundo: pede uma análise mais extensa da situação, com mais contexto, conexões bíblicas e próximos passos. Você aciona quando quiser. Não é revelação nem orientação profissional.",
+} as const;
+
+export const JOURNEYS_PLANS_FAQ = {
+  q: "Quais planos incluem Jornadas?",
+  a: "Caminho, Profundo e Particular. O Essencial mantém o chat completo; as Jornadas fazem parte dos planos com uso mais frequente.",
+} as const;
+
+/** Must stay aligned across home, planos, and ajuda (commercial honesty). */
+export const CROSS_SURFACE_COMMERCIAL_FAQ = [
+  PLAN_CHANGE_FAQ,
+  APROFUNDAR_FAQ,
+  JOURNEYS_PLANS_FAQ,
+] as const;
 
 export const PLAN_COMMERCIAL_FAQ = [
   {
@@ -9,18 +31,12 @@ export const PLAN_COMMERCIAL_FAQ = [
     q: "O Essencial tem acesso ao chat completo?",
     a: "Sim. Você conversa com reflexões personalizadas, perfil espiritual, histórico e continuidade dentro da conversa. A diferença entre planos está na flexibilidade de uso ao longo do mês e, no Profundo, no recurso Aprofundar.",
   },
-  {
-    q: "O que é Aprofundar?",
-    a: "É um modo opcional por mensagem no plano Profundo: pede uma análise mais extensa da situação, com mais contexto, conexões bíblicas e próximos passos. Você aciona quando quiser. Não é revelação nem orientação profissional.",
-  },
+  APROFUNDAR_FAQ,
   {
     q: "Posso cancelar quando quiser?",
     a: "Sim. Você cancela a renovação automática na sua conta e mantém acesso até o fim do período já pago.",
   },
-  {
-    q: "Posso trocar de plano?",
-    a: "A troca automática entre planos ainda não está disponível. Você pode comparar os planos agora; quando a troca estiver pronta, avisaremos na conta. Dúvidas urgentes podem ir ao suporte.",
-  },
+  PLAN_CHANGE_FAQ,
   {
     q: "O que acontece quando atinjo o limite de uso?",
     a: "O Amém Chat usa uso justo — sem cota rígida de mensagens. Se você atingir a margem do plano ou um limite diário de segurança, aguarde e tente de novo. Limites temporários são diferentes da margem mensal do plano.",
@@ -49,8 +65,5 @@ export const PLAN_COMMERCIAL_FAQ = [
     q: "O progresso fica salvo?",
     a: "Sim, para assinantes com acesso às Jornadas. Etapas concluídas e o ponto atual ficam na sua conta e podem ser exportados em Baixar meus dados.",
   },
-  {
-    q: "Quais planos incluem Jornadas?",
-    a: "Caminho, Profundo e Particular. O Essencial mantém o chat completo; as Jornadas fazem parte dos planos com uso mais frequente.",
-  },
+  JOURNEYS_PLANS_FAQ,
 ] as const;

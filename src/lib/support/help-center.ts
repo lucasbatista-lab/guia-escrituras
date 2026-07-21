@@ -1,4 +1,9 @@
 import { getSupportEmail } from "@/config/legal";
+import {
+  APROFUNDAR_FAQ,
+  JOURNEYS_PLANS_FAQ,
+  PLAN_CHANGE_FAQ,
+} from "@/lib/marketing/plan-faq";
 
 export type SupportCategoryId =
   | "acesso"
@@ -75,12 +80,27 @@ export const HELP_FAQ = [
   {
     category: "cobranca",
     q: "Onde vejo ou altero minha assinatura?",
-    a: "Na área Conta, após entrar. O portal de cobrança gerencia método de pagamento e faturas. Não envie número de cartão por e-mail.",
+    a: "Na área Conta, após entrar. O portal de cobrança gerencia método de pagamento e faturas. A troca automática entre planos ainda não está disponível por esse portal. Não envie número de cartão por e-mail.",
+  },
+  {
+    category: "cobranca",
+    q: PLAN_CHANGE_FAQ.q,
+    a: PLAN_CHANGE_FAQ.a,
+  },
+  {
+    category: "uso",
+    q: APROFUNDAR_FAQ.q,
+    a: APROFUNDAR_FAQ.a,
   },
   {
     category: "jornadas",
     q: "Por que não vejo as Jornadas completas?",
     a: "Jornadas integrais estão nos planos Caminho, Profundo e Particular. No Essencial há prévia e comparação de planos.",
+  },
+  {
+    category: "jornadas",
+    q: JOURNEYS_PLANS_FAQ.q,
+    a: JOURNEYS_PLANS_FAQ.a,
   },
   {
     category: "cancelamento",

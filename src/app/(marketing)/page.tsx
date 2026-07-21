@@ -7,6 +7,7 @@ import { ChatDemo } from "@/components/marketing/chat-demo";
 import { PlanCards } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { PERSONALIZATION_DEPTHS } from "@/lib/journey/personalization-labels";
+import { CROSS_SURFACE_COMMERCIAL_FAQ } from "@/lib/marketing/plan-faq";
 import {
   socialOpenGraphImages,
   socialTwitterImages,
@@ -141,6 +142,7 @@ const faq = [
     q: "Minhas conversas ficam públicas?",
     a: "Não. O uso das conversas segue a Política de Privacidade — não há publicação pública do seu diálogo na plataforma.",
   },
+  ...CROSS_SURFACE_COMMERCIAL_FAQ,
 ];
 
 function SectionShell({
