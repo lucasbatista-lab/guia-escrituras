@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:real-usage": "vitest run tests/real-usage-authorization-matrix.test.ts tests/real-usage-journey-caminho-flow.test.ts tests/real-usage-prefill-no-autosend.test.ts tests/real-usage-e2e-critical-flows.test.ts tests/journey-api-auth-contract.test.ts tests/retention-continuity-v2.test.ts tests/journeys-v1-1-ux.test.ts tests/local-security-v2.test.ts tests/help-center.test.ts tests/auth-deep-link-resume.test.ts tests/commercial-honesty-surfaces.test.ts tests/sprint4-reliability-ops.test.ts tests/composer-draft-privacy.test.ts",
+    "test:real-usage": "vitest run tests/real-usage-authorization-matrix.test.ts tests/real-usage-journey-caminho-flow.test.ts tests/real-usage-prefill-no-autosend.test.ts tests/real-usage-e2e-critical-flows.test.ts tests/journey-api-auth-contract.test.ts tests/retention-continuity-v2.test.ts tests/retention-return-priority-v4.test.ts tests/journeys-v1-1-ux.test.ts tests/local-security-v2.test.ts tests/local-security-v3.test.ts tests/help-center.test.ts tests/auth-deep-link-resume.test.ts tests/commercial-honesty-surfaces.test.ts tests/sprint4-reliability-ops.test.ts tests/composer-draft-privacy.test.ts tests/privacy-storage-v2.test.ts tests/chat-long-session-v4.test.ts tests/activation-session-checklist.test.ts",
     "launch:check": "node scripts/launch-check.cjs",
     "eval:theology": "node scripts/run-theology-eval.cjs",
     "eval:theology:ci": "node scripts/run-theology-eval.cjs --ci",

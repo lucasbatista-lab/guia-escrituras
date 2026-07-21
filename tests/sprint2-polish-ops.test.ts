@@ -104,6 +104,8 @@ describe("observability redaction", () => {
     );
     expect(health).toContain("requestId");
     expect(health).toContain("supabasePublicEnv");
+    expect(health).toContain("requestId");
+    expect(health).toContain("correlation");
     expect(health).not.toContain("OPENAI_API_KEY");
     expect(health).not.toContain("SUPABASE_SECRET");
     expect(health).not.toContain("mocksAllowed");
