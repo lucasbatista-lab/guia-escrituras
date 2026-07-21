@@ -18,6 +18,7 @@ export type ChatClientErrorKind =
   | "rate_limit"
   | "in_progress"
   | "deep_not_entitled"
+  | "not_found"
   | "unavailable"
   | "retryable";
 
@@ -74,6 +75,21 @@ export function resolveChatClientError(
         "A resposta aprofundada sob demanda está disponível no plano Profundo.",
       keepPendingRequest: false,
       clearDeepPreference: true,
+    };
+  }
+
+  if (
+    input.status === 404 ||
+    code === "conversation_not_found" ||
+    code === "not_found"
+  ) {
+    return {
+      kind: "not_found",
+      message:
+        serverMessage ||
+        "Esta conversa não está mais disponível. Abra outra pelo histórico ou comece uma nova reflexão.",
+      keepPendingRequest: false,
+      clearDeepPreference: false,
     };
   }
 

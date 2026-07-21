@@ -47,6 +47,7 @@ export function ChatPanel({
   initialDraft,
   canDeepen = false,
   currentPlanKey = null,
+  historyMayBeTruncated = false,
 }: {
   initialConversationId?: string | null;
   initialMessages?: UiMessage[];
@@ -56,6 +57,8 @@ export function ChatPanel({
   /** Server-resolved: Profundo / Particular provisioned only. */
   canDeepen?: boolean;
   currentPlanKey?: PlanKey | null;
+  /** True when the server loaded a full message page (older turns may exist). */
+  historyMayBeTruncated?: boolean;
 }) {
   const hasHistory = Boolean(initialMessages && initialMessages.length > 0);
   const [messages, setMessages] = useState<UiMessage[]>(
@@ -116,6 +119,8 @@ export function ChatPanel({
   const sendingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
   const sendGenerationRef = useRef(0);
+  const inflightTextRef = useRef<string | null>(null);
+  const inflightRequestIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia(
@@ -167,6 +172,8 @@ export function ChatPanel({
     }
     setSendingDeep(useDeep);
     setPendingRequestId(requestId);
+    inflightTextRef.current = trimmed;
+    inflightRequestIdRef.current = requestId;
 
     const userMessage: UiMessage = {
       id: requestId,
@@ -286,8 +293,32 @@ export function ChatPanel({
       if (generation === sendGenerationRef.current) {
         sendingRef.current = false;
         setLoading(false);
+        inflightTextRef.current = null;
+        inflightRequestIdRef.current = null;
       }
     }
+  }
+
+  function cancelInFlightSend() {
+    if (!loading && !sendingRef.current) return;
+    abortRef.current?.abort();
+    sendGenerationRef.current += 1;
+    const text = inflightTextRef.current;
+    const reqId = inflightRequestIdRef.current;
+    if (text) setInput(text);
+    if (reqId) {
+      setMessages((prev) => rollbackOptimisticUserMessage(prev, reqId));
+    }
+    setPendingRequestId(null);
+    pendingDeepRef.current = false;
+    setSendingDeep(false);
+    setError(null);
+    setErrorKind(null);
+    sendingRef.current = false;
+    setLoading(false);
+    inflightTextRef.current = null;
+    inflightRequestIdRef.current = null;
+    inputRef.current?.focus();
   }
 
   const profileBits = [traditionLabel, depthLabel].filter(Boolean).join(" · ");
@@ -322,6 +353,13 @@ export function ChatPanel({
         onScroll={onScroll}
         className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto px-4 py-5 font-chat sm:px-5"
       >
+        {historyMayBeTruncated ? (
+          <InlineNotice tone="info">
+            Mostrando as mensagens mais recentes desta conversa. As mais antigas
+            continuam salvas no histórico.
+          </InlineNotice>
+        ) : null}
+
         {showEmptyState ? (
           <div className="max-w-[40rem] space-y-4">
             <h2 className="font-display text-xl text-ink sm:text-2xl">
@@ -384,6 +422,7 @@ export function ChatPanel({
             className="animate-soft-pulse text-sm text-ink-soft"
             role="status"
             aria-live="polite"
+            aria-busy="true"
           >
             {sendingDeep
               ? "Preparando uma reflexão aprofundada…"
@@ -408,6 +447,15 @@ export function ChatPanel({
                 >
                   Entrar novamente
                 </Link>
+              ) : errorKind === "not_found" ? (
+                <>
+                  <Button asChild variant="outline" className="min-h-11">
+                    <Link href="/conversas">Ver histórico</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="min-h-11">
+                    <Link href="/conversar">Nova reflexão</Link>
+                  </Button>
+                </>
               ) : (
                 <Button
                   type="button"
@@ -510,18 +558,30 @@ export function ChatPanel({
             maxLength={4000}
             disabled={loading}
           />
-          <Button
-            type="button"
-            onClick={() => void send()}
-            disabled={loading || !input.trim()}
-            aria-busy={loading}
-            className="min-h-[3.25rem] min-w-11 self-end bg-ink px-4 hover:bg-ink/90"
-          >
-            {loading ? "Enviando…" : deepenActive ? "Aprofundar e enviar" : "Enviar"}
-          </Button>
+          {loading ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={cancelInFlightSend}
+              className="min-h-[3.25rem] min-w-11 self-end px-4"
+            >
+              Cancelar
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => void send()}
+              disabled={!input.trim()}
+              className="min-h-[3.25rem] min-w-11 self-end bg-ink px-4 hover:bg-ink/90"
+            >
+              {deepenActive ? "Aprofundar e enviar" : "Enviar"}
+            </Button>
+          )}
         </div>
         <p id="chat-composer-hint" className="mt-2 text-xs text-ink-soft">
-          Enter envia · Shift+Enter nova linha
+          {loading
+            ? "Você pode cancelar o envio e editar o texto."
+            : "Enter envia · Shift+Enter nova linha"}
         </p>
         {error ? (
           <p id="chat-error" className="sr-only">

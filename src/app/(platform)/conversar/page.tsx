@@ -6,6 +6,10 @@ import { RefreshPageButton } from "@/components/platform/refresh-page-button";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import { mapStoredMessagesToUi } from "@/lib/conversations/chat-history-ui";
+import {
+  CHAT_THREAD_LOAD_LIMIT,
+  chatThreadMayBeTruncated,
+} from "@/lib/conversations/chat-thread-window";
 import { getRepositories } from "@/lib/database/repositories";
 import { canUseDeepResponseOnDemand } from "@/lib/entitlements";
 import {
@@ -104,6 +108,7 @@ export default async function ConversarPage({
   const repos = getRepositories();
   let conversationId: string | null = null;
   let initialMessages: ReturnType<typeof mapStoredMessagesToUi> = [];
+  let historyMayBeTruncated = false;
   let loadError = false;
 
   try {
@@ -115,10 +120,11 @@ export default async function ConversarPage({
       const messages = await repos.messages.listRecent(
         conversation.id,
         auth.userId,
-        200,
+        CHAT_THREAD_LOAD_LIMIT,
       );
       conversationId = conversation.id;
       initialMessages = mapStoredMessagesToUi(messages);
+      historyMayBeTruncated = chatThreadMayBeTruncated(messages.length);
     }
   } catch {
     loadError = true;
@@ -157,6 +163,7 @@ export default async function ConversarPage({
       {...panelProps}
       initialConversationId={conversationId}
       initialMessages={initialMessages}
+      historyMayBeTruncated={historyMayBeTruncated}
     />
   );
 }
