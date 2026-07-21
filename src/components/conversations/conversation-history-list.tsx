@@ -19,14 +19,18 @@ export function ConversationHistoryList({
   latestId,
   showLoadMore,
   loadMoreHref,
+  initialQuery = "",
+  atHardCap = false,
 }: {
   items: HistoryListItem[];
   latestId: string | null;
   showLoadMore: boolean;
   loadMoreHref: string;
+  initialQuery?: string;
+  atHardCap?: boolean;
 }) {
   const searchId = useId();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
 
   const filtered = useMemo(
     () => filterHistoryItems(items, query),
@@ -156,6 +160,13 @@ export function ConversationHistoryList({
             <Link href={loadMoreHref}>Carregar mais conversas</Link>
           </Button>
         </div>
+      ) : null}
+
+      {atHardCap ? (
+        <p className="text-xs text-ink-soft" role="status">
+          Mostrando até {items.length} conversas nesta página. A busca e a lista
+          ficam limitadas ao que já foi carregado.
+        </p>
       ) : null}
     </div>
   );

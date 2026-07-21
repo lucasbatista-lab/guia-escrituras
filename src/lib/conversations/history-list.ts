@@ -7,6 +7,7 @@ export const HISTORY_LIST_DEFAULT_LIMIT = 30;
 export const HISTORY_LIST_EXPANDED_LIMIT = 60;
 export const HISTORY_LIST_HARD_CAP = 60;
 export const HISTORY_PREVIEW_FETCH_CAP = 8;
+export const HISTORY_SEARCH_QUERY_MAX = 80;
 
 export type HistoryPeriodKey = "today" | "yesterday" | "week" | "older";
 
@@ -111,4 +112,30 @@ export function filterHistoryItems(
     const preview = (item.preview ?? "").toLowerCase();
     return title.includes(q) || preview.includes(q);
   });
+}
+
+/** Bound/sanitize local history search for URL + initial state. */
+export function sanitizeHistorySearchQuery(
+  raw: string | string[] | undefined | null,
+): string {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[\u0000-\u001F\u007F]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, HISTORY_SEARCH_QUERY_MAX);
+}
+
+export function buildConversasListHref(options: {
+  expanded?: boolean;
+  query?: string;
+}): string {
+  const params = new URLSearchParams();
+  if (options.expanded) params.set("mais", "1");
+  const q = sanitizeHistorySearchQuery(options.query ?? "");
+  if (q) params.set("q", q);
+  const qs = params.toString();
+  return qs ? `/conversas?${qs}` : "/conversas";
 }

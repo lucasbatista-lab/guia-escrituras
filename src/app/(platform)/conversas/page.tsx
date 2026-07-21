@@ -9,8 +9,11 @@ import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import {
   HISTORY_LIST_DEFAULT_LIMIT,
+  HISTORY_LIST_HARD_CAP,
   HISTORY_PREVIEW_FETCH_CAP,
+  buildConversasListHref,
   resolveHistoryListLimit,
+  sanitizeHistorySearchQuery,
   type HistoryListItem,
 } from "@/lib/conversations/history-list";
 import { sanitizeConversationPreview } from "@/lib/conversations/display";
@@ -43,6 +46,7 @@ export default async function ConversasPage({
   const maisRaw = params.mais;
   const maisParam = Array.isArray(maisRaw) ? maisRaw[0] : maisRaw;
   const { limit, expanded } = resolveHistoryListLimit(maisParam);
+  const initialQuery = sanitizeHistorySearchQuery(params.q);
 
   let rows: HistoryListItem[] = [];
   let loadError = false;
@@ -85,7 +89,13 @@ export default async function ConversasPage({
 
   const showLoadMore =
     !expanded && !loadError && rows.length >= HISTORY_LIST_DEFAULT_LIMIT;
+  const atHardCap =
+    expanded && !loadError && rows.length >= HISTORY_LIST_HARD_CAP;
   const canJourneys = canUseReadingJourneys(auth.planKey);
+  const loadMoreHref = buildConversasListHref({
+    expanded: true,
+    query: initialQuery,
+  });
 
   return (
     <div className="space-y-8">
@@ -144,7 +154,9 @@ export default async function ConversasPage({
           items={rows}
           latestId={rows[0]?.id ?? null}
           showLoadMore={showLoadMore}
-          loadMoreHref="/conversas?mais=1"
+          loadMoreHref={loadMoreHref}
+          initialQuery={initialQuery}
+          atHardCap={atHardCap}
         />
       )}
     </div>
