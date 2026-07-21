@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `4bf47d8`  
-**HEAD final:** _(atualizado no commit de fechamento)_  
+**HEAD final:** `a553551` (tip; hydrate checklist `56b368a`; docs close `a553551`)  
 **Fechamento substantivo de produto da sprint 4:** `ebe9fe1`
 
 ## F0 — Confirmação
@@ -25,7 +25,7 @@
 | jornadas | CTA pós-conclusão para outras jornadas | concluído F4 |
 | conversão | Affordance Aprofundar pós-resposta | concluído F5 |
 | conversão | Cancelamento ≠ troca de plano; WA Particular | concluído F6 |
-| ativação | Checklist sessão + hint por plano | concluído F7 |
+| ativação | Checklist sessão + hint por plano | concluído F7 (+ hydrate F14) |
 | admin | Resumo do dia mobile | concluído F8 |
 | suporte | Empty search + requestId mailto | concluído F9 |
 | privacidade | Logout limpa drafts + checklist | concluído F10 |
@@ -67,9 +67,9 @@
 
 - Cancelamento honesto; Particular WhatsApp não pastoral  
 
-### F7 Ativação V3 — `50666aa`
+### F7 Ativação V3 — `50666aa` (+ `56b368a` hydrate)
 
-- Checklist session-only + clear no logout  
+- Checklist session-only + clear no logout; `useSyncExternalStore`  
 
 ### F8 Admin V2 — `51d9e80`
 
@@ -95,10 +95,13 @@
 
 - Catálogo códigos estáveis; health `notes.correlation`  
 
-### F14–F17
+### F14 Qualidade — `b5cbf30` + `56b368a`
 
-- Qualidade: expandir `test:real-usage`; health contract  
-- Docs: este log, matriz de prontidão, human ultramínimo, backlog/NEXT_STEPS/plan matrix  
+- Expandir `test:real-usage`; health contract; lint hydrate  
+
+### F15–F17 Docs — `a553551`
+
+- Matriz de prontidão, human ultramínimo, backlog/NEXT_STEPS/plan matrix  
 
 ---
 
@@ -106,16 +109,18 @@
 
 | Gate | Resultado |
 |------|-----------|
-| `pnpm test:real-usage` | _(preencher no fechamento)_ |
-| `pnpm eval:theology:journeys` | _(preencher)_ |
-| `pnpm eval:theology:ci` | _(preencher)_ |
-| `pnpm launch:check` | _(preencher)_ |
-| `pnpm lint` | _(preencher)_ |
-| `pnpm test` | _(preencher)_ |
-| `pnpm build` | _(preencher)_ |
+| `pnpm test:real-usage` | PASS (**107**; baseline 81) |
+| `pnpm eval:theology:journeys` | PASS |
+| `pnpm eval:theology:ci` | PASS |
+| `pnpm launch:check` | PASS |
+| `pnpm lint` | PASS (0 erros, 5 warnings preexistentes) |
+| `pnpm test` | PASS (**905**; baseline 870) |
+| `pnpm build` | PASS |
 
 ## Confirmações
 
 - `repositories/index.ts` **nunca** staged/commitado  
 - Sem migrations / Stripe / checkout / billing / preços / quotas / webhook / proration / deploy / remoto  
 - Playwright **não** instalado  
+- Matriz: `AMEM_FINAL_LAUNCH_READINESS_MATRIX_2026-07-21.md`  
+- Humano: `AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`  
