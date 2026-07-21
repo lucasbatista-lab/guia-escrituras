@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
 import { PlanCards } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
-import { ShareInvite } from "@/components/share/share-invite";
 import { PERSONALIZATION_DEPTHS } from "@/lib/journey/personalization-labels";
 import {
   socialOpenGraphImages,
@@ -14,6 +14,12 @@ import {
 import { buildVisitorShareUrl } from "@/lib/share/resolve-server";
 import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
+
+const ShareInvite = dynamic(
+  () =>
+    import("@/components/share/share-invite").then((m) => m.ShareInvite),
+  { ssr: true },
+);
 
 export const metadata: Metadata = {
   title: { absolute: brand.seoTitle },
