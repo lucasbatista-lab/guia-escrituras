@@ -38,7 +38,10 @@ export default async function AdminUsuarioDetailPage({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/admin/usuarios" className="text-sm text-ink-soft underline">
+        <Link
+          href="/admin/usuarios"
+          className="inline-flex min-h-11 items-center text-sm text-ink-soft underline"
+        >
           ← Usuários
         </Link>
         <h1 className="mt-3 font-display text-3xl text-ink">

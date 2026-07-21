@@ -90,8 +90,19 @@
 - **Arquivos:** `src/lib/safety/crisis/*`, `chat-service.ts`, `general-rules.ts`, `AI_AND_THEOLOGY.md`, eval report/evaluate, `tests/crisis-safety.test.ts`  
 - **Testes:** crisis-safety + chat-reliability + theology — PASS; eval theology ci/journeys  
 - **Resultado:** intercept determinístico; falsos positivos comuns rejeitados  
-- **Commit:** (pendente)  
+- **Commit:** `ac47ec2`  
 - **Riscos:** calibragem pastoral humana; panico+agora classificado como medical_emergency  
 - **Próximo:** B04 Admin Mobile Ops V1  
+
+---
+
+## B04 — Admin Mobile Operations V1 (~00:02)
+
+- **Objetivo:** AUD-010  
+- **Arquivos:** `admin-mobile-nav.tsx`, `admin/layout.tsx`, `admin/loading.tsx`, `aquisicao/page.tsx`, usuarios pages, `tests/admin-mobile-ops.test.ts`  
+- **Testes:** admin-mobile-ops + admin suites — PASS  
+- **Resultado:** nav primary+Mais no mobile; cards em aquisição; loading skeleton  
+- **Commit:** (pendente)  
+- **Próximo:** B09 a11y quick wins  
 
 ---

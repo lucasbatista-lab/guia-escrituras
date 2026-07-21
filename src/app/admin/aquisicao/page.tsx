@@ -27,15 +27,57 @@ function BreakdownTable({
   return (
     <div>
       <h2 className="font-display text-xl text-ink">{title}</h2>
-      <div className="mt-3 overflow-x-auto">
+      {/* Mobile: stacked cards — avoids unusable horizontal tables */}
+      <ul className="mt-3 space-y-2 md:hidden">
+        {rows.map((row) => (
+          <li
+            key={row.key}
+            className="rounded-lg border border-border/60 px-3 py-3 text-sm"
+          >
+            <p className="font-mono text-xs text-ink">{row.key}</p>
+            <dl className="mt-2 grid grid-cols-2 gap-2 text-ink-soft">
+              <div>
+                <dt className="text-xs">Cadastros</dt>
+                <dd className="text-ink">{row.signups}</dd>
+              </div>
+              <div>
+                <dt className="text-xs">Checkouts</dt>
+                <dd className="text-ink">{row.checkoutsStarted}</dd>
+              </div>
+              <div>
+                <dt className="text-xs">Assinaturas</dt>
+                <dd className="text-ink">{row.subscriptions}</dd>
+              </div>
+              <div>
+                <dt className="text-xs">Conv. %</dt>
+                <dd className="text-ink">
+                  {row.conversionPct == null ? "—" : `${row.conversionPct}%`}
+                </dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-3 hidden overflow-x-auto md:block">
         <table className="w-full min-w-[36rem] text-left text-sm">
+          <caption className="sr-only">{title}</caption>
           <thead>
             <tr className="border-b border-border/70 text-ink-soft">
-              <th className="py-2 pr-3 font-medium">Chave</th>
-              <th className="py-2 pr-3 font-medium">Cadastros</th>
-              <th className="py-2 pr-3 font-medium">Checkouts</th>
-              <th className="py-2 pr-3 font-medium">Assinaturas</th>
-              <th className="py-2 font-medium">Conv. %</th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Chave
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Cadastros
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Checkouts
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Assinaturas
+              </th>
+              <th scope="col" className="py-2 font-medium">
+                Conv. %
+              </th>
             </tr>
           </thead>
           <tbody>

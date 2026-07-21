@@ -259,7 +259,7 @@ export default async function AdminUsuariosPage({
           {page > 1 ? (
             <Link
               href={pageHref(page - 1)}
-              className="rounded-md border border-border px-3 py-1.5 text-ink"
+              className="inline-flex min-h-11 items-center rounded-md border border-border px-3 py-1.5 text-ink"
             >
               Anterior
             </Link>
@@ -267,7 +267,7 @@ export default async function AdminUsuariosPage({
           {page < totalPages ? (
             <Link
               href={pageHref(page + 1)}
-              className="rounded-md border border-border px-3 py-1.5 text-ink"
+              className="inline-flex min-h-11 items-center rounded-md border border-border px-3 py-1.5 text-ink"
             >
               Próxima
             </Link>
