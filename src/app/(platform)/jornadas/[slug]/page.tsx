@@ -18,6 +18,10 @@ import {
   getJourneyBySlug,
   getJourneyEstimatedMinutes,
 } from "@/lib/journeys/registry";
+import {
+  buildJourneyResumePath,
+  buildLoginHref,
+} from "@/lib/navigation/safe-next-path";
 
 export const dynamic = "force-dynamic";
 
@@ -26,9 +30,10 @@ export default async function JornadaDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
   const auth = await getAuthUserContext();
   if (!auth) {
-    redirect("/entrar?next=/jornadas");
+    redirect(buildLoginHref(buildJourneyResumePath(slug), "/jornadas"));
   }
 
   const journeyState = await resolveUserJourneyState();
@@ -36,7 +41,6 @@ export default async function JornadaDetailPage({
     redirect(getRequiredDestinationForState(journeyState.state));
   }
 
-  const { slug } = await params;
   const journey = getJourneyBySlug(slug);
   if (!journey) notFound();
 

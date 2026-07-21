@@ -8,7 +8,11 @@ import { getAuthUserContext } from "@/lib/auth";
 import { mapStoredMessagesToUi } from "@/lib/conversations/chat-history-ui";
 import { getRepositories } from "@/lib/database/repositories";
 import { canUseDeepResponseOnDemand } from "@/lib/entitlements";
-import { isUuid } from "@/lib/navigation/safe-next-path";
+import {
+  buildConversarResumePath,
+  buildLoginHref,
+  isUuid,
+} from "@/lib/navigation/safe-next-path";
 import {
   preferredDepthLabelPt,
   traditionLabelPt,
@@ -27,9 +31,10 @@ export default async function ConversarPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const params = await searchParams;
   const auth = await getAuthUserContext();
   if (!auth) {
-    redirect("/entrar?next=/conversar");
+    redirect(buildLoginHref(buildConversarResumePath(params), "/conversar"));
   }
 
   const journey = await resolveUserJourneyState();
@@ -37,7 +42,6 @@ export default async function ConversarPage({
     redirect(getRequiredDestinationForState(journey.state));
   }
 
-  const params = await searchParams;
   const raw = params.c;
   const conversationParam = Array.isArray(raw) ? raw[0] : raw;
   const temaRaw = params.tema;
