@@ -10,7 +10,9 @@ import {
   journeyHasEffectiveAccess,
   resolveUserJourneyState,
 } from "@/lib/journey";
-import { ensureJourneyStarted } from "@/lib/journeys/server";
+import {
+  ensureJourneyStarted,
+} from "@/lib/journeys/server";
 import {
   getJourneyBySlug,
   getJourneyStep,
@@ -45,10 +47,13 @@ export default async function JornadaStepPage({
     redirect("/jornadas");
   }
 
-  await ensureJourneyStarted(auth.userId, journey.slug);
+  const progress = await ensureJourneyStarted(auth.userId, journey.slug);
+  const stepCompleted = progress.completedStepIds.includes(step.id);
   const prevSlug = getPreviousStepSlug(slug, stepSlug);
   const nextSlug = getNextStepSlug(slug, stepSlug);
+  const nextStep = nextSlug ? getJourneyStep(slug, nextSlug) : null;
   const chatHref = `/conversar?jornada=${encodeURIComponent(journey.slug)}&etapa=${encodeURIComponent(step.slug)}`;
+  const isLastStep = !nextSlug;
 
   return (
     <article className="space-y-8 pb-24">
@@ -67,7 +72,9 @@ export default async function JornadaStepPage({
 
       <PlatformPageHeader
         title={step.title}
-        description={`Etapa ${step.number} de 7 · ${step.estimatedMinutes} min`}
+        description={`Etapa ${step.number} de 7 · ${step.estimatedMinutes} min${
+          stepCompleted ? " · concluída" : ""
+        }`}
       />
 
       <p className="text-sm text-ink-soft">
@@ -100,7 +107,17 @@ export default async function JornadaStepPage({
         ) : null}
       </section>
 
-      <JourneyStepCompleteButton journeySlug={journey.slug} stepId={step.id} />
+      <JourneyStepCompleteButton
+        journeySlug={journey.slug}
+        stepId={step.id}
+        completed={stepCompleted}
+        nextStepHref={
+          nextSlug ? `/jornadas/${journey.slug}/${nextSlug}` : null
+        }
+        nextStepLabel={nextStep?.title ?? null}
+        journeyHref={`/jornadas/${journey.slug}`}
+        isLastStep={isLastStep}
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Button asChild variant="outline" className="min-h-11">
@@ -131,7 +148,11 @@ export default async function JornadaStepPage({
                 Próxima etapa
               </Link>
             </Button>
-          ) : null}
+          ) : (
+            <Button asChild variant="outline" className="min-h-11 flex-1">
+              <Link href="/inicio">Voltar ao início</Link>
+            </Button>
+          )}
         </div>
       </nav>
     </article>
