@@ -13,7 +13,7 @@ import {
   resolveHistoryListLimit,
   type HistoryListItem,
 } from "@/lib/conversations/history-list";
-import { sanitizeConversationPreview } from "@/lib/conversations/resume";
+import { sanitizeConversationPreview } from "@/lib/conversations/display";
 import { getRepositories } from "@/lib/database/repositories";
 import { canUseReadingJourneys } from "@/lib/entitlements";
 import {

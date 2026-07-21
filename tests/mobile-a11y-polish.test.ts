@@ -87,8 +87,14 @@ describe("mobile accessibility & resilience polish", () => {
     expect(page).toContain("EmptyState");
     expect(page).toContain("Nenhuma conversa ainda");
     expect(page).toContain("Nova reflexão");
-    expect(page).toContain("Retomar conversa");
     expect(page).toContain('redirect("/entrar?next=/conversas")');
+    const list = read(
+      "src",
+      "components",
+      "conversations",
+      "conversation-history-list.tsx",
+    );
+    expect(list).toContain("Retomar conversa");
   });
 
   it("global loading and error boundaries announce status and focus", () => {

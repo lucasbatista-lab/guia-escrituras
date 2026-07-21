@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { brand } from "@/config/brand";
-import { getAppRuntime, allowsMocks } from "@/config/runtime";
+import { getAppRuntime } from "@/config/runtime";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import { createRequestId } from "@/lib/utils";
 
@@ -20,7 +20,6 @@ export async function GET() {
       requestId: createRequestId(),
       checks: {
         supabasePublicEnv: hasSupabasePublicEnv(),
-        mocksAllowed: allowsMocks(),
       },
     },
     { headers: { "Cache-Control": "no-store" } },

@@ -132,8 +132,8 @@ describe("plan differentiation — marketing surfaces", () => {
   it("home links to full plan comparison without duplicating roadmap in cards", () => {
     const home = read("src", "app", "(marketing)", "page.tsx");
     expect(home).toContain("Comparar todos os planos");
-    expect(home).toMatch(/Caminho é a escolha natural/i);
-    expect(home).toMatch(/Aprofundar sob demanda/i);
+    expect(home).toMatch(/Jornadas guiadas/i);
+    expect(home).toMatch(/Aprofundar sob\s+demanda/i);
   });
 
   it("conta preserves billing and honest plan change notice", () => {

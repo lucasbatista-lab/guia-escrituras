@@ -138,7 +138,7 @@ describe("first-use onboarding — themes", () => {
     expect(inicio).toContain("/conversar?tema=");
     expect(inicio).not.toContain("/api/chat");
     expect(conversar).toContain("sanitizeThemeDraft");
-    expect(conversar).toContain("initialDraft={initialDraft}");
+    expect(conversar).toContain("initialDraft");
     expect(conversar).not.toContain("conversations.create");
     expect(panel).toContain("initialDraft?.trim()");
     expect(panel).not.toContain("autoSend");

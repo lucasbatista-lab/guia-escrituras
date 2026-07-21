@@ -125,9 +125,16 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("loadError");
     expect(page).toContain("RefreshPageButton");
     expect(page).toContain("listForUser");
-    expect(page).toContain("Retomar conversa");
+    expect(page).toContain("ConversationHistoryList");
     expect(page).not.toContain("listRecent");
     expect(page).not.toMatch(JARGON);
+    const list = read(
+      "src",
+      "components",
+      "conversations",
+      "conversation-history-list.tsx",
+    );
+    expect(list).toContain("Retomar conversa");
   });
 
   it("conta is organized in Portuguese without inventing support", () => {

@@ -30,25 +30,24 @@ Hipótese vs evidência: padrões de mercado = **hipótese**; entitlements no re
 | human_concierge | Particular | **Manual** | Request | Alto | — | Alto | Médio | — | — | — | ops |
 | whatsapp_access | Particular | Flag only | upcoming | — | — | — | **WhatsApp pastoral proibido** | — | — | — | **não espiritual** |
 | Crisis safety | todos | **Ativo V1** (sprint) | Docs | Crítico | Baixo | Calibragem | Alto se falhar | — | Confiança | — | sim |
-| Help Center | todos | **Ativo V1** (sprint) | /ajuda | Médio | Baixo | Baixo | Baixo | Baixo | Médio | — | sim |
+| Help Center | todos | **Ativo V1.1** | /ajuda | Médio | Baixo | Baixo | Baixo | Baixo | Médio | — | sim |
+| Histórico retenção | todos | **Ativo V1.1** | /conversas | Alto | — | Baixo | Baixo | Baixo | Alto | — | sim |
+| Continuidade Jornadas no início | Caminho+ | **Ativo** | /inicio | Alto | Baixo | Baixo | Baixo | Baixo | Alto | Ess→Cam | sim |
+| Aprofundar (copy valor) | Profundo+ | **Ativo** | chat | Alto | — | Baixo | Baixo | Médio custo AI | Médio | Cam→Pro | sim |
+| Aquisição content admin | ops | **Ativo V1** | /admin/aquisicao | Médio | Baixo | Baixo | — | — | — | — | sim |
 
 ## Candidatos de implementação (sprint) — decisão
 
 | Ideia | Decisão | Motivo |
 |-------|---------|--------|
-| Help Center & Support Intake | **Feito** | M, testável, sem billing, mobile |
+| Help Center & Support Intake | **Feito** (+ V1.1) | M, testável, sem billing, mobile |
 | Crisis intercept | **Feito** | P1 segurança |
-| Admin mobile | **Feito** | Ops |
+| Admin mobile | **Feito** (+ attention V1.1) | Ops |
+| Histórico retenção | **Feito** | Retorno ao produto |
+| Continuidade Jornadas + deepen copy | **Feito** | Valor Caminho/Profundo |
+| Aquisição content attribution | **Feito V1** | Admin medium/content |
 | Memória ampliada / personas / áudio | **Adiado** | XL + risco teológico/custo |
 | Favoritos de mensagens | Adiado | Precisa schema/migration |
 | Novas jornadas editoriais | Adiado | Revisão pastoral humana |
 | Troca de plano | **Bloqueado** até smoke financeiro |
-
-## Próximas features M sem billing (fila)
-
-1. Badge de progresso de Jornadas mais visível em `/inicio` (já parcial)  
-2. Empty states de histórico com CTA Jornadas (Caminho+)  
-3. Copy Aprofundar: prova de valor antes do toggle (polish)  
-4. Acquisition content attribution (admin)
-
-Preços **inalterados**. Stripe **inalterado**.
+| Playwright E2E | **Adiado** | Spike 2026-07-21 — harness insuficiente |

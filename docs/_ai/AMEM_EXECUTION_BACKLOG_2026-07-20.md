@@ -243,6 +243,29 @@ Após commit desta auditoria, o **primeiro bloco de implementação de produto/c
 
 ---
 
+## Status pós segunda sprint intensiva (2026-07-21)
+
+| Bloco | Status |
+|-------|--------|
+| B01 AppError + DATABASE | **Concluído** (sprint 1) |
+| B02 Vitest real-usage | **Concluído** (+ matriz E2E crítica sprint 2) |
+| B03 Playwright | **Adiado** — spike `AMEM_PLAYWRIGHT_E2E_SPIKE_2026-07-21.md` |
+| B04 Admin Mobile | **Concluído** (+ V1.1 attention) |
+| B05 MIG 004 | **Bloqueado** MIG/REMOTE/HUMAN |
+| B07 Crisis | **Concluído** |
+| B08 Chat reliability | **Parcial** — mitigações locais; cross-instance dep. 004 |
+| B09 A11y | **Concluído** (sprint 1) |
+| B10 Performance boundaries | **Concluído** (sprint 2) |
+| B11 Observabilidade | **Concluído** (redaction + health) |
+| B12 Help Center | **Concluído** V1.1 |
+| B13 Acquisition | **Concluído** V1 admin content |
+| B15/B16 Financial smoke | **Bloqueado** STRIPE/REMOTE/HUMAN |
+| B17 Proration | **Bloqueado** até B16 |
+
+Ver log: `docs/_ai/AMEM_SECOND_INTENSIVE_SPRINT_2026-07-21.md`.
+
+---
+
 ## Fora de escopo permanente nesta fase de backlog curto
 
 - Apresentar IA como Jesus/Deus/profeta  

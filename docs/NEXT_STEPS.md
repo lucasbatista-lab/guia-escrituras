@@ -1,45 +1,41 @@
 # Next steps
 
-## Concluído (2026-07-20)
+## Concluído (2026-07-20 → 2026-07-21)
 
 - Plan Differentiation & Ethical Upsell V1 (`5ab9cf2`)
 - Journey Progress Persistence Foundation (`13258e5`) + migration `20260712000008` **aplicada** em produção
 - Reading Journeys MVP V1 (`7113493`) + auto-deploy confirmado
-- Postcheck consolidado preferencial + runbook de retomada (docs desta noite)
+- Intensive sprint 1: AppError journeys, real-usage Vitest, crisis safety, Admin Mobile Ops V1, a11y, Help Center V1
+- Intensive sprint 2 (`docs/_ai/AMEM_SECOND_INTENSIVE_SPRINT_2026-07-21.md`): chat reliability, history retention, Playwright defer+Vitest matrix, persona auth, perf cache, acquisition admin, premium continuity/deepen, copy, admin attention, HC V1.1, log redaction
 
-## Pendente imediato (amanhã)
+## Pendente imediato (ops humano)
 
-1. **Smoke autenticado** das Jornadas — seguir `docs/TOMORROW_LAUNCH_RUNBOOK.md`
+1. **Smoke autenticado** das Jornadas — `docs/TOMORROW_LAUNCH_RUNBOOK.md`
 2. **Revisão pastoral humana** das 21 etapas (`docs/READING_JOURNEYS.md`)
-3. (Opcional) Rodar postcheck consolidado:  
-   `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`
-
-## Próximo bloco após smoke verde
-
-4. **Admin Mobile Operations V1**
+3. (Opcional) Postcheck consolidado 008
+4. **B00** verificação remota read-only (policies 004, tabelas 005–007)
+5. **Smoke financeiro** — só após prep (`docs/_ai/AMEM_FINANCIAL_SMOKE_PREPARATION_2026-07-20.md`)
 
 ## Sequência sugerida depois
 
-5. Help Center & Support Intake V1  
-6. Acquisition Content Attribution V1  
-7. Autonomous Operations Runbook V1  
-8. Smoke de pagamento → só então Plan Change & Proration  
+6. Migration **004** (decisão humana explícita) + testes RLS locais  
+7. Playwright E2E quando harness de mocks process-scoped existir (ver spike 2026-07-21)  
+8. Plan Change & Proration — **somente após** smoke financeiro  
 
 ## Cutover / ops contínuos
 
-- `docs/PRODUCTION_CUTOVER_RUNBOOK.md` / `docs/LAUNCH_CHECKLIST.md` conforme itens abertos  
-- Cron + `CRON_SECRET` — `docs/DAILY_REPORTS.md`  
+- `docs/PRODUCTION_CUTOVER_RUNBOOK.md` / `docs/LAUNCH_CHECKLIST.md`
+- Cron + `CRON_SECRET` — `docs/DAILY_REPORTS.md`
 - Migration 004 só após revisão explícita (`docs/DEPLOYMENT.md`)
 
-## Pós-lançamento (não bloquear smoke de Jornadas)
+## Pós-lançamento
 
-- Observabilidade agregada de Jornadas (funil a partir dos eventos já logados)
-- Novas jornadas editoriais (com eval + revisão humana)
+- Observabilidade agregada de Jornadas
+- Novas jornadas editoriais (eval + revisão humana)
 - Streaming no `/api/chat`
-- Exclusão de conta (após portabilidade — `docs/USER_DATA_PORTABILITY.md`)
-- Troca de plano / proration **após** smoke financeiro
-- Fonte bíblica licenciada; receita Stripe no relatório diário; alertas externos
+- Exclusão de conta (após portabilidade)
+- Fonte bíblica licenciada; receita Stripe no relatório diário
 
 ## Estado mestre
 
-`docs/END_OF_DAY_MASTER_REPORT_2026-07-20.md`
+`docs/END_OF_DAY_MASTER_REPORT_2026-07-20.md` · sprint 2: `docs/_ai/AMEM_SECOND_INTENSIVE_SPRINT_2026-07-21.md`

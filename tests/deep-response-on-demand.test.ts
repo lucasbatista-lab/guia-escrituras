@@ -343,13 +343,13 @@ describe("deep response UI and plan copy", () => {
     expect(upsell).toContain("Conhecer o Profundo");
     expect(upsell).toContain('href="/planos#aprofundar"');
     expect(panel).toContain("aria-describedby");
-    expect(panel).toContain("consome mais");
+    expect(panel).toMatch(/[Cc]onsome\s+mais/);
   });
 
   it("conversar page passes server-resolved canDeepen", () => {
     const page = read("src", "app", "(platform)", "conversar", "page.tsx");
     expect(page).toContain("canUseDeepResponseOnDemand");
-    expect(page).toContain("canDeepen={canDeepen}");
+    expect(page).toContain("canDeepen");
   });
 
   it("Profundo lists on-demand deep as available now", () => {

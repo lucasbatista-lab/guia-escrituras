@@ -83,8 +83,9 @@ describe("observability redaction", () => {
       "utf8",
     );
     expect(health).toContain("requestId");
-    expect(health).toContain("mocksAllowed");
+    expect(health).toContain("supabasePublicEnv");
     expect(health).not.toContain("OPENAI_API_KEY");
     expect(health).not.toContain("SUPABASE_SECRET");
+    expect(health).not.toContain("mocksAllowed");
   });
 });

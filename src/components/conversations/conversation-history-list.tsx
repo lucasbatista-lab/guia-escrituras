@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   conversationTitleLabel,
   formatConversationActivity,
-} from "@/lib/conversations/resume";
+} from "@/lib/conversations/display";
 import {
   filterHistoryItems,
   groupConversationsByPeriod,

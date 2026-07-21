@@ -266,7 +266,8 @@ describe("runChatTurn requestId idempotency", () => {
       },
     });
     expect(second.answer).toBe(first.answer);
-    expect(second.interpretationNotice).toContain("idempotente");
+    expect(second.interpretationNotice).toBe("");
+    expect(second.interpretationNotice).not.toMatch(/idempotent/i);
     expect(generateSpy).toHaveBeenCalledTimes(1);
   });
 

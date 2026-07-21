@@ -28,7 +28,7 @@ export function resolveAuthorizedPersonaKey(input: {
   const available = listAvailablePersonas({
     traditionKey: input.traditionKey,
     saintsContentEnabled: input.saintsContentEnabled,
-    allowsSaintsContent: tradition.allowsSaintsContent,
+    allowsSaintsContent: tradition?.allowsSaintsContent ?? false,
   });
 
   if (available.some((p) => p.key === requested)) {

@@ -135,3 +135,8 @@
 - Gates finais: lint OK (5 warnings preexistentes), **780** testes, build OK  
 
 ---
+
+## Continuidade — Segunda sprint (2026-07-21)
+
+Log completo: `docs/_ai/AMEM_SECOND_INTENSIVE_SPRINT_2026-07-21.md`  
+HEAD inicial sprint 2: `7682398`  
