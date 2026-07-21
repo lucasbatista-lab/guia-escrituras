@@ -186,6 +186,7 @@ const MAILTO_HINTS: Record<SupportCategoryId, string[]> = {
     "Descreva a tela/rota e o que apareceu (erro, carregamento, envio).",
     "Navegador e dispositivo (opcional):",
     "Horário aproximado (opcional):",
+    "Código ou requestId da tela de erro, se aparecer (opcional — sem colar conversa):",
   ],
   outro: [
     "Descreva o assunto comercial ou Particular — sem pedido de aconselhamento pastoral.",

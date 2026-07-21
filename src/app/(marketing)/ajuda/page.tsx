@@ -68,7 +68,7 @@ export default function AjudaPage() {
               {SUPPORT_CATEGORIES.map((cat) => {
                 const href = buildSupportMailto(cat.id);
                 return (
-                  <li key={cat.id}>
+                  <li key={cat.id} id={`contato-${cat.id}`}>
                     <a
                       href={href ?? undefined}
                       className="flex min-h-11 flex-col justify-center rounded-xl border border-border/70 px-4 py-3 text-sm text-ink hover:bg-sand-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"

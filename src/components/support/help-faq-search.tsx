@@ -46,16 +46,36 @@ export function HelpFaqSearch() {
       ) : null}
 
       {groups.length === 0 ? (
-        <p className="text-sm text-ink-soft" role="status">
-          Nenhuma pergunta encontrada. Tente outro termo ou{" "}
-          <a
-            href="#contato"
-            className="underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            fale com o suporte por categoria
-          </a>
-          .
-        </p>
+        <div className="space-y-3 rounded-xl border border-border/70 bg-card/60 px-4 py-4" role="status">
+          <p className="text-sm text-ink-soft">
+            Nenhuma pergunta encontrada para “{query.trim()}”. O suporte por
+            e-mail não é aconselhamento pastoral.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="inline-flex min-h-11 items-center rounded-lg border border-border/70 px-3 text-sm text-ink hover:bg-sand-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onClick={() => setQuery("")}
+            >
+              Limpar busca
+            </button>
+            {SUPPORT_CATEGORIES.slice(0, 4).map((cat) => (
+              <a
+                key={cat.id}
+                href={`#contato-${cat.id}`}
+                className="inline-flex min-h-11 items-center rounded-lg border border-border/70 px-3 text-sm text-ink-soft hover:bg-sand-50 hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {cat.label}
+              </a>
+            ))}
+            <a
+              href="#contato"
+              className="inline-flex min-h-11 items-center rounded-lg border border-border/70 px-3 text-sm text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              Ver categorias de contato
+            </a>
+          </div>
+        </div>
       ) : (
         <div className="space-y-8">
           {groups.map((group) => (
