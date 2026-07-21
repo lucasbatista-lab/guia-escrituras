@@ -58,7 +58,11 @@ export default async function AdminHomePage() {
       </div>
 
       {alerts.length > 0 ? (
-        <Section title="Alertas operacionais">
+        <Section title="Precisa da sua atenção">
+          <p className="mb-3 text-sm text-ink-soft">
+            Itens operacionais com ação sugerida — toque para investigar no
+            celular.
+          </p>
           <ul className="space-y-2">
             {alerts.map((alert) => {
               const legacy = alertLevelToLegacy(alert.level);
@@ -68,10 +72,10 @@ export default async function AdminHomePage() {
                     href={alert.href}
                     className={
                       alert.level === "critical"
-                        ? "flex flex-col gap-1 rounded-lg border border-red-700/40 bg-red-50 px-3 py-3 text-sm text-red-950 sm:flex-row sm:items-start sm:justify-between"
+                        ? "flex min-h-11 flex-col gap-1 rounded-lg border border-red-700/40 bg-red-50 px-3 py-3 text-sm text-red-950 sm:flex-row sm:items-start sm:justify-between"
                         : alert.level === "attention"
-                          ? "flex flex-col gap-1 rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-3 text-sm text-amber-950 sm:flex-row sm:items-start sm:justify-between"
-                          : "flex flex-col gap-1 rounded-lg border border-border/70 bg-sand-50 px-3 py-3 text-sm text-ink sm:flex-row sm:items-start sm:justify-between"
+                          ? "flex min-h-11 flex-col gap-1 rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-3 text-sm text-amber-950 sm:flex-row sm:items-start sm:justify-between"
+                          : "flex min-h-11 flex-col gap-1 rounded-lg border border-border/70 bg-sand-50 px-3 py-3 text-sm text-ink sm:flex-row sm:items-start sm:justify-between"
                     }
                   >
                     <span>
@@ -91,7 +95,14 @@ export default async function AdminHomePage() {
             })}
           </ul>
         </Section>
-      ) : null}
+      ) : (
+        <Section title="Precisa da sua atenção">
+          <p className="rounded-lg border border-border/60 bg-sand-50/80 px-3 py-3 text-sm text-ink-soft">
+            Nenhum alerta operacional agora. Use os atalhos abaixo para revisões
+            de rotina.
+          </p>
+        </Section>
+      )}
 
       <Section title="Atalhos operacionais">
         <div className="flex flex-wrap gap-2 text-sm">
