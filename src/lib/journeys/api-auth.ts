@@ -9,9 +9,9 @@ export async function requireJourneySession() {
   if (!auth) {
     throw new AppError(
       "unauthorized",
-      "Faça login para continuar.",
-      401,
       "unauthorized",
+      401,
+      "Faça login para continuar.",
     );
   }
   return auth;
@@ -22,9 +22,9 @@ export async function requireJourneyEntitlement() {
   if (!canUseReadingJourneys(auth.planKey)) {
     throw new AppError(
       "journeys_not_entitled",
-      "Jornadas de leitura guiadas estão disponíveis nos planos Caminho, Profundo e Particular.",
-      403,
       "journeys_not_entitled",
+      403,
+      "Jornadas de leitura guiadas estão disponíveis nos planos Caminho, Profundo e Particular.",
     );
   }
   return auth;
