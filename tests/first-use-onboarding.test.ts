@@ -177,8 +177,8 @@ describe("first-use onboarding — chat empty state and composer", () => {
     expect(panel).toContain("Conte o que mais está pesando.");
     expect(panel).toContain("Explique que tipo de clareza você procura.");
     expect(panel).toContain("Exemplo:");
-    expect(panel).toContain("costumam combinar reflexão bíblica");
-    expect(panel).toContain("interpretação e sugestões práticas");
+    expect(panel).toContain("RESPONSE_FORMAT_HINT");
+    expect(panel).toContain('from "@/lib/conversations/response-format-hint"');
     expect(panel).not.toContain("aria-modal");
     expect(panel).not.toContain("localStorage");
   });

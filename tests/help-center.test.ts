@@ -59,9 +59,16 @@ describe("help center & support intake V1", () => {
       join(process.cwd(), "src/components/marketing/site-chrome.tsx"),
       "utf8",
     );
+    const search = readFileSync(
+      join(process.cwd(), "src/components/support/help-faq-search.tsx"),
+      "utf8",
+    );
     expect(page).toContain("Falar com o suporte");
+    expect(page).toContain('id="contato"');
     expect(page).toContain("HelpFaqSearch");
     expect(page).toContain("não é aconselhamento pastoral");
+    expect(search).toContain("#faq-");
+    expect(search).toContain("#contato");
     expect(sitemap).toContain('"/ajuda"');
     expect(footer).toContain('href="/ajuda"');
   });

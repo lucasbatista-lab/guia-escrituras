@@ -14,6 +14,7 @@ import {
   resumeReturnCopy,
   resumeReturnTone,
 } from "@/lib/conversations/resume";
+import { RESPONSE_FORMAT_HINT } from "@/lib/conversations/response-format-hint";
 import { getPlanByKey } from "@/lib/entitlements";
 import {
   firstNameFromDisplayName,
@@ -24,9 +25,6 @@ import { THEME_SHORTCUTS } from "@/lib/journey/theme-shortcuts";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-
-const RESPONSE_FORMAT_HINT =
-  "As respostas costumam combinar reflexão bíblica, interpretação e sugestões práticas — sempre sem afirmar revelação divina.";
 
 async function loadDisplayName(userId: string): Promise<string | null> {
   try {

@@ -21,6 +21,7 @@ import {
   resolveInitialComposerInput,
   writeComposerDraft,
 } from "@/lib/conversations/composer-draft";
+import { RESPONSE_FORMAT_HINT } from "@/lib/conversations/response-format-hint";
 import type { PlanKey } from "@/lib/entitlements";
 import { getPlanUpsellSuggestion } from "@/lib/marketing/plan-upsell";
 import { cn } from "@/lib/utils";
@@ -37,9 +38,6 @@ type UiMessage = ChatUiMessage;
 
 const EMPTY_EXAMPLE =
   "Estou com medo de tomar uma decisão profissional errada e preciso organizar minhas prioridades.";
-
-const RESPONSE_FORMAT_HINT =
-  "As respostas costumam combinar reflexão bíblica, interpretação e sugestões práticas — sempre sem afirmar revelação divina.";
 
 export function ChatPanel({
   initialConversationId = null,

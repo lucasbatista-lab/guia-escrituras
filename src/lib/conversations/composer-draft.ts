@@ -20,7 +20,8 @@ export function sanitizeComposerDraft(raw: string | null | undefined): string {
   return cleaned.slice(0, MAX_CHAT_MESSAGE_LENGTH);
 }
 
-type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem"> &
+  Partial<Pick<Storage, "key" | "length">>;
 
 export function readComposerDraft(
   conversationId: string | null | undefined,
@@ -69,6 +70,27 @@ export function clearComposerDraft(
     if (conversationId) {
       store.removeItem(composerDraftStorageKey(null));
     }
+  } catch {
+    // ignore
+  }
+}
+
+/** Remove all composer drafts from sessionStorage (logout / privacy minimize). */
+export function clearAllComposerDrafts(storage?: StorageLike | null): void {
+  const store = storage ?? getSessionStorage();
+  if (!store) return;
+  try {
+    const length = typeof store.length === "number" ? store.length : 0;
+    const keys: string[] = [];
+    if (typeof store.key === "function" && length > 0) {
+      for (let i = 0; i < length; i += 1) {
+        const key = store.key(i);
+        if (key && key.startsWith(DRAFT_KEY_PREFIX)) keys.push(key);
+      }
+    }
+    for (const key of keys) store.removeItem(key);
+    // Always clear the "new" bucket even if enumeration is unavailable.
+    store.removeItem(composerDraftStorageKey(null));
   } catch {
     // ignore
   }

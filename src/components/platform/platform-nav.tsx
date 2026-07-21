@@ -41,6 +41,10 @@ export function PlatformNav({
   }, [open]);
 
   async function logout() {
+    const { clearAllComposerDrafts } = await import(
+      "@/lib/conversations/composer-draft"
+    );
+    clearAllComposerDrafts();
     if (hasSupabaseEnv()) {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();

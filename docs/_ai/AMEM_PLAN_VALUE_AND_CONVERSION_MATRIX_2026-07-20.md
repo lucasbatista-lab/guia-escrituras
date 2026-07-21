@@ -40,17 +40,25 @@ Hipótese vs evidência: padrões de mercado = **hipótese**; entitlements no re
 | Etapa concluída Jornadas | Caminho+ | **Ativo V1.1** | /jornadas/.../step | Alto | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
 | Help FAQ search | todos | **Ativo V2** | /ajuda | Médio | Baixo | Baixo | Baixo | Baixo | Médio | — | sim |
 | Admin canceling + utm m/c | ops | **Ativo V1.2** | /admin | Médio | Baixo | Baixo | — | — | — | — | sim |
+| Auth deep-link resume | todos | **Ativo** | login next | Alto | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| Entitlements ACTIVE-only | todos | **Ativo** | resolve | Alto | — | — | — | — | — | — | sim |
+| FAQ honesty cross-surface | todos | **Ativo** | home/ajuda/planos | Alto | — | — | Baixo | Baixo | Médio | — | sim |
+| Chat abort + remount | todos | **Ativo** | /conversar | Alto | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| History search preserve + cap | todos | **Ativo V3** | /conversas | Médio | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| Draft clear on logout | todos | **Ativo** | sessionStorage | Médio | — | — | Baixo | Baixo | Médio | — | sim |
+| Help FAQ anchors V3 | todos | **Ativo V3** | /ajuda | Médio | Baixo | Baixo | Baixo | Baixo | Médio | — | sim |
 
 ## Candidatos de implementação (sprint) — decisão
 
 | Ideia | Decisão | Motivo |
 |-------|---------|--------|
-| Help Center & Support Intake | **Feito** (+ V1.1 + V2 search) | M, testável, sem billing, mobile |
+| Help Center & Support Intake | **Feito** (+ V1.1 + V2 search + V3 anchors) | M, testável, sem billing, mobile |
 | Crisis intercept | **Feito** | P1 segurança |
-| Admin mobile | **Feito** (+ attention + V1.2 filters) | Ops |
-| Histórico retenção | **Feito** (+ draft/age) | Retorno ao produto |
-| Continuidade Jornadas + deepen UX | **Feito** | Valor Caminho/Profundo |
+| Admin mobile | **Feito** (+ attention + V1.2 filters + severity sort) | Ops |
+| Histórico retenção | **Feito** (+ draft/age + V3 q/cap) | Retorno ao produto |
+| Continuidade Jornadas + deepen UX | **Feito** (+ complete negatives + label) | Valor Caminho/Profundo |
 | Aquisição content attribution | **Feito V1** | Admin medium/content filters V1.2 |
+| Auth deep-link + entitlements hygiene | **Feito** | Sprint 4 P1 |
 | Memória ampliada / personas / áudio | **Adiado** | XL + risco teológico/custo |
 | Favoritos de mensagens | Adiado | Precisa schema/migration |
 | Novas jornadas editoriais | Adiado | Revisão pastoral humana |

@@ -243,6 +243,28 @@ Após commit desta auditoria, o **primeiro bloco de implementação de produto/c
 
 ---
 
+## Status pós quarta sprint intensiva (2026-07-21)
+
+| Bloco | Status |
+|-------|--------|
+| Auth deep-link resume | **Concluído** |
+| Entitlements ACTIVE-only | **Concluído** |
+| FAQ honesty cross-surface | **Concluído** |
+| Chat abort/stale + Aprofundar label | **Concluído** (lock cross-instance ainda residual) |
+| Jornadas complete negatives | **Concluído** |
+| Histórico V3 (q + hard-cap) | **Concluído** |
+| Onboarding → conversar | **Concluído** |
+| Admin alert severity sort | **Concluído** |
+| Subscription lookup cache | **Concluído** |
+| Help Center V3 (anchors) | **Concluído** |
+| Privacy drafts on logout + redaction V2 | **Concluído** |
+| Human minimal actions pack | **Concluído** — `AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md` |
+| B00 / MIG 004 / Stripe / Playwright | **Bloqueado** |
+
+Ver log: `docs/_ai/AMEM_FOURTH_INTENSIVE_SPRINT_2026-07-21.md`.
+
+---
+
 ## Status pós terceira sprint intensiva (2026-07-21)
 
 | Bloco | Status |

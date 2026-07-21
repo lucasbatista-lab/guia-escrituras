@@ -46,8 +46,12 @@ export default function AjudaPage() {
           <HelpFaqSearch />
         </section>
 
-        <section className="mt-12 space-y-4" aria-labelledby="intake-heading">
-          <h2 id="intake-heading" className="font-display text-2xl text-ink">
+        <section
+          id="contato"
+          className="mt-12 space-y-4"
+          aria-labelledby="contato-heading"
+        >
+          <h2 id="contato-heading" className="font-display text-2xl text-ink">
             Falar com o suporte
           </h2>
           <p className="text-sm text-ink-soft">
