@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `7682398`  
-**HEAD final:** `3a05e72`
+**HEAD final:** `b8f64fd` (docs-only; fechamento substantivo em `3a05e72`)
 
 ## Ordem executada
 
