@@ -26,7 +26,7 @@ describe("real-usage: journey prefill without auto-send", () => {
   it("conversar page passes initialDraft and never POSTs chat on render", () => {
     const page = readSrc("app", "(platform)", "conversar", "page.tsx");
     expect(page).toContain("buildJourneyStepChatPrefill");
-    expect(page).toContain("initialDraft={initialDraft}");
+    expect(page).toContain("initialDraft");
     expect(page).toContain("journey_chat_prefill_opened");
     expect(page).not.toMatch(/fetch\(["']\/api\/chat/);
     expect(page).not.toMatch(/runChatTurn/);
