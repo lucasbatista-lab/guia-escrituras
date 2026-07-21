@@ -1,5 +1,6 @@
 import type { EntitlementKey, PlanKey } from "./types";
 import { getPlanEntitlements } from "./plans";
+import { isActiveEntitlementKey } from "./reserved";
 
 export interface EntitlementResolutionInput {
   planKey: PlanKey;
@@ -13,13 +14,19 @@ export interface EntitlementResolution {
   has: (key: EntitlementKey) => boolean;
 }
 
+/**
+ * Resolve *active* entitlements only. Reserved catalog keys remain on plan
+ * definitions for roadmap/display filtering, but never grant via `has()`.
+ */
 export function resolveEntitlements(
   input: EntitlementResolutionInput,
 ): EntitlementResolution {
-  const base = new Set(getPlanEntitlements(input.planKey));
+  const base = new Set(
+    getPlanEntitlements(input.planKey).filter(isActiveEntitlementKey),
+  );
 
   for (const key of input.overrides ?? []) {
-    base.add(key);
+    if (isActiveEntitlementKey(key)) base.add(key);
   }
 
   for (const key of input.revoked ?? []) {
@@ -31,7 +38,7 @@ export function resolveEntitlements(
   return {
     planKey: input.planKey,
     entitlements,
-    has: (key) => entitlements.includes(key),
+    has: (key) => isActiveEntitlementKey(key) && entitlements.includes(key),
   };
 }
 
