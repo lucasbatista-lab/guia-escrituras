@@ -109,6 +109,69 @@ export const HELP_FAQ = [
   },
 ] as const;
 
+export type HelpFaqItem = (typeof HELP_FAQ)[number];
+
+/** Case-insensitive local FAQ filter — no network, no sensitive logging. */
+export function filterHelpFaq(
+  query: string,
+  items: readonly HelpFaqItem[] = HELP_FAQ,
+): HelpFaqItem[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [...items];
+  return items.filter((item) => {
+    const hay = `${item.q} ${item.a} ${item.category}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+export function groupHelpFaqByCategory(
+  items: readonly HelpFaqItem[],
+): Array<{ category: SupportCategoryId; label: string; items: HelpFaqItem[] }> {
+  const byId = new Map<SupportCategoryId, HelpFaqItem[]>();
+  for (const item of items) {
+    const list = byId.get(item.category) ?? [];
+    list.push(item);
+    byId.set(item.category, list);
+  }
+  return SUPPORT_CATEGORIES.map((cat) => ({
+    category: cat.id,
+    label: cat.label,
+    items: byId.get(cat.id) ?? [],
+  })).filter((g) => g.items.length > 0);
+}
+
+const MAILTO_HINTS: Record<SupportCategoryId, string[]> = {
+  acesso: [
+    "Descreva se o problema é login, confirmação de e-mail ou recuperação de senha.",
+    "Horário aproximado (opcional):",
+  ],
+  cobranca: [
+    "Descreva o status da assinatura ou o recibo — sem número de cartão.",
+    "Horário aproximado (opcional):",
+  ],
+  uso: [
+    "Descreva o limite ou comportamento do chat (sem colar a conversa completa).",
+    "Horário aproximado (opcional):",
+  ],
+  privacidade: [
+    "Descreva a dúvida sobre exportação, retenção ou privacidade.",
+  ],
+  jornadas: [
+    "Descreva a Jornada/etapa e o problema de acesso ou progresso.",
+  ],
+  cancelamento: [
+    "Descreva se deseja cancelar a renovação ou entender o acesso até o fim do período.",
+  ],
+  tecnico: [
+    "Descreva a tela/rota e o que apareceu (erro, carregamento, envio).",
+    "Navegador e dispositivo (opcional):",
+    "Horário aproximado (opcional):",
+  ],
+  outro: [
+    "Descreva o assunto comercial ou Particular — sem pedido de aconselhamento pastoral.",
+  ],
+};
+
 /** Prefills mailto — never asks for spiritual conversation content. */
 export function buildSupportMailto(categoryId: SupportCategoryId): string | null {
   const email = getSupportEmail();
@@ -116,17 +179,18 @@ export function buildSupportMailto(categoryId: SupportCategoryId): string | null
   const cat =
     SUPPORT_CATEGORIES.find((c) => c.id === categoryId) ??
     SUPPORT_CATEGORIES.find((c) => c.id === "outro")!;
+  const hints = MAILTO_HINTS[cat.id] ?? MAILTO_HINTS.outro;
   const body = [
     "Olá, equipe Amém Chat,",
     "",
     `Categoria: ${cat.label}`,
     "",
-    "Descreva o problema operacional (acesso, cobrança, erro técnico).",
+    ...hints,
+    "",
     "Por favor, não inclua o conteúdo completo das suas conversas espirituais nem dados de cartão.",
     "",
     "E-mail da conta:",
     "Plano (se souber):",
-    "Horário aproximado do problema (opcional):",
     "",
   ].join("\n");
   return `mailto:${email}?subject=${encodeURIComponent(cat.subject)}&body=${encodeURIComponent(body)}`;

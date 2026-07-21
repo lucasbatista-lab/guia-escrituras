@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
+import { HelpFaqSearch } from "@/components/support/help-faq-search";
 import { MAIN_CONTENT_ID } from "@/components/a11y/main-content-id";
 import { getSupportEmail } from "@/config/legal";
 import { buildPublicPageMetadata } from "@/lib/seo";
 import {
-  HELP_FAQ,
   SUPPORT_CATEGORIES,
   SUPPORT_RESPONSE_NOTE,
   buildSupportMailto,
@@ -43,19 +43,7 @@ export default function AjudaPage() {
           <h2 id="faq-heading" className="font-display text-2xl text-ink">
             Perguntas frequentes
           </h2>
-          <ul className="space-y-4">
-            {HELP_FAQ.map((item) => (
-              <li
-                key={item.q}
-                className="rounded-xl border border-border/70 px-4 py-3"
-              >
-                <h3 className="text-sm font-medium text-ink">{item.q}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  {item.a}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <HelpFaqSearch />
         </section>
 
         <section className="mt-12 space-y-4" aria-labelledby="intake-heading">
@@ -106,6 +94,10 @@ export default function AjudaPage() {
         </section>
 
         <p className="mt-12 text-sm text-ink-soft">
+          <Link href="/inicio" className="underline underline-offset-2">
+            Ir ao início
+          </Link>
+          {" · "}
           <Link href="/planos" className="underline underline-offset-2">
             Ver planos
           </Link>
