@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  EMPTY_ACTIVATION_CHECKLIST,
   getActivationChecklist,
   markActivationStep,
   planFirstStepHint,
-  type ActivationChecklistState,
+  subscribeActivationChecklist,
 } from "@/lib/activation/session-checklist";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
 import type { PlanKey } from "@/lib/entitlements";
@@ -17,15 +18,13 @@ export function ActivationSessionChecklist({
 }: {
   planKey: PlanKey | null;
 }) {
-  const [state, setState] = useState<ActivationChecklistState | null>(null);
+  const state = useSyncExternalStore(
+    subscribeActivationChecklist,
+    getActivationChecklist,
+    () => EMPTY_ACTIVATION_CHECKLIST,
+  );
   const hint = planFirstStepHint(planKey);
   const journeysOk = canUseReadingJourneys(planKey);
-
-  useEffect(() => {
-    setState(getActivationChecklist());
-  }, []);
-
-  if (!state) return null;
 
   const relevantDone =
     Number(state.first_chat) +
@@ -61,7 +60,9 @@ export function ActivationSessionChecklist({
             <Button asChild variant="outline" className="min-h-11">
               <Link
                 href={hint.href}
-                onClick={() => setState(markActivationStep("first_chat"))}
+                onClick={() => {
+                  markActivationStep("first_chat");
+                }}
               >
                 {hint.cta}
               </Link>
@@ -82,9 +83,9 @@ export function ActivationSessionChecklist({
               <Button asChild variant="outline" className="min-h-11">
                 <Link
                   href="/jornadas"
-                  onClick={() =>
-                    setState(markActivationStep("explore_journeys"))
-                  }
+                  onClick={() => {
+                    markActivationStep("explore_journeys");
+                  }}
                 >
                   Ver jornadas
                 </Link>
@@ -101,7 +102,9 @@ export function ActivationSessionChecklist({
             <Button asChild variant="outline" className="min-h-11">
               <Link
                 href="/ajuda"
-                onClick={() => setState(markActivationStep("know_help"))}
+                onClick={() => {
+                  markActivationStep("know_help");
+                }}
               >
                 Abrir ajuda
               </Link>

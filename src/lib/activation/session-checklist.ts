@@ -1,7 +1,6 @@
 /**
  * Session-only first-activation checklist — no schema, no spiritual data.
- * Survives refresh in the same tab; cleared on logout via clearComposerDrafts
- * pattern (explicit clearActivationChecklist).
+ * Survives refresh in the same tab; cleared on logout via clearActivationChecklist.
  */
 
 const STORAGE_KEY = "amem:activation-checklist:v1";
@@ -17,17 +16,31 @@ export type ActivationChecklistState = {
   know_help: boolean;
 };
 
-const EMPTY: ActivationChecklistState = {
+export const EMPTY_ACTIVATION_CHECKLIST: ActivationChecklistState = {
   first_chat: false,
   explore_journeys: false,
   know_help: false,
 };
 
+const listeners = new Set<() => void>();
+
+function notifyActivationChecklistListeners(): void {
+  for (const listener of listeners) listener();
+}
+
+/** For useSyncExternalStore — client re-renders after mark/clear. */
+export function subscribeActivationChecklist(onStoreChange: () => void): () => void {
+  listeners.add(onStoreChange);
+  return () => {
+    listeners.delete(onStoreChange);
+  };
+}
+
 function readStorage(storage: Storage | null | undefined): ActivationChecklistState {
-  if (!storage) return { ...EMPTY };
+  if (!storage) return { ...EMPTY_ACTIVATION_CHECKLIST };
   try {
     const raw = storage.getItem(STORAGE_KEY);
-    if (!raw) return { ...EMPTY };
+    if (!raw) return { ...EMPTY_ACTIVATION_CHECKLIST };
     const parsed = JSON.parse(raw) as Partial<ActivationChecklistState>;
     return {
       first_chat: Boolean(parsed.first_chat),
@@ -35,7 +48,7 @@ function readStorage(storage: Storage | null | undefined): ActivationChecklistSt
       know_help: Boolean(parsed.know_help),
     };
   } catch {
-    return { ...EMPTY };
+    return { ...EMPTY_ACTIVATION_CHECKLIST };
   }
 }
 
@@ -51,51 +64,46 @@ function writeStorage(
   }
 }
 
+function resolveStore(storage?: Storage | null): Storage | null {
+  if (storage !== undefined) return storage;
+  if (typeof window !== "undefined") return window.sessionStorage;
+  return null;
+}
+
 export function getActivationChecklist(
   storage?: Storage | null,
 ): ActivationChecklistState {
-  const store =
-    storage === undefined
-      ? typeof window !== "undefined"
-        ? window.sessionStorage
-        : null
-      : storage;
-  return readStorage(store);
+  return readStorage(resolveStore(storage));
 }
 
 export function markActivationStep(
   step: ActivationStepId,
   storage?: Storage | null,
 ): ActivationChecklistState {
-  const store =
-    storage === undefined
-      ? typeof window !== "undefined"
-        ? window.sessionStorage
-        : null
-      : storage;
+  const store = resolveStore(storage);
   const next = { ...readStorage(store), [step]: true };
   writeStorage(next, store);
+  notifyActivationChecklistListeners();
   return next;
 }
 
 /** Logout / account switch — drop session activation progress. */
 export function clearActivationChecklist(storage?: Storage | null): void {
-  const store =
-    storage === undefined
-      ? typeof window !== "undefined"
-        ? window.sessionStorage
-        : null
-      : storage;
-  if (!storage && store === null) return;
+  const store = resolveStore(storage);
+  if (!store) return;
   try {
-    store?.removeItem(STORAGE_KEY);
+    store.removeItem(STORAGE_KEY);
   } catch {
     // ignore
   }
+  notifyActivationChecklistListeners();
 }
 
 export function activationProgressLabel(state: ActivationChecklistState): string {
-  const done = Number(state.first_chat) + Number(state.explore_journeys) + Number(state.know_help);
+  const done =
+    Number(state.first_chat) +
+    Number(state.explore_journeys) +
+    Number(state.know_help);
   return `${done} de 3 passos de ativação nesta sessão`;
 }
 
@@ -105,7 +113,11 @@ export function planFirstStepHint(planKey: string | null | undefined): {
   href: string;
   cta: string;
 } {
-  if (planKey === "caminho" || planKey === "profundo" || planKey === "particular") {
+  if (
+    planKey === "caminho" ||
+    planKey === "profundo" ||
+    planKey === "particular"
+  ) {
     return {
       title: "Primeiro passo",
       body: "Comece por uma conversa livre ou abra uma Jornada quando quiser um ritmo guiado.",
