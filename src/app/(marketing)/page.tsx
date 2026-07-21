@@ -425,8 +425,10 @@ export default function HomePage() {
             </h2>
             <p className="mt-3 max-w-2xl text-ink-soft">
               Assinatura mensal a partir de {ESSENCIAL_PRICE_LABEL}/mês.
-              Essencial para começar. Caminho é a escolha natural se você quer
-              voltar com frequência. Profundo inclui Aprofundar sob demanda.
+              Essencial para começar com reflexões e histórico. Caminho acrescenta
+              Jornadas guiadas e continuidade. Profundo inclui Aprofundar sob
+              demanda para situações que pedem mais detalhe — sem trocar o
+              Essencial por culpa ou pressão.
             </p>
             <div className="mt-10">
               <PlanCards compact />
