@@ -64,8 +64,21 @@
 - **Arquivos:** `src/lib/journeys/api-auth.ts`, `docs/DATABASE.md`, `tests/journey-api-auth-contract.test.ts`, este log  
 - **Testes:** `journey-api-auth-contract` + `persistence-and-migration004` — PASS  
 - **Resultado:** codes `unauthorized` / `journeys_not_entitled` estáveis; DATABASE alinhado a 008 aplicada / 004 não / 005–007 a confirmar  
-- **Commit:** (pendente push)  
+- **Commit:** `fe4c3af`  
 - **Riscos residuais:** AUD-001/004 ainda dependem de B00/B05 humanos  
 - **Próximo:** B02 real-usage Vitest  
+
+---
+
+## B02 — Base testes uso real Vitest (~23:58)
+
+- **Objetivo:** AUD-005 mitigação; pirâmide §8 do test plan  
+- **Investigação:** fixtures por plano; matriz auth; fluxo Caminho memory; prefill sem auto-send  
+- **Arquivos:** `tests/fixtures/synthetic-users.ts`, `tests/real-usage-*.test.ts`, `package.json` (`test:real-usage`)  
+- **Testes:** `pnpm test:real-usage` — 24 PASS  
+- **Resultado:** cobertura determinística anon/essencial/caminho/profundo/particular/admin contratos  
+- **Commit:** (pendente)  
+- **Riscos:** ainda sem Playwright E2E; smoke humano residual  
+- **Próximo:** B07 crisis safety  
 
 ---
