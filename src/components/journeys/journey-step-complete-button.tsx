@@ -95,6 +95,11 @@ export function JourneyStepCompleteButton({
               {isLastStep ? "Ver jornada" : "Voltar à jornada"}
             </Link>
           </Button>
+          {isLastStep ? (
+            <Button asChild className="min-h-11">
+              <Link href="/jornadas">Ver outras jornadas</Link>
+            </Button>
+          ) : null}
           <Button asChild variant="ghost" className="min-h-11">
             <Link href="/inicio">Ir ao início</Link>
           </Button>

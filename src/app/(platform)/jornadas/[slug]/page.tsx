@@ -116,6 +116,11 @@ export default async function JornadaDetailPage({
             {progress.isCompleted ? "Rever etapas" : "Continuar leitura"}
           </Link>
         </Button>
+        {progress.isCompleted ? (
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/jornadas">Ver outras jornadas</Link>
+          </Button>
+        ) : null}
         <JourneyResetButton journeySlug={journey.slug} />
       </div>
     </div>
