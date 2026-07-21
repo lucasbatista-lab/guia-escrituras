@@ -44,7 +44,11 @@ export function PlatformNav({
     const { clearAllComposerDrafts } = await import(
       "@/lib/conversations/composer-draft"
     );
+    const { clearActivationChecklist } = await import(
+      "@/lib/activation/session-checklist"
+    );
     clearAllComposerDrafts();
+    clearActivationChecklist();
     if (hasSupabaseEnv()) {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();

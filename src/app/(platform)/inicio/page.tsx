@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { JourneysInicioCard } from "@/components/journeys/journeys-inicio-card";
+import { ActivationSessionChecklist } from "@/components/platform/activation-session-checklist";
 import { PrimaryActionCard } from "@/components/platform/primary-action-card";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
@@ -316,6 +317,8 @@ export default async function InicioPage() {
             <Link href="/conversar">Escrever minha situação</Link>
           </Button>
         </section>
+
+        <ActivationSessionChecklist planKey={auth.planKey} />
 
         <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
 
