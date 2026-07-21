@@ -349,12 +349,20 @@ export default async function ContaPage() {
           title="Suporte"
           description="Precisa de ajuda com a conta ou a assinatura?"
         >
-          <a
-            href={`mailto:${supportEmail}`}
-            className="text-base text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            {supportEmail}
-          </a>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/ajuda"
+              className="inline-flex min-h-11 items-center text-base text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              Central de ajuda
+            </Link>
+            <a
+              href={`mailto:${supportEmail}`}
+              className="inline-flex min-h-11 items-center text-base text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {supportEmail}
+            </a>
+          </div>
         </PlatformSection>
       ) : null}
     </div>

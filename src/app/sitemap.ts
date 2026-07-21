@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   "/privacidade",
   "/uso-justo",
   "/cancelamento",
+  "/ajuda",
   "/entrar",
   "/cadastro",
 ] as const;

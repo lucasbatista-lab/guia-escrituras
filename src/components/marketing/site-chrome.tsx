@@ -127,6 +127,9 @@ export function SiteFooter() {
             <TrackingLink href="/planos" className="hover:text-ink">
               Planos
             </TrackingLink>
+            <TrackingLink href="/ajuda" className="min-h-11 inline-flex items-center hover:text-ink">
+              Ajuda
+            </TrackingLink>
             <TrackingLink href="/como-funciona" className="hover:text-ink">
               Como funciona
             </TrackingLink>

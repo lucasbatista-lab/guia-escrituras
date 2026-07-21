@@ -112,6 +112,17 @@
 - **Objetivo:** AUD-012/014/027  
 - **Arquivos:** legal-document-shell, not-found, chat-panel, mobile-a11y-polish.test  
 - **Testes:** mobile-a11y-polish PASS  
+- **Commit:** `565776b`  
+
+---
+
+## B12 — Help Center & Support Intake V1 + matrizes (~00:06)
+
+- **Objetivo:** AUD-020; docs matriz valor + prep smoke financeiro  
+- **Arquivos:** `src/lib/support/help-center.ts`, `(marketing)/ajuda/page.tsx`, sitemap, site-chrome, conta, docs `_ai` matriz e financial prep, `tests/help-center.test.ts`  
+- **Testes:** help-center + seo/launch-conversion — PASS  
+- **Resultado:** `/ajuda` público; mailto categorizado; sem intake espiritual  
 - **Commit:** (pendente)  
+- **Não iniciado:** B03 Playwright, B05 MIG, B08 cross-instance (dep 004), B13 acquisition, B16 live smoke  
 
 ---
