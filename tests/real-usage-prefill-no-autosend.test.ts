@@ -35,8 +35,9 @@ describe("real-usage: journey prefill without auto-send", () => {
   it("ChatPanel only sends on explicit send() — no mount auto-submit", () => {
     const panel = readSrc("components", "chat", "chat-panel.tsx");
     expect(panel).toContain("initialDraft");
-    expect(panel).toMatch(/useState\(initialDraft/);
-    // useEffects are for reduced-motion and scroll — not send
+    expect(panel).toContain("resolveInitialComposerInput");
+    expect(panel).toMatch(/urlDraft:\s*initialDraft/);
+    // useEffects are for reduced-motion, draft persist, and scroll — not send
     expect(panel).not.toMatch(/useEffect\(\s*\(\)\s*=>\s*\{[^}]*send\(/s);
     expect(panel).toMatch(/async function send\(/);
   });

@@ -81,7 +81,7 @@ describe("real-usage E2E-critical matrix (Vitest stand-in)", () => {
     expect(session).toMatch(/403|AppError/);
   });
 
-  it("7) /ajuda loads categories and classifies support mailto", () => {
+  it("7) /ajuda loads categories, FAQ search, and classifies support mailto", () => {
     expect(SUPPORT_CATEGORIES.length).toBeGreaterThan(3);
     expect(HELP_FAQ.length).toBeGreaterThan(3);
     const mailto = buildSupportMailto("cobranca");
@@ -92,6 +92,7 @@ describe("real-usage E2E-critical matrix (Vitest stand-in)", () => {
     }
     const page = read("src", "app", "(marketing)", "ajuda", "page.tsx");
     expect(page).toContain("SUPPORT_CATEGORIES");
+    expect(page).toContain("HelpFaqSearch");
   });
 
   it("8) admin mobile nav remains available for basic mobile ops", () => {
@@ -99,6 +100,28 @@ describe("real-usage E2E-critical matrix (Vitest stand-in)", () => {
     expect(layout).toContain("AdminMobileNav");
     const nav = read("src", "components", "admin", "admin-mobile-nav.tsx");
     expect(nav).toContain("min-h-11");
+  });
+
+  it("9) retention draft + age-based resume stay local and non-spiritual", () => {
+    const draft = read("src", "lib", "conversations", "composer-draft.ts");
+    const display = read("src", "lib", "conversations", "display.ts");
+    expect(draft).toContain("sessionStorage");
+    expect(display).toContain("resumeReturnTone");
+    expect(display).not.toMatch(/pecado|culpa espiritual/i);
+  });
+
+  it("10) journey step completion UX wires progress without new schema", () => {
+    const page = read(
+      "src",
+      "app",
+      "(platform)",
+      "jornadas",
+      "[slug]",
+      "[step]",
+      "page.tsx",
+    );
+    expect(page).toContain("completed={stepCompleted}");
+    expect(page).toContain("ensureJourneyStarted");
   });
 
   it("documents Playwright blocker: production runtime forbids mocks", () => {
