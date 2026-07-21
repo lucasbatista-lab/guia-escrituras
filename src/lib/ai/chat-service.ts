@@ -6,6 +6,7 @@ import {
   isOpenAiConfigured,
 } from "@/lib/ai/gateway";
 import type { ChatRequestInput, ChatResponsePayload } from "@/lib/ai/chat-schema";
+import { resolveAuthorizedPersonaKey } from "@/lib/ai/chat-persona";
 import type { AuthUserContext } from "@/lib/auth";
 import { requiresRealOpenAiForChat } from "@/config/runtime";
 import { getRepositories } from "@/lib/database/repositories";
@@ -311,10 +312,25 @@ export async function runChatTurn(input: {
     );
   }
 
+  const personaResolution = resolveAuthorizedPersonaKey({
+    requested: body.personaKey,
+    traditionKey: auth.spiritualProfile.traditionKey,
+    saintsContentEnabled: auth.spiritualProfile.saintsContentEnabled,
+  });
+  const personaKey = personaResolution.personaKey;
+  if (personaResolution.fellBack && body.personaKey !== personaKey) {
+    logger.info("chat_persona_fallback", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      requested: String(body.personaKey).slice(0, 32),
+      personaKey,
+    });
+  }
+
   if (!conversation) {
     conversation = await repos.conversations.create({
       userId: auth.userId,
-      personaKey: body.personaKey,
+      personaKey,
       title: body.message.slice(0, 80),
     });
   }
@@ -411,7 +427,7 @@ export async function runChatTurn(input: {
 
   const policy = theologyPolicyResolver.resolve({
     traditionKey: auth.spiritualProfile.traditionKey,
-    personaKey: body.personaKey,
+    personaKey,
     userPrefs: auth.spiritualProfile,
   });
 
@@ -427,7 +443,7 @@ export async function runChatTurn(input: {
     grounding = biblical.retrieve({
       question: body.message,
       traditionKey: auth.spiritualProfile.traditionKey,
-      personaKey: body.personaKey,
+      personaKey,
       allowsSaintsContent: policy.allowsSaintsContent,
       varietySeed: requestId,
       limit: groundingLimit,

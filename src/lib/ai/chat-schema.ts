@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_CHAT_PERSONA_KEY_LENGTH } from "@/lib/ai/chat-persona";
 
 export const MAX_CHAT_MESSAGE_LENGTH = 4000;
 
@@ -12,7 +13,12 @@ export const chatRequestSchema = z.object({
       `A mensagem pode ter no máximo ${MAX_CHAT_MESSAGE_LENGTH} caracteres.`,
     ),
   conversationId: z.string().uuid().optional().nullable(),
-  personaKey: z.string().min(1).default("jesus"),
+  personaKey: z
+    .string()
+    .trim()
+    .min(1)
+    .max(MAX_CHAT_PERSONA_KEY_LENGTH)
+    .default("jesus"),
   preferDeep: z.boolean().optional().default(false),
   /** Client-generated UUID reused across retries of the same send. */
   requestId: z.string().uuid().optional(),

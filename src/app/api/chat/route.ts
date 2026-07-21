@@ -8,6 +8,10 @@ import { toClientError } from "@/lib/safety";
 import { assertMessageSafe, sanitizeUserMessage } from "@/lib/safety";
 import { createRequestId } from "@/lib/utils";
 
+const PRIVATE_NO_STORE = {
+  "Cache-Control": "private, no-store",
+} as const;
+
 export async function POST(request: Request) {
   let requestId = createRequestId();
 
@@ -16,7 +20,7 @@ export async function POST(request: Request) {
     if (!auth) {
       return NextResponse.json(
         { code: "unauthenticated", message: "Faça login para conversar.", requestId },
-        { status: 401 },
+        { status: 401, headers: PRIVATE_NO_STORE },
       );
     }
 
@@ -34,7 +38,7 @@ export async function POST(request: Request) {
           message: isRequestId,
           requestId,
         },
-        { status: 400 },
+        { status: 400, headers: PRIVATE_NO_STORE },
       );
     }
 
@@ -49,7 +53,7 @@ export async function POST(request: Request) {
     if (!safety.ok) {
       return NextResponse.json(
         { code: "unsafe_input", message: safety.error, requestId },
-        { status: 400 },
+        { status: 400, headers: PRIVATE_NO_STORE },
       );
     }
 
@@ -59,7 +63,7 @@ export async function POST(request: Request) {
       body: { ...parsed.data, message },
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: PRIVATE_NO_STORE });
   } catch (error) {
     const client = toClientError(error);
     logger.error("chat_route_error", {
@@ -77,10 +81,12 @@ export async function POST(request: Request) {
       ),
       err: error instanceof Error ? error.message : "unknown",
     });
-    const headers =
-      client.retryAfterSeconds != null
-        ? { "Retry-After": String(client.retryAfterSeconds) }
-        : undefined;
+    const headers: Record<string, string> = {
+      ...PRIVATE_NO_STORE,
+    };
+    if (client.retryAfterSeconds != null) {
+      headers["Retry-After"] = String(client.retryAfterSeconds);
+    }
     return NextResponse.json(
       { code: client.code, message: client.message, requestId },
       { status: client.status, headers },
