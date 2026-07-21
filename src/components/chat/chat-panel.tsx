@@ -267,9 +267,6 @@ export function ChatPanel({
         ref={scrollerRef}
         onScroll={onScroll}
         className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto px-4 py-5 font-chat sm:px-5"
-        aria-live="polite"
-        aria-relevant="additions"
-        aria-atomic="false"
       >
         {showEmptyState ? (
           <div className="max-w-[40rem] space-y-4">

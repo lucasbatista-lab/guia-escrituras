@@ -63,6 +63,20 @@ describe("mobile accessibility & resilience polish", () => {
     expect(chat).toContain("/entrar?next=/conversar");
     expect(chat).toContain("aria-busy");
     expect(chat).not.toContain("visualViewport");
+    const scrollerOpen = chat.match(
+      /ref=\{scrollerRef\}[\s\S]{0,180}?>/,
+    )?.[0];
+    expect(scrollerOpen).toBeTruthy();
+    expect(scrollerOpen).not.toContain("aria-live");
+  });
+
+  it("legal shell and not-found keep skip target and touch CTA", () => {
+    const legal = read("src", "components", "legal", "legal-document-shell.tsx");
+    const notFound = read("src", "app", "not-found.tsx");
+    expect(legal).toContain("MAIN_CONTENT_ID");
+    expect(legal).toContain("min-h-11");
+    expect(notFound).toContain("min-h-11");
+    expect(notFound).toContain("focus-visible:ring");
   });
 
   it("conversas distinguishes load error from empty state", () => {

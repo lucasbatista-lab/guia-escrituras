@@ -102,7 +102,16 @@
 - **Arquivos:** `admin-mobile-nav.tsx`, `admin/layout.tsx`, `admin/loading.tsx`, `aquisicao/page.tsx`, usuarios pages, `tests/admin-mobile-ops.test.ts`  
 - **Testes:** admin-mobile-ops + admin suites — PASS  
 - **Resultado:** nav primary+Mais no mobile; cards em aquisição; loading skeleton  
-- **Commit:** (pendente)  
+- **Commit:** `c521b6c`  
 - **Próximo:** B09 a11y quick wins  
+
+---
+
+## B09 — A11y quick wins (~00:04)
+
+- **Objetivo:** AUD-012/014/027  
+- **Arquivos:** legal-document-shell, not-found, chat-panel, mobile-a11y-polish.test  
+- **Testes:** mobile-a11y-polish PASS  
+- **Commit:** (pendente)  
 
 ---

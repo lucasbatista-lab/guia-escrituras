@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
+import { MAIN_CONTENT_ID } from "@/components/a11y/main-content-id";
 import {
   getLegalEntityDocument,
   getLegalEntityName,
@@ -21,7 +22,11 @@ export function LegalDocumentShell({
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <main
+        id={MAIN_CONTENT_ID}
+        tabIndex={-1}
+        className="mx-auto max-w-3xl px-4 py-12 outline-none sm:px-6"
+      >
         <h1 className="font-display text-3xl text-ink">{title}</h1>
         {(entity || document) && (
           <p className="mt-3 text-sm text-ink-soft">
@@ -38,7 +43,7 @@ export function LegalDocumentShell({
           {supportEmail ? (
             <a
               href={`mailto:${supportEmail}`}
-              className="text-ink underline-offset-4 hover:underline"
+              className="inline-flex min-h-11 items-center text-ink underline-offset-4 hover:underline"
             >
               {supportEmail}
             </a>
@@ -48,7 +53,7 @@ export function LegalDocumentShell({
           {" · "}
           <Link
             href="/transparencia-ia"
-            className="text-ink underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center text-ink underline-offset-4 hover:underline"
           >
             Transparência sobre IA
           </Link>
