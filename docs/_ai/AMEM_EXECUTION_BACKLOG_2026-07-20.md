@@ -1,6 +1,7 @@
 # Amém Chat — Execution Backlog
 
 **Data:** 2026-07-20  
+**Atualização sprint 5 (2026-07-21):** consolidação local pré-lançamento fechada em código; bloqueios B00/B05/B16/B17 e Playwright (B03) permanecem. Ver `AMEM_FIFTH_INTENSIVE_SPRINT_2026-07-21.md` + `AMEM_FINAL_LAUNCH_READINESS_MATRIX_2026-07-21.md`.  
 **Base:** auditoria `AMEM_FULL_PRODUCT_ENGINEERING_AUDIT_2026-07-20.md` + plano `AMEM_AUTOMATED_REAL_USAGE_TEST_PLAN_2026-07-20.md`  
 **Regra:** blocos pequenos, auditáveis; privilegiar P0/P1 → testes de uso real → Admin Mobile → segurança → chat → UX → perf → HC → acquisition → ops runbook → smoke financeiro → só então plan/proration.
 

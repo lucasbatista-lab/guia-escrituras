@@ -9,6 +9,7 @@
 - Intensive sprint 2 (`docs/_ai/AMEM_SECOND_INTENSIVE_SPRINT_2026-07-21.md`): chat reliability, history retention, Playwright defer+Vitest matrix, persona auth, perf cache, acquisition admin, premium continuity/deepen, copy, admin attention, HC V1.1, log redaction
 - Intensive sprint 3 (`docs/_ai/AMEM_THIRD_INTENSIVE_SPRINT_2026-07-21.md`): inventário promessas, retenção draft/age, Aprofundar UX, Jornadas V1.1, onboarding/conversão copy, admin V1.2, HC V2, safeNextPath, loadings, real-usage 61, prep bloqueios humanos
 - Intensive sprint 4 (`docs/_ai/AMEM_FOURTH_INTENSIVE_SPRINT_2026-07-21.md`): regression review, auth deep-links, entitlements hygiene, FAQ honesty, chat abort/stale, Jornadas complete negatives, history V3, activation, admin triage, privacy drafts, HC anchors, human minimal pack
+- Intensive sprint 5 (`docs/_ai/AMEM_FIFTH_INTENSIVE_SPRINT_2026-07-21.md`): retenção chat×jornada, chat longo, histórico V4, jornadas fim, Aprofundar affordance, planos/cancelamento, ativação sessão, admin resumo diário, help empty search, privacy/security V3, perf cache journeys, códigos estáveis, matriz de prontidão
 
 ## Pendente imediato (ops humano)
 
@@ -30,6 +31,7 @@
 - Cron + `CRON_SECRET` — `docs/DAILY_REPORTS.md`
 - Migration 004 só após revisão explícita (`docs/DEPLOYMENT.md`)
 - Prep humano: `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md` + `AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md`
+- Matriz de prontidão: `docs/_ai/AMEM_FINAL_LAUNCH_READINESS_MATRIX_2026-07-21.md`
 
 ## Pós-lançamento
 
@@ -41,4 +43,4 @@
 
 ## Estado mestre
 
-`docs/END_OF_DAY_MASTER_REPORT_2026-07-20.md` · sprint 2–4 em `docs/_ai/AMEM_*_INTENSIVE_SPRINT_2026-07-21.md`
+Sprint 5 + matriz: `docs/_ai/AMEM_FIFTH_INTENSIVE_SPRINT_2026-07-21.md` · `AMEM_FINAL_LAUNCH_READINESS_MATRIX_2026-07-21.md`

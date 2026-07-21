@@ -47,18 +47,27 @@ Hipótese vs evidência: padrões de mercado = **hipótese**; entitlements no re
 | History search preserve + cap | todos | **Ativo V3** | /conversas | Médio | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
 | Draft clear on logout | todos | **Ativo** | sessionStorage | Médio | — | — | Baixo | Baixo | Médio | — | sim |
 | Help FAQ anchors V3 | todos | **Ativo V3** | /ajuda | Médio | Baixo | Baixo | Baixo | Baixo | Médio | — | sim |
+| Resume priority chat×jornada | Caminho+ | **Ativo V4** | /inicio | Alto | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| Chat cancel + truncagem + not_found | todos | **Ativo** | /conversar | Alto | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| History clear search + counts | todos | **Ativo V4** | /conversas | Médio | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| Journey done → other journeys | Caminho+ | **Ativo V1.3** | /jornadas | Alto | Baixo | Baixo | Baixo | Baixo | Alto | — | sim |
+| Aprofundar post-reply affordance | Profundo+ | **Ativo V3** | chat | Médio | — | Baixo | Baixo | Médio custo | Médio | — | sim |
+| Session activation checklist | todos | **Ativo** | /inicio session | Médio | — | Baixo | Baixo | Baixo | Alto | — | sim |
+| Admin daily summary | ops | **Ativo V2** | /admin | Médio | Baixo | Baixo | — | — | — | — | sim |
+| Help empty search + requestId | todos | **Ativo V4** | /ajuda | Médio | Baixo | Baixo | Baixo | Baixo | Médio | — | sim |
 
 ## Candidatos de implementação (sprint) — decisão
 
 | Ideia | Decisão | Motivo |
 |-------|---------|--------|
-| Help Center & Support Intake | **Feito** (+ V1.1 + V2 search + V3 anchors) | M, testável, sem billing, mobile |
+| Help Center & Support Intake | **Feito** (+ V1.1 + V2 search + V3 anchors + V4 empty) | M, testável, sem billing, mobile |
 | Crisis intercept | **Feito** | P1 segurança |
-| Admin mobile | **Feito** (+ attention + V1.2 filters + severity sort) | Ops |
-| Histórico retenção | **Feito** (+ draft/age + V3 q/cap) | Retorno ao produto |
-| Continuidade Jornadas + deepen UX | **Feito** (+ complete negatives + label) | Valor Caminho/Profundo |
+| Admin mobile | **Feito** (+ attention + V1.2 filters + severity + daily summary) | Ops |
+| Histórico retenção | **Feito** (+ draft/age + V3 q/cap + V4 clear) | Retorno ao produto |
+| Continuidade Jornadas + deepen UX | **Feito** (+ complete negatives + label + post-reply) | Valor Caminho/Profundo |
 | Aquisição content attribution | **Feito V1** | Admin medium/content filters V1.2 |
 | Auth deep-link + entitlements hygiene | **Feito** | Sprint 4 P1 |
+| Retenção priority + ativação sessão | **Feito** | Sprint 5 |
 | Memória ampliada / personas / áudio | **Adiado** | XL + risco teológico/custo |
 | Favoritos de mensagens | Adiado | Precisa schema/migration |
 | Novas jornadas editoriais | Adiado | Revisão pastoral humana |
