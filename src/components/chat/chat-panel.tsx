@@ -411,6 +411,12 @@ export function ChatPanel({
                 Resposta aprofundada · só nesta mensagem
               </p>
             ) : null}
+            {message.role === "assistant" && message.meta?.deepened ? (
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                Você pode seguir conversando normalmente. Aprofundar é opcional
+                e vale só para o próximo envio se você marcar de novo.
+              </p>
+            ) : null}
             {message.meta ? (
               <AssistantMetaFooter meta={message.meta} />
             ) : null}
