@@ -57,6 +57,49 @@ export default async function AdminHomePage() {
         ) : null}
       </div>
 
+      <Section title="Resumo do dia">
+        <p className="mb-3 text-sm text-ink-soft">
+          Revisão rápida no celular — números agregados, sem mensagens.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Metric
+            label="Assinantes ativos"
+            value={String(metrics.activeSubscriberUsers)}
+            href="/admin/usuarios?status=active"
+          />
+          <Metric
+            label="Novos usuários hoje"
+            value={String(metrics.newUsersToday)}
+            href="/admin/usuarios"
+          />
+          <Metric
+            label="Pedidos de IA hoje"
+            value={String(metrics.aiRequestsToday)}
+            href="/admin/custos"
+            hint="Estimativa operacional."
+          />
+          <Metric
+            label="Alertas abertos"
+            value={String(alerts.length)}
+            hint={
+              alerts.length === 0
+                ? "Nenhum item na faixa de atenção."
+                : "Priorize a seção Precisa da sua atenção."
+            }
+          />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/usuarios?canceling=1">
+            Cancelando ({cancelingLabel})
+          </OpLink>
+          <OpLink href="/admin/usuarios?past_due=1">
+            Past due ({metrics.pastDueSubscriptions})
+          </OpLink>
+          <OpLink href="/admin/aquisicao">Aquisição</OpLink>
+          <OpLink href="/admin/eventos">Eventos</OpLink>
+        </div>
+      </Section>
+
       {alerts.length > 0 ? (
         <Section title="Precisa da sua atenção">
           <p className="mb-3 text-sm text-ink-soft">
