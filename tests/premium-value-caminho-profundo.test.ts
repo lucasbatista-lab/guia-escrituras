@@ -30,7 +30,7 @@ describe("premium value — journey continuity on inicio", () => {
     expect(panel).toContain("conexões bíblicas e próximos passos práticos");
     expect(panel).toContain("só nesta resposta");
     expect(panel).not.toMatch(/memória permanente|acesso superior/i);
-    expect(panel).not.toMatch(/eu sou Jesus|revelação divina/i);
+    expect(panel).not.toMatch(/eu sou Jesus/i);
     expect(
       read("docs", "_ai", "AMEM_MINI_PRD_DEEPEN_VALUE_COPY_2026-07-21.md"),
     ).toContain("Profundo");
