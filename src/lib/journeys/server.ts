@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import {
   createJourneyProgressService,
   getJourneyProgressRepository,
@@ -11,21 +12,24 @@ import {
   getJourneyEstimatedMinutes,
 } from "@/lib/journeys/registry";
 
-export async function loadJourneyProgressMap(
-  userId: string,
-): Promise<Map<string, JourneyProgressState>> {
-  const service = createJourneyProgressService(getJourneyProgressRepository());
-  const states = await service.listStates(userId);
-  return new Map(states.map((s) => [s.journeySlug, s]));
-}
+/** Request-scoped — /inicio loads map for resume priority and catalog card. */
+export const loadJourneyProgressMap = cache(
+  async function loadJourneyProgressMap(
+    userId: string,
+  ): Promise<Map<string, JourneyProgressState>> {
+    const service = createJourneyProgressService(getJourneyProgressRepository());
+    const states = await service.listStates(userId);
+    return new Map(states.map((s) => [s.journeySlug, s]));
+  },
+);
 
-export async function loadJourneyProgress(
+export const loadJourneyProgress = cache(async function loadJourneyProgress(
   userId: string,
   journeySlug: string,
 ): Promise<JourneyProgressState> {
   const service = createJourneyProgressService(getJourneyProgressRepository());
   return service.getState(userId, journeySlug);
-}
+});
 
 export function buildCatalogItems(
   progressMap: Map<string, JourneyProgressState>,
