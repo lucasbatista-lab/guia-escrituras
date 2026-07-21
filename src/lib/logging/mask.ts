@@ -26,3 +26,28 @@ export function maskToken(token: string | null | undefined): string | undefined 
   if (!token) return undefined;
   return `tok_${token.slice(0, 4)}…`;
 }
+
+const SENSITIVE_KEY =
+  /^(message|content|answer|prompt|body|text|password|token|authorization|cookie|spiritual|conversationMemory|followUpQuestion)$/i;
+
+/**
+ * Strip or truncate fields that could contain spiritual conversation content
+ * or secrets before structured logging.
+ */
+export function redactLogFields(
+  fields: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    if (SENSITIVE_KEY.test(key)) {
+      out[key] = "[redacted]";
+      continue;
+    }
+    if (typeof value === "string" && value.length > 240) {
+      out[key] = `${value.slice(0, 80)}…[truncated ${value.length}]`;
+      continue;
+    }
+    out[key] = value;
+  }
+  return out;
+}

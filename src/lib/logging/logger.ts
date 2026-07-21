@@ -1,3 +1,5 @@
+import { redactLogFields } from "@/lib/logging/mask";
+
 type LogLevel = "info" | "warn" | "error";
 
 interface LogFields {
@@ -12,7 +14,7 @@ function write(level: LogLevel, message: string, fields: LogFields = {}) {
     level,
     message,
     ts: new Date().toISOString(),
-    ...fields,
+    ...redactLogFields(fields),
   };
   const line = JSON.stringify(payload);
   if (level === "error") {
