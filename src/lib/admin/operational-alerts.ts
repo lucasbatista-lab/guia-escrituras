@@ -164,7 +164,11 @@ export function buildOperationalAlerts(
     });
   }
 
-  return alerts;
+  return alerts.sort((a, b) => {
+    const rank = (level: OperationalAlertLevel) =>
+      level === "critical" ? 0 : level === "attention" ? 1 : 2;
+    return rank(a.level) - rank(b.level);
+  });
 }
 
 /** Map legacy P0/P1 labels used by older UI. */

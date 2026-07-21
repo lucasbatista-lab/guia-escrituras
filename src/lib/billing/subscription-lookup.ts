@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { PlanKey } from "@/lib/entitlements";
 import {
   resolveEffectiveSubscription,
@@ -21,24 +22,32 @@ function mapSubscriptionRow(row: Record<string, unknown>): SubscriptionCandidate
   };
 }
 
+const loadUserSubscriptionsCached = cache(
+  async (
+    userId: string,
+    useAdmin: boolean,
+  ): Promise<SubscriptionCandidate[]> => {
+    const client = useAdmin ? createAdminClient() : await createClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+      .from("subscriptions")
+      .select(
+        "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
+      )
+      .eq("user_id", userId);
+
+    if (error || !data) return [];
+    return data.map((row) => mapSubscriptionRow(row as Record<string, unknown>));
+  },
+);
+
+/** Request-scoped memoization — auth + journey must not double-hit subscriptions. */
 export async function loadUserSubscriptions(
   userId: string,
   options?: { useAdmin?: boolean },
 ): Promise<SubscriptionCandidate[]> {
-  const client = options?.useAdmin
-    ? createAdminClient()
-    : await createClient();
-  if (!client) return [];
-
-  const { data, error } = await client
-    .from("subscriptions")
-    .select(
-      "id, user_id, plan_key, status, stripe_customer_id, stripe_subscription_id, current_period_end, created_at",
-    )
-    .eq("user_id", userId);
-
-  if (error || !data) return [];
-  return data.map((row) => mapSubscriptionRow(row as Record<string, unknown>));
+  return loadUserSubscriptionsCached(userId, Boolean(options?.useAdmin));
 }
 
 export async function getEffectiveSubscriptionForUser(

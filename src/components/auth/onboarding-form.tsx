@@ -111,7 +111,7 @@ export function PersonalizationForm() {
         return;
       }
 
-      router.push("/inicio");
+      router.push("/conversar");
       router.refresh();
     } catch {
       setError("Algo deu errado. Tente novamente.");
