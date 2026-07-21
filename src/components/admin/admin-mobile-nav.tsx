@@ -47,10 +47,6 @@ export function AdminMobileNav() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -64,9 +60,12 @@ export function AdminMobileNav() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  function closeMenu() {
+    setOpen(false);
+  }
+
   return (
     <nav aria-label="Admin" className="w-full">
-      {/* Desktop / wide: full wrap */}
       <div className="hidden flex-wrap gap-1 md:flex">
         {[...PRIMARY, ...MORE].map((link) => {
           const active =
@@ -89,7 +88,6 @@ export function AdminMobileNav() {
         </Link>
       </div>
 
-      {/* Mobile: primary row + more drawer */}
       <div className="md:hidden">
         <div className="flex flex-wrap gap-1">
           {PRIMARY.map((link) => {
@@ -100,6 +98,7 @@ export function AdminMobileNav() {
                 href={link.href}
                 className={linkClass(active)}
                 aria-current={active ? "page" : undefined}
+                onClick={closeMenu}
               >
                 {link.label}
               </Link>
@@ -133,12 +132,17 @@ export function AdminMobileNav() {
                   href={link.href}
                   className={linkClass(active)}
                   aria-current={active ? "page" : undefined}
+                  onClick={closeMenu}
                 >
                   {link.label}
                 </Link>
               );
             })}
-            <Link href="/inicio" className={linkClass(false)}>
+            <Link
+              href="/inicio"
+              className={linkClass(false)}
+              onClick={closeMenu}
+            >
               Voltar ao app
             </Link>
           </div>

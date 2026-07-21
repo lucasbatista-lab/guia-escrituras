@@ -126,3 +126,12 @@
 - **Não iniciado:** B03 Playwright, B05 MIG, B08 cross-instance (dep 004), B13 acquisition, B16 live smoke  
 
 ---
+
+## Hotfix pós-gates (~00:09)
+
+- Lint: removido setState-in-effect no AdminMobileNav  
+- Test: acquisition-tracking aponta para nav  
+- Build: `buildPublicPageMetadata` em `/ajuda`  
+- Gates finais: lint OK (5 warnings preexistentes), **780** testes, build OK  
+
+---

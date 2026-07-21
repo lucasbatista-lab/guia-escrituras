@@ -3,14 +3,14 @@ import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { MAIN_CONTENT_ID } from "@/components/a11y/main-content-id";
 import { getSupportEmail } from "@/config/legal";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildPublicPageMetadata } from "@/lib/seo";
 import {
   HELP_FAQ,
   SUPPORT_CATEGORIES,
   buildSupportMailto,
 } from "@/lib/support/help-center";
 
-export const metadata: Metadata = buildPageMetadata({
+export const metadata: Metadata = buildPublicPageMetadata({
   title: "Ajuda e suporte",
   description:
     "Central de ajuda do Amém Chat: acesso, cobrança, Jornadas, privacidade e contato operacional.",

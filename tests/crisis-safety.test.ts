@@ -7,7 +7,6 @@ import {
   normalizeCrisisText,
 } from "@/lib/safety/crisis";
 import { detectCrisisSupportPresent } from "@/lib/evals/theology/detectors/secrets-crisis";
-import { createMemoryRepositories } from "@/lib/database/repositories/memory";
 import { resetChatTurnLocksForTests } from "@/lib/ai/chat-turn-lock";
 import { IDENTITY_DISCLAIMER } from "@/lib/theology";
 

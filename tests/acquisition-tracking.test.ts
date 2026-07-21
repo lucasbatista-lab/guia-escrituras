@@ -226,8 +226,12 @@ describe("acquisition admin + wiring contracts", () => {
     expect(page).toContain("getAdminAcquisitionReport");
     expect(page).toContain("force-dynamic");
     expect(page).not.toContain("messages");
-    expect(layout).toContain("/admin/aquisicao");
+    expect(layout).toContain("AdminMobileNav");
     expect(layout).toContain("isAdmin");
+    const nav = await import("node:fs/promises").then((fs) =>
+      fs.readFile("src/components/admin/admin-mobile-nav.tsx", "utf8"),
+    );
+    expect(nav).toContain("/admin/aquisicao");
   });
 });
 
