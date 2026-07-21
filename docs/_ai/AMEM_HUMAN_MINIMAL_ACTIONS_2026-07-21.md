@@ -1,6 +1,6 @@
 # Human Minimal Actions — Ultra-minimal Pre-launch Package
 
-**Data:** 2026-07-21 (sprint 5)  
+**Data:** 2026-07-21 (sprint 5)
 **Regra:** não executar nestas instruções de código. Sem SQL write, migration apply, Stripe live, deploy ou contas reais.
 
 Fonte: este pacote + `AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md` + `AMEM_FINAL_LAUNCH_READINESS_MATRIX_2026-07-21.md`.
@@ -57,20 +57,21 @@ Fonte: este pacote + `AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md` + `AMEM_FINAL_LAUN
 
 Cobrir só o que Vitest **não** cobre (`pnpm test:real-usage`):
 
-1. Login conta teste Caminho  
-2. Concluir 1 etapa → refresh → progresso  
-3. Prefill chat sem POST até submit  
-4. Reset com confirmação  
-5. Essencial: preview + CTA planos  
-6. Fim de jornada: CTA “Ver outras jornadas”
+1. Login conta teste Caminho
+2. Concluir 1 etapa → refresh → progresso
+3. Prefill chat sem POST até submit
+4. Reset com confirmação
+5. Essencial: preview + CTA planos
+6. Última etapa marcada **sem** todas as anteriores → **não** celebrar “Jornada concluída” / **sem** CTA “Ver outras jornadas”
+7. Após conclusão agregada real (`completedAt`) → CTA “Ver outras jornadas”; refresh mantém estado
 
 | Sucesso | Pass/fail por passo registrado |
-| Falha | Persistência falha ou Essencial vê etapa integral → bloquear launch feature |
+| Falha | Persistência falha, falsa celebração, ou Essencial vê etapa integral → bloquear launch feature |
 | Decisão seguinte | Revisão pastoral |
 
 ### 6. Revisão pastoral (21 etapas)
 
-Checklist em `AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md` + `docs/READING_JOURNEYS.md`.  
+Checklist em `AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md` + `docs/READING_JOURNEYS.md`.
 Sem reescrita teológica nesta sprint de engenharia.
 
 | Sucesso | Aprovação registrada |
@@ -78,7 +79,7 @@ Sem reescrita teológica nesta sprint de engenharia.
 
 ### 7. Smoke financeiro
 
-Somente após prep: `docs/_ai/AMEM_FINANCIAL_SMOKE_PREPARATION_2026-07-20.md`.  
+Somente após prep: `docs/_ai/AMEM_FINANCIAL_SMOKE_PREPARATION_2026-07-20.md`.
 Contas `*@amemchat.test` / Stripe test. **Parar** se cobrança duplicada, entitlement errado ou 5xx webhook.
 
 Fora até B16: troca de plano, proration, preços R$38/R$58/R$188, live prod.
@@ -103,6 +104,6 @@ Fora até B16: troca de plano, proration, preços R$38/R$58/R$188, live prod.
 ## Automação já coberta (não repetir no smoke)
 
 - Matriz auth / entitlement / prefill / crisis / safeNextPath / retention / HC / deep-link (`pnpm test:real-usage`)
-- Theology evals CI + journeys  
-- `launch:check`, lint, test, build  
+- Theology evals CI + journeys
+- `launch:check`, lint, test, build
 - Retenção V4, chat longo, histórico V4, ativação sessão, admin resumo, security V3 (sprint 5)

@@ -51,6 +51,10 @@ pnpm eval:theology:journeys
 3. Run `pnpm eval:theology:journeys` and full test suite
 4. **Human editorial review** before publishing copy changes
 
+## Completion rule
+
+A journey is **completed** only when the progress aggregate has `completedAt` / `isCompleted` (all required steps done). Being on the last step alone must **not** show “Jornada concluída” or the catalog CTA.
+
 ## Limitations
 
 - No personal reflection storage
