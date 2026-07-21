@@ -17,12 +17,13 @@ Arquivos: `src/lib/theology/*`.
 | Camada | Onde | Escopo |
 |--------|------|--------|
 | Regras de prompt | `general-rules.ts` + resolver | Identidade, revelação, cura/prosperidade, crise (instrucional) |
+| **Fluxo seguro de crise (runtime)** | `src/lib/safety/crisis/*` + `chat-service` | Detecção multi-sinal PT-BR; resposta fixa localizada (BR); **sem** chamada ao modelo; log só categoria |
 | Output gate (OpenAI) | `assertSafeAiIdentity` em `provider-output.ts` | Regex estreita de personificação/revelação |
 | Grounding | `CuratedBiblicalProvider` + `filterReferencesToGrounding` | Só refs estruturadas do conjunto recuperado |
 | Literalidade | `answerLooksLikeLiteralUnlicensedQuote` | Heurística suave |
 | Mock offline | `MockAiProvider` | Respostas determinísticas seguras (dev/preview) |
 
-**Lacunas conhecidas:** fluxo seguro de crise não implementado no chat; ódio/prosperidade/cura majoritariamente prompt-only; citações no texto livre da `answer` não são varridas; mock não passa por `assertSafeAiIdentity`.
+**Lacunas conhecidas:** ódio/prosperidade/cura majoritariamente prompt-only; citações no texto livre da `answer` não são varridas; mock não passa por `assertSafeAiIdentity`. Crise imediata: intercept runtime V1 ativo (ver `safety/crisis`); revisão pastoral humana ainda recomendada para calibragem de falsos positivos.
 
 ## OpenAI
 

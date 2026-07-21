@@ -17,6 +17,11 @@ import {
 
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
+import {
+  buildCrisisAnswer,
+  CRISIS_INTERPRETATION_NOTICE,
+  detectCrisisMessage,
+} from "@/lib/safety/crisis";
 import { theologyPolicyResolver } from "@/lib/theology";
 import { createBiblicalGroundingProvider } from "@/lib/biblical";
 import {
@@ -321,6 +326,71 @@ export async function runChatTurn(input: {
     content: body.message,
     requestId,
   });
+
+  // Crisis safety intercept — deterministic, no model call, no diagnosis.
+  // Persists a fixed safety reply; logs category only (never user text).
+  const crisis = detectCrisisMessage(body.message);
+  if (crisis.matched) {
+    const crisisAnswer = buildCrisisAnswer(crisis.category);
+    logger.info("crisis_safety_intercept", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      conversationId: conversation.id,
+      category: crisis.category,
+      signalIds: crisis.signalIds,
+      flowStatus: "crisis_intercept",
+      durationMs: Date.now() - turnStartedMs,
+    });
+
+    try {
+      await repos.messages.insertAssistantMessage({
+        conversationId: conversation.id,
+        userId: auth.userId,
+        content: crisisAnswer,
+        biblicalReferences: [],
+        requestId,
+      });
+    } catch (error) {
+      logger.error("crisis_assistant_persist_failed", {
+        requestId,
+        userId: maskUserId(auth.userId),
+        category: crisis.category,
+        err: error instanceof Error ? error.message : "unknown",
+      });
+    }
+
+    await repos.usage.insertEvent({
+      userId: auth.userId,
+      conversationId: conversation.id,
+      requestId,
+      featureType: "chat_standard",
+      model: "crisis_safety",
+      inputTokens: 0,
+      outputTokens: 0,
+      estimatedCostUsdMicros: 0,
+      estimatedCostBrlCents: 0,
+      latencyMs: Date.now() - turnStartedMs,
+      success: true,
+    });
+
+    return {
+      answer: crisisAnswer,
+      biblicalReferences: [],
+      interpretationNotice: CRISIS_INTERPRETATION_NOTICE,
+      usage: {
+        level:
+          budget.level === "blocked" ? "near_limit" : budget.level,
+        label: usageLevelLabel(
+          budget.level === "blocked" ? "near_limit" : budget.level,
+        ),
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      requestId,
+      conversationId: conversation.id,
+      provider: "mock",
+    };
+  }
 
   // Fetch enough history so that after excluding the current turn we still have
   // up to RECENT_CONTEXT_MESSAGE_LIMIT prior messages.

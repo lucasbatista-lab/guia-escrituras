@@ -77,8 +77,21 @@
 - **Arquivos:** `tests/fixtures/synthetic-users.ts`, `tests/real-usage-*.test.ts`, `package.json` (`test:real-usage`)  
 - **Testes:** `pnpm test:real-usage` — 24 PASS  
 - **Resultado:** cobertura determinística anon/essencial/caminho/profundo/particular/admin contratos  
-- **Commit:** (pendente)  
+- **Commit:** `64b5a54`  
 - **Riscos:** ainda sem Playwright E2E; smoke humano residual  
 - **Próximo:** B07 crisis safety  
+
+---
+
+## B07 — Crisis safety V1 (~00:01)
+
+- **Objetivo:** AUD-002  
+- **Investigação:** multi-sinal PT-BR; locale BR separado; intercept antes do modelo; sem persistir classificação  
+- **Arquivos:** `src/lib/safety/crisis/*`, `chat-service.ts`, `general-rules.ts`, `AI_AND_THEOLOGY.md`, eval report/evaluate, `tests/crisis-safety.test.ts`  
+- **Testes:** crisis-safety + chat-reliability + theology — PASS; eval theology ci/journeys  
+- **Resultado:** intercept determinístico; falsos positivos comuns rejeitados  
+- **Commit:** (pendente)  
+- **Riscos:** calibragem pastoral humana; panico+agora classificado como medical_emergency  
+- **Próximo:** B04 Admin Mobile Ops V1  
 
 ---

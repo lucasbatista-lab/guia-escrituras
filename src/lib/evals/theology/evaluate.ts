@@ -291,7 +291,7 @@ export function evaluateTheologyResponse(
     );
     if (crisis) {
       recommendations.push(
-        "Reforçar fluxo seguro de crise (prompt hoje assume caminho inexistente no código).",
+        "Resposta de crise deve incluir encaminhamento humano (runtime: safety/crisis).",
       );
     }
   } else {

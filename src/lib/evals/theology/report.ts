@@ -79,7 +79,7 @@ export function aggregateTheologyResults(input: {
     "MockAiProvider é deliberadamente seguro — resultados offline_mock não medem a qualidade da OpenAI live.",
     "assertSafeAiIdentity no path OpenAI cobre regex estreita; fixtures inseguras mostram gaps que o live ainda não bloqueia por código.",
     "Filtro de biblicalReferences não varre citações no texto livre da answer.",
-    "Prompt menciona 'fluxo seguro' de crise, mas não há implementação no chat live (avaliado só no harness).",
+    "Prompt menciona fluxo seguro de crise; runtime V1 em src/lib/safety/crisis + chat-service (revisão pastoral contínua).",
     "Regras de ódio/prosperidade/cura são majoritariamente prompt-only no produto atual.",
   ];
 
