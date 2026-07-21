@@ -21,6 +21,10 @@ export async function GET() {
       checks: {
         supabasePublicEnv: hasSupabasePublicEnv(),
       },
+      /** Ops hint only — no secrets, no DB probe here. */
+      notes: {
+        correlation: "Use requestId when filing support or correlating logs.",
+      },
     },
     { headers: { "Cache-Control": "no-store" } },
   );
