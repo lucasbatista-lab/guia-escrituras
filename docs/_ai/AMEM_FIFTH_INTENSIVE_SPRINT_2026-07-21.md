@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `4bf47d8`  
-**HEAD final:** `47113c9` (tip; docs stamp; fechamento substantivo `a553551` / hydrate `56b368a`)  
+**HEAD final:** `9e68cd1` (tip; docs-only SHA align; fechamento substantivo `a553551` / hydrate `56b368a`)  
 **Fechamento substantivo de produto da sprint 4:** `ebe9fe1`
 
 ## F0 — Confirmação
