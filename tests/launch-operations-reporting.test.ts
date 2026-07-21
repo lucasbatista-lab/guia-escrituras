@@ -174,6 +174,17 @@ describe("operational alerts", () => {
   it("stays quiet when report present and healthy", () => {
     expect(buildOperationalAlerts(base)).toEqual([]);
   });
+
+  it("surfaces canceling-with-access as an attention shortcut", () => {
+    const alerts = buildOperationalAlerts({
+      ...base,
+      cancelingWithAccessCount: 3,
+    });
+    const alert = alerts.find((a) => a.key === "canceling_with_access");
+    expect(alert).toBeTruthy();
+    expect(alert?.href).toBe("/admin/usuarios?canceling=1");
+    expect(alert?.level).toBe("info");
+  });
 });
 
 describe("generateDailyReportForDate outcomes", () => {

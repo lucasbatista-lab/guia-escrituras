@@ -296,13 +296,20 @@ async function fetchAllProfileIdsOrdered(): Promise<
 }
 
 async function findUserIdsByUtmSource(utmSource: string): Promise<string[]> {
+  return findUserIdsByUtmColumn("utm_source", utmSource);
+}
+
+async function findUserIdsByUtmColumn(
+  column: "utm_source" | "utm_medium" | "utm_content",
+  value: string,
+): Promise<string[]> {
   const client = admin();
   const { values } = await collectColumnPaginated<{ user_id: string | null }, string>(
     (from, to) =>
       client
         .from("signup_intents")
         .select("user_id")
-        .eq("utm_source", utmSource)
+        .eq(column, value)
         .not("user_id", "is", null)
         .order("updated_at", { ascending: false })
         .range(from, to),
@@ -392,6 +399,22 @@ export async function getAdminUsers(
 
   if (params.utmSource) {
     const utmIds = await findUserIdsByUtmSource(params.utmSource);
+    if (utmIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+    restriction = intersectIdSets(restriction, utmIds);
+  }
+
+  if (params.utmMedium) {
+    const utmIds = await findUserIdsByUtmColumn("utm_medium", params.utmMedium);
+    if (utmIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+    restriction = intersectIdSets(restriction, utmIds);
+  }
+
+  if (params.utmContent) {
+    const utmIds = await findUserIdsByUtmColumn("utm_content", params.utmContent);
     if (utmIds.length === 0) {
       return { rows: [], total: 0, page, pageSize };
     }

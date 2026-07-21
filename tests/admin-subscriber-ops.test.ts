@@ -19,6 +19,8 @@ describe("admin user list params", () => {
       pageSize: "50",
       page: "2",
       utm: "Share",
+      utm_medium: "Email",
+      utm_content: "Banner-A",
       created_from: "2026-01-01",
       created_to: "2026-01-31",
       canceling: "1",
@@ -30,6 +32,8 @@ describe("admin user list params", () => {
     expect(filters.pageSize).toBe(50);
     expect(filters.page).toBe(2);
     expect(filters.utmSource).toBe("share");
+    expect(filters.utmMedium).toBe("email");
+    expect(filters.utmContent).toBe("banner-a");
     expect(filters.createdFrom).toBe(parseAdminDateParam("2026-01-01", "start"));
     expect(filters.createdTo).toBe(parseAdminDateParam("2026-01-31", "end"));
     expect(filters.cancelingOnly).toBe(true);
@@ -38,11 +42,15 @@ describe("admin user list params", () => {
   it("rejects dangerous utm and invalid dates", () => {
     const filters = parseAdminUserListSearchParams({
       utm: "foo;drop",
+      utm_medium: "x<script>",
+      utm_content: "ok_value",
       created_from: "01/01/2026",
       pageSize: "999",
       status: "hacked",
     });
     expect(filters.utmSource).toBeUndefined();
+    expect(filters.utmMedium).toBeUndefined();
+    expect(filters.utmContent).toBe("ok_value");
     expect(filters.createdFrom).toBeUndefined();
     expect(filters.pageSize).toBe(25);
     expect(filters.subscriptionStatus).toBe("any");
@@ -54,6 +62,8 @@ describe("admin user list params", () => {
       planKey: "essencial",
       subscriptionStatus: "active",
       utmSource: "share",
+      utmMedium: "email",
+      utmContent: "banner",
       sort: "created_asc",
       pageSize: 50,
     });
@@ -61,6 +71,8 @@ describe("admin user list params", () => {
     expect(qs).toContain("plan=essencial");
     expect(qs).toContain("status=active");
     expect(qs).toContain("utm=share");
+    expect(qs).toContain("utm_medium=email");
+    expect(qs).toContain("utm_content=banner");
     expect(qs).toContain("sort=created_asc");
     expect(qs).toContain("pageSize=50");
   });

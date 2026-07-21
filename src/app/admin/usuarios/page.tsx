@@ -119,6 +119,24 @@ export default async function AdminUsuariosPage({
           />
         </label>
         <label className="text-sm">
+          <span className="text-ink-soft">Medium (utm_medium)</span>
+          <input
+            name="utm_medium"
+            defaultValue={filters.utmMedium ?? ""}
+            placeholder="ex.: cpc, email"
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          <span className="text-ink-soft">Conteúdo (utm_content)</span>
+          <input
+            name="utm_content"
+            defaultValue={filters.utmContent ?? ""}
+            placeholder="ex.: anuncio-a"
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
           <span className="text-ink-soft">Ordenação</span>
           <select
             name="sort"

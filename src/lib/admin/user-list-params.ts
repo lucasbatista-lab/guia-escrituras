@@ -19,6 +19,10 @@ export interface AdminUserListFilters {
   checkoutPendingOnly?: boolean;
   /** Exact utm_source from signup_intents (normalized). */
   utmSource?: string;
+  /** Exact utm_medium from signup_intents (normalized). */
+  utmMedium?: string;
+  /** Exact utm_content from signup_intents (normalized). */
+  utmContent?: string;
   /** Inclusive ISO bounds on profiles.created_at. */
   createdFrom?: string;
   createdTo?: string;
@@ -117,6 +121,18 @@ export function parseAdminUserListSearchParams(
     utmSource = "";
   }
 
+  const normalizeUtm = (raw: string | undefined): string => {
+    let value = (raw ?? "").trim().toLowerCase();
+    if (value === "any" || value === "") return "";
+    if (value.length > ADMIN_USER_UTM_MAX_LENGTH) {
+      value = value.slice(0, ADMIN_USER_UTM_MAX_LENGTH);
+    }
+    if (value && !/^[a-z0-9_./+-]+$/i.test(value)) return "";
+    return value;
+  };
+  const utmMedium = normalizeUtm(one("utm_medium"));
+  const utmContent = normalizeUtm(one("utm_content"));
+
   return {
     page: parsePositiveInt(one("page"), 1),
     pageSize,
@@ -129,6 +145,8 @@ export function parseAdminUserListSearchParams(
     cancelingOnly: one("canceling") === "1",
     checkoutPendingOnly: one("checkout_pending") === "1",
     utmSource: utmSource || undefined,
+    utmMedium: utmMedium || undefined,
+    utmContent: utmContent || undefined,
     createdFrom: parseAdminDateParam(one("created_from"), "start"),
     createdTo: parseAdminDateParam(one("created_to"), "end"),
     sort,
@@ -154,6 +172,8 @@ export function buildAdminUserListQuery(
   if (filters.cancelingOnly) qs.set("canceling", "1");
   if (filters.checkoutPendingOnly) qs.set("checkout_pending", "1");
   if (filters.utmSource) qs.set("utm", filters.utmSource);
+  if (filters.utmMedium) qs.set("utm_medium", filters.utmMedium);
+  if (filters.utmContent) qs.set("utm_content", filters.utmContent);
   if (filters.createdFrom) {
     qs.set("created_from", filters.createdFrom.slice(0, 10));
   }

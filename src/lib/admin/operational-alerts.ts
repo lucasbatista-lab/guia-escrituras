@@ -119,6 +119,22 @@ export function buildOperationalAlerts(
   }
 
   if (
+    metrics.cancelingWithAccessCount != null &&
+    metrics.cancelingWithAccessCount > 0
+  ) {
+    alerts.push({
+      key: "canceling_with_access",
+      level: "info",
+      message: `${metrics.cancelingWithAccessCount} assinatura(s) cancelando renovação com acesso ainda ativo.`,
+      meaning:
+        "cancel_at_period_end — usuário mantém acesso até o fim do período pago.",
+      investigate: "Ver lista filtrada; não é falha de cobrança imediata.",
+      href: "/admin/usuarios?canceling=1",
+      cta: "Ver cancelando",
+    });
+  }
+
+  if (
     metrics.activeSubscriberUsers >= ALERT_MIN_SUBSCRIBERS_FOR_ACTIVITY &&
     metrics.aiRequestsToday === 0
   ) {
