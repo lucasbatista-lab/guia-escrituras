@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `2fee6a0`  
-**HEAD final:** _(carimbado no commit de fechamento)_
+**HEAD final:** `ebe9fe1` (tip; carimbo de gates no commit seguinte se tip avançar)
 
 ## F0 — Confirmação e regression review
 
@@ -110,17 +110,19 @@ Logout limpa drafts; HC anchors `#faq-*` / `#contato`; hint compartilhado; runbo
 
 | Gate | Resultado |
 |------|-----------|
-| `pnpm test:real-usage` | _(fechamento)_ |
-| `pnpm eval:theology:journeys` | _(fechamento)_ |
-| `pnpm eval:theology:ci` | _(fechamento)_ |
-| `pnpm launch:check` | _(fechamento)_ |
-| `pnpm lint` | _(fechamento)_ |
-| `pnpm test` | _(fechamento)_ |
-| `pnpm build` | _(fechamento)_ |
+| `pnpm test:real-usage` | PASS (**81**; baseline 61) |
+| `pnpm eval:theology:journeys` | PASS |
+| `pnpm eval:theology:ci` | PASS |
+| `pnpm launch:check` | PASS |
+| `pnpm lint` | PASS (0 erros, 5 warnings preexistentes) |
+| `pnpm test` | PASS (**870**; baseline 848) |
+| `pnpm build` | PASS |
 
 ## Confirmações
 
 - `repositories/index.ts` **nunca** staged/commitado  
 - Sem migrations / Stripe / checkout / billing / preços / quotas / webhook / proration / deploy / remoto  
 - Playwright **não** instalado  
-- Lock cross-instance **residual** (MIG 004)
+- Lock cross-instance **residual** (MIG 004)  
+- Commits sprint 4: `de99916` → `9a23a21` → `bc38a01` → `c59f6fa` → `54e4388` → `7016c84` → `b4b90c4` → `e1f2d3f` → `ebe9fe1` (+ tip docs se houver)  
+
