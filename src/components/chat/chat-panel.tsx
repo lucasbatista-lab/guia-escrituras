@@ -116,11 +116,19 @@ export function ChatPanel({
   const prefersReducedMotion = useRef(false);
   /** Single-flight beyond React `loading` — guards double Enter/click races. */
   const sendingRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const sendGenerationRef = useRef(0);
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
   }, []);
 
   useEffect(() => {
@@ -173,10 +181,16 @@ export function ChatPanel({
     });
     setInput("");
 
+    abortRef.current?.abort();
+    const abortController = new AbortController();
+    abortRef.current = abortController;
+    const generation = ++sendGenerationRef.current;
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: abortController.signal,
         body: JSON.stringify({
           message: trimmed,
           conversationId,
@@ -186,9 +200,23 @@ export function ChatPanel({
         }),
       });
 
+      if (
+        abortController.signal.aborted ||
+        generation !== sendGenerationRef.current
+      ) {
+        return;
+      }
+
       const data = (await response.json()) as
         | ChatResponsePayload
         | { message?: string; error?: string; code?: string };
+
+      if (
+        abortController.signal.aborted ||
+        generation !== sendGenerationRef.current
+      ) {
+        return;
+      }
 
       if (!response.ok) {
         const code = "code" in data ? data.code : undefined;
@@ -243,15 +271,24 @@ export function ChatPanel({
           deepened: useDeep,
         }),
       );
-    } catch {
+    } catch (err) {
+      if (
+        abortController.signal.aborted ||
+        generation !== sendGenerationRef.current ||
+        (err instanceof DOMException && err.name === "AbortError")
+      ) {
+        return;
+      }
       setError(
         "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
       );
       setErrorKind("retryable");
       setInput(trimmed);
     } finally {
-      sendingRef.current = false;
-      setLoading(false);
+      if (generation === sendGenerationRef.current) {
+        sendingRef.current = false;
+        setLoading(false);
+      }
     }
   }
 
@@ -397,10 +434,7 @@ export function ChatPanel({
                 : "border-border/70 bg-sand-50/50",
             )}
           >
-            <label
-              htmlFor={deepenId}
-              className="flex min-h-11 cursor-pointer items-start gap-3"
-            >
+            <div className="flex items-start gap-3">
               <input
                 id={deepenId}
                 type="checkbox"
@@ -410,26 +444,29 @@ export function ChatPanel({
                 aria-describedby={deepenHelpId}
                 className="mt-2 h-5 w-5 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
-              <span className="min-w-0">
-                <span className="block text-sm font-medium text-ink">
+              <div className="min-w-0">
+                <label
+                  htmlFor={deepenId}
+                  className="block min-h-11 cursor-pointer pt-1.5 text-sm font-medium text-ink"
+                >
                   Aprofundar esta resposta
                   {deepenActive ? (
                     <span className="ml-2 text-xs font-normal text-wine">
                       · ativo nesta mensagem
                     </span>
                   ) : null}
-                </span>
-                <span
+                </label>
+                <p
                   id={deepenHelpId}
-                  className="mt-0.5 block text-xs leading-relaxed text-ink-soft"
+                  className="mt-0.5 text-xs leading-relaxed text-ink-soft"
                 >
                   Peça uma reflexão mais ampla desta mensagem: mais contexto da
                   situação, conexões bíblicas e próximos passos práticos. Consome
                   mais da sua margem de uso — só nesta resposta, sem alterar seu
                   perfil.
-                </span>
+                </p>
                 {deepenActive ? (
-                  <span className="mt-2 block rounded-lg border border-wine/20 bg-card/80 px-2.5 py-2 text-xs leading-relaxed text-ink">
+                  <p className="mt-2 rounded-lg border border-wine/20 bg-card/80 px-2.5 py-2 text-xs leading-relaxed text-ink">
                     <span className="font-medium">Será aprofundado:</span>{" "}
                     {input.trim()
                       ? input.trim().length > 140
@@ -437,10 +474,10 @@ export function ChatPanel({
                         : input.trim()
                       : "o texto que você escrever abaixo, nesta mensagem."}{" "}
                     Desmarque a caixa se quiser uma resposta padrão.
-                  </span>
+                  </p>
                 ) : null}
-              </span>
-            </label>
+              </div>
+            </div>
           </div>
         ) : (
           <DeepUpsellHint />

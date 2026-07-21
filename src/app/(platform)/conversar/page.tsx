@@ -81,7 +81,7 @@ export default async function ConversarPage({
   };
 
   if (!conversationParam?.trim()) {
-    return <ChatPanel {...panelProps} />;
+    return <ChatPanel key="new" {...panelProps} />;
   }
 
   if (!isUuid(conversationParam)) {
@@ -96,7 +96,7 @@ export default async function ConversarPage({
             <Link href="/conversas">Ver histórico</Link>
           </Button>
         </div>
-        <ChatPanel {...panelProps} />
+        <ChatPanel key="invalid" {...panelProps} />
       </div>
     );
   }
@@ -153,6 +153,7 @@ export default async function ConversarPage({
 
   return (
     <ChatPanel
+      key={conversationId}
       {...panelProps}
       initialConversationId={conversationId}
       initialMessages={initialMessages}
