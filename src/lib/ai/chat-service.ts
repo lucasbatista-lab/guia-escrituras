@@ -145,11 +145,12 @@ export async function runChatTurn(input: {
       flowStatus: "idempotent_return",
       durationMs: Date.now() - turnStartedMs,
     });
+    // Do not expose internal idempotency wording in the public notice field.
+    // Notice/follow-up are not persisted on MessageRecord (no migration).
     return {
       answer: existingAssistant.content,
       biblicalReferences: existingAssistant.biblicalReferences,
-      interpretationNotice:
-        "Resposta recuperada de uma solicitação anterior (idempotente).",
+      interpretationNotice: "",
       usage: {
         level:
           budget.level === "blocked" ? "near_limit" : budget.level,

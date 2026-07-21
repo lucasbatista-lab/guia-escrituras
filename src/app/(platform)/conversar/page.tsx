@@ -1,6 +1,11 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChatPanel } from "@/components/chat/chat-panel";
+import { InlineNotice } from "@/components/platform/inline-notice";
+import { RefreshPageButton } from "@/components/platform/refresh-page-button";
+import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
+import { mapStoredMessagesToUi } from "@/lib/conversations/chat-history-ui";
 import { getRepositories } from "@/lib/database/repositories";
 import { canUseDeepResponseOnDemand } from "@/lib/entitlements";
 import { isUuid } from "@/lib/navigation/safe-next-path";
@@ -63,61 +68,79 @@ export default async function ConversarPage({
   );
   const canDeepen = canUseDeepResponseOnDemand(auth.planKey);
 
+  const panelProps = {
+    traditionLabel,
+    depthLabel,
+    initialDraft,
+    canDeepen,
+    currentPlanKey: auth.planKey,
+  };
+
   if (!conversationParam?.trim()) {
-    return (
-      <ChatPanel
-        traditionLabel={traditionLabel}
-        depthLabel={depthLabel}
-        initialDraft={initialDraft}
-        canDeepen={canDeepen}
-        currentPlanKey={auth.planKey}
-      />
-    );
+    return <ChatPanel {...panelProps} />;
   }
 
   if (!isUuid(conversationParam)) {
     return (
-      <ChatPanel
-        traditionLabel={traditionLabel}
-        depthLabel={depthLabel}
-        initialDraft={initialDraft}
-        canDeepen={canDeepen}
-        currentPlanKey={auth.planKey}
-      />
+      <div className="space-y-4">
+        <InlineNotice tone="info">
+          Este link de conversa é inválido. Você pode começar uma nova reflexão
+          ou abrir uma conversa pelo histórico.
+        </InlineNotice>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/conversas">Ver histórico</Link>
+          </Button>
+        </div>
+        <ChatPanel {...panelProps} />
+      </div>
     );
   }
 
   const repos = getRepositories();
   let conversationId: string | null = null;
-  let initialMessages: Array<{
-    id: string;
-    role: "user" | "assistant";
-    content: string;
-  }> = [];
+  let initialMessages: ReturnType<typeof mapStoredMessagesToUi> = [];
+  let loadError = false;
 
   try {
     const conversation = await repos.conversations.getByIdForUser(
       conversationParam,
       auth.userId,
     );
-    if (!conversation) {
-      notFound();
+    if (conversation) {
+      const messages = await repos.messages.listRecent(
+        conversation.id,
+        auth.userId,
+        200,
+      );
+      conversationId = conversation.id;
+      initialMessages = mapStoredMessagesToUi(messages);
     }
-
-    const messages = await repos.messages.listRecent(
-      conversation.id,
-      auth.userId,
-      200,
-    );
-
-    conversationId = conversation.id;
-    initialMessages = messages.map((m) => ({
-      id: m.id,
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content,
-    }));
   } catch {
-    notFound();
+    loadError = true;
+  }
+
+  if (loadError) {
+    return (
+      <div
+        className="space-y-4 rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-5 sm:px-5"
+        role="alert"
+      >
+        <InlineNotice tone="error">
+          Não foi possível carregar esta conversa agora. Tente novamente em
+          instantes — sua reflexão continua salva.
+        </InlineNotice>
+        <div className="flex flex-wrap gap-2">
+          <RefreshPageButton />
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/conversas">Ver histórico</Link>
+          </Button>
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/conversar">Nova reflexão</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (!conversationId) {
@@ -126,12 +149,9 @@ export default async function ConversarPage({
 
   return (
     <ChatPanel
+      {...panelProps}
       initialConversationId={conversationId}
       initialMessages={initialMessages}
-      traditionLabel={traditionLabel}
-      depthLabel={depthLabel}
-      canDeepen={canDeepen}
-      currentPlanKey={auth.planKey}
     />
   );
 }

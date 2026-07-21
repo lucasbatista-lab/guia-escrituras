@@ -10,6 +10,12 @@ import {
   hasRenderableInterpretationNotice,
 } from "@/lib/ai/normalize-assistant-presentation";
 import { formatBiblicalReference } from "@/lib/biblical";
+import {
+  appendAssistantUiMessage,
+  rollbackOptimisticUserMessage,
+  syncConversationUrl,
+  type ChatUiMessage,
+} from "@/lib/conversations/chat-history-ui";
 import type { PlanKey } from "@/lib/entitlements";
 import { getPlanUpsellSuggestion } from "@/lib/marketing/plan-upsell";
 import { cn } from "@/lib/utils";
@@ -22,15 +28,7 @@ import {
   DeepUpsellHint,
 } from "@/components/chat/chat-plan-upsell";
 
-interface UiMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  meta?: Pick<
-    ChatResponsePayload,
-    "biblicalReferences" | "interpretationNotice" | "followUpQuestion"
-  >;
-}
+type UiMessage = ChatUiMessage;
 
 const EMPTY_EXAMPLE =
   "Estou com medo de tomar uma decisão profissional errada e preciso organizar minhas prioridades.";
@@ -106,6 +104,8 @@ export function ChatPanel({
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const prefersReducedMotion = useRef(false);
+  /** Single-flight beyond React `loading` — guards double Enter/click races. */
+  const sendingRef = useRef(false);
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia(
@@ -128,8 +128,9 @@ export function ChatPanel({
 
   async function send() {
     const trimmed = input.trim();
-    if (!trimmed || loading) return;
+    if (!trimmed || loading || sendingRef.current) return;
 
+    sendingRef.current = true;
     setError(null);
     setErrorKind(null);
     setLoading(true);
@@ -197,6 +198,9 @@ export function ChatPanel({
           setPendingRequestId(null);
           pendingDeepRef.current = false;
           setSendingDeep(false);
+          setMessages((prev) =>
+            rollbackOptimisticUserMessage(prev, requestId),
+          );
         }
         if (view.clearDeepPreference) {
           setPreferDeep(false);
@@ -208,23 +212,20 @@ export function ChatPanel({
 
       const payload = data as ChatResponsePayload;
       setConversationId(payload.conversationId);
+      syncConversationUrl(payload.conversationId);
       setPendingRequestId(null);
       pendingDeepRef.current = false;
       setPreferDeep(false);
       setSendingDeep(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `${payload.requestId}-assistant`,
-          role: "assistant",
-          content: payload.answer,
-          meta: {
-            biblicalReferences: payload.biblicalReferences,
-            interpretationNotice: payload.interpretationNotice,
-            followUpQuestion: payload.followUpQuestion,
-          },
-        },
-      ]);
+      setMessages((prev) =>
+        appendAssistantUiMessage(prev, {
+          requestId: payload.requestId,
+          answer: payload.answer,
+          biblicalReferences: payload.biblicalReferences,
+          interpretationNotice: payload.interpretationNotice,
+          followUpQuestion: payload.followUpQuestion,
+        }),
+      );
     } catch {
       setError(
         "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
@@ -232,6 +233,7 @@ export function ChatPanel({
       setErrorKind("retryable");
       setInput(trimmed);
     } finally {
+      sendingRef.current = false;
       setLoading(false);
     }
   }
