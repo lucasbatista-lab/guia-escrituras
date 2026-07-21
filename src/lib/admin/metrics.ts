@@ -550,6 +550,44 @@ function percentile(sorted: number[], p: number): number {
   return sorted[idx] ?? 0;
 }
 
+/**
+ * Lightweight AI cost metrics for /admin/custos — avoids the full overview
+ * waterfall (intents, referrals, payment events, UTM chunking, etc.).
+ */
+export type AdminAiCostMetrics = {
+  generatedAt: string;
+  totalUsers: number;
+  aiRequests30d: number;
+  aiEstimatedCostBrlCents30d: number;
+  aiEstimatedCostUsdMicros30d: number;
+  aiMetricsPartial: boolean;
+};
+
+export async function getAdminAiCostMetrics(): Promise<AdminAiCostMetrics> {
+  await assertAdminServiceAccess();
+  const client = admin();
+  const now = new Date();
+  const d30 = new Date(now.getTime() - 30 * 86400000).toISOString();
+
+  const [profiles, usage30] = await Promise.all([
+    client.from("profiles").select("id", { count: "exact", head: true }),
+    aggregateUsageEventsPaginated(client, { sinceIso: d30 }),
+  ]);
+
+  if (profiles.error) {
+    throw new AppError("admin_query_failed", "admin_query_failed", 500);
+  }
+
+  return {
+    generatedAt: now.toISOString(),
+    totalUsers: profiles.count ?? 0,
+    aiRequests30d: usage30.requests,
+    aiEstimatedCostBrlCents30d: usage30.costBrlCents,
+    aiEstimatedCostUsdMicros30d: usage30.costUsdMicros,
+    aiMetricsPartial: usage30.partial,
+  };
+}
+
 export async function getAdminUsageMetrics(): Promise<AdminUsageMetrics> {
   await assertAdminServiceAccess();
   const client = admin();

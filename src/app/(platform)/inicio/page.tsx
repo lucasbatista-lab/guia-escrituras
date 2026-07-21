@@ -76,7 +76,7 @@ export default async function InicioPage() {
     redirect("/entrar?next=/inicio");
   }
 
-  const { state } = await resolveUserJourneyState({ userId: auth.userId });
+  const { state } = await resolveUserJourneyState();
   const displayName = await loadDisplayName(auth.userId);
   const firstName =
     firstNameFromDisplayName(displayName) ??

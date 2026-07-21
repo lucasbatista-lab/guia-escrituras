@@ -15,7 +15,7 @@ export default async function PersonalizarPage() {
     redirect("/entrar?next=/personalizar");
   }
 
-  const { state } = await resolveUserJourneyState({ userId: auth.userId });
+  const { state } = await resolveUserJourneyState();
 
   if (!journeyHasEffectiveAccess(state)) {
     redirect(getRequiredDestinationForState(state));

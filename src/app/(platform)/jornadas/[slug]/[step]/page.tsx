@@ -30,7 +30,7 @@ export default async function JornadaStepPage({
     redirect("/entrar?next=/jornadas");
   }
 
-  const journeyState = await resolveUserJourneyState({ userId: auth.userId });
+  const journeyState = await resolveUserJourneyState();
   if (!journeyHasEffectiveAccess(journeyState.state)) {
     redirect(getRequiredDestinationForState(journeyState.state));
   }

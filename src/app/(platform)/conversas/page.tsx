@@ -34,7 +34,7 @@ export default async function ConversasPage({
     redirect("/entrar?next=/conversas");
   }
 
-  const journey = await resolveUserJourneyState({ userId: auth.userId });
+  const journey = await resolveUserJourneyState();
   if (!journeyAllowsChat(journey.state)) {
     redirect(getRequiredDestinationForState(journey.state));
   }

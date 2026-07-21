@@ -25,7 +25,7 @@ export default async function JornadasPage() {
     redirect("/entrar?next=/jornadas");
   }
 
-  const journey = await resolveUserJourneyState({ userId: auth.userId });
+  const journey = await resolveUserJourneyState();
   if (!journeyHasEffectiveAccess(journey.state)) {
     redirect(getRequiredDestinationForState(journey.state));
   }

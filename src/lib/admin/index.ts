@@ -1,5 +1,6 @@
 export {
   getAdminOverviewMetrics,
+  getAdminAiCostMetrics,
   getAdminUsageMetrics,
   getAdminPartnerMetrics,
   getAdminPaymentEvents,
@@ -10,6 +11,7 @@ export {
   startOfUtcDayIso,
   AdminMetricsError,
   type AdminOverviewMetrics,
+  type AdminAiCostMetrics,
   type AdminUsageMetrics,
   type AdminPartnerRow,
   type AdminPaymentEventRow,

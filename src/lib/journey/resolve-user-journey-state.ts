@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { AuthUserContext } from "@/lib/auth/session";
 import { getAuthUserContext } from "@/lib/auth/session";
 import { loadUserSubscriptions } from "@/lib/billing/subscription-lookup";
@@ -122,8 +123,9 @@ async function loadSignupIntentStatus(
  * Resolve journey from auth session + intent + subscriptions.
  * Does not call Stripe unless cancelAtPeriodEnd is passed in options.
  * Never infers state only from query string.
+ * Per-request memoized when called with the same arguments (layout + page).
  */
-export async function resolveUserJourneyState(
+export const resolveUserJourneyState = cache(async function resolveUserJourneyState(
   userIdOrOptions?:
     | string
     | {
@@ -218,4 +220,4 @@ export async function resolveUserJourneyState(
     snapshot,
     auth,
   };
-}
+});

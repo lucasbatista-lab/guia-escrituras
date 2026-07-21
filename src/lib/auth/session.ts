@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { allowsMocks, requiresRealSupabase } from "@/config/runtime";
 import type { PlanKey } from "@/lib/entitlements";
 import { createClient } from "@/lib/supabase/server";
@@ -31,7 +32,11 @@ const DEMO_PROFILE: SpiritualProfilePrefs = {
   onboardingCompleted: true,
 };
 
-export async function getAuthUserContext(): Promise<AuthUserContext | null> {
+/**
+ * Per-request memoization — layout + page often call this twice.
+ * Do not use across requests; React.cache is request-scoped.
+ */
+export const getAuthUserContext = cache(async function getAuthUserContext(): Promise<AuthUserContext | null> {
   if (!hasSupabasePublicEnv()) {
     if (requiresRealSupabase()) {
       return null;
@@ -121,7 +126,7 @@ export async function getAuthUserContext(): Promise<AuthUserContext | null> {
     isAdmin: Boolean(adminRole),
     demoMode: false,
   };
-}
+});
 
 export async function requireAuthUser(): Promise<AuthUserContext> {
   const ctx = await getAuthUserContext();
