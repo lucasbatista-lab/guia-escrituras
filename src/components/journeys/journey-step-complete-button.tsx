@@ -17,6 +17,7 @@ export function JourneyStepCompleteButton({
   nextStepLabel,
   journeyHref,
   isLastStep = false,
+  journeyCompleted = false,
 }: {
   journeySlug: string;
   stepId: string;
@@ -25,12 +26,16 @@ export function JourneyStepCompleteButton({
   nextStepLabel?: string | null;
   journeyHref?: string;
   isLastStep?: boolean;
+  /** True only when all steps are done (not merely last step in the trail). */
+  journeyCompleted?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justCompleted, setJustCompleted] = useState(false);
+  const [journeyJustFinished, setJourneyJustFinished] = useState(false);
   const showCompleted = completed || justCompleted;
+  const journeyFinished = journeyCompleted || journeyJustFinished;
   const backHref = journeyHref ?? `/jornadas/${journeySlug}`;
 
   async function handleComplete() {
@@ -45,9 +50,14 @@ export function JourneyStepCompleteButton({
         cache: "no-store",
         body: JSON.stringify({ journeySlug, stepId }),
       });
-      const data = (await res.json()) as { message?: string; code?: string };
+      const data = (await res.json()) as {
+        message?: string;
+        code?: string;
+        progress?: { completedAt?: string | null };
+      };
       if (!res.ok) {
         setJustCompleted(false);
+        setJourneyJustFinished(false);
         setError(
           mapJourneyCompleteError({
             status: res.status,
@@ -58,9 +68,11 @@ export function JourneyStepCompleteButton({
         return;
       }
       setJustCompleted(true);
+      setJourneyJustFinished(Boolean(data.progress?.completedAt));
       router.refresh();
     } catch {
       setJustCompleted(false);
+      setJourneyJustFinished(false);
       setError(mapJourneyCompleteNetworkError());
     } finally {
       setLoading(false);
@@ -75,12 +87,18 @@ export function JourneyStepCompleteButton({
         aria-live="polite"
       >
         <p className="text-sm font-medium text-ink">
-          {isLastStep ? "Jornada concluída nesta etapa" : "Etapa concluída"}
+          {journeyFinished
+            ? "Jornada concluída"
+            : isLastStep
+              ? "Última etapa marcada"
+              : "Etapa concluída"}
         </p>
         <p className="text-sm text-ink-soft">
-          {isLastStep
-            ? "Você pode revisar as etapas ou voltar ao início quando quiser."
-            : "Seu progresso foi salvo. Siga para a próxima etapa ou volte depois."}
+          {journeyFinished
+            ? "Você pode revisar as etapas ou escolher outra jornada quando quiser."
+            : isLastStep
+              ? "Progresso salvo. Se ainda houver etapas anteriores sem marcar, a jornada continua em andamento no catálogo."
+              : "Seu progresso foi salvo. Siga para a próxima etapa ou volte depois."}
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           {nextStepHref ? (
@@ -92,10 +110,10 @@ export function JourneyStepCompleteButton({
           ) : null}
           <Button asChild variant="outline" className="min-h-11">
             <Link href={backHref}>
-              {isLastStep ? "Ver jornada" : "Voltar à jornada"}
+              {journeyFinished ? "Ver jornada" : "Voltar à jornada"}
             </Link>
           </Button>
-          {isLastStep ? (
+          {journeyFinished ? (
             <Button asChild className="min-h-11">
               <Link href="/jornadas">Ver outras jornadas</Link>
             </Button>

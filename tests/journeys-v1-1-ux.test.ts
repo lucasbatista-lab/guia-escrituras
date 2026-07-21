@@ -35,13 +35,27 @@ describe("journeys V1.1 step completion UX", () => {
       "journey-step-complete-button.tsx",
     );
     expect(button).toContain("Etapa concluída");
-    expect(button).toContain("Jornada concluída nesta etapa");
-    expect(button).toContain('aria-live="polite"');
-    expect(button).toContain("Ir ao início");
+    expect(button).toContain("Jornada concluída");
+    expect(button).toContain("journeyFinished");
+    expect(button).toContain("Última etapa marcada");
     expect(button).toContain("Ver outras jornadas");
     expect(button).toContain("Próxima:");
     expect(button).toContain("Marcar como concluída");
     expect(button).toContain("setJustCompleted(true)");
+    expect(button).toContain("data.progress?.completedAt");
+  });
+
+  it("step page passes real journeyCompleted, not only last-step position", () => {
+    const page = read(
+      "src",
+      "app",
+      "(platform)",
+      "jornadas",
+      "[slug]",
+      "[step]",
+      "page.tsx",
+    );
+    expect(page).toContain("journeyCompleted={progress.isCompleted}");
   });
 
   it("completed journey detail offers catalog return", () => {

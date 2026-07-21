@@ -123,6 +123,7 @@ export default async function JornadaStepPage({
         nextStepLabel={nextStep?.title ?? null}
         journeyHref={`/jornadas/${journey.slug}`}
         isLastStep={isLastStep}
+        journeyCompleted={progress.isCompleted}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
