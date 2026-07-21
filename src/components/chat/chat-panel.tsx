@@ -401,8 +401,10 @@ export function ChatPanel({
                   id={deepenHelpId}
                   className="mt-0.5 block text-xs leading-relaxed text-ink-soft"
                 >
-                  Usa uma análise mais extensa para esta mensagem e consome mais
-                  da sua margem de uso.
+                  Peça uma reflexão mais ampla desta mensagem: mais contexto da
+                  situação, conexões bíblicas e próximos passos práticos. Consome
+                  mais da sua margem de uso — só nesta resposta, sem alterar seu
+                  perfil.
                 </span>
               </span>
             </label>
