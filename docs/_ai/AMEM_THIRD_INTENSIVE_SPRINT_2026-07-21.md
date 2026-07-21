@@ -3,7 +3,7 @@
 **Data:** 2026-07-21  
 **Branch:** `main`  
 **HEAD inicial:** `6b7b0f5` (pós-reconciliação; tip anterior `b8f64fd`)  
-**HEAD final:** `33a7a9ae575f54578f7230939a35369b8891d2b7`
+**HEAD final:** `0d9e121` (docs-only SHA stamp; fechamento substantivo em `33a7a9a`)
 
 ## F0 — Reconciliação Git (`3a05e72` × `b8f64fd`)
 
