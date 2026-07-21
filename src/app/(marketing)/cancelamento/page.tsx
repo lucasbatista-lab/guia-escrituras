@@ -23,6 +23,12 @@ export default function CancelamentoPage() {
         Falhas de pagamento podem suspender o acesso até regularização. Tentativas
         de cobrança seguem as regras do provedor de pagamentos.
       </p>
+      <p>
+        Cancelar a renovação é diferente de trocar de plano. A troca automática
+        entre planos ainda não está disponível — compare opções em{" "}
+        <a href="/planos">Planos</a> ou peça orientação pelo suporte, sem enviar
+        dados de cartão.
+      </p>
     </LegalDocumentShell>
   );
 }

@@ -111,7 +111,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "Resposta aprofundada sob demanda, quando provisionado",
     ],
     upcomingBenefits: [
-      "Possibilidades avaliadas após alinhamento: concierge, WhatsApp e recursos avançados",
+      "Possibilidades avaliadas após alinhamento: concierge, WhatsApp de suporte/comercial (nunca pastoral) e recursos avançados",
     ],
   },
 ];
