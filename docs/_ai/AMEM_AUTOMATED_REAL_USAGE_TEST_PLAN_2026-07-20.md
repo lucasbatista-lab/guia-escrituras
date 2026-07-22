@@ -1,7 +1,7 @@
 # Amém Chat — Automated Real Usage Test Plan
 
-**Data:** 2026-07-20  
-**Objetivo:** eliminar dependência de smoke manual do operador para jornadas representativas, sem tocar produção, Stripe live, OpenAI pago ou dados reais.  
+**Data:** 2026-07-20
+**Objetivo:** eliminar dependência de smoke manual do operador para jornadas representativas, sem tocar produção, Stripe live, OpenAI pago ou dados reais.
 **Companheiro:** `AMEM_FULL_PRODUCT_ENGINEERING_AUDIT_2026-07-20.md`
 
 ---
@@ -98,14 +98,14 @@ Injetar via `getAuthUserContext` mock / memory repos — **nunca** Auth de produ
 
 ## 6. Contratos a preservar
 
-- `chatRequestSchema` rejeita userId/role/cost  
-- Export ignora `x-user-id`  
-- `safeNextPath`  
-- Webhook invalid signature → 400  
-- Journey Essencial → redirect `/jornadas`  
-- Prefill allow-list sem auto POST  
-- AppError journeys: `code` machine-readable (AUD-006)  
-- Theology eval CI gate  
+- `chatRequestSchema` rejeita userId/role/cost
+- Export ignora `x-user-id`
+- `safeNextPath`
+- Webhook invalid signature → 400
+- Journey Essencial → redirect `/jornadas`
+- Prefill allow-list sem auto POST
+- AppError journeys: `code` machine-readable (AUD-006)
+- Theology eval CI gate
 
 ---
 
@@ -116,45 +116,45 @@ Injetar via `getAuthUserContext` mock / memory repos — **nunca** Auth de produ
 ### Suites
 
 #### E2E-A — Anônimo
-1. Home carrega brand  
-2. `/planos` mostra 4 planos; Particular sem cadastro checkout  
-3. `/inicio` → redirect `/entrar`  
-4. `/recuperar-senha` render  
-5. `/rota-inexistente` → not-found  
-6. Viewport 390×844  
+1. Home carrega brand
+2. `/planos` mostra 4 planos; Particular sem cadastro checkout
+3. `/inicio` → redirect `/entrar`
+4. `/recuperar-senha` render
+5. `/rota-inexistente` → not-found
+6. Viewport 390×844
 
 #### E2E-B — Essencial (auth mock)
-1. Login fixture → `/inicio`  
-2. Criar conversa (MockAi)  
-3. Histórico lista  
-4. Budget near-limit copy (fixture monthly)  
-5. `/jornadas` preview + CTA comparar  
-6. Deep link `/jornadas/ansiedade-confianca/...` → redirect catálogo  
-7. `/conta` + export download JSON schema  
-8. Cancel dialog acessível  
+1. Login fixture → `/inicio`
+2. Criar conversa (MockAi)
+3. Histórico lista
+4. Budget near-limit copy (fixture monthly)
+5. `/jornadas` preview + CTA comparar
+6. Deep link `/jornadas/ansiedade-confianca/...` → redirect catálogo
+7. `/conta` + export download JSON schema
+8. Cancel dialog acessível
 
 #### E2E-C — Caminho
-1. Catálogo 3 cards  
-2. Start journey → complete step → reload → progresso  
-3. Segunda “sessão” (novo context storage) → mesmo progresso (memory/db local)  
-4. Reset isolado  
-5. Prefill: textarea preenchida; **zero** network `POST /api/chat` até submit  
+1. Catálogo 3 cards
+2. Start journey → complete step → reload → progresso
+3. Segunda “sessão” (novo context storage) → mesmo progresso (memory/db local)
+4. Reset isolado
+5. Prefill: textarea preenchida; **zero** network `POST /api/chat` até submit
 
 #### E2E-D — Profundo
-1. Toggle Aprofundar habilitado  
-2. Sem entitlement deep em Essencial (cross-check)  
-3. Uso intenso → burst/budget messaging  
+1. Toggle Aprofundar habilitado
+2. Sem entitlement deep em Essencial (cross-check)
+3. Uso intenso → burst/budget messaging
 
 #### E2E-E — Particular
-1. Sem botões de checkout incompatíveis  
-2. Jornadas acessíveis se planKey particular  
+1. Sem botões de checkout incompatíveis
+2. Jornadas acessíveis se planKey particular
 
 #### E2E-F — Admin
-1. Não-admin → `/inicio`  
-2. Admin: lista usuários, detalhe sem `messages.content`  
-3. Mobile viewport nav usável  
-4. Export CSV  
-5. Ação destrutiva ausente ou confirmada  
+1. Não-admin → `/inicio`
+2. Admin: lista usuários, detalhe sem `messages.content`
+3. Mobile viewport nav usável
+4. Export CSV
+5. Ação destrutiva ausente ou confirmada
 
 **Estabilidade:** retries 0 no CI local primeiro; screenshots só on failure; selectors `getByRole`.
 
@@ -197,10 +197,10 @@ Matriz a automatizar:
 
 Rodar **apenas** em Supabase local ou projeto dev:
 
-1. JWT user tenta `insert messages role=assistant` → falha **após** 004  
-2. JWT tenta `insert usage_events` → falha após 004  
-3. JWT `journey_progress` outro `user_id` → fail  
-4. RPC `complete_journey_progress_step` com `p_user_id` alheio → forbidden  
+1. JWT user tenta `insert messages role=assistant` → falha **após** 004
+2. JWT tenta `insert usage_events` → falha após 004
+3. JWT `journey_progress` outro `user_id` → fail
+4. RPC `complete_journey_progress_step` com `p_user_id` alheio → forbidden
 
 **Antes de 004:** testes documentam comportamento inseguro (expect allow) como regressão de baseline — ou skip com flag `EXPECT_HARDENING=1`.
 
@@ -231,28 +231,28 @@ Theology: manter `eval:theology:journeys`.
 
 ## 12. Chat simulado
 
-- Sempre `MockAiProvider`  
-- Cenários: happy, idempotent retry, 429 budget, 409 in-flight, unsafe input, deep denied  
-- Concorrência: dois `runChatTurn` mesmo requestId  
-- Histórico longo: memory listRecent truncation  
+- Sempre `MockAiProvider`
+- Cenários: happy, idempotent retry, 429 budget, 409 in-flight, unsafe input, deep denied
+- Concorrência: dois `runChatTurn` mesmo requestId
+- Histórico longo: memory listRecent truncation
 
 ---
 
 ## 13. Admin
 
-- Layout redirect  
-- Metrics functions com admin client mock  
-- Garantia: serialização detalhe **não** inclui campos `content` de messages  
-- Mobile: Playwright viewport + nav links visible  
+- Layout redirect
+- Metrics functions com admin client mock
+- Garantia: serialização detalhe **não** inclui campos `content` de messages
+- Mobile: Playwright viewport + nav links visible
 
 ---
 
 ## 14. Exportação
 
-- Schema `amem-chat-user-data-v1`  
-- Includes `journeyProgress`  
-- Excludes secrets / other users  
-- Content-Disposition filename estável  
+- Schema `amem-chat-user-data-v1`
+- Includes `journeyProgress`
+- Excludes secrets / other users
+- Content-Disposition filename estável
 
 ---
 
@@ -260,11 +260,11 @@ Theology: manter `eval:theology:journeys`.
 
 Preparar fixtures:
 
-- `checkout.session.completed`  
-- `customer.subscription.updated` active/canceled/past_due  
-- Evento duplicado → ACK duplicate  
-- Signature inválida  
-- Mode mismatch live/test  
+- `checkout.session.completed`
+- `customer.subscription.updated` active/canceled/past_due
+- Evento duplicado → ACK duplicate
+- Signature inválida
+- Mode mismatch live/test
 
 **Condições para smoke financeiro real:** checklist humano; valor mínimo; conta de teste; webhook staging; **fora** deste plano de execução imediata.
 
@@ -276,11 +276,11 @@ Comando futuro sugerido (não adicionar agora): `pnpm test:billing:mock`.
 
 **Parar automação e escalar humano se:**
 
-- Teste exigir `sk_live` / produção Supabase  
-- Teste enviar OpenAI real  
-- Flaky &gt;2% em 20 runs  
-- Assert depender de timing de rede externa  
-- Qualquer write em projeto linked de produção  
+- Teste exigir `sk_live` / produção Supabase
+- Teste enviar OpenAI real
+- Flaky &gt;2% em 20 runs
+- Assert depender de timing de rede externa
+- Qualquer write em projeto linked de produção
 
 **Parar release se E2E-C/B falharem** após existirem no CI.
 
@@ -305,33 +305,37 @@ Implementação de scripts: só no bloco B02+, não nesta auditoria.
 
 ## 18. Separação: seguro agora vs financeiro futuro
 
-### Seguro agora
-- Vitest com memory/mocks  
-- Theology evals  
-- Playwright com DEMO_MODE / MockAi / sem Stripe live  
-- Contratos de autorização  
-- Export schema  
-- Journey progress memory atomicity  
+### Seguro agora (local)
+- Vitest com memory/mocks
+- Theology evals
+- `pnpm test:real-usage` (Vitest stand-in; **não** Playwright)
+- Contratos de autorização
+- Export schema
+- Journey progress memory atomicity
+
+### Playwright
+- **DEFER** — ver `AMEM_PLAYWRIGHT_E2E_SPIKE_2026-07-21.md`. Não instalar nesta fase.
+- Não tratar Playwright como “seguro agora” até harness process-scoped existir.
 
 ### Financeiro futuro (após preparação)
-- Webhook replay com secret de teste dedicado  
-- Checkout session create stubbed  
-- Reconciliação subscription states  
-- **Live smoke** somente com runbook e aprovação humana  
+- Webhook replay com secret de teste dedicado
+- Checkout session create stubbed
+- Reconciliação subscription states
+- **Live smoke** somente com runbook e aprovação humana
 
 ### Explicitamente fora
-- Produção  
-- Dados reais de clientes  
-- Alterar preços/quotas/webhooks  
-- Migrations aplicadas por testes  
+- Produção
+- Dados reais de clientes
+- Alterar preços/quotas/webhooks
+- Migrations aplicadas por testes
 
 ---
 
 ## 19. Critério de sucesso da iniciativa
 
-1. Os 15 passos do runbook de Jornadas têm assert automatizado equivalente.  
-2. CI local `pnpm test && pnpm test:e2e` verde sem rede paga.  
-3. Operador só executa smoke humano residual: e-mail real, Stripe live, DNS — documentado em Autonomous Operations Runbook V1.  
+1. Os 15 passos do runbook de Jornadas têm assert automatizado equivalente.
+2. CI local `pnpm test && pnpm test:e2e` verde sem rede paga.
+3. Operador só executa smoke humano residual: e-mail real, Stripe live, DNS — documentado em Autonomous Operations Runbook V1.
 
 ---
 
