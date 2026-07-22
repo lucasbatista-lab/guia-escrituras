@@ -208,6 +208,10 @@ describe("SEO & social readiness — robots and sitemap", () => {
         "/auth",
         "/assinatura",
         "/confira-seu-email",
+        "/jornada",
+        "/jornada/",
+        "/jornadas",
+        "/jornadas/",
       ]),
     );
     expect(doc.sitemap).toBe("https://amemchat.com.br/sitemap.xml");

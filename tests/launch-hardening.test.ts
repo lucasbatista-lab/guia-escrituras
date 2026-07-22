@@ -100,6 +100,8 @@ describe("SEO discoverability", () => {
           "/auth",
           "/confira-seu-email",
           "/recuperar-senha",
+          "/jornada",
+          "/jornadas",
         ]),
       );
       expect(doc.sitemap).toBe("https://amemchat.com.br/sitemap.xml");
