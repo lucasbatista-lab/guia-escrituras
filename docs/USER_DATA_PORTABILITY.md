@@ -98,8 +98,17 @@ Manual (local, no external services): sign in with demo/mocks if enabled, open `
 | Export | Delete |
 |--------|--------|
 | Download a copy | Remove account / data |
-| Available in V1 via `/conta` | Not automated yet — support channel |
+| Available in V1 via `/conta` | **Not automated** — manual support process |
+
+## Account deletion (manual)
+
+Self-service account deletion is **not** implemented. Operators must follow:
+
+- `docs/_ai/AMEM_MANUAL_ACCOUNT_DELETION_AND_RETENTION_RUNBOOK_2026-07-22.md`
+- Open legal/product retention decisions: `docs/_ai/AMEM_DATA_RETENTION_DECISION_REGISTER_2026-07-22.md`
+
+Incident pointer: ops runbook item “Pede exclusão”.
 
 ## Next steps (account deletion)
 
-Would require a separate product/legal design: soft-delete vs hard-delete, billing retention, Stripe customer lifecycle, and likely migrations for deletion audit trails. Do not conflate with this export.
+Would require a separate product/legal design: soft-delete vs hard-delete, billing retention, Stripe customer lifecycle, and likely migrations for deletion audit trails. Do not conflate with this export. Do not invent legal retention deadlines in engineering docs.

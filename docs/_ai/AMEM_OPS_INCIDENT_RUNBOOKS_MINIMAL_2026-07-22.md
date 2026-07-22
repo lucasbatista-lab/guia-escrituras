@@ -58,7 +58,7 @@ Para cada cenário: sintoma → severidade → detectar → evidência → dados
 **Sev:** Baixa · **1ª:** informar indisponível; não proration · **Rel:** COMMERCIAL_PLANS
 
 ### 18. Pede exclusão
-**Sev:** Alta LGPD · **1ª:** processo manual portabilidade; jurídico · **Rel:** USER_DATA_PORTABILITY
+**Sev:** Alta LGPD · **1ª:** runbook manual `AMEM_MANUAL_ACCOUNT_DELETION_AND_RETENTION_RUNBOOK_2026-07-22.md` (+ export portabilidade); jurídico via `AMEM_DATA_RETENTION_DECISION_REGISTER_2026-07-22.md` · **Rel:** USER_DATA_PORTABILITY · **Não:** self-service delete automático
 
 ### 19. WhatsApp esperando pastoral
 **Sev:** Média reputação · **1ª:** redirecionar para ajuda/emergência humana; **não** aconselhar · **Rel:** Particular honesty
