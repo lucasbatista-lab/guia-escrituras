@@ -15,6 +15,7 @@ export {
 export {
   extractBiblicalReferencesFromText,
   classifyBiblicalReferences,
+  findFreeTextRefsAbsentFromStructured,
   detectFalseLiteralCitation,
 } from "./biblical-refs";
 export {

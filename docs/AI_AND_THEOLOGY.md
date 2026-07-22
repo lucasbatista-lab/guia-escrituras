@@ -23,7 +23,7 @@ Arquivos: `src/lib/theology/*`.
 | Literalidade | `answerLooksLikeLiteralUnlicensedQuote` | Heurística suave |
 | Mock offline | `MockAiProvider` | Respostas determinísticas seguras (dev/preview) |
 
-**Lacunas conhecidas:** ódio/prosperidade/cura majoritariamente prompt-only; citações no texto livre da `answer` não são varridas; mock não passa por `assertSafeAiIdentity`. Crise imediata: intercept runtime V1 ativo (ver `safety/crisis`); revisão pastoral humana ainda recomendada para calibragem de falsos positivos.
+**Lacunas conhecidas:** ódio/prosperidade/cura majoritariamente prompt-only; citações no texto livre da `answer` não são varridas em runtime (spike `docs/_ai/AMEM_FREE_TEXT_SCRIPTURE_REFERENCE_VALIDATION_SPIKE_2026-07-22.md` — mitigação: eval + pastoral spot-check); mock não passa por `assertSafeAiIdentity`. Crise imediata: intercept runtime V1 ativo (ver `safety/crisis`); revisão pastoral humana ainda recomendada para calibragem de falsos positivos.
 
 ## OpenAI
 

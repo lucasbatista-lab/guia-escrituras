@@ -12,6 +12,7 @@ import {
   extractBiblicalReferencesFromText,
   hasLeadingNegation,
   classifyBiblicalReferences,
+  findFreeTextRefsAbsentFromStructured,
 } from "@/lib/evals/theology";
 
 describe("theology eval detectors — safety hits", () => {
@@ -108,5 +109,47 @@ describe("biblical reference extraction", () => {
     expect(
       detectFalseLiteralCitation("A Bíblia diz literalmente que você nunca sofrerá."),
     ).toBeTruthy();
+  });
+
+  it("MAE-P1-09: coherent structured ref does not flag free-text divergence", () => {
+    const absent = findFreeTextRefsAbsentFromStructured({
+      answer: "À luz de Salmos 23:1-4, há consolo no cuidado de Deus.",
+      structuredRefs: [
+        { book: "Salmos", chapter: 23, verseStart: 1, verseEnd: 4 },
+      ],
+    });
+    expect(absent).toEqual([]);
+  });
+
+  it("MAE-P1-09: explicit free-text ref diverges when structured is empty", () => {
+    const absent = findFreeTextRefsAbsentFromStructured({
+      answer: "Segundo Jonas 99:1, haveria uma prova inexistente.",
+      structuredRefs: [],
+    });
+    expect(absent.length).toBeGreaterThan(0);
+    expect(absent[0]?.raw).toMatch(/Jonas/i);
+    // Evidence must stay short — never the full answer body.
+    expect(absent[0]?.raw.length).toBeLessThan(40);
+    expect(absent.every((h) => !h.raw.includes("prova inexistente"))).toBe(true);
+  });
+
+  it("does not treat common numbers or bare names as scripture refs", () => {
+    expect(extractBiblicalReferencesFromText("João chegou cedo hoje.")).toEqual([]);
+    expect(extractBiblicalReferencesFromText("A opção 3 é melhor.")).toEqual([]);
+    expect(extractBiblicalReferencesFromText("versão 1.2 do app")).toEqual([]);
+  });
+
+  it("classifies invented free-text refs even when structured channel is clean", () => {
+    const classified = classifyBiblicalReferences({
+      answer: "Baruculon 3:8 diz algo inventado.",
+      structuredRefs: [
+        { book: "Salmos", chapter: 34, verseStart: 18 },
+      ],
+      allowedRefs: [{ book: "Salmos", chapter: 34, verseStart: 18 }],
+    });
+    expect(classified.invalid.length).toBeGreaterThan(0);
+    expect(classified.fabricatedHit?.evidence.every((e) => e.length < 80)).toBe(
+      true,
+    );
   });
 });

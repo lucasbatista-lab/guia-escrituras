@@ -173,6 +173,38 @@ export function classifyBiblicalReferences(input: {
   };
 }
 
+/**
+ * Eval-only: refs explicitly present in free-text that are absent from the
+ * structured `biblicalReferences` array. Documents MAE-P1-09 divergence —
+ * not used as a live chat gate (false-positive risk).
+ * Evidence strings are short `raw` matches only; callers must not log full answers.
+ */
+export function findFreeTextRefsAbsentFromStructured(input: {
+  answer: string;
+  structuredRefs: {
+    book: string;
+    chapter: number;
+    verseStart: number;
+    verseEnd?: number | null;
+  }[];
+}): BiblicalRefHit[] {
+  const fromText = extractBiblicalReferencesFromText(input.answer);
+  const structured: BiblicalRefHit[] = input.structuredRefs.map((ref) => {
+    const resolved = resolveBook(ref.book);
+    return {
+      raw: `${ref.book} ${ref.chapter}:${ref.verseStart}`,
+      book: resolved.canonical ? resolved.book : ref.book,
+      chapter: ref.chapter,
+      verseStart: ref.verseStart,
+      ...(ref.verseEnd != null ? { verseEnd: ref.verseEnd } : {}),
+      canonical: resolved.canonical,
+    };
+  });
+  return fromText.filter(
+    (hit) => !structured.some((s) => refsLooselyEqual(s, hit)),
+  );
+}
+
 export function detectFalseLiteralCitation(answer: string): DetectorHit | null {
   const text = normalizeEvalText(answer);
   const patterns: RegExp[] = [
