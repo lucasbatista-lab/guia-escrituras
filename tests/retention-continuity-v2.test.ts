@@ -40,11 +40,17 @@ function memoryStorage(): Storage {
 }
 
 describe("composer draft session helpers", () => {
-  it("scopes keys by conversation id and new thread", () => {
-    expect(composerDraftStorageKey(null)).toBe("amem:composer-draft:v1:new");
-    expect(composerDraftStorageKey("  ")).toBe("amem:composer-draft:v1:new");
-    expect(composerDraftStorageKey("abc-123")).toBe(
-      "amem:composer-draft:v1:abc-123",
+  const USER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+  it("scopes keys by user and conversation id", () => {
+    expect(composerDraftStorageKey(null, USER)).toBe(
+      `amem:composer-draft:v2:${USER}:new`,
+    );
+    expect(composerDraftStorageKey("  ", USER)).toBe(
+      `amem:composer-draft:v2:${USER}:new`,
+    );
+    expect(composerDraftStorageKey("abc-123", USER)).toBe(
+      `amem:composer-draft:v2:${USER}:abc-123`,
     );
   });
 
@@ -56,29 +62,30 @@ describe("composer draft session helpers", () => {
 
   it("reads and writes drafts without throwing when storage is missing", () => {
     const store = memoryStorage();
-    writeComposerDraft(null, "rascunho local", store);
-    expect(readComposerDraft(null, store)).toBe("rascunho local");
-    writeComposerDraft(null, "   ", store);
-    expect(readComposerDraft(null, store)).toBe("");
-    expect(readComposerDraft(null, null)).toBe("");
+    writeComposerDraft(null, "rascunho local", store, USER);
+    expect(readComposerDraft(null, store, USER)).toBe("rascunho local");
+    writeComposerDraft(null, "   ", store, USER);
+    expect(readComposerDraft(null, store, USER)).toBe("");
+    expect(readComposerDraft(null, null, USER)).toBe("");
   });
 
   it("clears both conversation and new keys after send", () => {
     const store = memoryStorage();
-    writeComposerDraft(null, "novo", store);
-    writeComposerDraft("c1", "existente", store);
-    clearComposerDraft("c1", store);
-    expect(readComposerDraft(null, store)).toBe("");
-    expect(readComposerDraft("c1", store)).toBe("");
+    writeComposerDraft(null, "novo", store, USER);
+    writeComposerDraft("c1", "existente", store, USER);
+    clearComposerDraft("c1", store, USER);
+    expect(readComposerDraft(null, store, USER)).toBe("");
+    expect(readComposerDraft("c1", store, USER)).toBe("");
   });
 
   it("prefers URL/tema draft over session draft", () => {
     const store = memoryStorage();
-    writeComposerDraft(null, "session", store);
+    writeComposerDraft(null, "session", store, USER);
     expect(
       resolveInitialComposerInput({
         urlDraft: "tema da url",
         conversationId: null,
+        userId: USER,
         storage: store,
       }),
     ).toBe("tema da url");
@@ -86,6 +93,7 @@ describe("composer draft session helpers", () => {
       resolveInitialComposerInput({
         urlDraft: "  ",
         conversationId: null,
+        userId: USER,
         storage: store,
       }),
     ).toBe("session");
@@ -130,6 +138,7 @@ describe("retention V2 wiring", () => {
     expect(chat).toContain("resolveInitialComposerInput");
     expect(chat).toContain("writeComposerDraft");
     expect(chat).toContain("clearComposerDraft");
+    expect(chat).toContain("userId");
   });
 
   it("inicio resume uses age-based return copy", () => {

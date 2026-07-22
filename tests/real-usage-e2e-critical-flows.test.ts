@@ -110,6 +110,8 @@ describe("real-usage E2E-critical matrix (Vitest stand-in)", () => {
     const draft = read("src", "lib", "conversations", "composer-draft.ts");
     const display = read("src", "lib", "conversations", "display.ts");
     expect(draft).toContain("sessionStorage");
+    expect(draft).toContain("amem:composer-draft:v2:");
+    expect(draft).toContain("normalizeDraftUserScope");
     expect(display).toContain("resumeReturnTone");
     expect(display).not.toMatch(/pecado|culpa espiritual/i);
   });

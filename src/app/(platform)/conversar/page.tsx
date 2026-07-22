@@ -80,6 +80,7 @@ export default async function ConversarPage({
   const canDeepen = canUseDeepResponseOnDemand(auth.planKey);
 
   const panelProps = {
+    userId: auth.userId,
     traditionLabel,
     depthLabel,
     initialDraft,

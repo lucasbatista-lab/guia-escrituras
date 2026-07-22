@@ -41,6 +41,7 @@ const EMPTY_EXAMPLE =
   "Estou com medo de tomar uma decisão profissional errada e preciso organizar minhas prioridades.";
 
 export function ChatPanel({
+  userId,
   initialConversationId = null,
   initialMessages,
   traditionLabel,
@@ -52,6 +53,8 @@ export function ChatPanel({
   chatFeatureDisabled = false,
   deepenFeatureDisabled = false,
 }: {
+  /** Authenticated user id — scopes session drafts; never email. */
+  userId: string;
   initialConversationId?: string | null;
   initialMessages?: UiMessage[];
   traditionLabel?: string;
@@ -75,6 +78,7 @@ export function ChatPanel({
     resolveInitialComposerInput({
       urlDraft: initialDraft,
       conversationId: initialConversationId,
+      userId,
     }),
   );
   const [conversationId, setConversationId] = useState<string | null>(
@@ -144,8 +148,8 @@ export function ChatPanel({
   }, []);
 
   useEffect(() => {
-    writeComposerDraft(conversationId, input);
-  }, [conversationId, input]);
+    writeComposerDraft(conversationId, input, undefined, userId);
+  }, [conversationId, input, userId]);
 
   const onScroll = useCallback(() => {
     const el = scrollerRef.current;
@@ -277,8 +281,8 @@ export function ChatPanel({
       }
 
       const payload = data as ChatResponsePayload;
-      clearComposerDraft(conversationId);
-      clearComposerDraft(payload.conversationId);
+      clearComposerDraft(conversationId, undefined, userId);
+      clearComposerDraft(payload.conversationId, undefined, userId);
       setConversationId(payload.conversationId);
       syncConversationUrl(payload.conversationId);
       setPendingRequestId(null);

@@ -38,17 +38,19 @@ function memoryStorage(): Storage {
 }
 
 describe("privacy storage V2 — account switch / logout", () => {
+  const USER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
   it("clears drafts and activation checklist together", () => {
     const store = memoryStorage();
-    writeComposerDraft(null, "texto privado", store);
+    writeComposerDraft(null, "texto privado", store, USER);
     markActivationStep("first_chat", store);
-    expect(store.getItem(composerDraftStorageKey(null))).toBeTruthy();
+    expect(store.getItem(composerDraftStorageKey(null, USER))).toBeTruthy();
     expect(store.getItem(ACTIVATION_CHECKLIST_STORAGE_KEY)).toBeTruthy();
 
     clearAllComposerDrafts(store);
     clearActivationChecklist(store);
 
-    expect(store.getItem(composerDraftStorageKey(null))).toBeNull();
+    expect(store.getItem(composerDraftStorageKey(null, USER))).toBeNull();
     expect(store.getItem(ACTIVATION_CHECKLIST_STORAGE_KEY)).toBeNull();
   });
 
