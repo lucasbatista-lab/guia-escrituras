@@ -161,4 +161,28 @@ describe("feature kill switches (MAE-P2-07)", () => {
     expect(view.kind).toBe("unavailable");
     expect(view.message.toLowerCase()).not.toMatch(/plano|upgrade|profundo/);
   });
+
+  it("blocks ensureJourneyStarted RSC path when journeys kill switch is on", async () => {
+    process.env.FEATURE_DISABLE_JOURNEYS = "true";
+    const { ensureJourneyStarted } = await import("@/lib/journeys/server");
+    await expect(
+      ensureJourneyStarted(baseAuth.userId, "paz-no-caos"),
+    ).rejects.toMatchObject({
+      code: FEATURE_TEMPORARILY_DISABLED_CODE,
+      status: 503,
+    });
+  });
+
+  it("journey detail/step pages redirect when journeys kill switch is on", async () => {
+    const detail = await import("node:fs/promises").then((fs) =>
+      fs.readFile("src/app/(platform)/jornadas/[slug]/page.tsx", "utf8"),
+    );
+    const step = await import("node:fs/promises").then((fs) =>
+      fs.readFile("src/app/(platform)/jornadas/[slug]/[step]/page.tsx", "utf8"),
+    );
+    expect(detail).toContain('isFeatureDisabled("journeys")');
+    expect(step).toContain('isFeatureDisabled("journeys")');
+    expect(detail).toContain('redirect("/jornadas")');
+    expect(step).toContain('redirect("/jornadas")');
+  });
 });

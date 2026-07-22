@@ -2,6 +2,11 @@ import "server-only";
 
 import { cache } from "react";
 import {
+  FEATURE_TEMPORARILY_DISABLED_CODE,
+  featureDisabledUserMessage,
+  isFeatureDisabled,
+} from "@/config/feature-kill-switches";
+import {
   createJourneyProgressService,
   getJourneyProgressRepository,
   type JourneyProgressState,
@@ -11,6 +16,7 @@ import {
   getJourneyBySlug,
   getJourneyEstimatedMinutes,
 } from "@/lib/journeys/registry";
+import { AppError } from "@/lib/safety";
 
 /** Request-scoped — /inicio loads map for resume priority and catalog card. */
 export const loadJourneyProgressMap = cache(
@@ -45,6 +51,15 @@ export async function ensureJourneyStarted(
   userId: string,
   journeySlug: string,
 ): Promise<JourneyProgressState> {
+  // Same server-side gate as API mutations — closes RSC deep-link bypass.
+  if (isFeatureDisabled("journeys")) {
+    throw new AppError(
+      FEATURE_TEMPORARILY_DISABLED_CODE,
+      FEATURE_TEMPORARILY_DISABLED_CODE,
+      503,
+      featureDisabledUserMessage("journeys"),
+    );
+  }
   const journey = getJourneyBySlug(journeySlug);
   if (!journey?.steps[0]) {
     throw new Error("invalid journey");

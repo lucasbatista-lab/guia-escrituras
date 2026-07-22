@@ -4,6 +4,7 @@ import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { JourneyResetButton } from "@/components/journeys/journey-reset-button";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { Button } from "@/components/ui/button";
+import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
 import {
@@ -34,6 +35,10 @@ export default async function JornadaDetailPage({
   const auth = await getAuthUserContext();
   if (!auth) {
     redirect(buildLoginHref(buildJourneyResumePath(slug), "/jornadas"));
+  }
+
+  if (isFeatureDisabled("journeys")) {
+    redirect("/jornadas");
   }
 
   const journeyState = await resolveUserJourneyState();
