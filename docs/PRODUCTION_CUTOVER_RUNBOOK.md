@@ -72,11 +72,11 @@ Checklist rápida: `APP_URL` e `NEXT_PUBLIC_APP_URL` = `https://amemchat.com.br`
 
 1. Configurar/conferir envs na Vercel (Production)
 2. Deploy de `main` (via fluxo Vercel já existente — **este runbook não executa deploy**)
-3. Confirmar commit implantado (`/api/health` commitSha ou painel Vercel)
-4. Health: `GET /api/health` e `GET /api/health/db`
+3. Confirmar commit implantado (`/api/health` version/commitSha ou painel Vercel). Health verde confirma runtime/SHA e checks documentados — **não** prova Stripe, OpenAI, billing nem lançamento completo.
+4. Health: `GET /api/health` e `GET /api/health/db` (db = latência básica; não substitui smoke financeiro)
 5. Smoke público (home, planos, robots, sitemap)
 6. Smoke autenticado (cadastro → e-mail → onboarding → chat)
-7. Pagamento controlado + webhook
+7. Pagamento controlado + webhook (**obrigatório** — health não substitui)
 8. Admin (operador) + bloqueio de usuário comum
 9. Cron / geração manual de relatório
 10. SEO/social (canonical + OG)

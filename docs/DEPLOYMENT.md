@@ -92,8 +92,8 @@ values ('<uuid>', 'caminho', 'active');
 ## Smoke tests (após deploy)
 
 1. `/` carrega marca Amém Chat
-2. `/api/health` → `status: ok` (sem secrets)
-3. `/api/health/db` → `ok` + `latencyMs` (ou 503 se misconfig)
+2. `/api/health` → `status: ok` (sem secrets). Prova runtime/SHA/env público — **não** Stripe/OpenAI/billing.
+3. `/api/health/db` → `ok` + `latencyMs` (ou 503 se misconfig). Não substitui smoke financeiro nem RLS live.
 4. Cadastro → e-mail → callback → onboarding → `/inicio`
 5. Sem assinatura: chat retorna 402
 6. Com assinatura + OpenAI: conversa persiste em `messages` / `usage_events`

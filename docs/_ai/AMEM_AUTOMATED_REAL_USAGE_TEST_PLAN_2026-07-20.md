@@ -10,14 +10,20 @@
 
 Hoje o runbook (`TOMORROW_LAUNCH_RUNBOOK.md`) exige ≤15 passos humanos para Jornadas. A estratégia é uma **pirâmide**:
 
-1. **Contratos estáticos** (já fortes) — manter  
-2. **Fixtures + memory repos + Vitest de fluxo** — expandir **agora** (seguro)  
-3. **Integração local Supabase** (opcional, container/`supabase start`) — quando disponível  
-4. **Playwright local** contra `next start` + DEMO_MODE/mocks — **seguro agora** se mocks  
-5. **RLS live tests** contra DB de **dev** — separado  
-6. **Smoke financeiro** — **futuro**, mock Stripe apenas; live só com runbook humano explícito  
+1. **Contratos estáticos** (já fortes) — manter
+2. **Fixtures + memory repos + Vitest de fluxo** — expandir **agora** (seguro)
+3. **Integração local Supabase** (opcional, container/`supabase start`) — quando disponível
+4. **Playwright local** — **DEFER** (substituído pela decisão em
+   `AMEM_PLAYWRIGHT_E2E_SPIKE_2026-07-21.md`; **não** instalar agora; harness insuficiente)
+5. **RLS live tests** contra DB de **dev** — separado
+6. **Smoke financeiro** — **futuro**, mock Stripe apenas; live só com runbook humano explícito
 
-**Condição de parada de smoke humano:** quando Playwright+Vitest cobrirem os 15 passos do runbook com asserts equivalentes e gates CI verdes.
+> **Nota histórica (2026-07-20):** a linha abaixo que dizia Playwright “seguro agora”
+> está **obsoleta**. A fonte de verdade é o spike DEFER + `pnpm test:real-usage` (Vitest).
+
+**Condição de parada de smoke humano residual:** quando houver harness Playwright
+process-scoped **ou** cobertura Vitest real-usage equivalente aos passos do runbook
+humano mínimo — **sem** declarar Playwright pronto enquanto o spike permanecer DEFER.
 
 ---
 
@@ -35,7 +41,7 @@ Hoje o runbook (`TOMORROW_LAUNCH_RUNBOOK.md`) exige ≤15 passos humanos para Jo
 | Unit/contrato | Vitest | Agora |
 | Theology eval | scripts existentes | Agora (já CI) |
 | Fluxo autenticado simulado | Vitest + fixtures | Agora |
-| E2E UI | Playwright | Próximo bloco testes |
+| E2E UI | Playwright | **DEFER** — ver spike 2026-07-21; não instalar nesta fase |
 | RLS | SQL tests + supabase local | Após confirmação schema |
 | Financeiro mock | Vitest Stripe fixtures | Preparação smoke |
 | Financeiro live | Manual + checklist | Só após preparação |

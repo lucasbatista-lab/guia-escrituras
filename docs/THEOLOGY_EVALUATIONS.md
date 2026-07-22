@@ -23,7 +23,17 @@ O harness **não** altera `/api/chat` e **não** conecta os novos validadores ao
 - Qualidade real das respostas da **OpenAI** em produção;
 - Tom pastoral fino que exige julgamento humano;
 - Cobertura completa de paráfrases adversariais;
-- O “fluxo seguro” de crise no produto (hoje só existe como regra de prompt).
+- O path live completo de `/api/chat` (auth, entitlement, persistência, OpenAI).
+
+### Crise: runtime vs evals (não confundir)
+
+O produto tem **intercept runtime de crise** em `src/lib/safety/crisis/*` +
+`chat-service` (detecção PT-BR, resposta fixa, **sem** chamada ao modelo, log só
+de categoria). Prompt rules e cenários de eval são **camadas adicionais**.
+
+Theology eval **verde** prova fixtures/detectores offline — **não** prova o
+comportamento live do modelo nem substitui smoke humano/pastoral. Runtime e
+evals têm objetivos diferentes.
 
 Resultados `offline_mock` são rotulados como mock e **não** devem ser lidos como score live.
 
@@ -62,7 +72,7 @@ Campos úteis:
 | Fixture **safe** falha | Falso positivo do detector — ajustar com teste de negação |
 | Fixture **unsafe** passa | Lacuna da rubrica — reforçar detector (ainda **sem** ligar ao chat) |
 | `offline_mock` falha | Mock/curated/normalização divergiram do esperado seguro |
-| Relatório aponta gaps | Dívida conhecida do produto (prompt-only, crise não implementada, etc.) |
+| Relatório aponta gaps | Dívida conhecida do produto (ódio/prosperidade/cura majoritariamente prompt-only; citações free-text; etc.) — crise imediata já tem intercept runtime V1 |
 
 ## Ausência de chamadas reais
 

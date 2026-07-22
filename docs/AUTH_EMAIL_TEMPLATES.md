@@ -260,9 +260,13 @@ Inclua no Supabase (Site URL + Redirect URLs):
 ## Domínio e cookies
 
 - Canônico: **https://amemchat.com.br** (apex)
-- Cookies de sessão/continuidade **não** devem fixar `Domain=.amemchat.com.br` nem
-  `www` — permanecem host-only no apex.
-- Redirecionamento externo **www → apex** deve ser configurado no DNS/hosting
-  (fora deste repo).
+- Em **Vercel Production** (`VERCEL_ENV=production`), cookies de sessão usam
+  `Domain=.amemchat.com.br` de propósito (`src/lib/supabase/auth-cookie-options.ts`)
+  para sobreviver apex ↔ www antes do redirect. Local e preview **não** aplicam
+  esse Domain (permanecem host-only).
+- **Não** alterar para host-only em produção sem nova decisão arquitetural —
+  isso quebraria continuidade de sessão entre www e apex.
+- Redirecionamento externo **www → apex** deve estar ativo no hosting
+  (código + DNS/hosting).
 - `APP_URL` / `NEXT_PUBLIC_APP_URL` devem ser `https://amemchat.com.br` em
   produção. URLs `*.vercel.app` não devem aparecer para clientes.

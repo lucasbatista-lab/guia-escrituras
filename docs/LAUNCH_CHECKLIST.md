@@ -37,7 +37,7 @@ Nada abaixo marcado como `[x]` significa “já validado em produção”.
 - [ ] Redirecionamento **www → apex**
 - [ ] `APP_URL` e `NEXT_PUBLIC_APP_URL` = `https://amemchat.com.br` na Vercel
 - [ ] Canonical/OG/sitemap respondendo no domínio de produção
-- [ ] Cookies de auth sem `Domain` www-bound (host-only no apex)
+- [ ] Cookies de auth em Vercel Production usam `Domain=.amemchat.com.br` (compartilhado apex/www) via `getAuthCookieOptions` — **intencional**; local/preview permanecem host-only. **Não** “corrigir” para host-only sem nova decisão arquitetural. Ver `src/lib/supabase/auth-cookie-options.ts`.
 
 ## 2. Supabase Auth — depende de produção
 
@@ -88,8 +88,8 @@ Nada abaixo marcado como `[x]` significa “já validado em produção”.
 
 ## 8. Observabilidade — produção + humano
 
-- [ ] `/api/health` ok (sem secrets)
-- [ ] `/api/health/db` ok/latência
+- [ ] `/api/health` ok (sem secrets) — prova runtime/SHA/env público documentado; **não** prova Stripe, OpenAI nem billing
+- [ ] `/api/health/db` ok/latência — prova latência de leitura básica no banco; **não** substitui smoke financeiro nem RLS live
 - [ ] Admin overview com timestamp e avisos de métricas parciais
 
 ## 9. Rollback — pronto no papel; executar só se P0

@@ -22,7 +22,8 @@ Hipótese vs evidência: padrões de mercado = **hipótese**; entitlements no re
 | Jornadas 3×7 | Caminho+ | **Ativo** | Ativo | Alto | Baixo | Editorial | Médio | Baixo | Alto | Ess→Cam | sim |
 | Aprofundar | Profundo+ | **Ativo** | Ativo | Alto | Médio (tokens) | Baixo | Baixo | Médio custo AI | Médio | Cam→Pro | sim |
 | Uso frequente (budget) | Caminho+ | **Ativo** (config) | Parcial | Médio | — | Baixo | Baixo | Baixo | Médio | sim | sim |
-| short_memory | todos | **Ativo** | Implícito | Médio | — | — | — | — | Médio | — | sim |
+| short_memory (entitlement key) | — | **Reservado** (`RESERVED_ENTITLEMENT_KEYS`) | **Não vender** | — | — | — | — | — | — | — | **não** |
+| Continuidade curta na conversa (comportamento) | todos | **Ativo** (universal; sem gate de plano) | Implícito | Médio | — | — | — | — | Médio | — | sim |
 | extended_memory | Profundo | **Reservado** | upcoming | Alto se real | Alto | Alto | Médio | Alto | Alto | — | **não agora** |
 | multiple_personas | Profundo | **Reservado** | upcoming | Médio | Alto | Teol. alto | **Alto** | Médio | Médio | — | **não** |
 | voice_responses | Profundo | **Reservado** | upcoming | Médio | Alto | Alto | Médio | Alto | Médio | — | **não** |
