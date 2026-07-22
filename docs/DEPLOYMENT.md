@@ -1,7 +1,7 @@
 # Deployment — Amém Chat (repo: guia-escrituras)
 
-> Estado: código de lançamento **implementado e testado localmente**.  
-> Cutover operacional: seguir `docs/PRODUCTION_CUTOVER_RUNBOOK.md` e `docs/LAUNCH_CHECKLIST.md`.  
+> Estado: código de lançamento **implementado e testado localmente**.
+> Cutover operacional: seguir `docs/PRODUCTION_CUTOVER_RUNBOOK.md` e `docs/LAUNCH_CHECKLIST.md`.
 > **Não trate este documento como prova de validação em produção.**
 
 ## Variáveis locais (`.env.local`)
@@ -54,7 +54,10 @@ Resend/SMTP: configurado no **Supabase Auth**, não como env do app Next.js.
 
 Arquivo: `supabase/migrations/20260712000004_production_hardening.sql`
 
-**Não aplicar no cutover inicial.** Quando for o momento (decisão independente):
+**Pacote de decisão / validação (read-only):**
+`docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`
+
+**Não aplicar no cutover inicial.** Quando for o momento (decisão independente + backup):
 
 ```bash
 # Revisar o SQL, depois (exemplo):
@@ -66,7 +69,7 @@ Efeitos: remove insert autenticado em `usage_events` e writes em summaries; rest
 
 ## Stripe (código live-ready)
 
-Checkout, webhook, cancelamento e reativação estão **implementados no código** e cobertos por testes locais.  
+Checkout, webhook, cancelamento e reativação estão **implementados no código** e cobertos por testes locais.
 Configuração live (keys, prices, webhook endpoint) **ainda depende do painel Stripe + Vercel** — ver runbook.
 
 ## Criar o primeiro admin

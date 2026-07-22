@@ -30,7 +30,7 @@ Qualquer falha com condição de interrupção no pacote humano → **parar**; n
 ## Pendente imediato (ops humano)
 
 1. **B00** verificação remota read-only (health SHA, postcheck 008, policies 004, tabelas 005–007)
-2. **Decisão explícita** sobre MIG 004 (só após B00)
+2. **Decisão explícita** sobre MIG 004 (só após B00) — pacote `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`
 3. **Smoke autenticado residual** das Jornadas — `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`
 4. **Revisão pastoral humana** das 21 etapas (`docs/READING_JOURNEYS.md`)
 5. **Smoke financeiro** — só após prep (`docs/_ai/AMEM_FINANCIAL_SMOKE_PREPARATION_2026-07-20.md`)

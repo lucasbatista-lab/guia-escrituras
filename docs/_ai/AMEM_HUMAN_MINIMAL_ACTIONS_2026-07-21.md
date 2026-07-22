@@ -47,10 +47,11 @@ Fonte: este pacote + `AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md` + `AMEM_FINAL_LAUN
 | Campo | Conteúdo |
 |-------|----------|
 | Pré-condição | Backup; B00 verde; chat happy path documentado |
-| Passos | Revisar SQL **sem editar**; janela ops; aplicar **somente** com aprovação humana explícita |
+| Pacote | `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` (SELECT before/after, GO/NO-GO) |
+| Passos | Revisar SQL **sem editar**; seguir pacote; aplicar **somente** com aprovação humana explícita |
 | Evidência | Policies novas; forge usage falha; chat OK |
 | Sucesso | Policies 004 ativas + chat funcional |
-| Falha | Writes assistant quebrados → **não** rollback automático; seguir runbook |
+| Falha | Writes assistant quebrados → **não** rollback automático; seguir runbook / restore |
 | Decisão seguinte | Smoke residual Jornadas |
 
 ### 5. Smoke residual de Jornadas (humano)

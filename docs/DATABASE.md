@@ -9,7 +9,7 @@ Migrations em `supabase/migrations/`.
 | `001` foundation | schema + RLS base | **Aplicada** (cutover) |
 | `002` seed | catálogo planos/entitlements | **Aplicada** |
 | `003` daily report fn | agregados | **Aplicada** |
-| `004` production hardening | RLS endurecido + uniques | **Não aplicada** (decisão cutover; aplicar só com revisão — `DEPLOYMENT.md`) |
+| `004` production hardening | RLS endurecido + uniques | **Não aplicada** (decisão cutover; aplicar só com revisão — pacote `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`) |
 | `005` signup_intents | intents de cadastro/checkout | **Provável em produção** (código de billing/cadastro depende); **confirmar no B00** |
 | `006` stripe billing | `billing_customers`, `payment_events` | **Provável em produção** (webhook depende); **confirmar no B00** |
 | `007` legal_consents | consentimentos | **Provável em produção** (cadastro legal depende); **confirmar no B00** |
@@ -17,18 +17,18 @@ Migrations em `supabase/migrations/`.
 
 **Não** reaplicar migrations. **Não** executar rollback. Postchecks são **somente leitura**.
 
-Postcheck Jornadas (preferencial):  
+Postcheck Jornadas (preferencial):
 `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`
 
 ## Arquivos
 
-1. `20260712000001_foundation_schema.sql` — schema + RLS (não alterar)  
-2. `20260712000002_seed_catalog.sql` — catálogo (não alterar)  
-3. `20260712000003_daily_report_fn.sql` — agregados (não alterar)  
-4. `20260712000004_production_hardening.sql` — hardening (aplicar manualmente depois, com aprovação)  
-5. `20260712000005_signup_intents.sql` — intents  
-6. `20260712000006_stripe_billing.sql` — customers + payment_events  
-7. `20260712000007_legal_consents.sql` — consentimentos  
+1. `20260712000001_foundation_schema.sql` — schema + RLS (não alterar)
+2. `20260712000002_seed_catalog.sql` — catálogo (não alterar)
+3. `20260712000003_daily_report_fn.sql` — agregados (não alterar)
+4. `20260712000004_production_hardening.sql` — hardening (aplicar manualmente depois, com aprovação)
+5. `20260712000005_signup_intents.sql` — intents
+6. `20260712000006_stripe_billing.sql` — customers + payment_events
+7. `20260712000007_legal_consents.sql` — consentimentos
 8. `20260712000008_journey_progress.sql` — progresso de Jornadas (aplicada; não reaplicar)
 
 ## Migration 004 (resumo — ainda não aplicada)
