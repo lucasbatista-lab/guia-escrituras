@@ -1,63 +1,54 @@
 # Next steps
 
-## Concluído (2026-07-20 → 2026-07-21)
+## Caminho crítico de lançamento
+
+1. Confirmar SHA em produção (`/api/health` vs tip de lançamento escolhido).
+2. B00 / postchecks / confirmação remota 005–007 (read-only).
+3. Backup (pré-condição antes de qualquer migration).
+4. Decisão / aplicação MIG 004 — só com `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` e backup.
+5. Smoke autenticado residual das Jornadas (pacote humano mínimo).
+6. Revisão pastoral das 21 etapas.
+7. E-mail deliverability (SPF/DKIM/bounce — Auth).
+8. Smoke financeiro (test mode + chargeback playbook lido).
+9. Revisão jurídica mínima (retenção/exclusão — `AMEM_DATA_RETENTION_DECISION_REGISTER_2026-07-22.md`).
+10. Cutover humano (`PRODUCTION_CUTOVER_RUNBOOK` / `LAUNCH_CHECKLIST`).
+
+Detalhe operacional: `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`.  
+Fechamento local de engenharia: `docs/_ai/AMEM_FINAL_LOCAL_ENGINEERING_CLOSURE_2026-07-22.md`.  
+**Não** colocar features novas antes desta sequência.
+
+---
+
+## Concluído (2026-07-20 → 2026-07-22)
 
 - Plan Differentiation & Ethical Upsell V1 (`5ab9cf2`)
 - Journey Progress Persistence Foundation (`13258e5`) + migration `20260712000008` **aplicada** em produção
 - Reading Journeys MVP V1 (`7113493`) + auto-deploy confirmado
-- Intensive sprint 1: AppError journeys, real-usage Vitest, crisis safety, Admin Mobile Ops V1, a11y, Help Center V1
-- Intensive sprint 2 (`docs/_ai/AMEM_SECOND_INTENSIVE_SPRINT_2026-07-21.md`): chat reliability, history retention, Playwright defer+Vitest matrix, persona auth, perf cache, acquisition admin, premium continuity/deepen, copy, admin attention, HC V1.1, log redaction
-- Intensive sprint 3 (`docs/_ai/AMEM_THIRD_INTENSIVE_SPRINT_2026-07-21.md`): inventário promessas, retenção draft/age, Aprofundar UX, Jornadas V1.1, onboarding/conversão copy, admin V1.2, HC V2, safeNextPath, loadings, real-usage 61, prep bloqueios humanos
-- Intensive sprint 4 (`docs/_ai/AMEM_FOURTH_INTENSIVE_SPRINT_2026-07-21.md`): regression review, auth deep-links, entitlements hygiene, FAQ honesty, chat abort/stale, Jornadas complete negatives, history V3, activation, admin triage, privacy drafts, HC anchors, human minimal pack
-- Intensive sprint 5 (`docs/_ai/AMEM_FIFTH_INTENSIVE_SPRINT_2026-07-21.md`): retenção chat×jornada, chat longo, histórico V4, jornadas fim, Aprofundar affordance, planos/cancelamento, ativação sessão, admin resumo diário, help empty search, privacy/security V3, perf cache journeys, códigos estáveis, matriz de prontidão
-- Follow-up Jornadas (`c03ff10`): celebração / CTA catálogo só com conclusão agregada real (`isCompleted` / `completedAt`)
-- Auditoria-mestre (`bf6123d`) + **hardening local pré-lançamento** (2026-07-22): crise×upsell, docs críticas, stable codes, robots `/jornadas`, prep financeira+chargeback, pacote MIG 004, kill switches, runbooks ops, supply-chain review — ver `docs/_ai/AMEM_LOCAL_LAUNCH_HARDENING_2026-07-22.md`
-
-## Execução humana concreta (agora)
-
-1. Confirmar `/api/health` SHA vs tip de lançamento escolhido.
-2. B00 read-only (postcheck 008, 005–007, policies 004 ausentes/presentes).
-3. Decidir MIG 004 com `AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` (backup primeiro).
-4. Smoke residual Jornadas (pacote humano mínimo).
-5. Revisão pastoral 21 etapas.
-6. Smoke financeiro test mode (12 testes no prep + chargeback playbook lido).
-7. Cutover só depois dos itens acima verdes.
-
-Detalhe operacional: `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`.
-Smoke residual **não** repete os 107 testes `pnpm test:real-usage`.
-Qualquer falha com condição de interrupção no pacote humano → **parar**; nenhuma destas ações aplica migration automaticamente nem usa produção para teste destrutivo.
+- Intensive sprints 1–5 + follow-up Jornadas (`c03ff10`)
+- Auditoria-mestre (`bf6123d`) + hardening local (`880bc2e`) — crise×upsell, docs, stable codes, robots, finance prep, MIG 004 pack, kill switches, ops runbooks, supply-chain
+- **Fechamento local final** (pós-`880bc2e`): drafts user-scoped, DEMO_MODE fail-closed, admin a11y focus, scripture free-text spike, exclusão/retenção runbooks, smoke `next start`, kill-switch RSC journeys — ver `AMEM_FINAL_LOCAL_ENGINEERING_CLOSURE_2026-07-22.md`
 
 ## Pendente imediato (ops humano)
 
-1. **B00** verificação remota read-only (health SHA, postcheck 008, policies 004, tabelas 005–007)
-2. **Decisão explícita** sobre MIG 004 (só após B00) — pacote `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`
-3. **Smoke autenticado residual** das Jornadas — `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`
-4. **Revisão pastoral humana** das 21 etapas (`docs/READING_JOURNEYS.md`)
-5. **Smoke financeiro** — só após prep (`docs/_ai/AMEM_FINANCIAL_SMOKE_PREPARATION_2026-07-20.md`)
+Itens 1–10 da seção **Caminho crítico de lançamento** acima.
 
-## Sequência sugerida depois
+## Sequência sugerida depois do cutover
 
-6. Migration **004** (apply humano só se decisão = sim) + testes RLS locais
-7. Playwright E2E quando harness de mocks process-scoped existir (ver spike 2026-07-21)
-8. Plan Change & Proration — **somente após** smoke financeiro
+- Observabilidade agregada de Jornadas
+- Playwright E2E quando harness process-scoped existir
+- Plan Change & Proration — **somente após** smoke financeiro
+- Self-service exclusão — **somente após** decisões jurídicas de retenção
+- Telemetria redigida / runtime não bloqueante para cites free-text (spike 2026-07-22)
 
 ## Cutover / ops contínuos
 
 - `docs/PRODUCTION_CUTOVER_RUNBOOK.md` / `docs/LAUNCH_CHECKLIST.md`
 - Cron + `CRON_SECRET` — `docs/DAILY_REPORTS.md`
-- Migration 004 só após revisão explícita (`docs/DEPLOYMENT.md`)
-- Prep humano: `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md` + `AMEM_HUMAN_BLOCKERS_PREP_2026-07-21.md`
+- Exclusão manual — `docs/_ai/AMEM_MANUAL_ACCOUNT_DELETION_AND_RETENTION_RUNBOOK_2026-07-22.md`
 - Matriz de prontidão: `docs/_ai/AMEM_FINAL_LAUNCH_READINESS_MATRIX_2026-07-21.md`
 
-## Pós-lançamento
+## Pós-lançamento (não gastar créditos locais agora)
 
-- Observabilidade agregada de Jornadas
-- Novas jornadas editoriais (eval + revisão humana)
-- Streaming no `/api/chat`
-- Exclusão de conta (após portabilidade)
+- Streaming `/api/chat`; search server-side; deepen persistido; PWA; i18n; voz; afiliados
+- Residuais cosméticos: renomear “Aprofundar”; Essencial `?bloqueado=1`; chips de tema
 - Fonte bíblica licenciada; receita Stripe no relatório diário
-- Residuais locais opcionais: renomear “Aprofundar”; drafts não user-scoped sem logout; Essencial `?bloqueado=1`; chips de tema no chat vazio
-
-## Estado mestre
-
-Tip de produto validado: `c03ff10` · Sprint 5 + matriz: `docs/_ai/AMEM_FIFTH_INTENSIVE_SPRINT_2026-07-21.md` · `AMEM_FINAL_LAUNCH_READINESS_MATRIX_2026-07-21.md`
