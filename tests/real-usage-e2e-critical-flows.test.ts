@@ -66,11 +66,15 @@ describe("real-usage E2E-critical matrix (Vitest stand-in)", () => {
     );
     const service = read("src", "lib", "ai", "chat-service.ts");
     expect(service).toContain("detectCrisisMessage");
+    expect(service).toContain('safetyMode: "crisis"');
     const crisisCall = service.indexOf("detectCrisisMessage(body.message)");
     const providerCall = service.indexOf("createAiProvider()");
     expect(crisisCall).toBeGreaterThan(-1);
     expect(providerCall).toBeGreaterThan(-1);
     expect(crisisCall).toBeLessThan(providerCall);
+    const panel = read("src", "components", "chat", "chat-panel.tsx");
+    expect(panel).toContain("suppressCommercialPrompts");
+    expect(panel).toContain("conversationHasCrisisSafetyMode");
   });
 
   it("6) admin without permission is blocked server-side", () => {

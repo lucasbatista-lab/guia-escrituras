@@ -12,8 +12,22 @@ export type ChatUiMessage = {
     followUpQuestion?: string;
     /** Session-only: this assistant turn used Aprofundar (not persisted). */
     deepened?: boolean;
+    /**
+     * Session-only: server set safetyMode=crisis on this turn.
+     * Not restored from DB on refresh (no schema) — residual after reload.
+     */
+    safetyMode?: "crisis";
   };
 };
+
+/** True when any assistant bubble in this panel session was crisis-classified. */
+export function conversationHasCrisisSafetyMode(
+  messages: ReadonlyArray<ChatUiMessage>,
+): boolean {
+  return messages.some(
+    (m) => m.role === "assistant" && m.meta?.safetyMode === "crisis",
+  );
+}
 
 /**
  * Map persisted messages into chat UI rows.
@@ -61,6 +75,7 @@ export function appendAssistantUiMessage(
     interpretationNotice?: string;
     followUpQuestion?: string;
     deepened?: boolean;
+    safetyMode?: "crisis";
   },
 ): ChatUiMessage[] {
   const id = assistantMessageId(input.requestId);
@@ -78,6 +93,7 @@ export function appendAssistantUiMessage(
         interpretationNotice: input.interpretationNotice,
         followUpQuestion: input.followUpQuestion,
         deepened: input.deepened || undefined,
+        safetyMode: input.safetyMode,
       },
     },
   ];

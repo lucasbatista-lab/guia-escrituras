@@ -166,13 +166,14 @@ describe("crisis intercept in runChatTurn", () => {
     expect(result.provider).toBe("mock");
     expect(result.biblicalReferences).toEqual([]);
     expect(result.interpretationNotice).toBe(CRISIS_INTERPRETATION_NOTICE);
+    expect(result.safetyMode).toBe("crisis");
     expect(detectCrisisSupportPresent(result.answer)).toBe(true);
     expect(result.answer).not.toMatch(/eu sou jesus/i);
   });
 
   it("does not intercept ordinary anxiety", async () => {
     const { runChatTurn } = await import("@/lib/ai/chat-service");
-    await runChatTurn({
+    const result = await runChatTurn({
       requestId: "11111111-1111-4111-8111-111111111102",
       auth: baseAuth,
       body: {
@@ -182,5 +183,6 @@ describe("crisis intercept in runChatTurn", () => {
       },
     });
     expect(generateSpy).toHaveBeenCalled();
+    expect(result.safetyMode).toBeUndefined();
   });
 });

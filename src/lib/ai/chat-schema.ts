@@ -47,6 +47,12 @@ export const chatResponseSchema = z.object({
   requestId: z.string(),
   conversationId: z.string(),
   provider: z.enum(["openai", "mock"]),
+  /**
+   * Server-classified safety mode for this turn (crisis intercept).
+   * Optional so older clients and normal turns stay compatible.
+   * Clients must use this marker — not keyword inference on answer text.
+   */
+  safetyMode: z.enum(["crisis"]).optional(),
 });
 
 export type ChatResponsePayload = z.infer<typeof chatResponseSchema>;

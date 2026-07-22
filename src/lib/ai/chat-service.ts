@@ -406,6 +406,7 @@ export async function runChatTurn(input: {
       requestId,
       conversationId: conversation.id,
       provider: "mock",
+      safetyMode: "crisis",
     };
   }
 

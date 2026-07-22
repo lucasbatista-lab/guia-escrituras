@@ -12,6 +12,7 @@ import {
 import { formatBiblicalReference } from "@/lib/biblical";
 import {
   appendAssistantUiMessage,
+  conversationHasCrisisSafetyMode,
   rollbackOptimisticUserMessage,
   syncConversationUrl,
   type ChatUiMessage,
@@ -85,6 +86,8 @@ export function ChatPanel({
 
   const upsellSuggestion = useMemo(() => {
     if (!errorKind || !currentPlanKey) return null;
+    // Never surface commercial upgrade CTAs after a crisis-classified turn.
+    if (conversationHasCrisisSafetyMode(messages)) return null;
     if (errorKind === "deep_not_entitled") {
       return getPlanUpsellSuggestion({
         currentPlanKey,
@@ -106,7 +109,7 @@ export function ChatPanel({
       });
     }
     return null;
-  }, [currentPlanKey, errorKind]);
+  }, [currentPlanKey, errorKind, messages]);
 
   const deepenId = useId();
   const deepenHelpId = useId();
@@ -162,11 +165,13 @@ export function ChatPanel({
     setStickToBottom(true);
     const requestId = pendingRequestId ?? crypto.randomUUID();
     const isRetry = Boolean(pendingRequestId);
-    const useDeep = canDeepen
-      ? isRetry
-        ? pendingDeepRef.current
-        : preferDeep
-      : false;
+    const crisisContext = conversationHasCrisisSafetyMode(messages);
+    const useDeep =
+      canDeepen && !crisisContext
+        ? isRetry
+          ? pendingDeepRef.current
+          : preferDeep
+        : false;
     if (!isRetry) {
       pendingDeepRef.current = useDeep;
     }
@@ -274,6 +279,7 @@ export function ChatPanel({
           interpretationNotice: payload.interpretationNotice,
           followUpQuestion: payload.followUpQuestion,
           deepened: useDeep,
+          safetyMode: payload.safetyMode,
         }),
       );
     } catch (err) {
@@ -322,8 +328,11 @@ export function ChatPanel({
   }
 
   const profileBits = [traditionLabel, depthLabel].filter(Boolean).join(" · ");
-  const deepenActive = canDeepen && preferDeep;
+  const suppressCommercialPrompts = conversationHasCrisisSafetyMode(messages);
+  const deepenActive = canDeepen && preferDeep && !suppressCommercialPrompts;
   const showEmptyState = !hasHistory && messages.length === 0;
+  const showDeepenControls = canDeepen && !suppressCommercialPrompts;
+  const showDeepUpsellHint = !canDeepen && !suppressCommercialPrompts;
 
   return (
     <div className="chat-shell-min-h flex flex-col overflow-x-hidden overflow-y-hidden rounded-2xl border border-border/80 bg-card/80 shadow-[0_8px_30px_rgba(44,36,28,0.04)]">
@@ -381,7 +390,7 @@ export function ChatPanel({
             <p className="text-xs leading-relaxed text-ink-soft">
               {RESPONSE_FORMAT_HINT}
             </p>
-            {canDeepen ? (
+            {canDeepen && !suppressCommercialPrompts ? (
               <p className="text-xs leading-relaxed text-ink-soft">
                 Em situações complexas, você pode ativar “Aprofundar esta
                 resposta” antes de enviar.
@@ -477,7 +486,7 @@ export function ChatPanel({
           </div>
         ) : null}
 
-        {canDeepen ? (
+        {showDeepenControls ? (
           <div
             className={cn(
               "mb-3 rounded-xl border px-3 py-2.5",
@@ -531,9 +540,9 @@ export function ChatPanel({
               </div>
             </div>
           </div>
-        ) : (
+        ) : showDeepUpsellHint ? (
           <DeepUpsellHint />
-        )}
+        ) : null}
 
         <div className="flex gap-2">
           <label htmlFor="chat-input" className="sr-only">
@@ -556,7 +565,7 @@ export function ChatPanel({
             aria-describedby={
               error
                 ? "chat-error"
-                : canDeepen
+                : showDeepenControls
                   ? `${deepenHelpId} chat-composer-hint`
                   : "chat-composer-hint"
             }
