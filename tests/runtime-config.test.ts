@@ -6,7 +6,9 @@ import {
 } from "@/lib/supabase/keys";
 import {
   allowsMocks,
+  assertDemoModeSafe,
   getAppRuntime,
+  hasDemoSecretConflict,
   requiresRealOpenAiForChat,
   requiresRealSupabase,
 } from "@/config/runtime";
@@ -51,7 +53,7 @@ describe("runtime mocks", () => {
     expect(requiresRealSupabase()).toBe(false);
   });
 
-  it("blocks mocks in production", () => {
+  it("blocks mocks in production even with DEMO_MODE", () => {
     process.env.NODE_ENV = "production";
     process.env.VERCEL_ENV = "production";
     process.env.DEMO_MODE = "true";
@@ -60,13 +62,62 @@ describe("runtime mocks", () => {
     expect(requiresRealOpenAiForChat()).toBe(true);
   });
 
-  it("allows mocks in preview only with DEMO_MODE", () => {
+  it("allows mocks in preview only with DEMO_MODE and no remote project", () => {
     process.env.NODE_ENV = "production";
     process.env.VERCEL_ENV = "preview";
     delete process.env.DEMO_MODE;
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    delete process.env.SUPABASE_SECRET_KEY;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.STRIPE_SECRET_KEY;
     expect(allowsMocks()).toBe(false);
     process.env.DEMO_MODE = "true";
     expect(allowsMocks()).toBe(true);
+  });
+
+  it("rejects preview DEMO_MODE when Supabase public env is present", () => {
+    process.env.NODE_ENV = "production";
+    process.env.VERCEL_ENV = "preview";
+    process.env.DEMO_MODE = "true";
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "pk_test";
+    delete process.env.SUPABASE_SECRET_KEY;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.STRIPE_SECRET_KEY;
+    expect(allowsMocks()).toBe(false);
+    expect(() => assertDemoModeSafe()).toThrow(/Configuração de ambiente inválida/);
+  });
+
+  it("rejects preview DEMO_MODE with live Stripe or service role secrets", () => {
+    process.env.NODE_ENV = "production";
+    process.env.VERCEL_ENV = "preview";
+    process.env.DEMO_MODE = "true";
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    process.env.STRIPE_SECRET_KEY = "sk_live_example_not_real";
+    expect(hasDemoSecretConflict()).toBe(true);
+    expect(allowsMocks()).toBe(false);
+    try {
+      assertDemoModeSafe();
+      expect.unreachable("expected throw");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      expect(message).not.toContain("sk_live_");
+      expect(message).not.toContain("example_not_real");
+    }
+  });
+
+  it("does not create production demo admin path via allowsMocks", () => {
+    process.env.NODE_ENV = "production";
+    process.env.VERCEL_ENV = "production";
+    delete process.env.DEMO_MODE;
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    expect(allowsMocks()).toBe(false);
+    expect(requiresRealSupabase()).toBe(true);
   });
 });
 

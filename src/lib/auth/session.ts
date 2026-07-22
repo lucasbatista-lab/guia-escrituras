@@ -1,5 +1,10 @@
 import { cache } from "react";
-import { allowsMocks, requiresRealSupabase } from "@/config/runtime";
+import {
+  allowsMocks,
+  assertDemoModeSafe,
+  isDemoModeFlag,
+  requiresRealSupabase,
+} from "@/config/runtime";
 import type { PlanKey } from "@/lib/entitlements";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
@@ -44,6 +49,9 @@ export const getAuthUserContext = cache(async function getAuthUserContext(): Pro
     if (!allowsMocks()) {
       return null;
     }
+    if (isDemoModeFlag()) {
+      assertDemoModeSafe();
+    }
     return {
       userId: "demo-user",
       email: "demo@amemchat.local",
@@ -61,6 +69,9 @@ export const getAuthUserContext = cache(async function getAuthUserContext(): Pro
   const supabase = await createClient();
   if (!supabase) {
     if (allowsMocks()) {
+      if (isDemoModeFlag()) {
+        assertDemoModeSafe();
+      }
       return {
         userId: "demo-user",
         email: "demo@amemchat.local",

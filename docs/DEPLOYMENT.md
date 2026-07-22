@@ -36,9 +36,10 @@ Production / Preview (presença; nunca documentar valores):
 | `NEXT_PUBLIC_SUPPORT_EMAIL` | sim antes de billing ao vivo |
 | `USD_BRL_PLANNING_RATE` | recomendado |
 | `CRON_SECRET` | sim em production (relatório diário) |
-| `DEMO_MODE` | apenas preview, se quiser mocks |
+| `DEMO_MODE` | apenas preview **sem** Supabase/Stripe live — mocks locais |
 
 Em **production**, `DEMO_MODE` não libera mocks.
+Em **preview**, `DEMO_MODE=true` com projeto Supabase configurado, service role ou `sk_live_` é rejeitado (fail-closed); mocks não misturam com banco remoto.
 
 Resend/SMTP: configurado no **Supabase Auth**, não como env do app Next.js.
 
