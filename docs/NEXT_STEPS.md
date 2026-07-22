@@ -11,17 +11,17 @@
 - Intensive sprint 4 (`docs/_ai/AMEM_FOURTH_INTENSIVE_SPRINT_2026-07-21.md`): regression review, auth deep-links, entitlements hygiene, FAQ honesty, chat abort/stale, Jornadas complete negatives, history V3, activation, admin triage, privacy drafts, HC anchors, human minimal pack
 - Intensive sprint 5 (`docs/_ai/AMEM_FIFTH_INTENSIVE_SPRINT_2026-07-21.md`): retenção chat×jornada, chat longo, histórico V4, jornadas fim, Aprofundar affordance, planos/cancelamento, ativação sessão, admin resumo diário, help empty search, privacy/security V3, perf cache journeys, códigos estáveis, matriz de prontidão
 - Follow-up Jornadas (`c03ff10`): celebração / CTA catálogo só com conclusão agregada real (`isCompleted` / `completedAt`)
+- Auditoria-mestre (`bf6123d`) + **hardening local pré-lançamento** (2026-07-22): crise×upsell, docs críticas, stable codes, robots `/jornadas`, prep financeira+chargeback, pacote MIG 004, kill switches, runbooks ops, supply-chain review — ver `docs/_ai/AMEM_LOCAL_LAUNCH_HARDENING_2026-07-22.md`
 
-## Primeira sequência de amanhã
+## Execução humana concreta (agora)
 
-1. Confirmar `/api/health` com o tip escolhido para lançamento.
-2. Executar postcheck consolidado read-only.
-3. Confirmar migrations 005–007 e estado da 004.
-4. Decidir explicitamente sobre MIG 004.
-5. Executar smoke residual mínimo de Jornadas.
-6. Executar revisão pastoral das 21 etapas.
-7. Executar smoke financeiro em ambiente de teste.
-8. Só depois decidir cutover e próximos blocos financeiros.
+1. Confirmar `/api/health` SHA vs tip de lançamento escolhido.
+2. B00 read-only (postcheck 008, 005–007, policies 004 ausentes/presentes).
+3. Decidir MIG 004 com `AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` (backup primeiro).
+4. Smoke residual Jornadas (pacote humano mínimo).
+5. Revisão pastoral 21 etapas.
+6. Smoke financeiro test mode (12 testes no prep + chargeback playbook lido).
+7. Cutover só depois dos itens acima verdes.
 
 Detalhe operacional: `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`.
 Smoke residual **não** repete os 107 testes `pnpm test:real-usage`.
