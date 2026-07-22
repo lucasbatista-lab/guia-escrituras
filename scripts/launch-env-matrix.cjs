@@ -159,6 +159,30 @@ const ENV_MATRIX = [
     production: "forbidden",
     preview: "optional",
   },
+  {
+    name: "FEATURE_DISABLE_CHAT",
+    purpose: "Ops kill switch: disable chat (503)",
+    visibility: "server",
+    sensitive: false,
+    production: "optional",
+    preview: "optional",
+  },
+  {
+    name: "FEATURE_DISABLE_JOURNEYS",
+    purpose: "Ops kill switch: disable reading journeys (503)",
+    visibility: "server",
+    sensitive: false,
+    production: "optional",
+    preview: "optional",
+  },
+  {
+    name: "FEATURE_DISABLE_DEEPEN",
+    purpose: "Ops kill switch: disable Aprofundar only (503)",
+    visibility: "server",
+    sensitive: false,
+    production: "optional",
+    preview: "optional",
+  },
 ];
 
 module.exports = { ENV_MATRIX };

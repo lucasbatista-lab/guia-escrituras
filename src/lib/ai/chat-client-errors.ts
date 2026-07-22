@@ -156,7 +156,8 @@ export function resolveChatClientError(
     code.startsWith("ai_") ||
     code === "openai_unavailable" ||
     code === "biblical_corpus_unavailable" ||
-    code === "model_rate_unconfigured"
+    code === "model_rate_unconfigured" ||
+    code === "feature_temporarily_disabled"
   ) {
     return {
       kind: "unavailable",

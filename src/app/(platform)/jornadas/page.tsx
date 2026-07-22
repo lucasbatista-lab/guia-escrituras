@@ -16,6 +16,8 @@ import {
   resolveUserJourneyState,
 } from "@/lib/journey";
 import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
+import { isFeatureDisabled } from "@/config/feature-kill-switches";
+import { InlineNotice } from "@/components/platform/inline-notice";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +32,12 @@ export default async function JornadasPage() {
     redirect(getRequiredDestinationForState(journey.state));
   }
 
+  const journeysDisabled = isFeatureDisabled("journeys");
   const entitled = canUseReadingJourneys(auth.planKey);
-  const progressMap = entitled
-    ? await loadJourneyProgressMap(auth.userId)
-    : new Map();
+  const progressMap =
+    entitled && !journeysDisabled
+      ? await loadJourneyProgressMap(auth.userId)
+      : new Map();
   const items = buildCatalogItems(progressMap);
 
   return (
@@ -44,7 +48,14 @@ export default async function JornadasPage() {
         description="Trilhas editoriais sobre temas reais da vida — sete etapas por jornada, no seu ritmo. Não substituem terapia, aconselhamento profissional ou emergência."
       />
 
-      {!entitled ? (
+      {journeysDisabled ? (
+        <InlineNotice tone="info">
+          As Jornadas estão temporariamente indisponíveis por manutenção
+          operacional. Seu progresso salvo permanece — tente novamente em breve.
+        </InlineNotice>
+      ) : null}
+
+      {!entitled && !journeysDisabled ? (
         <div className="rounded-xl border border-border/70 bg-sand-50/80 p-4 text-sm text-ink-soft">
           <p>
             Jornadas de leitura guiadas estão incluídas nos planos Caminho,
@@ -86,7 +97,7 @@ export default async function JornadasPage() {
               <p className="mt-3 text-xs text-ink-soft">
                 7 etapas · ~{estimatedMinutes} min · {status}
               </p>
-              {entitled && progress ? (
+              {entitled && !journeysDisabled && progress ? (
                 <div className="mt-4">
                   <JourneyProgressBar
                     progress={progress}
@@ -95,7 +106,11 @@ export default async function JornadasPage() {
                   />
                 </div>
               ) : null}
-              {entitled ? (
+              {journeysDisabled ? (
+                <p className="mt-5 text-xs text-ink-soft">
+                  Temporariamente indisponível — progresso preservado.
+                </p>
+              ) : entitled ? (
                 <div className="mt-5">
                   <Button asChild className="min-h-11 w-full">
                     <Link href={continueHref}>{cta}</Link>

@@ -13,6 +13,9 @@ import {
 import { getRepositories } from "@/lib/database/repositories";
 import { canUseDeepResponseOnDemand } from "@/lib/entitlements";
 import {
+  isFeatureDisabled,
+} from "@/config/feature-kill-switches";
+import {
   buildConversarResumePath,
   buildLoginHref,
   isUuid,
@@ -82,6 +85,8 @@ export default async function ConversarPage({
     initialDraft,
     canDeepen,
     currentPlanKey: auth.planKey,
+    chatFeatureDisabled: isFeatureDisabled("chat"),
+    deepenFeatureDisabled: isFeatureDisabled("deepen"),
   };
 
   if (!conversationParam?.trim()) {

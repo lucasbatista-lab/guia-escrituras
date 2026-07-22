@@ -50,6 +50,19 @@ Resend/SMTP: configurado no **Supabase Auth**, não como env do app Next.js.
    - Redirect URLs: `https://amemchat.com.br/auth/callback`, `https://amemchat.com.br/auth/confirm`, previews se necessário
 3. Confirmar e-mail conforme política do produto.
 
+## Ops kill switches (server-only)
+
+Env (sem `NEXT_PUBLIC_*`):
+
+- `FEATURE_DISABLE_CHAT`
+- `FEATURE_DISABLE_JOURNEYS`
+- `FEATURE_DISABLE_DEEPEN`
+
+Unset = habilitado. `true`/`1`/`yes`/`on` = desliga. Valores inválidos não vazios = desliga (fail-closed).  
+Alterar na Vercel normalmente exige **redeploy/restart** para o serverless ler o novo valor.  
+Código estável: `feature_temporarily_disabled` (503). Não altera preços/entitlements.  
+Ver `src/config/feature-kill-switches.ts`.
+
 ## Migration 004 (manual, futuro)
 
 Arquivo: `supabase/migrations/20260712000004_production_hardening.sql`

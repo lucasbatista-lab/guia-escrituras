@@ -49,6 +49,8 @@ export function ChatPanel({
   canDeepen = false,
   currentPlanKey = null,
   historyMayBeTruncated = false,
+  chatFeatureDisabled = false,
+  deepenFeatureDisabled = false,
 }: {
   initialConversationId?: string | null;
   initialMessages?: UiMessage[];
@@ -60,6 +62,10 @@ export function ChatPanel({
   currentPlanKey?: PlanKey | null;
   /** True when the server loaded a full message page (older turns may exist). */
   historyMayBeTruncated?: boolean;
+  /** Ops kill switch — chat mutations blocked server-side. */
+  chatFeatureDisabled?: boolean;
+  /** Ops kill switch — Aprofundar blocked; standard chat may remain. */
+  deepenFeatureDisabled?: boolean;
 }) {
   const hasHistory = Boolean(initialMessages && initialMessages.length > 0);
   const [messages, setMessages] = useState<UiMessage[]>(
@@ -158,6 +164,14 @@ export function ChatPanel({
     const trimmed = input.trim();
     if (!trimmed || loading || sendingRef.current) return;
 
+    if (chatFeatureDisabled) {
+      setError(
+        "O chat está temporariamente indisponível por manutenção operacional. Seu histórico e a ajuda continuam acessíveis.",
+      );
+      setErrorKind("unavailable");
+      return;
+    }
+
     sendingRef.current = true;
     setError(null);
     setErrorKind(null);
@@ -167,7 +181,7 @@ export function ChatPanel({
     const isRetry = Boolean(pendingRequestId);
     const crisisContext = conversationHasCrisisSafetyMode(messages);
     const useDeep =
-      canDeepen && !crisisContext
+      canDeepen && !crisisContext && !deepenFeatureDisabled
         ? isRetry
           ? pendingDeepRef.current
           : preferDeep
@@ -329,10 +343,14 @@ export function ChatPanel({
 
   const profileBits = [traditionLabel, depthLabel].filter(Boolean).join(" · ");
   const suppressCommercialPrompts = conversationHasCrisisSafetyMode(messages);
-  const deepenActive = canDeepen && preferDeep && !suppressCommercialPrompts;
+  const deepenEligible =
+    canDeepen && !deepenFeatureDisabled && !suppressCommercialPrompts;
+  const deepenActive = deepenEligible && preferDeep;
   const showEmptyState = !hasHistory && messages.length === 0;
-  const showDeepenControls = canDeepen && !suppressCommercialPrompts;
-  const showDeepUpsellHint = !canDeepen && !suppressCommercialPrompts;
+  const showDeepenControls = deepenEligible;
+  const showDeepUpsellHint =
+    !canDeepen && !suppressCommercialPrompts && !chatFeatureDisabled;
+
 
   return (
     <div className="chat-shell-min-h flex flex-col overflow-x-hidden overflow-y-hidden rounded-2xl border border-border/80 bg-card/80 shadow-[0_8px_30px_rgba(44,36,28,0.04)]">
@@ -390,7 +408,7 @@ export function ChatPanel({
             <p className="text-xs leading-relaxed text-ink-soft">
               {RESPONSE_FORMAT_HINT}
             </p>
-            {canDeepen && !suppressCommercialPrompts ? (
+            {canDeepen && !suppressCommercialPrompts && !deepenFeatureDisabled ? (
               <p className="text-xs leading-relaxed text-ink-soft">
                 Em situações complexas, você pode ativar “Aprofundar esta
                 resposta” antes de enviar.
@@ -448,6 +466,18 @@ export function ChatPanel({
       </div>
 
       <div className="safe-composer-pad sticky bottom-0 shrink-0 border-t border-border/70 bg-card/95 p-4 backdrop-blur-sm sm:p-5">
+        {chatFeatureDisabled ? (
+          <InlineNotice tone="info">
+            O chat está temporariamente indisponível por manutenção operacional.
+            Seu histórico e a ajuda continuam acessíveis.
+          </InlineNotice>
+        ) : null}
+        {deepenFeatureDisabled && canDeepen && !chatFeatureDisabled ? (
+          <p className="mb-3 text-xs leading-relaxed text-ink-soft">
+            Aprofundar está temporariamente indisponível. Você pode continuar com
+            respostas padrão.
+          </p>
+        ) : null}
         {error ? (
           <div className="mb-3 space-y-2" role="alert" aria-live="assertive">
             <InlineNotice tone="error">{error}</InlineNotice>

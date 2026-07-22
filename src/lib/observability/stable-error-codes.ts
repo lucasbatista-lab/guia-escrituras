@@ -34,6 +34,7 @@ export const STABLE_CHAT_ERROR_CODES = [
   "ai_identity_violation",
   "ai_provider_rate_limited",
   "ai_provider_unavailable",
+  "feature_temporarily_disabled",
 ] as const;
 
 /** Codes emitted by journey APIs and progress helpers. */
@@ -48,6 +49,7 @@ export const STABLE_JOURNEY_ERROR_CODES = [
   "method_not_allowed",
   "persist_failed",
   "not_found",
+  "feature_temporarily_disabled",
 ] as const;
 
 /**

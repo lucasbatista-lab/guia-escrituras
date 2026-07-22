@@ -90,7 +90,7 @@ Nada abaixo marcado como `[x]` significa “já validado em produção”.
 
 - [ ] `/api/health` ok (sem secrets) — prova runtime/SHA/env público documentado; **não** prova Stripe, OpenAI nem billing
 - [ ] `/api/health/db` ok/latência — prova latência de leitura básica no banco; **não** substitui smoke financeiro nem RLS live
-- [ ] Admin overview com timestamp e avisos de métricas parciais
+- [ ] Kill switches documentados (`FEATURE_DISABLE_CHAT` / `_JOURNEYS` / `_DEEPEN`) — só usar em incidente; redeploy após alterar
 
 ## 9. Rollback — pronto no papel; executar só se P0
 

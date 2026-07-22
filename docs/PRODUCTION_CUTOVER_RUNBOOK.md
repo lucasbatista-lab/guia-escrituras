@@ -84,6 +84,16 @@ Checklist rápida: `APP_URL` e `NEXT_PUBLIC_APP_URL` = `https://amemchat.com.br`
 
 ---
 
+## Kill switches (incidente)
+
+Em incidente de custo AI / teologia / Jornadas, Ops pode definir na Vercel (server-only):
+
+- `FEATURE_DISABLE_CHAT=true`
+- `FEATURE_DISABLE_JOURNEYS=true`
+- `FEATURE_DISABLE_DEEPEN=true`
+
+Redeploy/restart para aplicar. Código `feature_temporarily_disabled`. Não altera preços. Detalhe: `docs/DEPLOYMENT.md`.
+
 ## E. Smoke humano (checklist exata)
 
 - [ ] Home mobile

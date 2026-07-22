@@ -9,6 +9,11 @@ import type { ChatRequestInput, ChatResponsePayload } from "@/lib/ai/chat-schema
 import { resolveAuthorizedPersonaKey } from "@/lib/ai/chat-persona";
 import type { AuthUserContext } from "@/lib/auth";
 import { requiresRealOpenAiForChat } from "@/config/runtime";
+import {
+  FEATURE_TEMPORARILY_DISABLED_CODE,
+  featureDisabledUserMessage,
+  isFeatureDisabled,
+} from "@/config/feature-kill-switches";
 import { getRepositories } from "@/lib/database/repositories";
 import {
   canUseDeepResponseOnDemand,
@@ -71,6 +76,15 @@ export async function runChatTurn(input: {
 }): Promise<ChatResponsePayload> {
   const { requestId, auth, body } = input;
 
+  if (isFeatureDisabled("chat")) {
+    throw new AppError(
+      FEATURE_TEMPORARILY_DISABLED_CODE,
+      FEATURE_TEMPORARILY_DISABLED_CODE,
+      503,
+      featureDisabledUserMessage("chat"),
+    );
+  }
+
   // Subscription gate BEFORE any persistence (and before personalization).
   if (!auth.planKey) {
     throw new AppError(
@@ -109,6 +123,15 @@ export async function runChatTurn(input: {
       "deep_response_not_entitled",
       403,
       DEEP_RESPONSE_NOT_ENTITLED_MESSAGE,
+    );
+  }
+
+  if (body.preferDeep && isFeatureDisabled("deepen")) {
+    throw new AppError(
+      FEATURE_TEMPORARILY_DISABLED_CODE,
+      FEATURE_TEMPORARILY_DISABLED_CODE,
+      503,
+      featureDisabledUserMessage("deepen"),
     );
   }
 
