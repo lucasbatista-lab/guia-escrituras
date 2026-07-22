@@ -24,8 +24,20 @@ describe("admin mobile operations V1", () => {
     expect(nav).toContain("/admin/relatorios");
     expect(nav).toContain("Mais");
     expect(nav).toContain("aria-expanded");
+    expect(nav).toContain("aria-controls");
     expect(nav).toContain("Escape");
     expect(nav).toContain("min-h-11");
+  });
+
+  it("contains Tab focus in Mais panel and restores trigger on close", () => {
+    const nav = read("src", "components", "admin", "admin-mobile-nav.tsx");
+    expect(nav).toContain('e.key !== "Tab"');
+    expect(nav).toContain("shiftKey");
+    expect(nav).toContain("wasOpen");
+    expect(nav).toContain("buttonRef.current?.focus()");
+    expect(nav).toContain("pointerdown");
+    expect(nav).toContain("openPath === pathname");
+    expect(nav).toContain("setOpenPath(null)");
   });
 
   it("acquisition uses mobile cards instead of only wide tables", () => {

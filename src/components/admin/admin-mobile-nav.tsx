@@ -30,6 +30,9 @@ const MORE = [
   { href: "/admin/parceiros", label: "Parceiros" },
 ] as const;
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 function linkClass(active: boolean) {
   return [
     "inline-flex min-h-11 items-center rounded-md px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -39,29 +42,85 @@ function linkClass(active: boolean) {
   ].join(" ");
 }
 
+function listFocusable(root: HTMLElement | null): HTMLElement[] {
+  if (!root) return [];
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true",
+  );
+}
+
 export function AdminMobileNav() {
   const pathname = usePathname() ?? "/admin";
-  const [open, setOpen] = useState(false);
+  /** Open only while still on the path that opened the panel. */
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const open = openPath === pathname;
   const panelId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const wasOpen = useRef(false);
+
+  // Restore focus to the trigger after close (Escape, outside, route, toggle).
+  useEffect(() => {
+    if (wasOpen.current && !open) {
+      buttonRef.current?.focus();
+    }
+    wasOpen.current = open;
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
+
+    const panel = panelRef.current;
+    const first = listFocusable(panel)[0];
+    first?.focus();
+
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        setOpen(false);
-        buttonRef.current?.focus();
+        e.preventDefault();
+        setOpenPath(null);
+        return;
+      }
+      if (e.key !== "Tab" || !panel) return;
+      const focusables = listFocusable(panel);
+      if (focusables.length === 0) return;
+      const firstEl = focusables[0]!;
+      const lastEl = focusables[focusables.length - 1]!;
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === firstEl || !panel.contains(active)) {
+          e.preventDefault();
+          lastEl.focus();
+        }
+        return;
+      }
+      if (active === lastEl || !panel.contains(active)) {
+        e.preventDefault();
+        firstEl.focus();
       }
     }
+
+    function onPointerDown(e: PointerEvent) {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (panel?.contains(target)) return;
+      if (buttonRef.current?.contains(target)) return;
+      setOpenPath(null);
+    }
+
     document.addEventListener("keydown", onKey);
-    const first = panelRef.current?.querySelector<HTMLElement>("a,button");
-    first?.focus();
-    return () => document.removeEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
   }, [open]);
 
   function closeMenu() {
-    setOpen(false);
+    setOpenPath(null);
+  }
+
+  function toggleMenu() {
+    setOpenPath((current) => (current === pathname ? null : pathname));
   }
 
   return (
@@ -110,7 +169,8 @@ export function AdminMobileNav() {
             className={linkClass(open)}
             aria-expanded={open}
             aria-controls={panelId}
-            onClick={() => setOpen((v) => !v)}
+            aria-haspopup="true"
+            onClick={toggleMenu}
           >
             Mais
           </button>
