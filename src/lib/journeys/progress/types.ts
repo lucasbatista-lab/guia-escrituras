@@ -1,5 +1,7 @@
 /** Domain types for journey progress — not coupled to DB row shape. */
 
+import { AppError } from "@/lib/safety";
+
 export interface JourneyProgressRecord {
   userId: string;
   journeySlug: string;
@@ -43,15 +45,20 @@ export interface ResetJourneyProgressInput {
   journeySlug: string;
 }
 
-export class JourneyProgressError extends Error {
+export class JourneyProgressError extends AppError {
   constructor(
     message: string,
-    public readonly code:
-      | "invalid_input"
-      | "persist_failed"
-      | "not_found" = "persist_failed",
+    code: "invalid_input" | "persist_failed" | "not_found" = "persist_failed",
   ) {
-    super(message);
+    const status =
+      code === "invalid_input" ? 400 : code === "not_found" ? 404 : 503;
+    const safeMessage =
+      code === "invalid_input"
+        ? "Dados inválidos."
+        : code === "not_found"
+          ? "Progresso não encontrado."
+          : "Não foi possível salvar o progresso. Tente de novo.";
+    super(message, code, status, safeMessage);
     this.name = "JourneyProgressError";
   }
 }

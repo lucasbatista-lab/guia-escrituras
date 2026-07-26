@@ -1,5 +1,6 @@
 import "server-only";
 
+import { logger } from "@/lib/logging/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type {
   JourneyProgressRecord,
@@ -31,6 +32,34 @@ function mapRow(row: DbRow): JourneyProgressRecord {
     updatedAt: row.updated_at,
     completedAt: row.completed_at,
   };
+}
+
+/** PostgREST may return a composite RPC result as object or single-element array. */
+function unwrapRpcRow(data: unknown): DbRow | null {
+  if (data == null) return null;
+  if (Array.isArray(data)) {
+    const first = data[0];
+    if (!first || typeof first !== "object") return null;
+    return first as DbRow;
+  }
+  if (typeof data === "object") return data as DbRow;
+  return null;
+}
+
+function throwRpcFailure(
+  op: "start" | "completeStep" | "reset",
+  error: { message?: string; code?: string; details?: string },
+): never {
+  logger.error("journey_progress_rpc_failed", {
+    op,
+    code: error.code ?? null,
+    message: (error.message ?? "unknown").slice(0, 240),
+    details: (error.details ?? "").slice(0, 160) || null,
+  });
+  throw new JourneyProgressError(
+    error.message ?? `${op} failed`,
+    "persist_failed",
+  );
 }
 
 /**
@@ -91,12 +120,13 @@ export class SupabaseJourneyProgressRepository
     });
 
     if (error) {
-      throw new JourneyProgressError(error.message);
+      throwRpcFailure("start", error);
     }
-    if (!data) {
+    const row = unwrapRpcRow(data);
+    if (!row) {
       throw new JourneyProgressError("start returned empty", "persist_failed");
     }
-    return mapRow(data as DbRow);
+    return mapRow(row);
   }
 
   async completeStep(input: {
@@ -116,15 +146,16 @@ export class SupabaseJourneyProgressRepository
     });
 
     if (error) {
-      throw new JourneyProgressError(error.message);
+      throwRpcFailure("completeStep", error);
     }
-    if (!data) {
+    const row = unwrapRpcRow(data);
+    if (!row) {
       throw new JourneyProgressError(
         "completeStep returned empty",
         "persist_failed",
       );
     }
-    return mapRow(data as DbRow);
+    return mapRow(row);
   }
 
   async reset(
@@ -138,12 +169,13 @@ export class SupabaseJourneyProgressRepository
     });
 
     if (error) {
-      throw new JourneyProgressError(error.message);
+      throwRpcFailure("reset", error);
     }
-    if (!data) {
+    const row = unwrapRpcRow(data);
+    if (!row) {
       throw new JourneyProgressError("reset returned empty", "persist_failed");
     }
-    return mapRow(data as DbRow);
+    return mapRow(row);
   }
 }
 

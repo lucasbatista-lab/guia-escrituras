@@ -11,6 +11,8 @@ import {
   MemoryJourneyProgressRepository,
   JourneyProgressError,
 } from "@/lib/journeys/progress";
+import { mapJourneyCompleteError } from "@/lib/journeys/complete-client-errors";
+import { toClientError } from "@/lib/safety";
 
 const root = process.cwd();
 const migrationPath = join(
@@ -192,6 +194,49 @@ describe("journey progress migration 009 anonymous access hardening", () => {
     expect(consolidated).toMatch(
       /and\s+ate\.anon_table_privileges_blocked[\s\S]*and\s+are\.anon_rpc_execute_blocked[\s\S]*as\s+overall_ok/,
     );
+  });
+});
+
+describe("journey progress API error contract after grant hardening", () => {
+  it("maps JourneyProgressError to stable client codes (not generic 500)", () => {
+    const persist = new JourneyProgressError(
+      'permission denied for table journey_progress',
+      "persist_failed",
+    );
+    const client = toClientError(persist);
+    expect(client.status).toBe(503);
+    expect(client.code).toBe("persist_failed");
+    expect(client.message).toMatch(/salvar o progresso/i);
+    expect(client.message).not.toMatch(/Algo deu errado/i);
+
+    const invalid = new JourneyProgressError("bad", "invalid_input");
+    expect(toClientError(invalid)).toMatchObject({
+      status: 400,
+      code: "invalid_input",
+    });
+  });
+
+  it("repository uses service_role admin client and never DELETE", () => {
+    const repoSrc = readFileSync(
+      join(root, "src", "lib", "journeys", "progress", "repository.ts"),
+      "utf8",
+    );
+    expect(repoSrc).toContain("createAdminClient");
+    expect(repoSrc).toContain("complete_journey_progress_step");
+    expect(repoSrc).toContain("unwrapRpcRow");
+    expect(repoSrc).toContain("journey_progress_rpc_failed");
+    expect(repoSrc).not.toMatch(/\.delete\(/);
+    expect(repoSrc).not.toMatch(/from\([\"']journey_progress[\"']\)[\s\S]*\.insert/);
+  });
+
+  it("complete client surfaces persist_failed message from API body", () => {
+    expect(
+      mapJourneyCompleteError({
+        status: 503,
+        code: "persist_failed",
+        message: "Não foi possível salvar o progresso. Tente de novo.",
+      }),
+    ).toMatch(/salvar o progresso/i);
   });
 });
 
