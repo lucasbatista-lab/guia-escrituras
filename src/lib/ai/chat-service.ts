@@ -116,23 +116,27 @@ export async function runChatTurn(input: {
   }
 
   // preferDeep is per-turn only — never mutates profile preferredDepth.
-  // Authorization uses effective planKey from auth (subscription), not client.
-  if (body.preferDeep && !canUseDeepResponseOnDemand(auth.planKey)) {
-    throw new AppError(
-      "deep_response_not_entitled",
-      "deep_response_not_entitled",
-      403,
-      DEEP_RESPONSE_NOT_ENTITLED_MESSAGE,
-    );
-  }
+  // Skip deep gates when the message is a crisis match so safety intercept
+  // is never blocked by deep-entitlement or deepen kill-switch.
+  const crisisPreview = detectCrisisMessage(body.message);
+  if (!crisisPreview.matched) {
+    if (body.preferDeep && !canUseDeepResponseOnDemand(auth.planKey)) {
+      throw new AppError(
+        "deep_response_not_entitled",
+        "deep_response_not_entitled",
+        403,
+        DEEP_RESPONSE_NOT_ENTITLED_MESSAGE,
+      );
+    }
 
-  if (body.preferDeep && isFeatureDisabled("deepen")) {
-    throw new AppError(
-      FEATURE_TEMPORARILY_DISABLED_CODE,
-      FEATURE_TEMPORARILY_DISABLED_CODE,
-      503,
-      featureDisabledUserMessage("deepen"),
-    );
+    if (body.preferDeep && isFeatureDisabled("deepen")) {
+      throw new AppError(
+        FEATURE_TEMPORARILY_DISABLED_CODE,
+        FEATURE_TEMPORARILY_DISABLED_CODE,
+        503,
+        featureDisabledUserMessage("deepen"),
+      );
+    }
   }
 
   if (requiresRealOpenAiForChat() && !isOpenAiConfigured()) {

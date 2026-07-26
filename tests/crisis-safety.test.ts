@@ -65,6 +65,23 @@ describe("crisis detect — português", () => {
     expect(normalizeCrisisText("Suicídio")).toContain("suicid");
   });
 
+  it("matches veiled ideation without requiring exact 'quero morrer'", () => {
+    const veiled =
+      "Estou em uma situação muito difícil, acho que não posso suportar mais isso, estou considerando não viver mais e a vida não faz sentido.";
+    const hit = detectCrisisMessage(veiled);
+    expect(hit.matched).toBe(true);
+    expect(hit.category).toBe("suicide");
+    expect(detectCrisisMessage("Estou considerando não viver mais.").matched).toBe(
+      true,
+    );
+    // "encerrar essa sensação" alone is not a suicide method request
+    expect(
+      detectCrisisMessage(
+        "Quero ajuda para encerrar essa sensação de tristeza com uma oração.",
+      ).matched,
+    ).toBe(false);
+  });
+
   it("matches suicide and self-harm signals", () => {
     expect(detectCrisisMessage("Estou pensando em me matar.").matched).toBe(
       true,
@@ -116,9 +133,10 @@ describe("crisis response content", () => {
   it("is human, non-divine, and includes BR resources", () => {
     const answer = buildCrisisAnswer("suicide");
     expect(answer).not.toMatch(/eu sou jesus|eu sou deus|revelação/i);
-    expect(answer).toMatch(/não sou jesus/i);
+    expect(answer).toMatch(/não sou médico|não sou.*terapeuta/i);
     expect(answer).toContain("188");
     expect(answer).toContain("192");
+    expect(answer).not.toMatch(/encerrar essa sensa/i);
     expect(CRISIS_RESOURCES_BR.locale).toBe("pt-BR");
     expect(detectCrisisSupportPresent(answer)).toBe(true);
     expect(CRISIS_INTERPRETATION_NOTICE).toMatch(/sem modelo de IA/i);
@@ -169,6 +187,25 @@ describe("crisis intercept in runChatTurn", () => {
     expect(result.safetyMode).toBe("crisis");
     expect(detectCrisisSupportPresent(result.answer)).toBe(true);
     expect(result.answer).not.toMatch(/eu sou jesus/i);
+  });
+
+  it("intercepts veiled suicide ideation with preferDeep before provider", async () => {
+    const { runChatTurn } = await import("@/lib/ai/chat-service");
+    const result = await runChatTurn({
+      requestId: "11111111-1111-4111-8111-111111111103",
+      auth: { ...baseAuth, planKey: "essencial" },
+      body: {
+        message:
+          "Estou considerando não viver mais; a vida não faz sentido e não aguento.",
+        personaKey: "jesus",
+        preferDeep: true,
+      },
+    });
+    expect(generateSpy).not.toHaveBeenCalled();
+    expect(result.safetyMode).toBe("crisis");
+    expect(result.answer).toContain("188");
+    expect(result.answer).toContain("192");
+    expect(result.biblicalReferences).toEqual([]);
   });
 
   it("does not intercept ordinary anxiety", async () => {

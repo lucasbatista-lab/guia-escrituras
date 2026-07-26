@@ -38,9 +38,13 @@ const SIGNALS: Signal[] = [
       /\bvou me matar\b/,
       /\bme matar\b/,
       /\bnao quero mais viver\b/,
+      /\bnao viver mais\b/,
+      /\bconsiderando nao viver\b/,
       /\bsem vontade de viver\b/,
       /\bnao vejo saida\b.{0,40}\b(viver|vida|morrer)/,
       /\bpensar em morrer\b/,
+      /\bvida nao faz sentido\b.{0,80}\b(nao viver|morrer|acabar|desistir)\b/,
+      /\b(nao viver|morrer|acabar|desistir)\b.{0,80}\bvida nao faz sentido\b/,
     ],
     unless: [
       /\bmorrer de (vergonha|medo|rir|saudade|amor)\b/,

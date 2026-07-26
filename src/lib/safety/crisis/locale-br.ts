@@ -2,11 +2,11 @@
  * Brazil-localized crisis resources (product launch locale).
  * Keep copy here — detection logic must not hardcode numbers.
  *
- * Sources (public, non-exclusive):
- * - CVV — Centro de Valorização da Vida: 188 (24h) — https://www.cvv.org.br/
- * - SAMU: 192
+ * Sources (public, official):
+ * - CVV — Centro de Valorização da Vida: 188 (24h, gratuito) — https://www.cvv.org.br/
+ *   https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/s/suicidio-prevencao
+ * - SAMU: 192 (emergência médica) — Ministério da Saúde
  * - Polícia Militar: 190
- * - Bombeiros: 193
  * - Disque 100 (direitos humanos / violência)
  *
  * Decision: Amém Chat operates initially for Brazil (pt-BR).
@@ -17,9 +17,9 @@ export const CRISIS_LOCALE = "pt-BR" as const;
 export const CRISIS_RESOURCES_BR = {
   locale: CRISIS_LOCALE,
   lines: [
-    "CVV — Centro de Valorização da Vida: ligue 188 (24 horas) ou acesse cvv.org.br",
-    "Em emergência médica: SAMU 192",
-    "Em risco imediato de violência: Polícia 190",
+    "CVV — apoio emocional e prevenção do suicídio: ligue 188 (24h, gratuito) ou cvv.org.br",
+    "Emergência médica: SAMU 192",
+    "Risco imediato de violência: Polícia 190",
     "Violação de direitos humanos / violência: Disque 100",
   ],
 } as const;
@@ -32,17 +32,19 @@ export function buildCrisisAnswer(category: string): string {
       ? "O que você descreve pode exigir ajuda médica imediata. Sua segurança vem primeiro."
       : category === "violence" || category === "abuse"
         ? "Se há risco de violência agora, priorize sua segurança e a de outras pessoas."
-        : "Obrigado por falar sobre isso. Sua vida importa, e você não precisa enfrentar este momento sozinho(a).";
+        : "Obrigado por falar sobre isso. Sua vida importa. Você não precisa enfrentar este momento sozinho(a).";
 
   return [
     lead,
     "",
-    "Eu sou um assistente de reflexão baseado nas Escrituras — não sou Jesus, Deus, médico, terapeuta nem autoridade pastoral. Não diagnostico e não substituo atendimento humano de emergência.",
-    "",
-    "Por favor, busque ajuda humana agora:",
+    "Agora, busque ajuda humana imediata:",
     resources,
     "",
-    "Se puder, avise alguém de confiança ao seu lado. Quando estiver em segurança, você pode voltar aqui para uma conversa reflexiva — neste momento, o cuidado presencial e profissional é o passo certo.",
+    "Se puder, avise alguém de confiança perto de você.",
+    "",
+    "Eu sou um assistente digital de reflexão — não sou médico, terapeuta, plantão de emergência nem autoridade pastoral. Não diagnostico e não substituo atendimento humano.",
+    "",
+    "Quando estiver em segurança, você pode voltar se quiser conversar. Neste momento, o passo certo é ajuda humana presencial ou pelos canais acima.",
   ].join("\n");
 }
 
