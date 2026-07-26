@@ -14,19 +14,20 @@ Migrations em `supabase/migrations/`.
 | `006` stripe billing | `billing_customers`, `payment_events` | **Provável em produção** (webhook depende); **confirmar no B00** |
 | `007` legal_consents | consentimentos | **Provável em produção** (cadastro legal depende); **confirmar no B00** |
 | `008` journey_progress | progresso de Jornadas + RPCs | **Aplicada** em produção (humano, 2026-07-20 — `END_OF_DAY_MASTER_REPORT`, `NEXT_STEPS`) |
-| `009` journey_progress anon hardening | revoga grants de `anon`/`PUBLIC` na tabela + EXECUTE nas RPCs | **Não aplicada** (versionada localmente; aplicar só após backup + postcheck verde) |
+| `009` journey_progress anon hardening | revoga grants de `anon`/`PUBLIC` na tabela + EXECUTE nas RPCs | **Aplicada** em produção (humano, **2026-07-26**) · postcheck consolidado `overall_ok = true` |
 
 **Não** reaplicar migrations. **Não** executar rollback. Postchecks são **somente leitura**.
 
-### Gap remoto confirmado (Jornadas / pós-008)
+### Gap remoto (Jornadas) — fechado pela 009
 
-- `anon` tinha grants explícitos de tabela (SELECT/INSERT/UPDATE/DELETE/…) e EXECUTE nas três RPCs.
-- RLS + policies de ownership + `SECURITY INVOKER` impediram vazamento demonstrado de linhas; a superfície anônima dependia **exclusivamente** da RLS.
-- MIG `009` corrige grants (ainda **não** aplicada). MIG `004` permanece **separada** e pendente.
+- Pré-009: `anon` tinha grants explícitos de tabela e EXECUTE nas três RPCs; a superfície anônima dependia **exclusivamente** da RLS (sem vazamento de linhas demonstrado).
+- MIG `009` **aplicada 2026-07-26**; postcheck consolidado verde (`overall_ok = true`).
+- MIG `004` permanece **separada** e **não aplicada**.
+- **Nota ops:** após a 009, houve observação de HTTP 500 completo em Jornadas em uso real — **sem causalidade provada** com a migration; investigar via logs pós-deploy dos fixes locais (ver `docs/_ai/AMEM_PRELAUNCH_REAL_USAGE_FINDINGS_2026-07-26.md`).
 
 Postcheck Jornadas (preferencial):
 `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`  
-(expectativa após apply da `009`: `overall_ok = true`, incluindo bloqueio anônimo de tabela e RPC.)
+(estado documentado pós-009: `overall_ok = true`, incluindo bloqueio anônimo de tabela e RPC.)
 
 ## Arquivos
 
@@ -38,7 +39,7 @@ Postcheck Jornadas (preferencial):
 6. `20260712000006_stripe_billing.sql` — customers + payment_events
 7. `20260712000007_legal_consents.sql` — consentimentos
 8. `20260712000008_journey_progress.sql` — progresso de Jornadas (aplicada; não reaplicar)
-9. `20260712000009_journey_progress_anonymous_access_hardening.sql` — endurece grants anônimos (não aplicada; não editar 008)
+9. `20260712000009_journey_progress_anonymous_access_hardening.sql` — endurece grants anônimos (**aplicada 2026-07-26**; não reaplicar; não editar 008)
 
 ## Migration 004 (resumo — ainda não aplicada)
 

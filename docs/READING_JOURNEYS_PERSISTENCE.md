@@ -36,9 +36,9 @@ Table: `public.journey_progress`
 - Table: `SELECT`/`INSERT`/`UPDATE` to `authenticated` + `service_role`; **no** `DELETE` to `authenticated`
 - Admin UI must not gain access from frontend role claims alone
 
-### Gap remoto (pós-008, pré-009)
+### Gap remoto (pós-008) — fechado pela 009
 
-Investigação confirmou grants explícitos de `anon` na tabela e EXECUTE nas três RPCs. Não houve evidência de vazamento de linhas (RLS + ownership + `SECURITY INVOKER`), mas a superfície anônima dependia só da RLS. Correção versionada: `20260712000009_journey_progress_anonymous_access_hardening.sql` (**ainda não aplicada**).
+Investigação confirmou grants explícitos de `anon` na tabela e EXECUTE nas três RPCs. Não houve evidência de vazamento de linhas (RLS + ownership + `SECURITY INVOKER`), mas a superfície anônima dependia só da RLS. Correção: `20260712000009_journey_progress_anonymous_access_hardening.sql` — **aplicada em produção 2026-07-26**; postcheck consolidado `overall_ok = true`. MIG `004` permanece pendente e independente. HTTP 500 completo em Jornadas foi observado após a 009 **sem causalidade provada**.
 
 ## Concurrency
 
@@ -50,7 +50,7 @@ Use RPCs (SECURITY INVOKER, fixed `search_path`):
 - `complete_journey_progress_step(p_user_id, p_journey_slug, p_step_id, p_next_step_id, p_total_step_ids)`
 - `reset_journey_progress(p_user_id, p_journey_slug)`
 
-Authenticated callers may only act when `p_user_id = auth.uid()`.  
+Authenticated callers may only act when `p_user_id = auth.uid()`.
 `service_role` (`auth.uid()` null) may pass a server-resolved user id (trusted backend).
 
 `complete_journey_progress_step` merges ids under a single row `UPDATE` (row lock serializes writers) and sets `completed_at` when every expected id is present.
@@ -112,7 +112,7 @@ Implemented in `src/lib/admin/users.ts` + admin user detail page. No admin edit/
 
 ## Privacy
 
-Persisted: step ids + timestamps only.  
+Persisted: step ids + timestamps only.
 Never: reflections, chat drafts, prompts, clinical notes, payment data, secrets.
 
 ## Apply migration (human)
@@ -122,19 +122,17 @@ Never: reflections, chat drafts, prompts, clinical notes, payment data, secrets.
 1. Review `supabase/migrations/20260712000008_journey_progress.sql` — **não reaplicar**
 2. Reading Journeys MVP (entitlement + UI + export) — **done on `main`**
 
-### 009 anonymous access hardening (**ainda não aplicada**)
+### 009 anonymous access hardening (**aplicada 2026-07-26**)
 
-1. **Backup** restaurável do projeto Supabase (pré-condição obrigatória)
-2. Review `supabase/migrations/20260712000009_journey_progress_anonymous_access_hardening.sql`
-3. Apply **somente** o SQL da `009` (SQL Editor paste após review). **Não** reaplicar `008`. **Não** misturar com MIG `004`.
-4. Run postcheck consolidado (read-only):  
-   `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`  
-   Expectativa: uma linha com **todos** os booleans true e `overall_ok = true`  
-   (inclui bloqueio anônimo de tabela + RPC, ACL `PUBLIC`, EXECUTE `authenticated`/`service_role`).
-5. **STOP** se `overall_ok = false` — não seguir cutover/smoke até verde.
-6. Legacy multi-result: `supabase/postchecks/20260712000008_journey_progress_postcheck.sql` (não cobre o gap `anon` EXECUTE)
+1. Backup + review + apply da `009` — **concluídos** (humano). **Não** reaplicar `008` nem `009`.
+2. Postcheck consolidado (read-only) — **verde**: `overall_ok = true`
+   `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`
+3. MIG `004` **não** misturar / **não** aplicada.
+4. Legacy multi-result: `supabase/postchecks/20260712000008_journey_progress_postcheck.sql` (não cobre o gap `anon` EXECUTE)
 
 **Postcheck note:** the legacy file runs multiple read-only `SELECT`s; Supabase SQL Editor may show only the **last** result set. Prefer the consolidated postcheck. Runtime app code does **not** depend on either postcheck file.
+
+**Ops note (2026-07-26):** complete HTTP 500 on Journeys observed after 009 without proven causation — track in `docs/_ai/AMEM_PRELAUNCH_REAL_USAGE_FINDINGS_2026-07-26.md`.
 
 ## Emergency rollback (do not run unless required)
 
@@ -152,10 +150,10 @@ commit;
 
 ## Safe deploy sequence
 
-1. Ship foundation code — migration + RPCs  
-2. Apply migration + postcheck in Supabase  
-3. Ship Reading Journeys feature (registry, entitlement, routes, export)  
-4. Commercial copy reflects active Jornadas on Caminho/Profundo/Particular  
+1. Ship foundation code — migration + RPCs
+2. Apply migration + postcheck in Supabase
+3. Ship Reading Journeys feature (registry, entitlement, routes, export)
+4. Commercial copy reflects active Jornadas on Caminho/Profundo/Particular
 
 ## Tests
 

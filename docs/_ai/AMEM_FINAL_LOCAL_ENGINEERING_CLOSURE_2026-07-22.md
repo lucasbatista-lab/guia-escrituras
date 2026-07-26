@@ -1,8 +1,8 @@
 # Fechamento local de engenharia — Amém Chat
 
-**Data:** 2026-07-22  
-**HEAD de entrada:** `880bc2e`  
-**Pacote anterior:** `bf6123d` → `880bc2e`  
+**Data:** 2026-07-22
+**HEAD de entrada:** `880bc2e`
+**Pacote anterior:** `bf6123d` → `880bc2e`
 **Conclusão:** **A — Não restam bloqueadores locais de engenharia conhecidos; seguir para operação humana/remota.**
 
 ---
@@ -66,13 +66,13 @@ Renomear Aprofundar · Essencial `?bloqueado=1` · chips de tema · streaming ·
 
 ## Commits desta rodada
 
-1. `600de89` — drafts user-scoped  
-2. `5eb8f03` — DEMO_MODE/mocks fail-closed  
-3. `c942b5f` — admin mobile a11y focus  
-4. `88b951f` — scripture free-text spike/evals  
-5. `c4373e4` — exclusão/retenção docs  
-6. `cb480ad` — local runtime smoke  
-7. `12fcca7` — kill switch journeys RSC bypass  
+1. `600de89` — drafts user-scoped
+2. `5eb8f03` — DEMO_MODE/mocks fail-closed
+3. `c942b5f` — admin mobile a11y focus
+4. `88b951f` — scripture free-text spike/evals
+5. `c4373e4` — exclusão/retenção docs
+6. `cb480ad` — local runtime smoke
+7. `12fcca7` — kill switch journeys RSC bypass
 8. (este relatório + NEXT_STEPS)
 
 ---
@@ -125,5 +125,21 @@ Limitações do smoke: sem sessão autenticada; 503 autenticado dos kill switche
 
 ## Recomendação final
 
-**Parar de gastar créditos Cursor em polish local não crítico.**  
+**Parar de gastar créditos Cursor em polish local não crítico.**
 Executar imediatamente o **caminho crítico humano/remoto** em `docs/NEXT_STEPS.md`.
+
+---
+
+## Addendum — 2026-07-26 (remoto / pré-launch)
+
+| Item | Estado |
+|------|--------|
+| MIG `009` | **Aplicada** em produção (2026-07-26) · postcheck consolidado `overall_ok = true` |
+| MIG `004` | **Ainda não aplicada** (pack permanece; fora da janela 28/07 salvo GO) |
+| Produção publicada | `461736d` · tip origem `eda920e` + fixes locais pending deploy |
+| Jornadas HTTP 500 | Observado após 009 **sem causalidade provada** · error masking fix local · root cause via logs pós-deploy |
+| Crise FN | “considerando não viver mais” → modelo chamado · fix local pending deploy |
+| Plan change / redesign / cupom remoto | Sem implementação nesta janela |
+
+Índice: `docs/_ai/AMEM_PRELAUNCH_REAL_USAGE_FINDINGS_2026-07-26.md`.
+Atualizar `NEXT_STEPS.md` / `DATABASE.md` / `READING_JOURNEYS_PERSISTENCE.md` já reconciliados com a 009.
