@@ -1,12 +1,14 @@
 -- =============================================================================
 -- Postcheck CONSOLIDADO (READ ONLY) — journey_progress
 -- Preferencial a partir de 2026-07-20 (retorna UMA linha / um result set).
+-- Atualizado para MIG 009 (anonymous access hardening): verifica anon e PUBLIC
+-- separadamente (has_*_privilege para anon; ACL/catálogo para PUBLIC).
 -- O postcheck multi-result set original permanece em:
 --   20260712000008_journey_progress_postcheck.sql
 --
 -- Uso: colar no Supabase SQL Editor (produção). Não modifica dados nem schema.
 -- Não depende de usuário autenticado. Não retorna UUIDs nem conteúdo pessoal.
--- Preferir este arquivo amanhã antes/depois do smoke autenticado.
+-- Não consulta conteúdo de progresso (sem SELECT em linhas de journey_progress).
 -- =============================================================================
 
 with
@@ -113,7 +115,7 @@ policy_check as (
   where schemaname = 'public'
     and tablename = 'journey_progress'
 ),
-anon_check as (
+anon_table_effective as (
   select
     case
       when to_regclass('public.journey_progress') is null then false
@@ -122,7 +124,45 @@ anon_check as (
         and not coalesce(has_table_privilege('anon', 'public.journey_progress', 'insert'), false)
         and not coalesce(has_table_privilege('anon', 'public.journey_progress', 'update'), false)
         and not coalesce(has_table_privilege('anon', 'public.journey_progress', 'delete'), false)
-    end as anonymous_access_blocked
+    end as anon_table_privileges_blocked
+),
+anon_table_explicit as (
+  select
+    case
+      when to_regclass('public.journey_progress') is null then false
+      else not exists (
+        select 1
+        from information_schema.role_table_grants g
+        where g.table_schema = 'public'
+          and g.table_name = 'journey_progress'
+          and g.grantee = 'anon'
+          and g.privilege_type in (
+            'SELECT', 'INSERT', 'UPDATE', 'DELETE',
+            'TRUNCATE', 'REFERENCES', 'TRIGGER'
+          )
+      )
+    end as anon_table_explicit_grants_absent
+),
+public_table_acl as (
+  select
+    case
+      when to_regclass('public.journey_progress') is null then false
+      else not exists (
+        select 1
+        from pg_class c
+        join pg_namespace n on n.oid = c.relnamespace
+        cross join lateral aclexplode(
+          coalesce(c.relacl, acldefault('r', c.relowner))
+        ) a
+        where n.nspname = 'public'
+          and c.relname = 'journey_progress'
+          and a.grantee = 0 -- PUBLIC
+          and a.privilege_type in (
+            'SELECT', 'INSERT', 'UPDATE', 'DELETE',
+            'TRUNCATE', 'REFERENCES', 'TRIGGER'
+          )
+      )
+    end as public_table_privileges_absent
 ),
 rpc_check as (
   select
@@ -133,32 +173,68 @@ rpc_check as (
     to_regprocedure('public.reset_journey_progress(uuid,text)') is not null
       as rpc_reset_exists
 ),
-grant_check as (
+anon_rpc_execute as (
   select
     (
       to_regprocedure('public.start_journey_progress(uuid,text,text)') is null
-      or not has_function_privilege(
-        'public',
-        'public.start_journey_progress(uuid,text,text)',
-        'execute'
+      or not coalesce(
+        has_function_privilege(
+          'anon',
+          'public.start_journey_progress(uuid,text,text)',
+          'execute'
+        ),
+        false
       )
     )
     and (
       to_regprocedure('public.complete_journey_progress_step(uuid,text,text,text,text[])') is null
-      or not has_function_privilege(
-        'public',
-        'public.complete_journey_progress_step(uuid,text,text,text,text[])',
-        'execute'
+      or not coalesce(
+        has_function_privilege(
+          'anon',
+          'public.complete_journey_progress_step(uuid,text,text,text,text[])',
+          'execute'
+        ),
+        false
       )
     )
     and (
       to_regprocedure('public.reset_journey_progress(uuid,text)') is null
-      or not has_function_privilege(
-        'public',
-        'public.reset_journey_progress(uuid,text)',
-        'execute'
+      or not coalesce(
+        has_function_privilege(
+          'anon',
+          'public.reset_journey_progress(uuid,text)',
+          'execute'
+        ),
+        false
       )
-    ) as public_execute_revoked,
+    ) as anon_rpc_execute_blocked
+),
+public_rpc_acl as (
+  select
+    not exists (
+      select 1
+      from (
+        values
+          ('public.start_journey_progress(uuid,text,text)'::text),
+          ('public.complete_journey_progress_step(uuid,text,text,text,text[])'),
+          ('public.reset_journey_progress(uuid,text)')
+      ) as sigs(sig)
+      cross join lateral (
+        select to_regprocedure(sigs.sig) as oid
+      ) p
+      cross join lateral aclexplode(
+        coalesce(
+          (select proacl from pg_proc where oid = p.oid),
+          acldefault('f', (select proowner from pg_proc where oid = p.oid))
+        )
+      ) a
+      where p.oid is not null
+        and a.grantee = 0 -- PUBLIC
+        and a.privilege_type = 'EXECUTE'
+    ) as public_rpc_execute_absent
+),
+grant_check as (
+  select
     to_regprocedure('public.start_journey_progress(uuid,text,text)') is not null
     and has_function_privilege(
       'authenticated',
@@ -208,27 +284,9 @@ trigger_check as (
       and t.tgname = 'journey_progress_set_updated_at'
   ) as updated_at_trigger_exists
 ),
-rows_check as (
-  -- Empty is OK after apply. After future smoke, rows must obey structural invariants.
-  -- Never returns UUIDs or personal content.
-  select
-    case
-      when to_regclass('public.journey_progress') is null then false
-      when (select count(*) from public.journey_progress) = 0 then true
-      else not exists (
-        select 1
-        from public.journey_progress jp
-        where jp.version < 1
-           or char_length(trim(jp.journey_slug)) = 0
-           or jp.completed_step_ids is null
-           or jp.started_at is null
-           or jp.updated_at is null
-           or (
-             jp.completed_at is not null
-             and cardinality(jp.completed_step_ids) = 0
-           )
-      )
-    end as initially_empty_or_has_valid_rows
+schema_only_check as (
+  -- Catalog-only: do not SELECT progress row payloads (no UUIDs / step ids / timestamps).
+  select (to_regclass('public.journey_progress') is not null) as schema_present_without_row_scan
 )
 select
   t.table_exists,
@@ -240,15 +298,19 @@ select
   pol.select_policy_exists,
   pol.insert_policy_exists,
   pol.update_policy_exists,
-  a.anonymous_access_blocked,
+  pol.no_delete_policy,
+  ate.anon_table_privileges_blocked,
+  atx.anon_table_explicit_grants_absent,
+  pta.public_table_privileges_absent,
   rpc.rpc_start_exists,
   rpc.rpc_complete_exists,
   rpc.rpc_reset_exists,
-  g.public_execute_revoked,
+  are.anon_rpc_execute_blocked,
+  pra.public_rpc_execute_absent,
   g.authenticated_execute_granted,
   g.service_role_execute_granted,
   tr.updated_at_trigger_exists,
-  rows.initially_empty_or_has_valid_rows,
+  so.schema_present_without_row_scan,
   (
     t.table_exists
     and c.expected_columns_exist
@@ -260,15 +322,18 @@ select
     and pol.insert_policy_exists
     and pol.update_policy_exists
     and pol.no_delete_policy
-    and a.anonymous_access_blocked
+    and ate.anon_table_privileges_blocked
+    and atx.anon_table_explicit_grants_absent
+    and pta.public_table_privileges_absent
     and rpc.rpc_start_exists
     and rpc.rpc_complete_exists
     and rpc.rpc_reset_exists
-    and g.public_execute_revoked
+    and are.anon_rpc_execute_blocked
+    and pra.public_rpc_execute_absent
     and g.authenticated_execute_granted
     and g.service_role_execute_granted
     and tr.updated_at_trigger_exists
-    and rows.initially_empty_or_has_valid_rows
+    and so.schema_present_without_row_scan
   ) as overall_ok
 from table_check t
 cross join columns_check c
@@ -277,8 +342,12 @@ cross join fk_check f
 cross join cascade_check casc
 cross join rls_check r
 cross join policy_check pol
-cross join anon_check a
+cross join anon_table_effective ate
+cross join anon_table_explicit atx
+cross join public_table_acl pta
 cross join rpc_check rpc
+cross join anon_rpc_execute are
+cross join public_rpc_acl pra
 cross join grant_check g
 cross join trigger_check tr
-cross join rows_check rows;
+cross join schema_only_check so;

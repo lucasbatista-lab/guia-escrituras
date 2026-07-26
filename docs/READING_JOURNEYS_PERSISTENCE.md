@@ -31,9 +31,14 @@ Table: `public.journey_progress`
 - RLS enabled
 - `select` / `insert` / `update` own (`auth.uid() = user_id`)
 - **No DELETE** for clients — reset clears via `reset_journey_progress` UPDATE
-- Anonymous: no access
-- RPCs: `EXECUTE` to `authenticated` + `service_role`; revoked from `PUBLIC`
+- Anonymous: no access (table + RPC) — enforced by grants in MIG `009`, not RLS alone
+- RPCs: `EXECUTE` to `authenticated` + `service_role`; revoked from `anon` and `PUBLIC`
+- Table: `SELECT`/`INSERT`/`UPDATE` to `authenticated` + `service_role`; **no** `DELETE` to `authenticated`
 - Admin UI must not gain access from frontend role claims alone
+
+### Gap remoto (pós-008, pré-009)
+
+Investigação confirmou grants explícitos de `anon` na tabela e EXECUTE nas três RPCs. Não houve evidência de vazamento de linhas (RLS + ownership + `SECURITY INVOKER`), mas a superfície anônima dependia só da RLS. Correção versionada: `20260712000009_journey_progress_anonymous_access_hardening.sql` (**ainda não aplicada**).
 
 ## Concurrency
 
@@ -112,17 +117,24 @@ Never: reflections, chat drafts, prompts, clinical notes, payment data, secrets.
 
 ## Apply migration (human)
 
-1. Review `supabase/migrations/20260712000008_journey_progress.sql`
-2. Apply in Supabase (SQL Editor paste **or** `pnpm exec supabase db push --linked` after review)
-3. Run postcheck (read-only). **Prefer** the consolidated one-liner:  
-   `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`  
-   (expect a single row with `overall_ok = true`).  
-   Legacy multi-result file still exists:  
-   `supabase/postchecks/20260712000008_journey_progress_postcheck.sql`
-4. Confirm postcheck booleans / `overall_ok` (consolidated) or review each result set (legacy)
-5. Ship Reading Journeys MVP (entitlement + UI + export) — **done on `main`**
+### 008 (já aplicada em produção)
 
-**Postcheck note:** the legacy file runs multiple read-only `SELECT`s; Supabase SQL Editor may show only the **last** result set. Prefer the consolidated postcheck for tomorrow’s ops. Runtime app code does **not** depend on either postcheck file.
+1. Review `supabase/migrations/20260712000008_journey_progress.sql` — **não reaplicar**
+2. Reading Journeys MVP (entitlement + UI + export) — **done on `main`**
+
+### 009 anonymous access hardening (**ainda não aplicada**)
+
+1. **Backup** restaurável do projeto Supabase (pré-condição obrigatória)
+2. Review `supabase/migrations/20260712000009_journey_progress_anonymous_access_hardening.sql`
+3. Apply **somente** o SQL da `009` (SQL Editor paste após review). **Não** reaplicar `008`. **Não** misturar com MIG `004`.
+4. Run postcheck consolidado (read-only):  
+   `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`  
+   Expectativa: uma linha com **todos** os booleans true e `overall_ok = true`  
+   (inclui bloqueio anônimo de tabela + RPC, ACL `PUBLIC`, EXECUTE `authenticated`/`service_role`).
+5. **STOP** se `overall_ok = false` — não seguir cutover/smoke até verde.
+6. Legacy multi-result: `supabase/postchecks/20260712000008_journey_progress_postcheck.sql` (não cobre o gap `anon` EXECUTE)
+
+**Postcheck note:** the legacy file runs multiple read-only `SELECT`s; Supabase SQL Editor may show only the **last** result set. Prefer the consolidated postcheck. Runtime app code does **not** depend on either postcheck file.
 
 ## Emergency rollback (do not run unless required)
 

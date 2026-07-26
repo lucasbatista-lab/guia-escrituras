@@ -19,11 +19,23 @@ const migrationPath = join(
   "migrations",
   "20260712000008_journey_progress.sql",
 );
+const migration009Path = join(
+  root,
+  "supabase",
+  "migrations",
+  "20260712000009_journey_progress_anonymous_access_hardening.sql",
+);
 const postcheckPath = join(
   root,
   "supabase",
   "postchecks",
   "20260712000008_journey_progress_postcheck.sql",
+);
+const postcheckConsolidatedPath = join(
+  root,
+  "supabase",
+  "postchecks",
+  "20260712000008_journey_progress_postcheck_consolidated.sql",
 );
 
 const TOTAL = [
@@ -76,6 +88,110 @@ describe("journey progress migration 008", () => {
     expect(postcheck).toContain("READ ONLY");
     expect(postcheck).toContain("rls_enabled");
     expect(postcheck).toContain("policies_ok");
+  });
+});
+
+describe("journey progress migration 009 anonymous access hardening", () => {
+  const sql008 = readFileSync(migrationPath, "utf8");
+  const sql009 = readFileSync(migration009Path, "utf8");
+  const consolidated = readFileSync(postcheckConsolidatedPath, "utf8");
+
+  it("revokes all table privileges from anon and public", () => {
+    expect(sql009).toMatch(
+      /revoke\s+all\s+on\s+table\s+public\.journey_progress\s+from\s+anon/i,
+    );
+    expect(sql009).toMatch(
+      /revoke\s+all\s+on\s+table\s+public\.journey_progress\s+from\s+public/i,
+    );
+  });
+
+  it("revokes EXECUTE on the three RPCs from anon and public", () => {
+    for (const fn of [
+      "start_journey_progress(uuid, text, text)",
+      "complete_journey_progress_step(uuid, text, text, text, text[])",
+      "reset_journey_progress(uuid, text)",
+    ]) {
+      expect(sql009).toMatch(
+        new RegExp(
+          `revoke\\s+all\\s+on\\s+function\\s+public\\.${fn.replace(
+            /[()[\]]/g,
+            "\\$&",
+          )}\\s+from\\s+public`,
+          "i",
+        ),
+      );
+      expect(sql009).toMatch(
+        new RegExp(
+          `revoke\\s+all\\s+on\\s+function\\s+public\\.${fn.replace(
+            /[()[\]]/g,
+            "\\$&",
+          )}\\s+from\\s+anon`,
+          "i",
+        ),
+      );
+    }
+  });
+
+  it("preserves EXECUTE for authenticated and service_role without authenticated DELETE", () => {
+    expect(sql009).toMatch(
+      /grant\s+select,\s*insert,\s*update\s+on\s+table\s+public\.journey_progress\s+to\s+authenticated/i,
+    );
+    expect(sql009).toMatch(
+      /grant\s+select,\s*insert,\s*update\s+on\s+table\s+public\.journey_progress\s+to\s+service_role/i,
+    );
+    expect(sql009).not.toMatch(
+      /grant\s+[^;]*\bdelete\b[^;]*to\s+authenticated/i,
+    );
+    expect(sql009).toContain(
+      "grant execute on function public.start_journey_progress(uuid, text, text) to authenticated",
+    );
+    expect(sql009).toContain(
+      "grant execute on function public.start_journey_progress(uuid, text, text) to service_role",
+    );
+    expect(sql009).toContain(
+      "grant execute on function public.complete_journey_progress_step(uuid, text, text, text, text[]) to authenticated",
+    );
+    expect(sql009).toContain(
+      "grant execute on function public.complete_journey_progress_step(uuid, text, text, text, text[]) to service_role",
+    );
+    expect(sql009).toContain(
+      "grant execute on function public.reset_journey_progress(uuid, text) to authenticated",
+    );
+    expect(sql009).toContain(
+      "grant execute on function public.reset_journey_progress(uuid, text) to service_role",
+    );
+  });
+
+  it("does not introduce SECURITY DEFINER or rewrite RPC bodies", () => {
+    expect(sql009).not.toMatch(/security\s+definer/i);
+    expect(sql009).not.toMatch(/create\s+or\s+replace\s+function/i);
+    expect(sql009).not.toContain("completed_step_ids");
+  });
+
+  it("does not edit migration 008", () => {
+    expect(sql008).toContain("create table public.journey_progress");
+    expect(sql008).toContain("security invoker");
+    expect(sql009).not.toContain("create table public.journey_progress");
+  });
+
+  it("updates consolidated postcheck with separate anon and PUBLIC checks in overall_ok", () => {
+    expect(consolidated).toContain("anon_table_privileges_blocked");
+    expect(consolidated).toContain("anon_table_explicit_grants_absent");
+    expect(consolidated).toContain("public_table_privileges_absent");
+    expect(consolidated).toContain("anon_rpc_execute_blocked");
+    expect(consolidated).toContain("public_rpc_execute_absent");
+    expect(consolidated).toContain("has_function_privilege");
+    expect(consolidated).toContain("'anon'");
+    expect(consolidated).toContain("a.grantee = 0");
+    expect(consolidated).not.toMatch(
+      /has_(?:table|function)_privilege\(\s*'PUBLIC'/i,
+    );
+    expect(consolidated).not.toMatch(
+      /has_(?:table|function)_privilege\(\s*'public'\s*,/i,
+    );
+    expect(consolidated).toMatch(
+      /and\s+ate\.anon_table_privileges_blocked[\s\S]*and\s+are\.anon_rpc_execute_blocked[\s\S]*as\s+overall_ok/,
+    );
   });
 });
 
