@@ -27,6 +27,12 @@ const migration009Path = join(
   "migrations",
   "20260712000009_journey_progress_anonymous_access_hardening.sql",
 );
+const migration010Path = join(
+  root,
+  "supabase",
+  "migrations",
+  "20260712000010_journey_progress_complete_rpc_unnest_fix.sql",
+);
 const postcheckPath = join(
   root,
   "supabase",
@@ -38,6 +44,12 @@ const postcheckConsolidatedPath = join(
   "supabase",
   "postchecks",
   "20260712000008_journey_progress_postcheck_consolidated.sql",
+);
+const postcheck010Path = join(
+  root,
+  "supabase",
+  "postchecks",
+  "20260712000010_journey_progress_complete_rpc_unnest_fix_postcheck.sql",
 );
 
 const TOTAL = [
@@ -194,6 +206,87 @@ describe("journey progress migration 009 anonymous access hardening", () => {
     expect(consolidated).toMatch(
       /and\s+ate\.anon_table_privileges_blocked[\s\S]*and\s+are\.anon_rpc_execute_blocked[\s\S]*as\s+overall_ok/,
     );
+  });
+});
+
+describe("journey progress migration 010 complete RPC unnest fix (PG 42883)", () => {
+  const sql008 = readFileSync(migrationPath, "utf8");
+  const sql010 = readFileSync(migration010Path, "utf8");
+  const postcheck010 = readFileSync(postcheck010Path, "utf8");
+
+  /** Bare unnest table-alias used as scalar — proven PG 42883 vector in MIG 008. */
+  const bareUnnestAliasMisuse = [
+    /unnest\([^)]*\)\s+as\s+e\b/i,
+    /unnest\([^)]*\)\s+as\s+x\b/i,
+    /trim\(\s*e\s*\)/i,
+    /char_length\(\s*x\s*\)/i,
+    /bool_and\(\s*e\s*=/i,
+    /array_agg\(\s*distinct\s+x\b/i,
+  ];
+
+  it("documents that MIG 008 still contains the historical bare-alias anti-pattern", () => {
+    // 008 is immutable history — contract detects the bug class, 010 repairs it.
+    expect(sql008).toMatch(/unnest\([^)]*\)\s+as\s+e\b/i);
+    expect(sql008).toMatch(/trim\(\s*e\s*\)/i);
+    expect(sql008).toMatch(/unnest\([^)]*\)\s+as\s+x\b/i);
+  });
+
+  it("replaces only complete_journey_progress_step with explicit unnest column aliases", () => {
+    expect(sql010).toContain(
+      "create or replace function public.complete_journey_progress_step",
+    );
+    expect(sql010).toContain("security invoker");
+    expect(sql010).toContain("set search_path = public");
+    expect(sql010).toContain("as item(step_id)");
+    expect(sql010).toContain("as exp(step_id)");
+    expect(sql010).toContain("item.step_id");
+    expect(sql010).toContain("exp.step_id");
+    expect(sql010).not.toContain("create table public.journey_progress");
+    expect(sql010).not.toMatch(/security\s+definer/i);
+    expect(sql010).not.toContain("start_journey_progress(");
+    expect(sql010).not.toContain("reset_journey_progress(");
+  });
+
+  it("removes bare unnest alias scalar misuse from the repaired function body", () => {
+    const bodyMatch = sql010.match(/as\s+\$\$([\s\S]*?)\$\$;/i);
+    expect(bodyMatch?.[1]).toBeTruthy();
+    const body = bodyMatch![1]!;
+    for (const pattern of bareUnnestAliasMisuse) {
+      expect(body, String(pattern)).not.toMatch(pattern);
+    }
+  });
+
+  it("reaffirms anon/PUBLIC revoke and authenticated/service_role EXECUTE", () => {
+    expect(sql010).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.complete_journey_progress_step\(uuid, text, text, text, text\[\]\)\s+from\s+public/i,
+    );
+    expect(sql010).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.complete_journey_progress_step\(uuid, text, text, text, text\[\]\)\s+from\s+anon/i,
+    );
+    expect(sql010).toContain(
+      "grant execute on function public.complete_journey_progress_step(uuid, text, text, text, text[]) to authenticated",
+    );
+    expect(sql010).toContain(
+      "grant execute on function public.complete_journey_progress_step(uuid, text, text, text, text[]) to service_role",
+    );
+    expect(sql010).toMatch(
+      /revoke\s+all\s+on\s+table\s+public\.journey_progress\s+from\s+anon/i,
+    );
+  });
+
+  it("ships read-only postcheck proving fix markers and grants", () => {
+    expect(postcheck010).toContain("READ ONLY");
+    expect(postcheck010).toContain("overall_ok");
+    expect(postcheck010).toContain("fixed_unnest_aliases_present");
+    expect(postcheck010).toContain("invalid_bare_unnest_alias_absent");
+    expect(postcheck010).toContain("security_invoker");
+    expect(postcheck010).toContain("policies_intact");
+    expect(postcheck010).toContain("Does not mutate data");
+  });
+
+  it("does not edit migration 008 file contents via 010", () => {
+    expect(sql008).toContain("from unnest(coalesce(p_total_step_ids");
+    expect(sql010).toContain("DO NOT apply until human review");
   });
 });
 

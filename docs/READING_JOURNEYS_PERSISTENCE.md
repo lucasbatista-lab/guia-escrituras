@@ -38,7 +38,15 @@ Table: `public.journey_progress`
 
 ### Gap remoto (pós-008) — fechado pela 009
 
-Investigação confirmou grants explícitos de `anon` na tabela e EXECUTE nas três RPCs. Não houve evidência de vazamento de linhas (RLS + ownership + `SECURITY INVOKER`), mas a superfície anônima dependia só da RLS. Correção: `20260712000009_journey_progress_anonymous_access_hardening.sql` — **aplicada em produção 2026-07-26**; postcheck consolidado `overall_ok = true`. MIG `004` permanece pendente e independente. HTTP 500 completo em Jornadas foi observado após a 009 **sem causalidade provada**.
+Investigação confirmou grants explícitos de `anon` na tabela e EXECUTE nas três RPCs. Não houve evidência de vazamento de linhas (RLS + ownership + `SECURITY INVOKER`), mas a superfície anônima dependia só da RLS. Correção: `20260712000009_journey_progress_anonymous_access_hardening.sql` — **aplicada em produção 2026-07-26**; postcheck consolidado `overall_ok = true`. MIG `004` permanece pendente e independente.
+
+### Bug remoto complete → PG 42883 — corrigido pela 010 (pendente apply)
+
+Produção (`2b2fcbf`): `POST /api/journeys/progress/complete` → 503 com log `journey_progress_rpc_failed` `{ op: completeStep, code: 42883 }`.
+
+**Causa:** no corpo de `complete_journey_progress_step` (MIG 008), aliases de `unnest(...) AS e` / `AS x` usados como escalares (`trim(e)`, `char_length(x)`, `e = any (...)`, `array_agg(distinct x)`). No PostgreSQL o alias de tabela sem lista de colunas é **record** na posição de expressão → `undefined_function` (42883). `start_journey_progress` não usa `unnest` e não é afetado.
+
+**Correção versionada:** `20260712000010_journey_progress_complete_rpc_unnest_fix.sql` — `CREATE OR REPLACE` só dessa assinatura, com `unnest(...) AS item(step_id)` / `AS exp(step_id)`; reafirma grants 009. **Não aplicar automaticamente** — humano + postcheck `20260712000010_journey_progress_complete_rpc_unnest_fix_postcheck.sql`.
 
 ## Concurrency
 
