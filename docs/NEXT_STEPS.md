@@ -6,10 +6,10 @@
 2. B00 / postchecks / confirmação remota 005–007 (read-only) — residual se ainda aberto.
 3. Backup (pré-condição antes de qualquer migration futura).
 4. ~~Aplicar MIG 009~~ — **feita 2026-07-26**; postcheck consolidado `overall_ok = true`. **Não** reaplicar.
-5. ~~Aplicar MIG 010~~ — **feita 2026-07-26**; função complete corrigida; checks de função verdes. **Não** reaplicar. Residual: `table_grants_ok` falso (grants históricos).
-6. **Próximo gate DB:** apply humano MIG `011` (`journey_progress_role_least_privilege`) → postcheck 011 `overall_ok` → smoke das Jornadas. **Não** reaplicar 008–010; **não** misturar MIG 004.
-7. Decisão / aplicação MIG 004 — **ainda pendente**; só com `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` e backup. **Não** aplicar na janela 28/07 salvo GO do pack.
-8. Smoke autenticado residual das Jornadas (após 011) + investigar 500 observado pós-009 se ainda residual via logs.
+5. ~~Aplicar MIG 010~~ — **feita**; aliases unnest OK; postcheck estrutural **não** prova execução.
+6. ~~Aplicar MIG 011~~ — **feita**; privilégio mínimo tabela `overall_ok = true`. **Não** reaplicar.
+7. **Próximo gate DB P0:** apply humano MIG `012` (`complete_rpc_runtime_fix`) → postcheck estrutural → **runtime smoke** → smoke UI Jornadas. **Não** reaplicar 008–011; **não** misturar MIG 004.
+8. Decisão / aplicação MIG 004 — **ainda pendente**; só com `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` e backup. **Não** aplicar na janela 28/07 salvo GO do pack.
 9. Deploy fixes locais P0 (crise FN + error masking jornadas) + reteste sintético crise (CVV 188).
 10. Revisão pastoral das 21 etapas.
 11. E-mail deliverability (SPF/DKIM/bounce — Auth).
@@ -36,7 +36,7 @@ Fechamento local de engenharia: `docs/_ai/AMEM_FINAL_LOCAL_ENGINEERING_CLOSURE_2
 ## Pendente imediato (ops humano)
 
 Itens abertos do **Caminho crítico** acima (SHA, smoke, deploy P0, pastoral, e-mail, Stripe test, jurídico, cutover).
-MIG `009` **aplicada 2026-07-26** (postcheck verde). MIG `010` **aplicada 2026-07-26** (função OK; residual grants → 011). MIG `011` **ainda não aplicada**. MIG `004` continua **pendente** e independente — fora da janela 28/07 salvo GO.
+MIG `009`–`011` **aplicadas**. MIG `012` **ainda não aplicada** (42883 residual `ANY((SELECT text[]))`). MIG `004` continua **pendente** e independente — fora da janela 28/07 salvo GO.
 
 ## Sequência sugerida depois do cutover
 

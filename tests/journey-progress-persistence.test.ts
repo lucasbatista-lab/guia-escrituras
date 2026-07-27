@@ -63,6 +63,24 @@ const postcheck011Path = join(
   "postchecks",
   "20260712000011_journey_progress_role_least_privilege_postcheck.sql",
 );
+const migration012Path = join(
+  root,
+  "supabase",
+  "migrations",
+  "20260712000012_journey_progress_complete_rpc_runtime_fix.sql",
+);
+const postcheck012Path = join(
+  root,
+  "supabase",
+  "postchecks",
+  "20260712000012_journey_progress_complete_rpc_runtime_fix_postcheck.sql",
+);
+const smoke012Path = join(
+  root,
+  "supabase",
+  "postchecks",
+  "20260712000012_journey_progress_complete_rpc_runtime_smoke.sql",
+);
 
 const TOTAL = [
   "step-1",
@@ -411,6 +429,123 @@ describe("journey progress migration 011 role least privilege", () => {
       /has_(?:table|function)_privilege\(\s*'PUBLIC'/i,
     );
     expect(postcheck011).toContain("a.grantee = 0");
+  });
+});
+
+describe("journey progress migration 012 complete RPC runtime fix (ANY subquery 42883)", () => {
+  const sql010 = readFileSync(migration010Path, "utf8");
+  const sql011 = readFileSync(migration011Path, "utf8");
+  const sql012 = readFileSync(migration012Path, "utf8");
+  const postcheck012 = readFileSync(postcheck012Path, "utf8");
+  const smoke012 = readFileSync(smoke012Path, "utf8");
+
+  const body012 = () => {
+    const m = sql012.match(/as\s+\$\$([\s\S]*?)\$\$;/i);
+    expect(m?.[1]).toBeTruthy();
+    return m![1]!;
+  };
+
+  it("documents that MIG 010 still embeds ANY((SELECT array_agg...)) anti-pattern", () => {
+    expect(sql010).toMatch(/=\s*any\s*\(\s*\(/i);
+    expect(sql010).toMatch(/any\s*\(\s*\(\s*select/i);
+  });
+
+  it("rewrites complete RPC with expected/merged/is_complete and expected <@ merged", () => {
+    const body = body012();
+    expect(sql012).toContain(
+      "create or replace function public.complete_journey_progress_step",
+    );
+    expect(sql012).toContain("security invoker");
+    expect(sql012).toContain("set search_path = public");
+    expect(sql012).toContain("returns public.journey_progress");
+    expect(body).toMatch(/expected\s+text\[\]/);
+    expect(body).toMatch(/merged\s+text\[\]/);
+    expect(body).toMatch(/is_complete\s+boolean/);
+    expect(body).toMatch(/expected\s*<@\s*merged/);
+    expect(body).toMatch(/for\s+update/i);
+  });
+
+  it("forbids ANY((SELECT ...)) and repeated nested array_agg completion logic", () => {
+    const body = body012();
+    expect(body).not.toMatch(/=\s*any\s*\(\s*\(/i);
+    expect(body).not.toMatch(/any\s*\(\s*\(\s*select/i);
+    expect(body).not.toMatch(/bool_and\s*\(\s*exp\.step_id\s*=\s*any/i);
+    // merged computed once — only one array_agg over completed_step_ids || array[step]
+    const mergeAggs = body.match(
+      /array_agg\(distinct item\.step_id order by item\.step_id\)/gi,
+    );
+    expect(mergeAggs?.length ?? 0).toBe(1);
+  });
+
+  it("preserves public semantics markers: intermediate, final, idempotency, reset path intact", () => {
+    const body = body012();
+    // Intermediate: current_step_id advances when not complete
+    expect(body).toMatch(/coalesce\(next_step,\s*current_step_id\)/);
+    // Final: current_step_id null + completed_at preserved once set
+    expect(body).toMatch(/when is_complete then null/);
+    expect(body).toMatch(
+      /coalesce\(completed_at,\s*timezone\('utc',\s*now\(\)\)\)/,
+    );
+    // Idempotency: distinct merge of existing ids + step
+    expect(body).toContain("result.completed_step_ids || array[step]");
+    // Does not rewrite start/reset RPCs
+    expect(sql012).not.toContain("create or replace function public.start_journey_progress");
+    expect(sql012).not.toContain("create or replace function public.reset_journey_progress");
+    expect(sql011).toContain("journey_progress_role_least_privilege");
+  });
+
+  it("reaffirms EXECUTE and table least-privilege grants without GRANT ALL", () => {
+    expect(sql012).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.complete_journey_progress_step\(uuid, text, text, text, text\[\]\)\s+from\s+public/i,
+    );
+    expect(sql012).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.complete_journey_progress_step\(uuid, text, text, text, text\[\]\)\s+from\s+anon/i,
+    );
+    expect(sql012).toContain(
+      "grant execute on function public.complete_journey_progress_step(uuid, text, text, text, text[]) to authenticated",
+    );
+    expect(sql012).toContain(
+      "grant execute on function public.complete_journey_progress_step(uuid, text, text, text, text[]) to service_role",
+    );
+    expect(sql012).toMatch(
+      /grant\s+select,\s*insert,\s*update\s+on\s+table\s+public\.journey_progress\s+to\s+authenticated/i,
+    );
+    expect(sql012).not.toMatch(/grant\s+all\b/i);
+  });
+
+  it("ships structural postcheck that is not treated as sole proof", () => {
+    expect(postcheck012).toContain("READ ONLY");
+    expect(postcheck012).toContain("NOT sufficient proof alone");
+    expect(postcheck012).toContain("runtime smoke");
+    expect(postcheck012).toContain("overall_ok");
+    expect(postcheck012).toContain("plpgsql_vars_present");
+    expect(postcheck012).toContain("containment_check_present");
+    expect(postcheck012).toContain("any_subquery_absent");
+    expect(postcheck012).toContain("bare_record_alias_absent");
+    expect(postcheck012).toMatch(/expected\\s\*<@\\s\*merged/);
+    expect(postcheck012).toMatch(/to_regprocedure\(/);
+  });
+
+  it("ships transactional runtime smoke with BEGIN/ROLLBACK and boolean overall_ok", () => {
+    expect(smoke012).toMatch(/\bbegin\s*;/i);
+    expect(smoke012).toMatch(/\brollback\s*;/i);
+    expect(smoke012).toContain("complete_journey_progress_step");
+    expect(smoke012).toContain("start_journey_progress");
+    expect(smoke012).toContain("reset_journey_progress");
+    expect(smoke012).toContain("overall_ok");
+    expect(smoke012).toContain("mid_step_ok");
+    expect(smoke012).toContain("final_complete_ok");
+    expect(smoke012).toContain("idempotent_ok");
+    expect(smoke012).toContain("reset_ok");
+    expect(smoke012).not.toMatch(/raise notice.*@/i);
+    expect(smoke012).not.toContain("email");
+    expect(smoke012).toMatch(/select id[\s\S]*from public\.profiles/i);
+  });
+
+  it("does not edit migrations 008–011", () => {
+    expect(sql010).toMatch(/=\s*any\s*\(\s*\(/i);
+    expect(sql012).toContain("DO NOT apply until human review");
+    expect(sql012).not.toContain("create table public.journey_progress");
   });
 });
 

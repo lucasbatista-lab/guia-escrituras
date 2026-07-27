@@ -16,9 +16,10 @@ Migrations em `supabase/migrations/`.
 | `008` journey_progress | progresso de Jornadas + RPCs | **Aplicada** em produção (humano, 2026-07-20 — `END_OF_DAY_MASTER_REPORT`, `NEXT_STEPS`) |
 | `009` journey_progress anon hardening | revoga grants de `anon`/`PUBLIC` na tabela + EXECUTE nas RPCs | **Aplicada** em produção (humano, **2026-07-26**) · postcheck consolidado `overall_ok = true` |
 | `010` journey_progress complete RPC unnest fix | repara `complete_journey_progress_step` (PG 42883) | **Aplicada** em produção (humano, **2026-07-26**) · checks de função verdes; postcheck `table_grants_ok` falso por grants históricos |
-| `011` journey_progress role least privilege | revoga DELETE/TRUNCATE/REFERENCES/TRIGGER de `authenticated` + `service_role` | **Não aplicada** — apply humano + postcheck 011 |
+| `011` journey_progress role least privilege | revoga DELETE/TRUNCATE/REFERENCES/TRIGGER de `authenticated` + `service_role` | **Aplicada** em produção (humano, **2026-07-26**) · postcheck `overall_ok = true` |
+| `012` journey_progress complete RPC runtime fix | reescreve complete: `merged` + `expected <@ merged` (sem `ANY((SELECT))`) | **Não aplicada** — apply humano + postcheck estrutural + **runtime smoke** |
 
-**Não** reaplicar migrations. **Não** executar rollback. Postchecks são **somente leitura**.
+**Não** reaplicar migrations. **Não** executar rollback. Postchecks são **somente leitura** (exceto smoke 012, que usa `BEGIN`/`ROLLBACK` sem persistir).
 
 ### Gap remoto (Jornadas) — fechado pela 009
 
@@ -27,18 +28,23 @@ Migrations em `supabase/migrations/`.
 - MIG `004` permanece **separada** e **não aplicada**.
 - **Nota ops:** após a 009, houve observação de HTTP 500 completo em Jornadas em uso real — **sem causalidade provada** com a migration; investigar via logs pós-deploy dos fixes locais (ver `docs/_ai/AMEM_PRELAUNCH_REAL_USAGE_FINDINGS_2026-07-26.md`).
 
-### MIG 010 aplicada + residual de grants (011)
+### MIG 010/011 aplicadas + residual runtime 42883 (012)
 
-- MIG `010` **aplicada 2026-07-26**: função `complete_journey_progress_step` corrigida (`unnest` com aliases de coluna); checks de função / RLS / policies / RPC EXECUTE verdes.
-- Postcheck 010 revelou `table_grants_ok = false`: `authenticated` e `service_role` ainda tinham DELETE/TRUNCATE/REFERENCES/TRIGGER históricos (GRANT é aditivo; 009/010 não os removeram). **Nenhum vazamento de linhas demonstrado** (RLS + ownership + SECURITY INVOKER).
-- MIG `011` fecha o privilégio mínimo — **ainda não aplicada**. Próximo gate: apply humano → postcheck 011 → smoke das Jornadas.
+- MIG `010` **aplicada**: aliases `unnest` corrigidos; postcheck estrutural verde na função — **não** prova execução.
+- MIG `011` **aplicada**: privilégio mínimo tabela; `overall_ok = true`.
+- Produção ainda retorna 503 / `op=completeStep` / `code=42883`: `exp.step_id = any ((select array_agg(...)::text[]))` → operador `text = text[]` inexistente.
+- MIG `012` reescreve a RPC com variáveis PL/pgSQL — **ainda não aplicada**. Gate: apply → postcheck estrutural → **runtime smoke** → smoke UI Jornadas.
 
 Postcheck Jornadas (preferencial pós-009):
 `supabase/postchecks/20260712000008_journey_progress_postcheck_consolidated.sql`  
 (estado documentado pós-009: `overall_ok = true`, incluindo bloqueio anônimo de tabela e RPC.)
 
-Postcheck privilégio mínimo (após apply 011):
+Postcheck privilégio mínimo (011):
 `supabase/postchecks/20260712000011_journey_progress_role_least_privilege_postcheck.sql`
+
+Postcheck + smoke runtime (após apply 012):
+`supabase/postchecks/20260712000012_journey_progress_complete_rpc_runtime_fix_postcheck.sql`  
+`supabase/postchecks/20260712000012_journey_progress_complete_rpc_runtime_smoke.sql`
 
 ## Arquivos
 
@@ -51,8 +57,9 @@ Postcheck privilégio mínimo (após apply 011):
 7. `20260712000007_legal_consents.sql` — consentimentos
 8. `20260712000008_journey_progress.sql` — progresso de Jornadas (aplicada; não reaplicar)
 9. `20260712000009_journey_progress_anonymous_access_hardening.sql` — endurece grants anônimos (**aplicada 2026-07-26**; não reaplicar; não editar 008)
-10. `20260712000010_journey_progress_complete_rpc_unnest_fix.sql` — repara complete RPC (**aplicada 2026-07-26**; não reaplicar; não editar 008–009)
-11. `20260712000011_journey_progress_role_least_privilege.sql` — privilégio mínimo tabela (**não aplicada**; não editar 008–010)
+10. `20260712000010_journey_progress_complete_rpc_unnest_fix.sql` — repara aliases unnest (**aplicada**; não reaplicar; não editar 008–009)
+11. `20260712000011_journey_progress_role_least_privilege.sql` — privilégio mínimo tabela (**aplicada**; não reaplicar; não editar 008–010)
+12. `20260712000012_journey_progress_complete_rpc_runtime_fix.sql` — reescrita runtime complete (**não aplicada**; não editar 008–011)
 
 ## Migration 004 (resumo — ainda não aplicada)
 
