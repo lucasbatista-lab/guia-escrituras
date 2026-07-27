@@ -6,14 +6,16 @@
 2. B00 / postchecks / confirmação remota 005–007 (read-only) — residual se ainda aberto.
 3. Backup (pré-condição antes de qualquer migration futura).
 4. ~~Aplicar MIG 009~~ — **feita 2026-07-26**; postcheck consolidado `overall_ok = true`. **Não** reaplicar.
-5. Decisão / aplicação MIG 004 — **ainda pendente**; só com `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` e backup. **Não** aplicar na janela 28/07 salvo GO do pack.
-6. Smoke autenticado residual das Jornadas + investigar 500 observado pós-009 (**sem causalidade provada**) via logs após deploy dos fixes.
-7. Deploy fixes locais P0 (crise FN + error masking jornadas) + reteste sintético crise (CVV 188).
-8. Revisão pastoral das 21 etapas.
-9. E-mail deliverability (SPF/DKIM/bounce — Auth).
-10. Smoke financeiro (test mode ROTA A — `AMEM_LOW_COST_STRIPE_VALIDATION_PLAN_2026-07-26.md`).
-11. Revisão jurídica mínima (retenção/exclusão + `AMEM_LEGAL_PAGES_LAUNCH_GAP_REVIEW_2026-07-26.md`).
-12. Cutover humano (`PRODUCTION_CUTOVER_RUNBOOK` / `LAUNCH_CHECKLIST`).
+5. ~~Aplicar MIG 010~~ — **feita 2026-07-26**; função complete corrigida; checks de função verdes. **Não** reaplicar. Residual: `table_grants_ok` falso (grants históricos).
+6. **Próximo gate DB:** apply humano MIG `011` (`journey_progress_role_least_privilege`) → postcheck 011 `overall_ok` → smoke das Jornadas. **Não** reaplicar 008–010; **não** misturar MIG 004.
+7. Decisão / aplicação MIG 004 — **ainda pendente**; só com `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md` e backup. **Não** aplicar na janela 28/07 salvo GO do pack.
+8. Smoke autenticado residual das Jornadas (após 011) + investigar 500 observado pós-009 se ainda residual via logs.
+9. Deploy fixes locais P0 (crise FN + error masking jornadas) + reteste sintético crise (CVV 188).
+10. Revisão pastoral das 21 etapas.
+11. E-mail deliverability (SPF/DKIM/bounce — Auth).
+12. Smoke financeiro (test mode ROTA A — `AMEM_LOW_COST_STRIPE_VALIDATION_PLAN_2026-07-26.md`).
+13. Revisão jurídica mínima (retenção/exclusão + `AMEM_LEGAL_PAGES_LAUNCH_GAP_REVIEW_2026-07-26.md`).
+14. Cutover humano (`PRODUCTION_CUTOVER_RUNBOOK` / `LAUNCH_CHECKLIST`).
 
 Veredito pré-launch: `docs/_ai/AMEM_PRELAUNCH_REAL_USAGE_FINDINGS_2026-07-26.md`.
 Detalhe operacional: `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`.
@@ -34,7 +36,7 @@ Fechamento local de engenharia: `docs/_ai/AMEM_FINAL_LOCAL_ENGINEERING_CLOSURE_2
 ## Pendente imediato (ops humano)
 
 Itens abertos do **Caminho crítico** acima (SHA, smoke, deploy P0, pastoral, e-mail, Stripe test, jurídico, cutover).
-MIG `009` **aplicada 2026-07-26** (postcheck verde). MIG `004` continua **pendente** e independente — fora da janela 28/07 salvo GO.
+MIG `009` **aplicada 2026-07-26** (postcheck verde). MIG `010` **aplicada 2026-07-26** (função OK; residual grants → 011). MIG `011` **ainda não aplicada**. MIG `004` continua **pendente** e independente — fora da janela 28/07 salvo GO.
 
 ## Sequência sugerida depois do cutover
 

@@ -33,20 +33,26 @@ Table: `public.journey_progress`
 - **No DELETE** for clients — reset clears via `reset_journey_progress` UPDATE
 - Anonymous: no access (table + RPC) — enforced by grants in MIG `009`, not RLS alone
 - RPCs: `EXECUTE` to `authenticated` + `service_role`; revoked from `anon` and `PUBLIC`
-- Table: `SELECT`/`INSERT`/`UPDATE` to `authenticated` + `service_role`; **no** `DELETE` to `authenticated`
+- Table: `SELECT`/`INSERT`/`UPDATE` to `authenticated` + `service_role`; **no** `DELETE`/`TRUNCATE`/`REFERENCES`/`TRIGGER` (MIG `011`, apply humano pendente)
 - Admin UI must not gain access from frontend role claims alone
 
 ### Gap remoto (pós-008) — fechado pela 009
 
 Investigação confirmou grants explícitos de `anon` na tabela e EXECUTE nas três RPCs. Não houve evidência de vazamento de linhas (RLS + ownership + `SECURITY INVOKER`), mas a superfície anônima dependia só da RLS. Correção: `20260712000009_journey_progress_anonymous_access_hardening.sql` — **aplicada em produção 2026-07-26**; postcheck consolidado `overall_ok = true`. MIG `004` permanece pendente e independente.
 
-### Bug remoto complete → PG 42883 — corrigido pela 010 (pendente apply)
+### Bug remoto complete → PG 42883 — corrigido pela 010 (**aplicada**)
 
 Produção (`2b2fcbf`): `POST /api/journeys/progress/complete` → 503 com log `journey_progress_rpc_failed` `{ op: completeStep, code: 42883 }`.
 
 **Causa:** no corpo de `complete_journey_progress_step` (MIG 008), aliases de `unnest(...) AS e` / `AS x` usados como escalares (`trim(e)`, `char_length(x)`, `e = any (...)`, `array_agg(distinct x)`). No PostgreSQL o alias de tabela sem lista de colunas é **record** na posição de expressão → `undefined_function` (42883). `start_journey_progress` não usa `unnest` e não é afetado.
 
-**Correção versionada:** `20260712000010_journey_progress_complete_rpc_unnest_fix.sql` — `CREATE OR REPLACE` só dessa assinatura, com `unnest(...) AS item(step_id)` / `AS exp(step_id)`; reafirma grants 009. **Não aplicar automaticamente** — humano + postcheck `20260712000010_journey_progress_complete_rpc_unnest_fix_postcheck.sql`.
+**Correção versionada:** `20260712000010_journey_progress_complete_rpc_unnest_fix.sql` — **aplicada em produção 2026-07-26**. Função corrigida (`unnest` com `item(step_id)` / `exp(step_id)`); checks de função / RLS / policies / RPC EXECUTE verdes. Postcheck 010 usa `to_regprocedure` (assinatura tipada; nomes de params remotos não esvaziam `fn`).
+
+### Grants históricos excedentes — MIG 011 (ainda não aplicada)
+
+Postcheck 010 revelou `table_grants_ok = false`: `authenticated` e `service_role` ainda tinham DELETE/TRUNCATE/REFERENCES/TRIGGER explícitos. GRANT é aditivo; 009/010 afirmaram SELECT/INSERT/UPDATE sem remover privilégios anteriores. **Nenhum vazamento demonstrado** (RLS + ownership + SECURITY INVOKER).
+
+**Correção versionada:** `20260712000011_journey_progress_role_least_privilege.sql` — `REVOKE` direcionado dos quatro privilégios + reafirma SELECT/INSERT/UPDATE. **Não altera** schema, RLS, policies, corpos das RPCs nem MIG 004/008–010. **Não aplicada automaticamente** — humano + postcheck `20260712000011_journey_progress_role_least_privilege_postcheck.sql` → smoke das Jornadas.
 
 ## Concurrency
 
@@ -138,9 +144,23 @@ Never: reflections, chat drafts, prompts, clinical notes, payment data, secrets.
 3. MIG `004` **não** misturar / **não** aplicada.
 4. Legacy multi-result: `supabase/postchecks/20260712000008_journey_progress_postcheck.sql` (não cobre o gap `anon` EXECUTE)
 
+### 010 complete RPC unnest fix (**aplicada 2026-07-26**)
+
+1. Apply `20260712000010_journey_progress_complete_rpc_unnest_fix.sql` — **concluído**. **Não** reaplicar `008`–`010`.
+2. Postcheck função: verdes (`function_exists_exact_signature`, `security_invoker`, aliases `unnest`, RPC grants, RLS, policies).
+3. Residual: `table_grants_ok = false` (grants históricos) → fecha com 011.
+
+### 011 role least privilege (**não aplicada**)
+
+1. Backup + review `supabase/migrations/20260712000011_journey_progress_role_least_privilege.sql`.
+2. Apply **somente** a 011 (não reaplicar 008–010; não misturar MIG 004).
+3. Postcheck read-only — esperar `overall_ok = true`:
+   `supabase/postchecks/20260712000011_journey_progress_role_least_privilege_postcheck.sql`
+4. Smoke autenticado das Jornadas (start / complete / reset).
+
 **Postcheck note:** the legacy file runs multiple read-only `SELECT`s; Supabase SQL Editor may show only the **last** result set. Prefer the consolidated postcheck. Runtime app code does **not** depend on either postcheck file.
 
-**Ops note (2026-07-26):** complete HTTP 500 on Journeys observed after 009 without proven causation — track in `docs/_ai/AMEM_PRELAUNCH_REAL_USAGE_FINDINGS_2026-07-26.md`.
+**Ops note (2026-07-26):** complete HTTP 500 on Journeys observed after 009 without proven causation — track in `docs/_ai/AMEM_PRELAUNCH_REAL_USAGE_FINDINGS_2026-07-26.md`. Causa 42883 fechada pela 010 aplicada.
 
 ## Emergency rollback (do not run unless required)
 

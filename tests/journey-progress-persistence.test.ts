@@ -51,6 +51,18 @@ const postcheck010Path = join(
   "postchecks",
   "20260712000010_journey_progress_complete_rpc_unnest_fix_postcheck.sql",
 );
+const migration011Path = join(
+  root,
+  "supabase",
+  "migrations",
+  "20260712000011_journey_progress_role_least_privilege.sql",
+);
+const postcheck011Path = join(
+  root,
+  "supabase",
+  "postchecks",
+  "20260712000011_journey_progress_role_least_privilege_postcheck.sql",
+);
 
 const TOTAL = [
   "step-1",
@@ -303,6 +315,102 @@ describe("journey progress migration 010 complete RPC unnest fix (PG 42883)", ()
   it("does not edit migration 008 file contents via 010", () => {
     expect(sql008).toContain("from unnest(coalesce(p_total_step_ids");
     expect(sql010).toContain("DO NOT apply until human review");
+  });
+});
+
+describe("journey progress migration 011 role least privilege", () => {
+  const sql008 = readFileSync(migrationPath, "utf8");
+  const sql009 = readFileSync(migration009Path, "utf8");
+  const sql010 = readFileSync(migration010Path, "utf8");
+  const sql011 = readFileSync(migration011Path, "utf8");
+  const postcheck011 = readFileSync(postcheck011Path, "utf8");
+
+  it("revokes only DELETE/TRUNCATE/REFERENCES/TRIGGER from authenticated and service_role", () => {
+    expect(sql011).toMatch(
+      /revoke\s+delete,\s*truncate,\s*references,\s*trigger\s+on\s+table\s+public\.journey_progress\s+from\s+authenticated/i,
+    );
+    expect(sql011).toMatch(
+      /revoke\s+delete,\s*truncate,\s*references,\s*trigger\s+on\s+table\s+public\.journey_progress\s+from\s+service_role/i,
+    );
+    expect(sql011).not.toMatch(
+      /revoke\s+all\s+on\s+table\s+public\.journey_progress\s+from\s+authenticated/i,
+    );
+    expect(sql011).not.toMatch(
+      /revoke\s+all\s+on\s+table\s+public\.journey_progress\s+from\s+service_role/i,
+    );
+  });
+
+  it("reaffirms SELECT/INSERT/UPDATE without GRANT ALL", () => {
+    expect(sql011).toMatch(
+      /grant\s+select,\s*insert,\s*update\s+on\s+table\s+public\.journey_progress\s+to\s+authenticated/i,
+    );
+    expect(sql011).toMatch(
+      /grant\s+select,\s*insert,\s*update\s+on\s+table\s+public\.journey_progress\s+to\s+service_role/i,
+    );
+    expect(sql011).not.toMatch(/grant\s+all\b/i);
+    expect(sql011).not.toMatch(
+      /grant\s+[^;]*\bdelete\b[^;]*to\s+(?:authenticated|service_role)/i,
+    );
+  });
+
+  it("does not alter RPC bodies, policies, or schema", () => {
+    expect(sql011).not.toMatch(/create\s+or\s+replace\s+function/i);
+    expect(sql011).not.toMatch(/create\s+table/i);
+    expect(sql011).not.toMatch(/alter\s+table/i);
+    expect(sql011).not.toMatch(/create\s+policy/i);
+    expect(sql011).not.toMatch(/drop\s+policy/i);
+    expect(sql011).not.toMatch(/security\s+definer/i);
+    expect(sql011).not.toContain("completed_step_ids");
+  });
+
+  it("leaves migrations 008–010 intact (011 is additive only)", () => {
+    expect(sql008).toContain("create table public.journey_progress");
+    expect(sql008).toMatch(/unnest\([^)]*\)\s+as\s+e\b/i);
+    expect(sql009).toContain("anonymous_access_hardening");
+    expect(sql009).toMatch(
+      /revoke\s+all\s+on\s+table\s+public\.journey_progress\s+from\s+anon/i,
+    );
+    expect(sql010).toContain("as item(step_id)");
+    expect(sql010).toContain("as exp(step_id)");
+    expect(sql011).not.toContain("create table public.journey_progress");
+    expect(sql011).not.toContain("as item(step_id)");
+  });
+
+  it("ships read-only postcheck covering all privilege classes and overall_ok", () => {
+    expect(postcheck011).toContain("READ ONLY");
+    expect(postcheck011).toContain("Does not mutate data");
+    expect(postcheck011).toContain("overall_ok");
+    expect(postcheck011).toContain("anon_table_privileges_blocked");
+    expect(postcheck011).toContain("authenticated_dml_ok");
+    expect(postcheck011).toContain("authenticated_excess_revoked");
+    expect(postcheck011).toContain("service_role_dml_ok");
+    expect(postcheck011).toContain("service_role_excess_revoked");
+    expect(postcheck011).toContain("rpc_execute_granted");
+    expect(postcheck011).toContain("anon_rpc_execute_blocked");
+    expect(postcheck011).toContain("public_rpc_execute_absent");
+    expect(postcheck011).toContain("rls_enabled");
+    expect(postcheck011).toContain("ownership_policies_intact");
+    expect(postcheck011).toContain("no_delete_policy");
+    expect(postcheck011).toContain("complete_function_exists");
+    expect(postcheck011).toContain("complete_security_invoker");
+    for (const priv of [
+      "SELECT",
+      "INSERT",
+      "UPDATE",
+      "DELETE",
+      "TRUNCATE",
+      "REFERENCES",
+      "TRIGGER",
+    ]) {
+      expect(postcheck011).toContain(priv);
+    }
+    expect(postcheck011).toMatch(
+      /and\s+authenticated_excess_revoked[\s\S]*and\s+service_role_excess_revoked[\s\S]*as\s+overall_ok/,
+    );
+    expect(postcheck011).not.toMatch(
+      /has_(?:table|function)_privilege\(\s*'PUBLIC'/i,
+    );
+    expect(postcheck011).toContain("a.grantee = 0");
   });
 });
 
