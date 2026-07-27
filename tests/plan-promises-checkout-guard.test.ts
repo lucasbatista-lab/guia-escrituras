@@ -43,7 +43,8 @@ describe("plan promises — catalog honesty", () => {
   it("Essencial keeps complete honest core", () => {
     const plan = getPlanByKey("essencial")!;
     const active = plan.displayBenefits.join(" ").toLowerCase();
-    expect(plan.idealFor).toMatch(/pontuais/i);
+    expect(plan.idealFor).toMatch(/Comece com clareza/i);
+    expect(plan.tagline).toMatch(/pontuais/i);
     expect(active).toMatch(/reflexões/);
     expect(active).toMatch(/tradição|histórico/);
     expect(active).toMatch(/cancelamento/);
@@ -51,14 +52,16 @@ describe("plan promises — catalog honesty", () => {
     expect(plan.upcomingBenefits).toBeUndefined();
   });
 
-  it("Caminho communicates frequent use and active journeys", () => {
+  it("Caminho communicates weekly return and active journeys", () => {
     const plan = getPlanByKey("caminho")!;
     const active = plan.displayBenefits.join(" ").toLowerCase();
-    expect(plan.idealFor).toMatch(/frequência/i);
+    expect(plan.idealFor).toMatch(/Constância com Jornadas/i);
+    expect(plan.highlightBadge).toMatch(/Melhor equilíbrio/i);
     expect(plan.ctaLabel).toBe("Escolher o Caminho");
     expect(active).toMatch(/tudo do essencial/);
-    expect(active).toMatch(/frequente/);
+    expect(active).toMatch(/volta várias vezes na semana/);
     expect(active).toMatch(/jornadas de leitura/);
+    expect(active).not.toMatch(/\bmargem\b/);
     expect(
       plan.upcomingBenefits?.some((b) => /jornadas/i.test(b)) ?? false,
     ).toBe(false);
@@ -67,11 +70,13 @@ describe("plan promises — catalog honesty", () => {
   it("Profundo communicates Aprofundar without false active extras", () => {
     const plan = getPlanByKey("profundo")!;
     const active = plan.displayBenefits.join(" ").toLowerCase();
-    expect(plan.idealFor).toMatch(/Aprofundar sob demanda/i);
+    expect(plan.idealFor).toMatch(/mais análise/i);
+    expect(plan.tagline).toMatch(/Aprofundar sob demanda/i);
     expect(plan.ctaLabel).toBe("Quero o Profundo");
     expect(active).not.toMatch(/suporte prioritário|suporte prioritario/);
     expect(active).not.toMatch(/áudio|audio/);
     expect(active).not.toMatch(/memória estendida/);
+    expect(active).not.toMatch(/mais espiritual|superioridade/);
     expect(plan.displayBenefits.some((b) =>
       /aprofundar/i.test(b),
     )).toBe(true);
@@ -97,16 +102,22 @@ describe("plan promises — catalog honesty", () => {
     const cards = read("src", "components", "marketing", "plan-cards.tsx");
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
     expect(cards).not.toContain("Em desenvolvimento");
-    expect(planos).toContain("Em desenvolvimento");
-    expect(cards).toContain("Recomendado");
+    expect(cards).toContain("Melhor equilíbrio entre uso e acompanhamento");
+    expect(cards).toContain("ParticularAccessNote");
+    expect(cards).toContain("getPublicCheckoutPlans");
+    expect(cards).not.toContain("Recomendado");
+    expect(planos).toContain("Em evolução");
+    expect(planos).toContain("ParticularAccessNote");
+    expect(planos).not.toMatch(/Em desenvolvimento/);
   });
 
-  it("uso-justo aligns with moderate/frequent/intensive tiers", () => {
+  it("uso-justo aligns with punctual/weekly/intensive tiers", () => {
     const uso = read("src", "app", "(marketing)", "uso-justo", "page.tsx");
-    expect(uso).toMatch(/uso moderado/i);
-    expect(uso).toMatch(/uso frequente/i);
-    expect(uso).toMatch(/uso intensivo/i);
+    expect(uso).toMatch(/uso pontual/i);
+    expect(uso).toMatch(/volta várias vezes na semana/i);
+    expect(uso).toMatch(/uso mais intenso/i);
     expect(uso).toMatch(/franquia fixa de mensagens/);
+    expect(uso).not.toMatch(/\bmargem\b/i);
   });
 
   it("does not expose rigid message quotas as promises", () => {

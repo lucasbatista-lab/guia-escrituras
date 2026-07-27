@@ -8,26 +8,26 @@ import { buildPublicPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPublicPageMetadata({
   title: "Como funciona",
   description:
-    "Entenda como o Amém Chat funciona: plano, conta, personalização e reflexões com inteligência artificial inspirada nas Escrituras.",
+    "Entenda como o Amém Chat funciona: escolha o plano, confirme o e-mail, pague com segurança e personalize a experiência.",
   path: "/como-funciona",
 });
 
 const steps = [
   {
     title: "Escolha seu plano",
-    body: "Essencial, Caminho ou Profundo — com benefícios claros do que já está disponível.",
+    body: "Essencial, Caminho ou Profundo — com o que já está disponível hoje.",
   },
   {
-    title: "Crie a conta e confirme o e-mail",
+    title: "Crie sua conta e confirme o e-mail",
     body: "Você só segue para o pagamento depois da confirmação.",
   },
   {
-    title: "Pague com segurança e personalize",
-    body: "Checkout pela Stripe. Depois escolha tradição, estilo e profundidade.",
+    title: "Conclua o pagamento com segurança",
+    body: "Checkout pela Stripe. Renovação mensal, cancelável na sua conta.",
   },
   {
-    title: "Traga sua situação",
-    body: "Receba orientação com referências bíblicas, interpretação e um próximo passo possível.",
+    title: "Personalize a experiência e traga sua situação",
+    body: "Escolha tradição e profundidade. Depois receba orientação com referências bíblicas, interpretação e um próximo passo possível.",
   },
 ];
 
@@ -42,9 +42,9 @@ export default function ComoFuncionaPage() {
       >
         <h1 className="font-display text-4xl text-ink">Como funciona</h1>
         <p className="mt-4 text-ink-soft leading-relaxed">
-          {brand.name} — {brand.description} A pergunta central — “
-          {brand.tagline}” — é respondida como interpretação ancorada nos
-          Evangelhos, nunca como pretensa voz divina.
+          {brand.name} — {brand.description} Não se apresenta como voz divina:
+          é inteligência artificial baseada nas Escrituras, com limites
+          honestos.
         </p>
         <ol className="mt-12 space-y-8">
           {steps.map((step, index) => (
@@ -62,7 +62,7 @@ export default function ComoFuncionaPage() {
           ))}
         </ol>
         <Button asChild className="mt-12 min-h-11 bg-ink hover:bg-ink/90">
-          <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
+          <TrackingLink href="/planos">Ver planos</TrackingLink>
         </Button>
       </main>
       <SiteFooter />

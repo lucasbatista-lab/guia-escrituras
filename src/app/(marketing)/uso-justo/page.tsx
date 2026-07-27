@@ -11,15 +11,16 @@ export default function UsoJustoPage() {
   return (
     <LegalDocumentShell title="Uso justo">
       <p>
-        Cada plano inclui uma margem mensal de uso de IA adequada ao perfil
+        Cada plano inclui espaço para conversas no mês adequado ao perfil
         contratado. Os limites são flexíveis e protegidos por orçamento mensal,
         uso diário e controle de ritmo — não há franquia fixa de mensagens
         exposta como promessa.
       </p>
       <p>
-        O Essencial é indicado para uso moderado. O Caminho oferece mais margem
-        para uso frequente ao longo do mês. O Profundo amplia a tolerância para
-        uso intensivo, inclusive em dias com mais conversas.
+        O Essencial é indicado para uso pontual ou moderado. O Caminho oferece
+        mais espaço para quem volta várias vezes na semana. O Profundo amplia a
+        tolerância para uso mais intenso, inclusive em dias com mais conversas e
+        análises adicionais com Aprofundar.
       </p>
       <p>
         Uso muito acima do esperado para o plano pode encontrar limite

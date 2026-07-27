@@ -54,18 +54,18 @@ export const PLAN_USAGE_PROFILES: Record<
   { headline: string; example: string }
 > = {
   essencial: {
-    headline: "Uso pontual",
+    headline: "Para uso pontual",
     example: "Quero conversar quando uma situação específica surgir.",
   },
   caminho: {
-    headline: "Uso frequente + Jornadas",
+    headline: "Para quem volta várias vezes na semana",
     example:
-      "Quero voltar várias vezes na semana e seguir trilhas guiadas sobre temas reais.",
+      "Quero acompanhar Jornadas guiadas e voltar ao chat ao longo da semana.",
   },
   profundo: {
-    headline: "Uso intenso + Aprofundar",
+    headline: "Para uso mais intenso e análises adicionais",
     example:
-      "Quero usar com frequência e acionar Aprofundar quando a situação pedir mais detalhe.",
+      "Quero o ritmo do Caminho e acionar Aprofundar quando a situação pedir mais detalhe.",
   },
 };
 
@@ -75,7 +75,7 @@ export const SHARED_PLAN_INCLUDES = [
   "Tradição ecumênica, evangélica ou católica no perfil",
   "Profundidade de estilo escolhida no perfil",
   "Continuidade dentro da conversa e histórico privado",
-  "Uso flexível dentro da política de uso justo",
+  "Espaço para conversas no mês, dentro da política de uso justo",
   "Cancelamento da renovação pela sua conta",
 ] as const;
 

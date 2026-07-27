@@ -17,27 +17,28 @@ describe("launch conversion home", () => {
   const chatService = read("src", "lib", "ai", "chat-service.ts");
   const adminMetrics = read("src", "lib", "admin", "metrics.ts");
 
-  it("keeps brand tagline and emotional hero hierarchy", () => {
+  it("keeps brand mother line and conversion hero hierarchy", () => {
     expect(home).toContain("brand.name");
-    expect(home).toContain("brand.tagline");
-    expect(home).toContain("Quando a ansiedade aperta");
-    expect(home).toContain("clareza");
-    expect(home).toContain("Escrituras");
-    expect(home).toContain("Não é Jesus");
-    expect(home).toContain("revelação divina");
+    expect(home).toContain("brand.description");
+    expect(home).not.toContain("brand.tagline");
+    expect(home).toContain("Clareza à luz das Escrituras para o que pesa agora.");
+    expect(home).toContain("IA cristã transparente");
+    expect(home).toContain("voz divina");
   });
 
-  it("makes demo the primary cold-traffic CTA and conversion uses TrackingLink", () => {
+  it("makes plans the primary CTA and demo secondary", () => {
     expect(home).toContain('href="#demonstracao"');
-    expect(home).toContain("Ver uma reflexão de exemplo");
-    expect(home).toContain("Ver planos e começar");
-    expect(home).toContain("Conhecer os planos");
+    expect(home).toContain("Ver um exemplo");
+    expect(home).toContain("Ver planos");
     expect(home).toContain("TrackingLink");
     expect(home).toContain('href="/planos"');
     expect(home).toContain("R$ 38");
-    // Primary CTA block appears before secondary conversion wording in hero CTAs
-    const primaryIdx = home.indexOf("Ver uma reflexão de exemplo");
-    const secondaryIdx = home.indexOf("Ver planos e começar");
+    const heroSlice = home.slice(
+      home.indexOf("animate-fade-up"),
+      home.indexOf("demo-heading"),
+    );
+    const primaryIdx = heroSlice.indexOf("Ver planos");
+    const secondaryIdx = heroSlice.indexOf("Ver um exemplo");
     expect(primaryIdx).toBeGreaterThan(-1);
     expect(secondaryIdx).toBeGreaterThan(primaryIdx);
   });

@@ -26,11 +26,17 @@ export interface BrandConfig {
 
 const DEFAULT_BRAND = {
   name: "Amém Chat",
+  /**
+   * Campaign / ads hook only — never primary H1 or nav tagline.
+   * Public surfaces use `description` (mother line) instead.
+   */
   tagline: "Como Jesus responderia à sua situação?",
-  description: "Reflexões cristãs baseadas nas Escrituras.",
+  /** Mother line for chrome and public positioning (not the campaign tagline). */
+  description:
+    "Reflexões cristãs para situações reais, com inteligência artificial e limites honestos.",
   seoTitle: "Amém Chat | Reflexões cristãs para situações reais",
   seoDescription:
-    "Converse com uma inteligência artificial inspirada nas Escrituras para refletir com acolhimento, responsabilidade e esperança sobre situações da sua vida.",
+    "Converse com uma inteligência artificial cristã transparente: referências bíblicas, aplicação prática e próximos passos — sem se apresentar como voz divina. Planos a partir de R$ 38/mês.",
   socialHandles: {
     instagram: "amem.chat",
   },

@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
-import { PlanCards } from "@/components/marketing/plan-cards";
+import { PlanCards, ParticularAccessNote } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { PERSONALIZATION_DEPTHS } from "@/lib/journey/personalization-labels";
 import { CROSS_SURFACE_COMMERCIAL_FAQ } from "@/lib/marketing/plan-faq";
@@ -101,19 +101,19 @@ const pillars = [
 const steps = [
   {
     title: "1. Escolha seu plano",
-    body: "Essencial, Caminho ou Profundo — com benefícios claros do que já está disponível hoje.",
+    body: "Essencial, Caminho ou Profundo — com o que já está disponível hoje.",
   },
   {
-    title: "2. Confirme seu e-mail",
-    body: "Crie a conta e confirme o e-mail para seguir com segurança.",
+    title: "2. Crie sua conta e confirme o e-mail",
+    body: "Cadastro com confirmação de e-mail antes do pagamento.",
   },
   {
-    title: "3. Pague com segurança",
+    title: "3. Conclua o pagamento com segurança",
     body: "Checkout pela Stripe. Renovação mensal, cancelável na sua conta no Amém Chat.",
   },
   {
-    title: "4. Personalize e converse",
-    body: "Escolha a tradição e a profundidade — depois traga sua situação.",
+    title: "4. Personalize a experiência e traga sua situação",
+    body: "Escolha tradição e profundidade — depois converse sobre o que pesa agora.",
   },
 ];
 
@@ -179,23 +179,18 @@ export default function HomePage() {
           <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pb-12 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12 lg:pb-16 lg:pt-10">
             <div className="animate-fade-up max-w-xl">
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft sm:text-sm">
-                {brand.name} · Reflexões cristãs com inteligência artificial
+                {brand.name}
               </p>
-              <p className="mt-4 font-display text-2xl leading-snug tracking-tight text-wine sm:text-3xl">
-                {brand.tagline}
+              <p className="mt-4 font-display text-xl leading-snug tracking-tight text-wine sm:text-2xl">
+                {brand.name} — {brand.description}
               </p>
               <h1 className="mt-5 text-balance font-display text-3xl leading-[1.15] text-ink sm:text-4xl lg:text-[2.65rem]">
-                Quando a ansiedade aperta, traga o que pesa — e encontre clareza
-                à luz das Escrituras.
+                Clareza à luz das Escrituras para o que pesa agora.
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-ink-soft sm:text-lg">
-                Uma reflexão personalizada para sua situação, considerando a
-                tradição cristã que você escolhe e oferecendo também próximos
-                passos possíveis para a vida real.
-              </p>
-              <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-soft">
-                Não é Jesus, aconselhamento pastoral ou revelação divina. É uma
-                ferramenta de reflexão baseada nas Escrituras.
+                Converse com uma IA cristã transparente, receba referências
+                bíblicas, aplicação prática e próximos passos — sem se apresentar
+                como voz divina.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Button
@@ -203,7 +198,7 @@ export default function HomePage() {
                   size="lg"
                   className="min-h-11 bg-ink hover:bg-ink/90"
                 >
-                  <a href="#demonstracao">Ver uma reflexão de exemplo</a>
+                  <TrackingLink href="/planos">Ver planos</TrackingLink>
                 </Button>
                 <Button
                   asChild
@@ -211,9 +206,7 @@ export default function HomePage() {
                   variant="outline"
                   className="min-h-11 border-ink/20"
                 >
-                  <TrackingLink href="/planos">
-                    Ver planos e começar
-                  </TrackingLink>
+                  <a href="#demonstracao">Ver um exemplo</a>
                 </Button>
               </div>
               <p className="mt-3 text-sm font-medium text-ink">
@@ -441,6 +434,7 @@ export default function HomePage() {
             <div className="mt-10">
               <PlanCards compact />
             </div>
+            <ParticularAccessNote className="mt-8" />
             <p className="mt-6">
               <TrackingLink
                 href="/planos"
@@ -519,11 +513,11 @@ export default function HomePage() {
                 className="min-h-11 bg-wine hover:bg-wine-soft"
               >
                 <TrackingLink href="/planos">
-                  Ver planos e começar
+                  Ver planos
                 </TrackingLink>
               </Button>
               <Button asChild size="lg" variant="outline" className="min-h-11">
-                <a href="#demonstracao">Ver uma reflexão de exemplo</a>
+                <a href="#demonstracao">Ver um exemplo</a>
               </Button>
             </div>
             <div className="mx-auto mt-10 max-w-md border-t border-wine/15 pt-8 text-left">

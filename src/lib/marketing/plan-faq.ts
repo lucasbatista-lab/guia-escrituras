@@ -12,7 +12,7 @@ export const APROFUNDAR_FAQ = {
 
 export const JOURNEYS_PLANS_FAQ = {
   q: "Quais planos incluem Jornadas?",
-  a: "Caminho, Profundo e Particular. O Essencial mantém o chat completo; as Jornadas fazem parte dos planos com uso mais frequente.",
+    a: "Caminho, Profundo e Particular. O Essencial mantém o chat completo; as Jornadas fazem parte dos planos para quem quer voltar com mais constância.",
 } as const;
 
 /** Must stay aligned across home, planos, and ajuda (commercial honesty). */
@@ -39,7 +39,7 @@ export const PLAN_COMMERCIAL_FAQ = [
   PLAN_CHANGE_FAQ,
   {
     q: "O que acontece quando atinjo o limite de uso?",
-    a: "O Amém Chat usa uso justo — sem cota rígida de mensagens. Se você atingir a margem do plano ou um limite diário de segurança, aguarde e tente de novo. Limites temporários são diferentes da margem mensal do plano.",
+    a: "O Amém Chat usa uso justo — sem cota rígida de mensagens. Se você atingir o espaço do plano ou um limite diário de segurança, aguarde e tente de novo. Limites temporários são diferentes do espaço mensal do plano.",
   },
   {
     q: "O Amém Chat fala literalmente em nome de Jesus?",

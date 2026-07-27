@@ -203,9 +203,10 @@ describe("UTM and referral preservation", () => {
     const cards = readSrc("src", "components", "marketing", "plan-cards.tsx");
     const chrome = readSrc("src", "components", "marketing", "site-chrome.tsx");
     expect(cards).toContain("TrackingLink");
-    expect(cards).toContain("Recomendado");
+    expect(cards).toContain("Melhor equilíbrio entre uso e acompanhamento");
     expect(cards).toContain("Comparar planos");
     expect(cards).not.toContain("Em desenvolvimento");
+    expect(cards).not.toContain("Recomendado");
     expect(cards).toContain("Seu plano atual");
     expect(chrome).toContain("TrackingLink");
     expect(chrome).toContain("marketing-mobile-nav");

@@ -12,11 +12,12 @@ function read(...parts: string[]) {
 }
 
 describe("launch premium conversion", () => {
-  it("home hero keeps primary CTA, starting price and trust microcopy", () => {
+  it("home hero keeps primary plans CTA, starting price and trust microcopy", () => {
     const home = read("src", "app", "(marketing)", "page.tsx");
-    expect(home).toContain("brand.tagline");
-    expect(home).toContain("Ver planos e começar");
-    expect(home).toContain("Ver uma reflexão de exemplo");
+    expect(home).toContain("brand.description");
+    expect(home).not.toContain("brand.tagline");
+    expect(home).toContain("Ver planos");
+    expect(home).toContain("Ver um exemplo");
     expect(home).toContain("ESSENCIAL_PRICE_LABEL");
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("R$ 38");
@@ -25,7 +26,7 @@ describe("launch premium conversion", () => {
     expect(home).toContain("Tradição ecumênica, evangélica ou católica");
     expect(home).toContain("inteligência artificial");
     const hero = home.slice(0, home.indexOf('id="demo-heading"'));
-    expect(hero).toContain("Não é Jesus");
+    expect(hero).toContain("voz divina");
     expect(hero).not.toMatch(/Não afirma ser Jesus/);
     expect(home.toLowerCase()).not.toMatch(/depoimento|testemunho|milhares de/);
   });

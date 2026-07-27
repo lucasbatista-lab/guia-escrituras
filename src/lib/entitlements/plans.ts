@@ -4,9 +4,9 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
   {
     key: "essencial",
     name: "Essencial",
+    idealFor: "Comece com clareza",
     tagline:
-      "Para começar e levar situações reais ao Amém Chat com regularidade moderada.",
-    idealFor: "Para começar e usar em situações pontuais",
+      "Para situações pontuais, com reflexão personalizada, referências bíblicas e continuidade pelo histórico.",
     priceMonthlyCents: 3800,
     currency: "BRL",
     ctaType: "checkout",
@@ -16,21 +16,22 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "Reflexões cristãs personalizadas com orientação bíblica",
       "Tradição ecumênica, evangélica ou católica no perfil",
       "Continuidade dentro da conversa e histórico privado",
-      "Uso pontual ou moderado dentro da política de uso justo",
+      "Para uso pontual, dentro da política de uso justo",
       "Cancelamento da renovação pela sua conta",
     ],
   },
   {
     key: "caminho",
     name: "Caminho",
+    idealFor: "Constância com Jornadas",
     tagline:
-      "Para quem quer Jornadas guiadas e voltar ao chat várias vezes na semana, com mais margem no mês.",
-    idealFor: "Para frequência semanal e Jornadas",
+      "Tudo do Essencial, com Jornadas guiadas de 7 etapas para quem quer voltar ao longo da semana.",
     priceMonthlyCents: 5800,
     currency: "BRL",
     ctaType: "checkout",
     ctaLabel: "Escolher o Caminho",
     highlighted: true,
+    highlightBadge: "Melhor equilíbrio entre uso e acompanhamento",
     entitlements: [
       "chat_standard",
       "chat_frequent",
@@ -40,18 +41,18 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     ],
     displayBenefits: [
       "Tudo do Essencial",
-      "Flexibilidade para uso frequente ao longo da semana",
-      "Mais espaço para conversas recorrentes ao longo do mês",
+      "Para quem volta várias vezes na semana",
+      "Mais espaço para conversas no mês",
       "Jornadas de leitura guiadas sobre temas reais da vida",
-      "Uso flexível dentro da política de uso justo",
+      "Dentro da política de uso justo",
     ],
   },
   {
     key: "profundo",
     name: "Profundo",
+    idealFor: "Quando a situação pede mais análise",
     tagline:
-      "Para uso intenso e Aprofundar sob demanda quando a situação pedir mais contexto e Escrituras.",
-    idealFor: "Para Aprofundar sob demanda",
+      "Tudo do Caminho, com Aprofundar sob demanda para explorar contexto, tensões e próximos passos.",
     priceMonthlyCents: 18800,
     currency: "BRL",
     ctaType: "checkout",
@@ -70,10 +71,10 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     ],
     displayBenefits: [
       "Tudo do Caminho",
-      "Aprofundar respostas sob demanda, quando você quiser",
-      "Análise mais extensa com contexto, Escrituras e próximos passos",
-      "Capacidade para uso intenso e reflexões recorrentes",
-      "Uso flexível dentro da política de uso justo",
+      "Aprofundar sob demanda para análises adicionais",
+      "Mais contexto, tensões e próximos passos quando você pedir",
+      "Para uso mais intenso, dentro da política de uso justo",
+      "Cancelamento da renovação pela sua conta",
     ],
     upcomingBenefits: [
       "Perspectivas bíblicas adicionais",
@@ -85,7 +86,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     key: "particular",
     name: "Particular",
     tagline: "Acompanhamento sob medida, com acesso sob solicitação.",
-    idealFor: "Para acompanhamento sob medida, com alinhamento prévio",
+    idealFor: "Acompanhamento sob medida",
     priceMonthlyCents: 98800,
     currency: "BRL",
     ctaType: "request_access",
@@ -122,6 +123,11 @@ export function getPlanByKey(key: PlanDefinition["key"]): PlanDefinition | undef
 
 export function getPlanEntitlements(key: PlanDefinition["key"]) {
   return getPlanByKey(key)?.entitlements ?? [];
+}
+
+/** Public self-serve plans shown in the main commercial grid. */
+export function getPublicCheckoutPlans(): PlanDefinition[] {
+  return PLAN_DEFINITIONS.filter((plan) => plan.ctaType === "checkout");
 }
 
 export function formatPriceBRL(cents: number): string {

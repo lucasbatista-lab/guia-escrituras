@@ -21,8 +21,8 @@ describe("purchase experience — home copy & flow order", () => {
 
   it("follows the conversion section order", () => {
     const markers = [
+      "Ver planos",
       'href="#demonstracao"',
-      "Ver planos e começar",
       'id="demo-heading"',
       "Situações reais que você pode trazer",
       "Como o Amém Chat transforma situação em reflexão",
@@ -45,8 +45,8 @@ describe("purchase experience — home copy & flow order", () => {
   });
 
   it("keeps CTAs and short hero transparency without defensive spam", () => {
-    expect(home).toContain("Ver planos e começar");
-    expect(home).toContain("Ver uma reflexão de exemplo");
+    expect(home).toContain("Ver planos");
+    expect(home).toContain("Ver um exemplo");
     expect(home).toContain("#demonstracao");
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("Pagamento seguro");
@@ -55,7 +55,7 @@ describe("purchase experience — home copy & flow order", () => {
     // Short transparency line is allowed; long "Não afirma" stays out of hero spam
     const heroEnd = home.indexOf('id="demo-heading"');
     const hero = home.slice(0, heroEnd);
-    expect(hero).toContain("Não é Jesus");
+    expect(hero).toContain("voz divina");
     expect(hero).not.toMatch(/Não afirma ser Jesus/);
     expect(home).toContain("Transparência sobre IA");
     expect(home).toContain("inteligência artificial");
@@ -63,9 +63,9 @@ describe("purchase experience — home copy & flow order", () => {
 
   it("how-to-start describes plan → email → pay → personalize → converse", () => {
     expect(home).toContain("Escolha seu plano");
-    expect(home).toContain("Confirme seu e-mail");
-    expect(home).toContain("Pague com segurança");
-    expect(home).toContain("Personalize e converse");
+    expect(home).toContain("Crie sua conta e confirme o e-mail");
+    expect(home).toContain("Conclua o pagamento com segurança");
+    expect(home).toContain("Personalize a experiência e traga sua situação");
   });
 
   it("does not show fake social proof or urgency", () => {
@@ -112,7 +112,7 @@ describe("purchase experience — honest plan cards", () => {
       /aprofundar/i.test(b),
     )).toBe(false);
     expect(profundo?.displayBenefits.join(" ")).toMatch(/aprofundar/i);
-    expect(profundo?.tagline).toMatch(/intens/i);
+    expect(profundo?.displayBenefits.join(" ")).toMatch(/intens/i);
   });
 
   it("planos page explains renewal, cancellation and flexible use", () => {
@@ -123,7 +123,8 @@ describe("purchase experience — honest plan cards", () => {
     expect(planos).toContain("Checkout seguro");
     expect(planos).toContain("comparar-uso");
     const cards = read("src", "components", "marketing", "plan-cards.tsx");
-    expect(cards).toContain("Recomendado");
+    expect(cards).toContain("CAMINHO_HIGHLIGHT_BADGE");
+    expect(cards).toContain("Melhor equilíbrio entre uso e acompanhamento");
     expect(cards).not.toContain("Disponível agora");
   });
 });

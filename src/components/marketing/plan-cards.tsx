@@ -1,6 +1,7 @@
 import {
   PLAN_DEFINITIONS,
   formatPriceBRL,
+  getPublicCheckoutPlans,
   MAX_PUBLIC_PLAN_BENEFITS,
   type PlanDefinition,
   type PlanKey,
@@ -9,6 +10,10 @@ import { PlanConversionLink } from "@/components/marketing/plan-conversion-link"
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+/** Honest Caminho highlight — never fake popularity / social proof. */
+export const CAMINHO_HIGHLIGHT_BADGE =
+  "Melhor equilíbrio entre uso e acompanhamento";
 
 export function PlanCards({
   className,
@@ -21,15 +26,17 @@ export function PlanCards({
   currentPlanKey?: PlanKey | null;
   hasActiveSubscription?: boolean;
 }) {
+  const plans = getPublicCheckoutPlans();
+
   return (
     <div
       className={cn(
         "grid gap-5",
-        compact ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-4",
+        compact ? "md:grid-cols-2 lg:grid-cols-3" : "md:grid-cols-2 lg:grid-cols-3",
         className,
       )}
     >
-      {PLAN_DEFINITIONS.map((plan) => (
+      {plans.map((plan) => (
         <PlanCard
           key={plan.key}
           plan={plan}
@@ -38,6 +45,41 @@ export function PlanCards({
         />
       ))}
     </div>
+  );
+}
+
+/** Discrete Particular access — never in the main three-plan grid. */
+export function ParticularAccessNote({ className }: { className?: string }) {
+  const particular = PLAN_DEFINITIONS.find((plan) => plan.key === "particular");
+  if (!particular) return null;
+
+  return (
+    <aside
+      className={cn(
+        "max-w-2xl rounded-2xl border border-border/60 bg-card/40 px-5 py-5",
+        className,
+      )}
+      aria-labelledby="particular-access-heading"
+    >
+      <h2
+        id="particular-access-heading"
+        className="font-display text-xl text-ink"
+      >
+        Acompanhamento sob medida
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+        {particular.tagline} Fora da comparação principal dos planos Essencial,
+        Caminho e Profundo.
+      </p>
+      <p className="mt-4">
+        <TrackingLink
+          href="/mensagens-personalizadas"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
+        >
+          Conhecer o Particular
+        </TrackingLink>
+      </p>
+    </aside>
   );
 }
 
@@ -51,7 +93,6 @@ function PlanCard({
   hasActiveSubscription: boolean;
 }) {
   const checkoutHref = `/cadastro?plan=${plan.key}`;
-  const requestHref = "/mensagens-personalizadas";
   const benefits = plan.displayBenefits.slice(0, MAX_PUBLIC_PLAN_BENEFITS);
 
   const isCompareOnly =
@@ -59,19 +100,19 @@ function PlanCard({
 
   const buttonClass = cn(
     "mt-6 w-full min-h-11",
-    plan.ctaType === "request_access"
-      ? "bg-wine hover:bg-wine-soft"
-      : plan.highlighted
-        ? "bg-ink hover:bg-ink/90"
-        : plan.key === "profundo"
-          ? ""
-          : "",
+    plan.highlighted
+      ? "bg-ink hover:bg-ink/90"
+      : plan.key === "profundo"
+        ? ""
+        : "",
   );
 
   const buttonVariant =
-    plan.highlighted || plan.ctaType === "request_access" || plan.key === "profundo"
-      ? "default"
-      : "outline";
+    plan.highlighted || plan.key === "profundo" ? "default" : "outline";
+
+  const highlightBadge =
+    plan.highlightBadge ??
+    (plan.highlighted ? CAMINHO_HIGHLIGHT_BADGE : null);
 
   return (
     <article
@@ -86,9 +127,10 @@ function PlanCard({
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-wine">
           Seu plano atual
         </p>
-      ) : plan.highlighted ? (
-        <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-gold">
-          Recomendado
+      ) : highlightBadge ? (
+        <p className="mb-3 text-xs font-medium leading-snug tracking-[0.08em] text-gold sm:tracking-[0.12em]">
+          {/* Default Caminho badge — honest positioning, never fake social proof */}
+          {highlightBadge}
         </p>
       ) : plan.key === "profundo" ? (
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-wine/90">
@@ -144,11 +186,7 @@ function PlanCard({
         </Button>
       ) : (
         <Button asChild className={buttonClass} variant={buttonVariant}>
-          <TrackingLink
-            href={plan.ctaType === "request_access" ? requestHref : checkoutHref}
-          >
-            {plan.ctaLabel}
-          </TrackingLink>
+          <TrackingLink href={checkoutHref}>{plan.ctaLabel}</TrackingLink>
         </Button>
       )}
     </article>

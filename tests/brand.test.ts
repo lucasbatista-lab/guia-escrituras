@@ -18,7 +18,9 @@ describe("brand config", () => {
     const brand = getBrandConfig();
     expect(brand.name).toBe("Amém Chat");
     expect(brand.tagline).toBe("Como Jesus responderia à sua situação?");
-    expect(brand.description).toContain("Escrituras");
+    expect(brand.description).toMatch(/situações reais/i);
+    expect(brand.description).toMatch(/inteligência artificial/i);
+    expect(brand.description).toMatch(/limites honestos/i);
     expect(brand.seoTitle).toContain("Amém Chat");
     expect(brand.seoTitle).toContain("situações reais");
     expect(brand.seoDescription).toMatch(/inteligência artificial/i);

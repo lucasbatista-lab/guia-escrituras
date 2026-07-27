@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
-import { PlanCards } from "@/components/marketing/plan-cards";
+import {
+  ParticularAccessNote,
+  PlanCards,
+} from "@/components/marketing/plan-cards";
 import { PlanComparisonViewBeacon } from "@/components/marketing/plan-comparison-view-beacon";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { getAuthUserContext } from "@/lib/auth/session";
@@ -18,7 +21,7 @@ import { buildPublicPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPublicPageMetadata({
   title: "Planos",
   description:
-    "Compare os planos do Amém Chat: Essencial para começar, Caminho para uso frequente e Profundo com Aprofundar sob demanda.",
+    "Compare Essencial, Caminho e Profundo: uso pontual, constância com Jornadas ou análises adicionais com Aprofundar. A partir de R$ 38/mês.",
   path: "/planos",
 });
 
@@ -45,8 +48,8 @@ export default async function PlanosPage() {
           <h1 className="font-display text-4xl text-ink">Planos</h1>
           <p className="mt-3 text-ink-soft">
             Assinatura mensal com renovação automática. Todos os planos incluem
-            o chat completo — a diferença está no ritmo de uso e, no Profundo,
-            no recurso Aprofundar.
+            o chat completo — a diferença está no ritmo de uso, nas Jornadas e,
+            no Profundo, no recurso Aprofundar.
           </p>
         </header>
 
@@ -122,6 +125,8 @@ export default async function PlanosPage() {
           />
         </div>
 
+        <ParticularAccessNote className="mt-10" />
+
         <section
           id="aprofundar"
           className="mt-14 scroll-mt-24 max-w-2xl"
@@ -165,27 +170,6 @@ export default async function PlanosPage() {
 
         <section
           className="mt-14 max-w-2xl"
-          aria-labelledby="roadmap-heading"
-        >
-          <h2 id="roadmap-heading" className="font-display text-2xl text-ink">
-            Em desenvolvimento
-          </h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            Recursos abaixo não fazem parte da promessa ativa nem justificam o
-            preço de hoje.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-ink-soft">
-            {PLAN_ROADMAP_ITEMS.map((item) => (
-              <li key={item} className="flex gap-2">
-                <span aria-hidden>·</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section
-          className="mt-14 max-w-2xl"
           aria-labelledby="planos-faq-heading"
         >
           <h2 id="planos-faq-heading" className="font-display text-2xl text-ink">
@@ -210,6 +194,28 @@ export default async function PlanosPage() {
             período pago
           </li>
         </ul>
+
+        <section
+          className="mt-14 max-w-2xl border-t border-border/50 pt-10"
+          aria-labelledby="roadmap-heading"
+        >
+          <h2 id="roadmap-heading" className="font-display text-xl text-ink">
+            Em evolução — não faz parte do que você está contratando hoje
+          </h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            Itens abaixo são possíveis caminhos futuros. Não justificam o preço
+            atual e não confundem com as Jornadas já disponíveis no Caminho e no
+            Profundo.
+          </p>
+          <ul className="mt-4 space-y-2 text-sm text-ink-soft">
+            {PLAN_ROADMAP_ITEMS.map((item) => (
+              <li key={item} className="flex gap-2">
+                <span aria-hidden>·</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
       <SiteFooter />
     </div>

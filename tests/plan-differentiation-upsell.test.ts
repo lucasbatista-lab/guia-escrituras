@@ -52,28 +52,34 @@ describe("plan differentiation — catalog", () => {
 
   it("positions Essencial as complete entry product", () => {
     const plan = getPlanByKey("essencial")!;
-    expect(plan.idealFor).toMatch(/pontuais/i);
+    expect(plan.idealFor).toMatch(/Comece com clareza/i);
+    expect(plan.tagline).toMatch(/pontuais/i);
     expect(plan.displayBenefits.length).toBeLessThanOrEqual(5);
     const active = plan.displayBenefits.join(" ").toLowerCase();
     expect(active).toMatch(/reflexões|histórico|cancelamento/);
     expect(plan.upcomingBenefits).toBeUndefined();
   });
 
-  it("highlights Caminho as recommended frequent use", () => {
+  it("highlights Caminho for constancy without fake social proof", () => {
     const plan = getPlanByKey("caminho")!;
     expect(plan.highlighted).toBe(true);
-    expect(plan.idealFor).toMatch(/frequência/i);
+    expect(plan.idealFor).toMatch(/Constância com Jornadas/i);
+    expect(plan.highlightBadge).not.toMatch(/popular|preferido|campeão/i);
     expect(plan.ctaLabel).toBe("Escolher o Caminho");
-    expect(plan.displayBenefits.join(" ").toLowerCase()).toMatch(/frequente/);
+    expect(plan.displayBenefits.join(" ").toLowerCase()).toMatch(
+      /volta várias vezes na semana/,
+    );
   });
 
-  it("positions Profundo with Aprofundar", () => {
+  it("positions Profundo with Aprofundar as analysis, not spirituality", () => {
     const plan = getPlanByKey("profundo")!;
     expect(plan.ctaLabel).toBe("Quero o Profundo");
     expect(
       plan.displayBenefits.some((b) => /aprofundar/i.test(b)),
     ).toBe(true);
-    expect(plan.idealFor).toMatch(/Aprofundar sob demanda/i);
+    expect(plan.idealFor).toMatch(/mais análise/i);
+    expect(plan.tagline).toMatch(/Aprofundar sob demanda/i);
+    expect(plan.tagline.toLowerCase()).not.toMatch(/mais espiritual/);
   });
 
   it("uses updated checkout CTAs", () => {
@@ -113,10 +119,12 @@ describe("plan differentiation — marketing surfaces", () => {
     const cards = read("src", "components", "marketing", "plan-cards.tsx");
     expect(cards).toContain("idealFor");
     expect(cards).toContain("Cobrança mensal");
-    expect(cards).toContain("Recomendado");
+    expect(cards).toContain("Melhor equilíbrio entre uso e acompanhamento");
     expect(cards).toContain("Com Aprofundar");
+    expect(cards).not.toContain("Recomendado");
     expect(cards).not.toContain("Em desenvolvimento");
     expect(cards).toContain("min-h-11");
+    expect(cards).toContain("getPublicCheckoutPlans");
   });
 
   it("planos page is the commercial decision hub", () => {
@@ -124,9 +132,11 @@ describe("plan differentiation — marketing surfaces", () => {
     expect(planos).toContain("comparar-uso");
     expect(planos).toContain("aprofundar");
     expect(planos).toContain("PLAN_COMMERCIAL_FAQ");
-    expect(planos).toContain("Em desenvolvimento");
+    expect(planos).toContain("Em evolução");
+    expect(planos).toContain("ParticularAccessNote");
     expect(planos).toContain("troca automática");
     expect(planos).toContain("PlanComparisonViewBeacon");
+    expect(planos).not.toMatch(/Em desenvolvimento/);
   });
 
   it("home links to full plan comparison without duplicating roadmap in cards", () => {

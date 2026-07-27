@@ -10,6 +10,7 @@ export {
   formatPriceBRL,
   getPlanByKey,
   getPlanEntitlements,
+  getPublicCheckoutPlans,
 } from "./plans";
 export {
   requireEntitlement,
