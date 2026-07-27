@@ -29,7 +29,7 @@ export const PLAN_COMMERCIAL_FAQ = [
   },
   {
     q: "O Essencial tem acesso ao chat completo?",
-    a: "Sim. Você conversa com reflexões personalizadas, perfil espiritual, histórico e continuidade dentro da conversa. A diferença entre planos está na flexibilidade de uso ao longo do mês e, no Profundo, no recurso Aprofundar.",
+    a: "Sim. O Essencial inclui chat com reflexões personalizadas, histórico e personalização do perfil. O Caminho acrescenta Jornadas guiadas. O Profundo inclui tudo do Caminho e o recurso Aprofundar sob demanda.",
   },
   APROFUNDAR_FAQ,
   {

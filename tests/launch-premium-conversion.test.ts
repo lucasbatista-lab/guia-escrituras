@@ -22,7 +22,7 @@ describe("launch premium conversion", () => {
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("R$ 38");
     expect(home).toContain("Pagamento seguro");
-    expect(home).toContain("Cancele quando quiser");
+    expect(home).toContain("Cancele a renovação quando quiser");
     expect(home).toContain("Tradição ecumênica, evangélica ou católica");
     expect(home).toContain("inteligência artificial");
     const hero = home.slice(0, home.indexOf('id="demo-heading"'));

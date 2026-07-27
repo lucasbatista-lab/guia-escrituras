@@ -216,7 +216,7 @@ export default function HomePage() {
                   Tradição ecumênica, evangélica ou católica
                 </li>
                 <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
-                  Cancele quando quiser
+                  Cancele a renovação quando quiser
                 </li>
                 <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
                   Pagamento seguro

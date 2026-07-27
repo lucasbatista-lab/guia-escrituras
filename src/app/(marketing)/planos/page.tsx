@@ -194,7 +194,7 @@ export default async function PlanosPage() {
 
           {/* 8. Comparação detalhada mobile-first */}
           <div className="mt-16">
-            <PlanCompareStatic />
+            <PlanCompareStatic hasActiveSubscription={hasActiveSubscription} />
           </div>
 
           {/* Shared includes */}
@@ -324,35 +324,49 @@ export default async function PlanosPage() {
               Profundo continuam disponíveis.
             </p>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <Button
-                asChild
-                size="lg"
-                className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
-              >
-                <TrackingLink href="/cadastro?plan=caminho">
-                  Escolher o Caminho
-                </TrackingLink>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="min-h-11 w-full sm:w-auto"
-              >
-                <TrackingLink href="/cadastro?plan=essencial">
-                  Começar com o Essencial
-                </TrackingLink>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="min-h-11 w-full sm:w-auto"
-              >
-                <TrackingLink href="/cadastro?plan=profundo">
-                  Quero o Profundo
-                </TrackingLink>
-              </Button>
+              {hasActiveSubscription ? (
+                <Button
+                  asChild
+                  size="lg"
+                  className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
+                >
+                  <TrackingLink href="/conta">
+                    Gerenciar assinatura
+                  </TrackingLink>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
+                  >
+                    <TrackingLink href="/cadastro?plan=caminho">
+                      Escolher o Caminho
+                    </TrackingLink>
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="min-h-11 w-full sm:w-auto"
+                  >
+                    <TrackingLink href="/cadastro?plan=essencial">
+                      Começar com o Essencial
+                    </TrackingLink>
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="min-h-11 w-full sm:w-auto"
+                  >
+                    <TrackingLink href="/cadastro?plan=profundo">
+                      Quero o Profundo
+                    </TrackingLink>
+                  </Button>
+                </>
+              )}
             </div>
           </section>
         </div>

@@ -2,7 +2,8 @@ import { getJourneyBySlug } from "@/lib/journeys/registry";
 import { cn } from "@/lib/utils";
 
 const PREVIEW_JOURNEY_SLUG = "ansiedade-confianca" as const;
-const PREVIEW_COMPLETED = 3;
+/** Illustrative progress: 2 done → current step 3 of 7 (coherent with product). */
+const PREVIEW_COMPLETED = 2;
 const PREVIEW_STEP_NUMBER = 3;
 
 /**

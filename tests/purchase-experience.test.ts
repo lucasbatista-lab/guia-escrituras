@@ -51,7 +51,7 @@ describe("purchase experience — home copy & flow order", () => {
     expect(home).toContain("#demonstracao");
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("Pagamento seguro");
-    expect(home).toContain("Cancele quando quiser");
+    expect(home).toContain("Cancele a renovação quando quiser");
     expect(home).toContain("Tradição ecumênica, evangélica ou católica");
     // Short transparency line is allowed; long "Não afirma" stays out of hero spam
     const heroEnd = home.indexOf('id="demo-heading"');

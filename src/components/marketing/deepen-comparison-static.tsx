@@ -24,24 +24,20 @@ const NORMAL_POINTS = [
 
 const DEEPEN_ADDS = [
   {
-    label: "Contexto",
-    body: "Mapeia o que está em jogo: verdade, paz, hierarquia, reputação e o custo de falar agora versus adiar.",
+    label: "Contexto adicional",
+    body: "Amplia o que está em jogo — relações, riscos e o custo de falar agora versus esperar — conforme a situação que você descreveu.",
   },
   {
-    label: "Tensões e perspectivas",
+    label: "Tensões relevantes",
     body: "Segura a tensão entre coragem e prudência — sem transformar “esperar” em fuga nem “conversar” em impulsividade.",
   },
   {
-    label: "Análise de cenários",
-    body: "Se X (há abertura e segurança) → converse com um limite claro. Se Y (há risco ou cansaço extremo) → prepare e escolha outro momento.",
+    label: "Conexões bíblicas",
+    body: "As Escrituras entram em diálogo com o dilema concreto — não como lista solta de versículos, e o detalhe varia conforme o caso.",
   },
   {
-    label: "Conexões bíblicas contextualizadas",
-    body: "As Escrituras entram em diálogo com a situação — não como lista solta de versículos, mas como luz para o dilema concreto.",
-  },
-  {
-    label: "Próximos passos mais detalhados",
-    body: "Roteiro da semana: orar com honestidade, pedir conselho a alguém de confiança e definir um próximo gesto observável.",
+    label: "Aplicação e próximos passos",
+    body: "Sugere gestos observáveis para a semana — orar com honestidade, pedir conselho de confiança e um próximo passo concreto.",
   },
 ] as const;
 
@@ -135,9 +131,10 @@ export function DeepenComparisonStatic({
       </div>
 
       <p className="mt-5 max-w-2xl text-xs leading-relaxed text-ink-soft">
-        Texto revisado para demonstração. Não é uma resposta gerada neste
-        momento e não é revelação divina. Aprofundar usa mais espaço do plano e
-        pode ser cancelado junto com a renovação na sua conta.
+        Exemplo revisado de como o recurso funciona — não é uma resposta gerada
+        neste momento e não é revelação divina. Aprofundar vale para a
+        solicitação em que você o aciona. A renovação da assinatura pode ser
+        cancelada na sua conta.
       </p>
     </section>
   );

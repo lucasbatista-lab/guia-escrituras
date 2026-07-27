@@ -432,7 +432,8 @@ export function ChatPanel({
             {canDeepen && !suppressCommercialPrompts && !deepenFeatureDisabled ? (
               <p className="text-xs leading-relaxed text-ink-soft">
                 Em situações complexas, use “Aprofundar este tema” sob uma
-                resposta — ou a opção secundária no composer — antes de enviar.
+                resposta — ou a opção secundária no campo de mensagem — antes de
+                enviar.
               </p>
             ) : null}
           </div>
@@ -486,8 +487,8 @@ export function ChatPanel({
                   Aprofundar este tema
                 </Button>
                 <p className="mt-2 text-xs leading-relaxed text-ink-soft">
-                  Não envia sozinho — ativa o modo no composer para a próxima
-                  mensagem.
+                  Não envia sozinho — ativa o modo no campo de mensagem para a
+                  próxima mensagem.
                 </p>
               </div>
             ) : null}
@@ -596,7 +597,7 @@ export function ChatPanel({
                 Keep checkbox for retries/tests; remove post-launch if unused. */}
             <details className="rounded-lg border border-border/50 bg-sand-50/40 px-3 py-2">
               <summary className="cursor-pointer list-none rounded-md text-xs font-medium text-ink-soft marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-                Opção secundária no composer
+                Opção secundária no campo de mensagem
               </summary>
               <div className="mt-2 flex items-start gap-3 border-t border-border/40 pt-2">
                 <input

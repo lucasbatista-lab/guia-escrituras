@@ -22,13 +22,13 @@ describe("marketing product proof components", () => {
     expect(src).not.toContain("fetch(");
     expect(src).toContain("getJourneyBySlug");
     expect(src).toContain("ansiedade-confianca");
-    expect(src).toContain("PREVIEW_COMPLETED");
+    expect(src).toContain("PREVIEW_COMPLETED = 2");
+    expect(src).toContain("PREVIEW_STEP_NUMBER = 3");
     expect(src).toContain(" de {totalSteps} etapas");
     expect(src).toContain("progresso fica salvo");
 
     const step3 = ANSIEDADE_CONFIANCA_JOURNEY.steps.find((s) => s.number === 3);
     expect(step3?.title).toBeTruthy();
-    expect(src).toContain("PREVIEW_STEP_NUMBER");
   });
 
   it("deepen comparison is a reviewed static example, not live AI", () => {
@@ -45,9 +45,14 @@ describe("marketing product proof components", () => {
     expect(src).toContain(
       "Estou em conflito no trabalho e não sei se devo conversar agora ou esperar.",
     );
-    expect(src).toContain("Tensões e perspectivas");
-    expect(src).toContain("Análise de cenários");
-    expect(src).toContain("Não é uma resposta gerada neste");
+    expect(src).toContain("Tensões relevantes");
+    expect(src).toContain("Contexto adicional");
+    expect(src).toContain("Exemplo revisado de como o recurso funciona");
+    expect(src).not.toContain("Análise de cenários");
+    expect(src).not.toContain("Se X");
+    expect(src).not.toContain("pode ser cancelado junto com a renovação");
+    expect(src).toContain("renovação da assinatura pode ser");
+    expect(src).toContain("cancelada na sua conta");
   });
 
   it("plan compare stays mobile-first without horizontal tables", () => {
@@ -64,6 +69,9 @@ describe("marketing product proof components", () => {
     expect(src).toContain("essencial");
     expect(src).toContain("caminho");
     expect(src).toContain("profundo");
+    expect(src).toContain("hasActiveSubscription");
+    expect(src).toContain("Gerenciar assinatura");
+    expect(src).toContain("/conta");
   });
 
   it("home and planos mount both product proofs", () => {
@@ -75,6 +83,8 @@ describe("marketing product proof components", () => {
     }
     expect(planos).toContain("PlanCompareStatic");
     expect(planos).toContain("ParticularAccessNote");
+    expect(planos).toContain("hasActiveSubscription={hasActiveSubscription}");
+    expect(planos).toContain("Gerenciar assinatura");
     expect(home.toLowerCase()).not.toMatch(/depoimento|testemunho|milhares de/);
     const cards = read("src", "components", "marketing", "plan-cards.tsx");
     expect(cards).toContain("Precisa de algo sob medida?");

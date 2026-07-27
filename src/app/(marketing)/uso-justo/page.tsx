@@ -11,7 +11,7 @@ export default function UsoJustoPage() {
   return (
     <LegalDocumentShell title="Uso justo">
       <p>
-        Cada plano inclui espaço para conversas no mês adequado ao perfil
+        Cada plano inclui um espaço mensal de conversas adequado ao perfil
         contratado. Os limites são flexíveis e protegidos por orçamento mensal,
         uso diário e controle de ritmo — não há franquia fixa de mensagens
         exposta como promessa.

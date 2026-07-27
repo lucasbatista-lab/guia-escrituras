@@ -57,7 +57,13 @@ const PLAN_ORDER = ["essencial", "caminho", "profundo"] as const;
 /**
  * Mobile-first plan comparison — stacked details, never a horizontal table.
  */
-export function PlanCompareStatic({ className }: { className?: string }) {
+export function PlanCompareStatic({
+  className,
+  hasActiveSubscription = false,
+}: {
+  className?: string;
+  hasActiveSubscription?: boolean;
+}) {
   const plans = getPublicCheckoutPlans();
   const byKey = Object.fromEntries(plans.map((p) => [p.key, p])) as Record<
     "essencial" | "caminho" | "profundo",
@@ -128,10 +134,16 @@ export function PlanCompareStatic({ className }: { className?: string }) {
               </ul>
               <p className="pb-5">
                 <TrackingLink
-                  href={`/cadastro?plan=${key as PlanKey}`}
+                  href={
+                    hasActiveSubscription
+                      ? "/conta"
+                      : `/cadastro?plan=${key as PlanKey}`
+                  }
                   className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
                 >
-                  {plan.ctaLabel}
+                  {hasActiveSubscription
+                    ? "Gerenciar assinatura"
+                    : plan.ctaLabel}
                 </TrackingLink>
               </p>
             </details>

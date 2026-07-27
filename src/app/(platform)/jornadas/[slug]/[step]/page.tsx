@@ -84,7 +84,7 @@ export default async function JornadaStepPage({
 
       <PlatformPageHeader
         title={step.title}
-        description={`Etapa ${step.number} de ${totalSteps} · ~${step.estimatedMinutes} min por etapa${
+        description={`Etapa ${step.number} de ${totalSteps} · ~${step.estimatedMinutes} min nesta etapa${
           stepCompleted ? " · concluída" : ""
         }`}
       />
