@@ -4,20 +4,20 @@
 -- Does not mutate data. Expect overall_ok = true.
 -- =============================================================================
 
+-- Resolve by exact regprocedure signature (types only). Do not compare
+-- pg_get_function_identity_arguments() text — remotes may include param names
+-- (e.g. 'p_user_id uuid, p_journey_slug text, ...') and would empty this CTE.
 with fn as (
   select
     p.oid,
     p.proname,
-    pg_get_function_identity_arguments(p.oid) as identity_args,
     p.prosecdef as is_security_definer,
     coalesce(p.proconfig, '{}'::text[]) as proconfig,
     pg_get_functiondef(p.oid) as def
   from pg_proc p
-  join pg_namespace n on n.oid = p.pronamespace
-  where n.nspname = 'public'
-    and p.proname = 'complete_journey_progress_step'
-    and pg_get_function_identity_arguments(p.oid)
-      = 'uuid, text, text, text, text[]'
+  where p.oid = to_regprocedure(
+    'public.complete_journey_progress_step(uuid,text,text,text,text[])'
+  )
 ),
 checks as (
   select

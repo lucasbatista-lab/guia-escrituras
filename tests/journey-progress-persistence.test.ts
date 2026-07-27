@@ -284,6 +284,22 @@ describe("journey progress migration 010 complete RPC unnest fix (PG 42883)", ()
     expect(postcheck010).toContain("Does not mutate data");
   });
 
+  it("locates the RPC via to_regprocedure so named identity args cannot empty fn", () => {
+    expect(postcheck010).toMatch(
+      /to_regprocedure\(\s*'public\.complete_journey_progress_step\(uuid,text,text,text,text\[\]\)'\s*\)/,
+    );
+    expect(postcheck010).toMatch(
+      /p\.oid\s*=\s*to_regprocedure\(/,
+    );
+    // Must not gate on identity-argument display text (names vary by PG/client).
+    expect(postcheck010).not.toMatch(
+      /pg_get_function_identity_arguments\s*\(\s*p\.oid\s*\)\s*=\s*'uuid,\s*text,\s*text,\s*text,\s*text\[\]'/,
+    );
+    expect(postcheck010).not.toContain(
+      "= 'uuid, text, text, text, text[]'",
+    );
+  });
+
   it("does not edit migration 008 file contents via 010", () => {
     expect(sql008).toContain("from unnest(coalesce(p_total_step_ids");
     expect(sql010).toContain("DO NOT apply until human review");
