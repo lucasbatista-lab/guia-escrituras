@@ -96,6 +96,47 @@ describe("crisis detect — português", () => {
     ).toBe("suicide");
   });
 
+  it("matches production-style explicit ideation that previously bypassed", () => {
+    const productionLike =
+      "Estou pensando seriamente em não continuar vivo e não sei se consigo me manter seguro agora.";
+    const hit = detectCrisisMessage(productionLike);
+    expect(hit.matched).toBe(true);
+    expect(hit.category).toBe("suicide");
+    expect(detectCrisisMessage("não continuar vivo").matched).toBe(true);
+    expect(
+      detectCrisisMessage("não sei se consigo me manter seguro agora.").matched,
+    ).toBe(true);
+    expect(detectCrisisMessage("não quero mais viver").matched).toBe(true);
+    expect(
+      detectCrisisMessage("penso em tirar minha vida").matched,
+    ).toBe(true);
+    expect(
+      detectCrisisMessage("quero acabar com minha vida").matched,
+    ).toBe(true);
+    expect(
+      detectCrisisMessage("estou pensando em me machucar").matched,
+    ).toBe(true);
+    expect(
+      detectCrisisMessage("quero desaparecer para sempre").matched,
+    ).toBe(true);
+    expect(
+      detectCrisisMessage("tenho um plano para me ferir").matched,
+    ).toBe(true);
+  });
+
+  it("avoids fiction, third-person help-seeking, and situational life-change phrasing", () => {
+    const negatives = [
+      "o personagem do livro não quer continuar vivo",
+      "como ajudar alguém que disse que não quer viver?",
+      "não quero continuar vivendo desse jeito, preciso mudar de emprego",
+      "Estou muito triste e cansado, mas sem pensar em me machucar.",
+      "A metáfora da morte do ego no retiro espiritual me tocou.",
+    ];
+    for (const msg of negatives) {
+      expect(detectCrisisMessage(msg).matched, msg).toBe(false);
+    }
+  });
+
   it("matches violence and abuse", () => {
     expect(detectCrisisMessage("Vou matar ele hoje à noite.").category).toBe(
       "violence",
@@ -206,6 +247,46 @@ describe("crisis intercept in runChatTurn", () => {
     expect(result.answer).toContain("188");
     expect(result.answer).toContain("192");
     expect(result.biblicalReferences).toEqual([]);
+  });
+
+  it("intercepts production-style ideation with preferDeep: no provider, no deep markers, zero AI cost", async () => {
+    const { runChatTurn } = await import("@/lib/ai/chat-service");
+    const { getRepositories } = await import("@/lib/database/repositories");
+    const repos = getRepositories();
+    const insertEventSpy = vi.spyOn(repos.usage, "insertEvent");
+
+    const result = await runChatTurn({
+      requestId: "11111111-1111-4111-8111-111111111104",
+      auth: { ...baseAuth, planKey: "profundo" },
+      body: {
+        message:
+          "Estou pensando seriamente em não continuar vivo e não sei se consigo me manter seguro agora.",
+        personaKey: "jesus",
+        preferDeep: true,
+      },
+    });
+
+    expect(generateSpy).not.toHaveBeenCalled();
+    expect(result.safetyMode).toBe("crisis");
+    expect(result.provider).toBe("mock");
+    expect(result.biblicalReferences).toEqual([]);
+    expect(result.answer).toContain("188");
+    expect(result.answer).toContain("192");
+    expect(result.answer).not.toMatch(/Resposta aprofundada/i);
+    expect(result.answer).not.toMatch(/Aprofundar/i);
+    expect(result.answer).not.toMatch(/upgrade|Profundo|assinatura/i);
+    expect(result.answer).not.toMatch(/Salmos|João|Mateus|referência/i);
+    expect(result.answer.split(/\s+/).length).toBeLessThan(220);
+    expect(insertEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        featureType: "chat_standard",
+        model: "crisis_safety",
+        estimatedCostUsdMicros: 0,
+        estimatedCostBrlCents: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+      }),
+    );
   });
 
   it("does not intercept ordinary anxiety", async () => {
