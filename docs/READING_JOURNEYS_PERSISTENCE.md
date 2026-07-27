@@ -40,13 +40,13 @@ Table: `public.journey_progress`
 
 Investigação confirmou grants explícitos de `anon` na tabela e EXECUTE nas três RPCs. Não houve evidência de vazamento de linhas (RLS + ownership + `SECURITY INVOKER`), mas a superfície anônima dependia só da RLS. Correção: `20260712000009_journey_progress_anonymous_access_hardening.sql` — **aplicada em produção 2026-07-26**; postcheck consolidado `overall_ok = true`. MIG `004` permanece pendente e independente.
 
-### Bug remoto complete → PG 42883 — aliases (010) + ANY(subquery) (012)
+### Bug remoto complete → PG 42883 — aliases (010) + ANY(subquery) (012) — **encerrado**
 
-Produção: `POST /api/journeys/progress/complete` → 503 / `journey_progress_rpc_failed` `{ op: completeStep, code: 42883 }`.
+Produção (pré-012): `POST /api/journeys/progress/complete` → 503 / `journey_progress_rpc_failed` `{ op: completeStep, code: 42883 }`.
 
 **Causa 1 (fechada pela 010, aplicada):** aliases `unnest(...) AS e` / `AS x` usados como escalares → `record` em posição de expressão.
 
-**Causa 2 restante (MIG 012, não aplicada):** após 010, o corpo ainda tinha:
+**Causa 2 (fechada pela 012, aplicada 2026-07-27):** após 010, o corpo ainda tinha:
 
 ```sql
 exp.step_id = any (
@@ -54,9 +54,14 @@ exp.step_id = any (
 )
 ```
 
-`ANY (subquery)` compara o lado esquerdo com **cada linha** da subquery. A subquery devolve uma linha `text[]`, logo o operador exigido é `text = text[]` → `undefined_function` (42883). Postcheck 010 era só textual e não executou a função.
+`ANY (subquery)` compara o lado esquerdo com **cada linha** da subquery. A subquery devolve uma linha `text[]`, logo o operador exigido é `text = text[]` → `undefined_function` (42883).
 
-**Correção versionada:** `20260712000012_journey_progress_complete_rpc_runtime_fix.sql` — variáveis `expected` / `merged` / `is_complete`; um `array_agg`; conclusão via `expected <@ merged`; `SELECT ... FOR UPDATE` + um `UPDATE`. **Não** edita 008–011. Apply humano + postcheck estrutural + **runtime smoke** (`…_runtime_smoke.sql` com `BEGIN`/`ROLLBACK`).
+**Correção versionada (aplicada):** `20260712000012_journey_progress_complete_rpc_runtime_fix.sql` — variáveis `expected` / `merged` / `is_complete`; um `array_agg`; conclusão via `expected <@ merged`.
+
+**Provas pós-apply:**
+- Runtime smoke (`…_runtime_smoke.sql`): `overall_ok=true` (start/intermediate/final/reset).
+- Smoke humano UI: conclusão e persistência OK.
+- Postcheck estrutural (`…_runtime_fix_postcheck.sql`): ainda `overall_ok=false` — campo falso **não** reconciliado; **não** afirmar verde estrutural; hipótese `table_grants_ok` ou regex de corpo. **Não** criar migration nesta janela.
 
 ### Grants históricos — MIG 011 (**aplicada**)
 
@@ -161,19 +166,16 @@ Never: reflections, chat drafts, prompts, clinical notes, payment data, secrets.
 
 1. Apply `20260712000011_…` — **concluído**. Postcheck `overall_ok = true`. **Não** reaplicar.
 
-### 012 complete RPC runtime fix (**não aplicada**)
+### 012 complete RPC runtime fix (**aplicada 2026-07-27**)
 
-1. Backup + review `supabase/migrations/20260712000012_journey_progress_complete_rpc_runtime_fix.sql`.
-2. Apply **somente** a 012 (não reaplicar 008–011; não misturar MIG 004).
-3. Postcheck estrutural (necessário, insuficiente sozinho):
-   `supabase/postchecks/20260712000012_journey_progress_complete_rpc_runtime_fix_postcheck.sql`
-4. **Runtime smoke obrigatório** (`BEGIN`/`ROLLBACK`, `overall_ok = true`):
-   `supabase/postchecks/20260712000012_journey_progress_complete_rpc_runtime_smoke.sql`
-5. Smoke autenticado UI: start / complete / reset.
+1. Apply `20260712000012_…` — **concluído**. **Não** reaplicar 008–012; **não** misturar MIG 004.
+2. Runtime smoke (`…_runtime_smoke.sql`): `overall_ok = true`.
+3. Smoke autenticado UI: conclusão e persistência OK.
+4. Postcheck estrutural (`…_runtime_fix_postcheck.sql`): ainda `overall_ok = false` — reconciliar campo falso (hipótese `table_grants_ok` / regex). **Não** criar migration.
 
 **Postcheck note:** the legacy file runs multiple read-only `SELECT`s; Supabase SQL Editor may show only the **last** result set. Prefer the consolidated postcheck. Runtime app code does **not** depend on either postcheck file.
 
-**Ops note (2026-07-26):** complete HTTP 503 + `42883` persiste após 010/011 até apply 012 + smoke runtime verde.
+**Ops note:** causa `text = text[]` / 42883 no complete **encerrada** após 012 + smoke runtime verde. Residual = apenas postcheck estrutural.
 
 ## Emergency rollback (do not run unless required)
 
