@@ -59,27 +59,20 @@ Env (sem `NEXT_PUBLIC_*`):
 - `FEATURE_DISABLE_JOURNEYS`
 - `FEATURE_DISABLE_DEEPEN`
 
-Unset = habilitado. `true`/`1`/`yes`/`on` = desliga. Valores inválidos não vazios = desliga (fail-closed).  
-Alterar na Vercel normalmente exige **redeploy/restart** para o serverless ler o novo valor.  
-Código estável: `feature_temporarily_disabled` (503). Não altera preços/entitlements.  
+Unset = habilitado. `true`/`1`/`yes`/`on` = desliga. Valores inválidos não vazios = desliga (fail-closed).
+Alterar na Vercel normalmente exige **redeploy/restart** para o serverless ler o novo valor.
+Código estável: `feature_temporarily_disabled` (503). Não altera preços/entitlements.
 Ver `src/config/feature-kill-switches.ts`.
 
-## Migration 004 (manual, futuro)
+## Migration 004 (aplicada 2026-07-27)
 
 Arquivo: `supabase/migrations/20260712000004_production_hardening.sql`
 
-**Pacote de decisão / validação (read-only):**
-`docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`
+**Estado:** **aplicada** em produção (humano, 2026-07-27). Postcheck `overall_ok=true`; smoke transacional 6/6; smoke app pós-004 verde.
+**Pacote:** `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`
+**Não reaplicar.** Handoff: `docs/_ai/AMEM_LAUNCH_GO_HANDOFF_2026-07-28.md`.
 
-**Não aplicar no cutover inicial.** Quando for o momento (decisão independente + backup):
-
-```bash
-# Revisar o SQL, depois (exemplo):
-pnpm exec supabase db push --linked
-# ou colar no SQL Editor após revisão humana
-```
-
-Efeitos: remove insert autenticado em `usage_events` e writes em summaries; restringe insert de messages a `role=user`; endurece `security definer`; índices únicos Stripe/request_id.
+Efeitos aplicados: remove insert autenticado em `usage_events` e writes em summaries; restringe insert de messages a `role=user`; endurece `security definer`; índices únicos Stripe/request_id.
 
 ## Stripe (código live-ready)
 

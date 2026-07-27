@@ -62,7 +62,7 @@ Checkout Stripe real no código; prevenção de assinatura duplicada; cancelamen
 
 - Fluxo normal do usuário: publishable/anon + cookies
 - Secret key (`SUPABASE_SECRET_KEY`) só em módulos `server-only` para writes administrativas (assistant, usage, summaries, cron)
-- Endurecimento adicional na migration **004** (ainda não aplicada no cutover)
+- Endurecimento adicional na migration **004** (**aplicada em produção 2026-07-27**; ver `docs/DATABASE.md`)
 - Nunca logar chaves; health não expõe presença de secrets
 
 ## Runtime

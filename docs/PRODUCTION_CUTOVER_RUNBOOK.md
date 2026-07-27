@@ -4,7 +4,7 @@ Runbook operacional curto. Detalhes longos ficam em `DEPLOYMENT.md`, `DAILY_REPO
 **Nunca cole secrets neste arquivo.**
 
 Estado do código (local): implementado e testado com lint/test/build.  
-Estado de produção: **ainda depende de configuração remota + smoke humano**.
+Estado de produção (fechamento GO 2026-07-27/28): SHA **`8b8a7d1`**, health ok, MIG **004** e **009–012** aplicadas — ver `docs/_ai/AMEM_LAUNCH_GO_HANDOFF_2026-07-28.md` e `docs/DATABASE.md`.
 
 ---
 
@@ -14,11 +14,11 @@ Estado de produção: **ainda depende de configuração remota + smoke humano**.
 2. Confirmar `git rev-parse HEAD` === `git rev-parse origin/main`
 3. Working tree limpa, exceto ruído CRLF conhecido em `src/lib/database/repositories/index.ts` (ignorar; **não commitá-lo**)
 4. `pnpm lint`
-5. `pnpm test` (repetir se houve mudança recente em env/mocks)
+5. `pnpm test` (repetir se houver mudança recente em env/mocks)
 6. `pnpm build`
 7. `pnpm launch:check`
-8. Migrations: confirmar **001–003** já aplicadas no projeto Supabase de produção
-9. Migration **004** (`20260712000004_production_hardening.sql`): **não aplicar** neste cutover, salvo decisão explícita e independente depois
+8. Migrations: confirmar estado remoto em `docs/DATABASE.md` (001–004 e 008–012 aplicadas no GO; 005–007 confirmar se residual)
+9. Migration **004** (`20260712000004_production_hardening.sql`): **já aplicada 2026-07-27** — **não reaplicar**; novos deploys exigem smoke direcionado se houver mudança de RLS/chat
 
 ---
 
@@ -125,7 +125,7 @@ Redeploy/restart para aplicar. Código `feature_temporarily_disabled`. Não alte
 ## F. Rollback
 
 1. Identificar deploy anterior estável no painel Vercel
-2. Reverter **somente o deploy** — **não** alterar banco; **não** aplicar migration 004 durante incidente
+2. Reverter **somente o deploy** — **não** alterar banco; **não** reaplicar nem reverter migrations durante incidente (004 já está em produção)
 3. Manter endpoint de webhook compatível com o handler implantado (ou pausar eventos se necessário)
 4. Interromper lançamento se: checkout live quebra, auth/e-mail fora, chat 503 em massa, dados/PII vazando
 5. Registrar falha (hora UTC, commit, sintoma, impacto) e abrir follow-up — sem mascarar erro

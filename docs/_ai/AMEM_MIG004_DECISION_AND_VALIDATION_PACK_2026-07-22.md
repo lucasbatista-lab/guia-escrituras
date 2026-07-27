@@ -3,9 +3,9 @@
 **Data:** 2026-07-22
 **Finding:** MAE-P0-01
 **Arquivo:** `supabase/migrations/20260712000004_production_hardening.sql`
-**Estado remoto documentado:** **não aplicada** (`docs/DATABASE.md`).
+**Estado remoto documentado:** **aplicada** em produção em **2026-07-27** (ver `docs/DATABASE.md` e `docs/_ai/AMEM_LAUNCH_GO_HANDOFF_2026-07-28.md`).
 
-**Este pacote não aplica a migration.** Nenhum SQL abaixo foi executado nesta rodada de eng.
+**Este pacote não aplica a migration.** Nenhum SQL abaixo foi executado na rodada original de eng (2026-07-22). A aplicação humana e os smokes ocorreram em 2026-07-27.
 
 ---
 
@@ -211,13 +211,17 @@ Não há `DOWN` migration no repo. Rollback = **restauração de backup** ou rec
 - Chat + Jornadas smoke
 - Decisão final assinada (Ops)
 
-## 23. Decisão final (template — preencher humano)
+## 23. Decisão final (preenchida 2026-07-27)
 
-- [ ] **Aplicar** em ____/____/____ por ________
+- [x] **Aplicar** em **2026-07-27** por operador humano (SQL Editor / reaplicação idempotente)
 - [ ] **Adiar aceitando risco** até ____ (motivo: ________)
 - [ ] **Não aplicar e bloquear lançamento** (motivo: ________)
 
-**Esta linha permanece em branco no repositório até decisão humana.** A migration **não** está aplicada por este documento.
+**Resultado pós-apply:**
+- Postcheck: `overall_ok=true`
+- Smoke transacional: 6/6 (forge assistant bloqueado; forge usage bloqueado; cross-user bloqueado; escrita legítima preservada; ROLLBACK)
+- Smoke app: chat Profundo / Deep / Jornada complete / Essencial 200; gating Essencial OK; sem 42501 / 42883 / 5xx
+- **Não reaplicar.** Veredito de lançamento: **GO** (`8b8a7d1`).
 
 ---
 
@@ -226,4 +230,6 @@ Não há `DOWN` migration no repo. Rollback = **restauração de backup** ou rec
 - `docs/DATABASE.md`
 - `docs/DEPLOYMENT.md`
 - `docs/_ai/AMEM_HUMAN_MINIMAL_ACTIONS_2026-07-21.md`
+- `docs/_ai/AMEM_FINAL_RUNTIME_CLOSURE_2026-07-27.md`
+- `docs/_ai/AMEM_LAUNCH_GO_HANDOFF_2026-07-28.md`
 - `tests/persistence-and-migration004.test.ts` (contrato local)

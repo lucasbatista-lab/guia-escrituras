@@ -61,7 +61,7 @@ exp.step_id = any (
 **Provas pós-apply:**
 - Runtime smoke (`…_runtime_smoke.sql`): `overall_ok=true` (start/intermediate/final/reset).
 - Smoke humano UI: conclusão e persistência OK.
-- Postcheck estrutural (`…_runtime_fix_postcheck.sql`): ainda `overall_ok=false` — campo falso **não** reconciliado; **não** afirmar verde estrutural; hipótese `table_grants_ok` ou regex de corpo. **Não** criar migration nesta janela.
+- Postcheck estrutural (`…_runtime_fix_postcheck.sql`): `overall_ok=false` **somente** por `plpgsql_vars_present=false` — **falso negativo** (em regex PostgreSQL, `\b` é backspace, não word boundary). Runtime + Jornada 7/7 verdes. Correção futura: só no postcheck. **Não** criar migration.
 
 ### Grants históricos — MIG 011 (**aplicada**)
 

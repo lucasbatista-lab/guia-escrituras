@@ -67,7 +67,7 @@ Para cada cenário: sintoma → severidade → detectar → evidência → dados
 **Sev:** Alta · **Detectar:** `/api/health` version ≠ tip lançamento · **1ª:** não declarar ready; redeploy ou aceitar tip
 
 ### 21. Migration local ≠ remota
-**Sev:** Alta · **1ª:** B00; pacote MIG 004; **não** apply automático
+**Sev:** Alta · **1ª:** B00; consultar `docs/DATABASE.md` (004 e 009–012 aplicadas no GO); **não** apply automático; **não** reaplicar 004/012
 
 ### 22. www/apex sessão inconsistente
 **Sev:** Média · **1ª:** confirmar Domain=.amemchat.com.br em Vercel Production; redirect www→apex · **Não** “corrigir” para host-only
@@ -80,6 +80,9 @@ Para cada cenário: sintoma → severidade → detectar → evidência → dados
 
 ### 25. Acionar kill switch
 **Sev:** conforme incidente · **1ª:** set env + redeploy; validar 503 `feature_temporarily_disabled`; comunicar manutenção · **Rel:** DEPLOYMENT.md
+
+### 26. SHA produção ≠ tip de GO
+**Sev:** Alta · **Detectar:** `/api/health` version ≠ `8b8a7d1` (tip GO) sem deploy deliberado · **1ª:** não declarar estável; investigar drift; handoff `AMEM_LAUNCH_GO_HANDOFF_2026-07-28.md`
 
 ---
 

@@ -43,8 +43,8 @@ Páginas públicas, auth forms, `/api/chat`, journeys APIs, checkout actions, we
 
 | ID | Cenário | Controles atuais | Lacuna |
 |----|---------|------------------|--------|
-| T-01 | Forge usage / assistant messages via JWT | App service path; policies 001 | **MIG 004 não aplicada** (`DATABASE.md:42`) |
-| T-02 | Duplicate OpenAI spend cross-instance | Process lock + unique indexes (004) | Lock cross-instance ausente; uniques dependem de 004 |
+| T-01 | Forge usage / assistant messages via JWT | App service path; **MIG 004 aplicada 2026-07-27** (postcheck + smoke 6/6) | Residual: monitorar; não reaplicar 004 |
+| T-02 | Duplicate OpenAI spend cross-instance | Process lock + unique indexes (004 aplicadas) | Lock cross-instance ainda process-local; uniques 004 mitigam |
 | T-03 | Open redirect pós-login | `safeNextPath` | Cobertura de teste local OK |
 | T-04 | Admin bypass | layout + `requireAdminUser` | Sem MFA; DEMO_MODE admin em mocks |
 | T-05 | Webhook replay / mode mix | signature + claim lease + key-mode | Smoke live pendente |
