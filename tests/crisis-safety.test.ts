@@ -303,4 +303,71 @@ describe("crisis intercept in runChatTurn", () => {
     expect(generateSpy).toHaveBeenCalled();
     expect(result.safetyMode).toBeUndefined();
   });
+
+  it("budget exhausted + ordinary message still returns budget_exceeded", async () => {
+    const { runChatTurn } = await import("@/lib/ai/chat-service");
+    const { getRepositories } = await import("@/lib/database/repositories");
+    const { currentYearMonth } = await import("@/lib/utils");
+    const userId = "user-crisis-budget-ordinary";
+    await getRepositories().usage.incrementMonthly({
+      userId,
+      yearMonth: currentYearMonth(),
+      addBrlCents: 50_000_000,
+    });
+
+    await expect(
+      runChatTurn({
+        requestId: "11111111-1111-4111-8111-111111111201",
+        auth: { ...baseAuth, userId, planKey: "essencial" },
+        body: {
+          message: "Quero refletir sobre gratidão no trabalho.",
+          personaKey: "jesus",
+          preferDeep: false,
+        },
+      }),
+    ).rejects.toMatchObject({ code: "budget_exceeded" });
+    expect(generateSpy).not.toHaveBeenCalled();
+  });
+
+  it("budget exhausted + crisis still returns safety template (no provider)", async () => {
+    const { runChatTurn } = await import("@/lib/ai/chat-service");
+    const { getRepositories } = await import("@/lib/database/repositories");
+    const { currentYearMonth } = await import("@/lib/utils");
+    const userId = "user-crisis-budget-crisis";
+    const repos = getRepositories();
+    await repos.usage.incrementMonthly({
+      userId,
+      yearMonth: currentYearMonth(),
+      addBrlCents: 50_000_000,
+    });
+    const insertEventSpy = vi.spyOn(repos.usage, "insertEvent");
+
+    const result = await runChatTurn({
+      requestId: "11111111-1111-4111-8111-111111111202",
+      auth: { ...baseAuth, userId, planKey: "essencial" },
+      body: {
+        message:
+          "Estou pensando seriamente em não continuar vivo e não sei se consigo me manter seguro agora.",
+        personaKey: "jesus",
+        preferDeep: true,
+      },
+    });
+
+    expect(generateSpy).not.toHaveBeenCalled();
+    expect(result.safetyMode).toBe("crisis");
+    expect(result.provider).toBe("mock");
+    expect(result.answer).toContain("188");
+    expect(result.answer).toContain("192");
+    expect(result.usage.inputTokens).toBe(0);
+    expect(result.usage.outputTokens).toBe(0);
+    expect(insertEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "crisis_safety",
+        estimatedCostBrlCents: 0,
+        estimatedCostUsdMicros: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+      }),
+    );
+  });
 });

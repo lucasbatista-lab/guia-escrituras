@@ -116,9 +116,9 @@ export async function runChatTurn(input: {
     );
   }
 
+  // Crisis detection runs before commercial gates so distressed users never
+  // receive budget/burst/rate 429 instead of the safety template.
   // preferDeep is per-turn only — never mutates profile preferredDepth.
-  // Skip deep gates when the message is a crisis match so safety intercept
-  // is never blocked by deep-entitlement or deepen kill-switch.
   const crisisPreview = detectCrisisMessage(body.message);
   if (!crisisPreview.matched) {
     if (body.preferDeep && !canUseDeepResponseOnDemand(auth.planKey)) {
@@ -138,15 +138,16 @@ export async function runChatTurn(input: {
         featureDisabledUserMessage("deepen"),
       );
     }
-  }
 
-  if (requiresRealOpenAiForChat() && !isOpenAiConfigured()) {
-    throw new AppError(
-      "openai_unavailable",
-      "openai_unavailable",
-      503,
-      "O chat está temporariamente indisponível. Tente novamente mais tarde.",
-    );
+    // OpenAI is only required for ordinary (non-crisis) turns.
+    if (requiresRealOpenAiForChat() && !isOpenAiConfigured()) {
+      throw new AppError(
+        "openai_unavailable",
+        "openai_unavailable",
+        503,
+        "O chat está temporariamente indisponível. Tente novamente mais tarde.",
+      );
+    }
   }
 
   const repos = getRepositories();
@@ -215,6 +216,151 @@ export async function runChatTurn(input: {
   }
 
   try {
+  // Re-check assistant under the lock (another instance may have finished).
+  const assistantUnderLock = await repos.messages.findByRequestId(
+    auth.userId,
+    requestId,
+    "assistant",
+  );
+  if (assistantUnderLock) {
+    logger.info("chat_turn_idempotent_hit", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      conversationId: assistantUnderLock.conversationId,
+      flowStatus: "idempotent_return_under_lock",
+      durationMs: Date.now() - turnStartedMs,
+    });
+    return {
+      answer: assistantUnderLock.content,
+      biblicalReferences: assistantUnderLock.biblicalReferences,
+      interpretationNotice:
+        "Resposta recuperada de uma solicitação anterior (idempotente).",
+      usage: {
+        level: "normal",
+        label: usageLevelLabel("normal"),
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      requestId,
+      conversationId: assistantUnderLock.conversationId,
+      provider: "openai",
+    };
+  }
+
+  const personaResolution = resolveAuthorizedPersonaKey({
+    requested: body.personaKey,
+    traditionKey: auth.spiritualProfile.traditionKey,
+    saintsContentEnabled: auth.spiritualProfile.saintsContentEnabled,
+  });
+  const personaKey = personaResolution.personaKey;
+  if (personaResolution.fellBack && body.personaKey !== personaKey) {
+    logger.info("chat_persona_fallback", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      requested: String(body.personaKey).slice(0, 32),
+      personaKey,
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Crisis safety intercept — BEFORE budget / burst / short rate limits.
+  // Deterministic template; no OpenAI; no plan-usage gate; no deepen.
+  // Logs category only (never user text).
+  // -------------------------------------------------------------------------
+  if (crisisPreview.matched) {
+    let crisisConversation =
+      body.conversationId != null
+        ? await repos.conversations.getByIdForUser(
+            body.conversationId,
+            auth.userId,
+          )
+        : null;
+
+    if (body.conversationId && !crisisConversation) {
+      throw new AppError(
+        "conversation_not_found",
+        "conversation_not_found",
+        404,
+        "Conversa não encontrada.",
+      );
+    }
+
+    if (!crisisConversation) {
+      crisisConversation = await repos.conversations.create({
+        userId: auth.userId,
+        personaKey,
+        title: body.message.slice(0, 80),
+      });
+    }
+
+    await repos.messages.insertUserMessage({
+      conversationId: crisisConversation.id,
+      userId: auth.userId,
+      content: body.message,
+      requestId,
+    });
+
+    const crisisAnswer = buildCrisisAnswer(crisisPreview.category);
+    logger.info("crisis_safety_intercept", {
+      requestId,
+      userId: maskUserId(auth.userId),
+      conversationId: crisisConversation.id,
+      category: crisisPreview.category,
+      signalIds: crisisPreview.signalIds,
+      flowStatus: "crisis_intercept",
+      durationMs: Date.now() - turnStartedMs,
+    });
+
+    try {
+      await repos.messages.insertAssistantMessage({
+        conversationId: crisisConversation.id,
+        userId: auth.userId,
+        content: crisisAnswer,
+        biblicalReferences: [],
+        requestId,
+      });
+    } catch (error) {
+      logger.error("crisis_assistant_persist_failed", {
+        requestId,
+        userId: maskUserId(auth.userId),
+        category: crisisPreview.category,
+        err: error instanceof Error ? error.message : "unknown",
+      });
+    }
+
+    // Usage event records zero cost for ops visibility — does not consume plan budget.
+    await repos.usage.insertEvent({
+      userId: auth.userId,
+      conversationId: crisisConversation.id,
+      requestId,
+      featureType: "chat_standard",
+      model: "crisis_safety",
+      inputTokens: 0,
+      outputTokens: 0,
+      estimatedCostUsdMicros: 0,
+      estimatedCostBrlCents: 0,
+      latencyMs: Date.now() - turnStartedMs,
+      success: true,
+    });
+
+    return {
+      answer: crisisAnswer,
+      biblicalReferences: [],
+      interpretationNotice: CRISIS_INTERPRETATION_NOTICE,
+      usage: {
+        level: "normal",
+        label: usageLevelLabel("normal"),
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      requestId,
+      conversationId: crisisConversation.id,
+      provider: "mock",
+      safetyMode: "crisis",
+    };
+  }
+
+  // Ordinary turns only: commercial usage gates.
   const budgetConfig = getBudgetConfig(auth.planKey);
   const yearMonth = currentYearMonth();
   const monthly = await repos.usage.getMonthly(auth.userId, yearMonth);
@@ -289,40 +435,6 @@ export async function runChatTurn(input: {
     }
   }
 
-  // Re-check assistant under the lock (another instance may have finished).
-  const assistantUnderLock = await repos.messages.findByRequestId(
-    auth.userId,
-    requestId,
-    "assistant",
-  );
-  if (assistantUnderLock) {
-    logger.info("chat_turn_idempotent_hit", {
-      requestId,
-      userId: maskUserId(auth.userId),
-      conversationId: assistantUnderLock.conversationId,
-      flowStatus: "idempotent_return_under_lock",
-      durationMs: Date.now() - turnStartedMs,
-    });
-    return {
-      answer: assistantUnderLock.content,
-      biblicalReferences: assistantUnderLock.biblicalReferences,
-      interpretationNotice:
-        "Resposta recuperada de uma solicitação anterior (idempotente).",
-      usage: {
-        level:
-          budget.level === "blocked" ? "near_limit" : budget.level,
-        label: usageLevelLabel(
-          budget.level === "blocked" ? "near_limit" : budget.level,
-        ),
-        inputTokens: 0,
-        outputTokens: 0,
-      },
-      requestId,
-      conversationId: assistantUnderLock.conversationId,
-      provider: "openai",
-    };
-  }
-
   let conversation =
     body.conversationId != null
       ? await repos.conversations.getByIdForUser(
@@ -338,21 +450,6 @@ export async function runChatTurn(input: {
       404,
       "Conversa não encontrada.",
     );
-  }
-
-  const personaResolution = resolveAuthorizedPersonaKey({
-    requested: body.personaKey,
-    traditionKey: auth.spiritualProfile.traditionKey,
-    saintsContentEnabled: auth.spiritualProfile.saintsContentEnabled,
-  });
-  const personaKey = personaResolution.personaKey;
-  if (personaResolution.fellBack && body.personaKey !== personaKey) {
-    logger.info("chat_persona_fallback", {
-      requestId,
-      userId: maskUserId(auth.userId),
-      requested: String(body.personaKey).slice(0, 32),
-      personaKey,
-    });
   }
 
   if (!conversation) {
@@ -371,72 +468,6 @@ export async function runChatTurn(input: {
     content: body.message,
     requestId,
   });
-
-  // Crisis safety intercept — deterministic, no model call, no diagnosis.
-  // Persists a fixed safety reply; logs category only (never user text).
-  const crisis = detectCrisisMessage(body.message);
-  if (crisis.matched) {
-    const crisisAnswer = buildCrisisAnswer(crisis.category);
-    logger.info("crisis_safety_intercept", {
-      requestId,
-      userId: maskUserId(auth.userId),
-      conversationId: conversation.id,
-      category: crisis.category,
-      signalIds: crisis.signalIds,
-      flowStatus: "crisis_intercept",
-      durationMs: Date.now() - turnStartedMs,
-    });
-
-    try {
-      await repos.messages.insertAssistantMessage({
-        conversationId: conversation.id,
-        userId: auth.userId,
-        content: crisisAnswer,
-        biblicalReferences: [],
-        requestId,
-      });
-    } catch (error) {
-      logger.error("crisis_assistant_persist_failed", {
-        requestId,
-        userId: maskUserId(auth.userId),
-        category: crisis.category,
-        err: error instanceof Error ? error.message : "unknown",
-      });
-    }
-
-    await repos.usage.insertEvent({
-      userId: auth.userId,
-      conversationId: conversation.id,
-      requestId,
-      featureType: "chat_standard",
-      model: "crisis_safety",
-      inputTokens: 0,
-      outputTokens: 0,
-      estimatedCostUsdMicros: 0,
-      estimatedCostBrlCents: 0,
-      latencyMs: Date.now() - turnStartedMs,
-      success: true,
-    });
-
-    return {
-      answer: crisisAnswer,
-      biblicalReferences: [],
-      interpretationNotice: CRISIS_INTERPRETATION_NOTICE,
-      usage: {
-        level:
-          budget.level === "blocked" ? "near_limit" : budget.level,
-        label: usageLevelLabel(
-          budget.level === "blocked" ? "near_limit" : budget.level,
-        ),
-        inputTokens: 0,
-        outputTokens: 0,
-      },
-      requestId,
-      conversationId: conversation.id,
-      provider: "mock",
-      safetyMode: "crisis",
-    };
-  }
 
   // Fetch enough history so that after excluding the current turn we still have
   // up to RECENT_CONTEXT_MESSAGE_LIMIT prior messages.
