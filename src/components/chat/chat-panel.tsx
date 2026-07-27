@@ -480,6 +480,7 @@ export function ChatPanel({
                   type="button"
                   variant="outline"
                   className="min-h-11 w-full border-wine/25 text-ink sm:w-auto"
+                  aria-pressed={preferDeep}
                   onClick={() => activateDeepenFromReply()}
                 >
                   Aprofundar este tema
@@ -594,7 +595,7 @@ export function ChatPanel({
             {/* Secondary entry — primary is “Aprofundar este tema” under replies.
                 Keep checkbox for retries/tests; remove post-launch if unused. */}
             <details className="rounded-lg border border-border/50 bg-sand-50/40 px-3 py-2">
-              <summary className="cursor-pointer list-none text-xs font-medium text-ink-soft marker:content-none [&::-webkit-details-marker]:hidden">
+              <summary className="cursor-pointer list-none rounded-md text-xs font-medium text-ink-soft marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                 Opção secundária no composer
               </summary>
               <div className="mt-2 flex items-start gap-3 border-t border-border/40 pt-2">
@@ -618,8 +619,10 @@ export function ChatPanel({
                     id={deepenHelpId}
                     className="mt-0.5 text-xs leading-relaxed text-ink-soft"
                   >
-                    Entrada alternativa ao botão sob a resposta. Consome mais do
-                    espaço de uso — só nesta mensagem, sem alterar seu perfil.
+                    Entrada alternativa ao botão sob a resposta: mais contexto,
+                    conexões bíblicas e próximos passos práticos. Consome mais
+                    do espaço de uso — só nesta resposta, sem alterar seu
+                    perfil.
                   </p>
                 </div>
               </div>

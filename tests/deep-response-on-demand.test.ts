@@ -344,6 +344,7 @@ describe("deep response UI and plan copy", () => {
     const upsell = read("src", "components", "chat", "chat-plan-upsell.tsx");
     expect(panel).toContain("Aprofundar esta resposta");
     expect(panel).toContain("Aprofundar este tema");
+    expect(panel).toContain("aria-pressed={preferDeep}");
     expect(panel).toContain("activateDeepenFromReply");
     expect(panel).toContain("Aprofundar ativo para a próxima mensagem");
     expect(panel).toContain("Cancelar Aprofundar");

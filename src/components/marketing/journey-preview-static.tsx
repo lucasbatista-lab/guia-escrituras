@@ -48,7 +48,7 @@ export function JourneyPreviewStatic({
       </div>
 
       <article
-        className="mt-8 overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-sm"
+        className="mt-8 min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-sm"
         aria-label={`Prévia da jornada ${journey.title}`}
       >
         <div className="border-b border-border/70 bg-sand-100/50 px-5 py-5 sm:px-6">

@@ -68,7 +68,7 @@ export default async function JornadaStepPage({
   const totalSteps = journey.steps.length;
 
   return (
-    <article className="space-y-8 pb-28">
+    <article className="space-y-8 pb-32">
       <nav className="text-sm text-ink-soft">
         <Link href="/jornadas" className="underline underline-offset-4">
           Jornadas

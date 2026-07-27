@@ -90,6 +90,7 @@ export default async function JornadaDetailPage({
           {visual.mark}
         </span>
         <PlatformPageHeader
+          className="min-w-0 flex-1"
           title={journey.title}
           description={journey.description}
         />

@@ -105,11 +105,11 @@ export default async function JornadasPage() {
             <li
               key={j.slug}
               className={cn(
-                "flex flex-col rounded-2xl border bg-card/60 p-5",
+                "flex min-w-0 flex-col rounded-2xl border bg-card/60 p-5",
                 visual.borderClass,
               )}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-3">
                 <span
                   className={cn(
                     "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg",
@@ -121,7 +121,9 @@ export default async function JornadasPage() {
                   {visual.mark}
                 </span>
                 <div className="min-w-0">
-                  <h2 className="font-display text-xl text-ink">{j.title}</h2>
+                  <h2 className="break-words font-display text-xl text-ink">
+                    {j.title}
+                  </h2>
                   <p className="mt-1 text-xs font-medium text-ink-soft">
                     {status}
                   </p>

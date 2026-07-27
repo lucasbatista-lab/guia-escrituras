@@ -93,8 +93,8 @@ export function PlanCompareStatic({ className }: { className?: string }) {
               )}
               open={key === "caminho"}
             >
-              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-4 marker:content-none [&::-webkit-details-marker]:hidden">
-                <span>
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-md py-4 marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                <span className="min-w-0">
                   <span className="font-display text-xl text-ink">
                     {plan.name}
                   </span>

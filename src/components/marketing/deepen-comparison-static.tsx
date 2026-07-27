@@ -82,7 +82,7 @@ export function DeepenComparisonStatic({
         <figcaption className="text-xs font-medium uppercase tracking-[0.1em] text-ink-soft">
           Pergunta de exemplo
         </figcaption>
-        <blockquote className="mt-2 font-display text-lg leading-snug text-ink">
+        <blockquote className="mt-2 break-words font-display text-lg leading-snug text-ink">
           “{EXAMPLE_QUESTION}”
         </blockquote>
       </figure>
