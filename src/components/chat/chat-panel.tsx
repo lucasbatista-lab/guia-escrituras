@@ -432,8 +432,7 @@ export function ChatPanel({
             {canDeepen && !suppressCommercialPrompts && !deepenFeatureDisabled ? (
               <p className="text-xs leading-relaxed text-ink-soft">
                 Em situações complexas, use “Aprofundar este tema” sob uma
-                resposta — ou a opção secundária no campo de mensagem — antes de
-                enviar.
+                resposta — ou a opção secundária no campo de mensagem — antes de enviar.
               </p>
             ) : null}
           </div>
