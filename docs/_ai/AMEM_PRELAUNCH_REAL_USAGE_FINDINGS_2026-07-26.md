@@ -1,32 +1,38 @@
 # Achados de uso real pré-lançamento
 
-**Data:** 2026-07-26  
+**Data:** 2026-07-26 (atualizado pós-reteste prod `2b2fcbf`)  
 **Lançamento planejado:** 2026-07-28  
-**HEAD tip origem:** `eda920e` · **fixes locais:** pending deploy  
-**Produção publicada:** `461736d`  
+**Produção confirmada:** `2b2fcbf` (`/api/health` · runtime production)  
 **MIG 009:** aplicada 2026-07-26 · postcheck `overall_ok=true`  
 **MIG 004:** **não** aplicada  
-**Preços:** R$38 / R$58 / R$188 imutáveis
+**Preços:** R$38 / R$58 / R$188 imutáveis  
+**Stripe live smoke:** **depois** dos P0 — não bloqueia investigação atual, mas **não** declara GO
 
 ---
 
 ## Veredito 28/07
 
-**Condicional GO** — lançar só se: (1) deploy dos fixes locais críticos, (2) smoke autenticado completo, (3) reteste sintético de crise em produção.
+**NO-GO** para lançamento nesta atualização.
 
-**Não** nesta janela: redesign público amplo · aplicar MIG 004 sem pack GO · implementar plan change · criar cupons via agent.
+Motivos:
+
+1. Jornada permanece **503** em produção; causa remota **ainda não** lida nos logs nesta execução.  
+2. Crise teve **falso negativo** em formulação explícita sob Aprofundar (fix local pronto; falta deploy + smoke).  
+3. Um de três testes Deep foi **objetivamente incompleto** (intro+refs+CTA sem corpo) e era aceito como sucesso (guard local pronto; falta deploy + smoke).
+
+**Não** nesta janela: redesign público · MIG 004 · plan change · cupons via agent · Stripe live como substituto dos P0.
+
+Relatório P0: `AMEM_P0_PRODUCTION_RETEST_2026-07-26.md`.
 
 ---
 
-## P0
+## P0 (estado após reteste `2b2fcbf`)
 
 | Item | Evidência | Estado | Ação |
 |------|-----------|--------|------|
-| Jornadas HTTP 500 | Observado em uso real; masking de erro corrigido **localmente**; causa raiz RPC **não** provada | Pós-009: 500 completo observado **sem causalidade provada** com a 009 | Deploy fix masking · **logs prod** pós-deploy · smoke jornadas |
-| Crise FN | “considerando não viver mais” → modelo chamado (sem CVV no excerpt) | Fix local detector+template+skip preferDeep | Deploy + reteste sintético |
-| Qualidade Deep | Wiring OK; gap = prompt/modelo (**HIPÓTESE**) | Docs-only | Review humano; não bloqueia se copy honesta |
-
-Docs: `AMEM_CRISIS_RUNTIME_*` · `AMEM_DEEP_RESPONSE_*`.
+| Jornadas HTTP 503 | `POST …/complete` → 503 + `persist_failed` após `2b2fcbf` | Causa remota **não** lida (Vercel não linkada nesta máquina) | Operador: logs `journey_progress_rpc_failed`; **sem** fix especulativo |
+| Crise FN | “não continuar vivo” + “me manter seguro” + Aprofundar → modelo + Deep UI | Fix local detector+template | Deploy + smoke sintético |
+| Deep incompleto | 1/3 respostas: intro+footer+refs+CTA sem corpo | Guard estrutural local (`ai_incomplete`) | Deploy + smoke 3 prompts |
 
 ---
 
@@ -34,7 +40,7 @@ Docs: `AMEM_CRISIS_RUNTIME_*` · `AMEM_DEEP_RESPONSE_*`.
 
 | Item | Ação |
 |------|------|
-| Cupons / validação $ | ROTA A test mode (`AMEM_LOW_COST_STRIPE_*`) |
+| Cupons / validação $ | ROTA A test mode (`AMEM_LOW_COST_STRIPE_*`) — **após** P0 |
 | Plan change | Decision pack D/E — **não** implementar agora |
 | Admin truth labels | `AMEM_ADMIN_DATA_TRUTH_*` |
 | Legal review | Gaps counsel — `AMEM_LEGAL_PAGES_*` |
@@ -51,24 +57,25 @@ Redesign público (`AMEM_PUBLIC_UX_*`) · evolução visual autenticada · MIG 0
 
 | Condição | Obrigatório |
 |----------|-------------|
-| Deploy fixes (crise + jornadas error UX / correlatos locais) | Sim |
+| Identificar causa do 503 de Jornadas nos logs + correção causal | Sim |
+| Deploy fixes crise + Deep incompleto | Sim |
 | Smoke autenticado (chat, jornadas, conta, checkout test) | Sim |
-| Crise sintético em prod (188 presente, sem biblia longa) | Sim |
-| Confirmar SHA prod = tip de lançamento escolhido | Sim |
+| Crise sintético em prod (188/192, sem biblia longa, sem Deep) | Sim |
+| Deep: nenhum sucesso oco (intro-only) | Sim |
+| Confirmar SHA prod = tip de lançamento | Sim |
+| Stripe live smoke | Depois dos P0 |
 | Aplicar MIG 004 | **Não**, salvo GO do pack |
 | Redesign antes do launch | **Não** |
-| Inventar taxa de conversão / depoimentos | **Não** |
 
 ---
 
 ## Ordem de execução sugerida
 
-1. Deploy local fixes → verificar `/api/health` SHA  
-2. Reteste crise + smoke jornadas + logs se 500 persistir  
-3. Stripe ROTA A  
-4. Counsel legal mínimo  
-5. Cutover checklist  
-6. Pós: admin labels, plan-change decisão, redesign
+1. Operador: extrair `journey_progress_rpc_failed` da Vercel → correção causal de Jornadas  
+2. Deploy fixes crise + Deep → `/api/health` SHA  
+3. Smoke P0 (crise, Deep×3, jornadas)  
+4. Stripe ROTA A  
+5. Counsel legal mínimo / cutover  
 
 ---
 
@@ -76,6 +83,7 @@ Redesign público (`AMEM_PUBLIC_UX_*`) · evolução visual autenticada · MIG 0
 
 | Doc |
 |-----|
+| `AMEM_P0_PRODUCTION_RETEST_2026-07-26.md` |
 | `AMEM_CRISIS_RUNTIME_PRODUCTION_RESPONSE_REVIEW_2026-07-26.md` |
 | `AMEM_DEEP_RESPONSE_VALUE_AND_RUNTIME_AUDIT_2026-07-26.md` |
 | `AMEM_LOW_COST_STRIPE_VALIDATION_PLAN_2026-07-26.md` |
