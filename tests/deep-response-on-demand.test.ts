@@ -75,7 +75,13 @@ function authFor(opts: {
 
 function mockGenerate(topic = "paz") {
   return {
-    answer: `Reflexão sobre ${topic}.`,
+    answer: [
+      `Entendo que ${topic} pesa neste momento e merece atenção cuidadosa, sem pressa de resolver tudo de uma vez.`,
+      "",
+      "À luz das Escrituras, vale distinguir o que você controla do que precisa confiar. A passagem convida a trazer o peso com honestidade, a nomear o medo sem se esconder dele, e a buscar um passo concreto que preserve dignidade, vínculos e responsabilidade diante de Deus.",
+      "",
+      "Sugestões práticas: (1) nomear o que mais aperta em uma frase clara; (2) orar pedindo clareza sem exigir resposta imediata; (3) conversar com alguém de confiança sobre o próximo passo pequeno que você consegue dar hoje; (4) revisar amanhã se o passo foi possível.",
+    ].join("\n"),
     biblicalReferences: [{ book: "Salmos", chapter: 23, verseStart: 1 }],
     interpretationNotice: SHORT_INTERPRETATION_NOTICE,
     followUpQuestion: "Quer continuar?",

@@ -57,7 +57,16 @@ vi.mock("@/config/runtime", async (importOriginal) => {
 
 function mockResult(answer = "Resposta mock.") {
   return {
-    answer,
+    answer:
+      answer.length >= 200
+        ? answer
+        : [
+            answer,
+            "",
+            "À luz das Escrituras, vale acolher o que pesa sem forçar uma solução imediata. A passagem convida a nomear o medo com honestidade, a pedir sabedoria e a dar um passo concreto e pequeno que preserve dignidade e vínculos.",
+            "",
+            "Sugestões: (1) escrever uma frase sobre o que mais aperta; (2) orar pedindo clareza sem exigir resposta imediata; (3) conversar com alguém de confiança hoje; (4) revisar amanhã se o passo foi possível.",
+          ].join("\n"),
     biblicalReferences: [{ book: "João", chapter: 14, verseStart: 27 }],
     interpretationNotice: IDENTITY_DISCLAIMER,
     followUpQuestion: "Quer continuar?",

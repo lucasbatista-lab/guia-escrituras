@@ -40,6 +40,7 @@ import {
   selectContextMessages,
 } from "@/lib/ai/conversation-memory";
 import { normalizeAssistantPresentation } from "@/lib/ai/normalize-assistant-presentation";
+import { assertDeepAnswerSubstantive } from "@/lib/ai/deep-response-completeness";
 import { tryAcquireChatTurnLock } from "@/lib/ai/chat-turn-lock";
 import {
   mapOpenAiProviderError,
@@ -553,6 +554,25 @@ export async function runChatTurn(input: {
     interpretationNotice: result.interpretationNotice,
     followUpQuestion: result.followUpQuestion,
   });
+
+  // Aprofundar must not succeed with intro/footer/refs shell and no reflection body.
+  if (body.preferDeep) {
+    try {
+      assertDeepAnswerSubstantive(presented.answer);
+    } catch (error) {
+      logger.error("deep_response_incomplete", {
+        requestId,
+        userId: maskUserId(auth.userId),
+        responseDepth,
+        answerChars: presented.answer.length,
+        refCount: result.biblicalReferences.length,
+        hasFollowUp: Boolean(presented.followUpQuestion),
+        flowStatus: "failed",
+        durationMs: Date.now() - turnStartedMs,
+      });
+      throw error;
+    }
+  }
 
   // Provider output is validated before this point; never persist invalid assistant content.
   let costs;
