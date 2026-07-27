@@ -184,7 +184,8 @@ describe("first-use onboarding — chat empty state and composer", () => {
   });
 
   it("composer has welcoming placeholder and a11y label", () => {
-    expect(panel).toContain('placeholder="Conte o que você está vivendo…"');
+    expect(panel).toContain("Conte o que você está vivendo…");
+    expect(panel).toContain("O que você gostaria de explorar com mais atenção?");
     expect(panel).toContain("Conte o que você está vivendo");
     expect(panel).toContain("htmlFor=\"chat-input\"");
     expect(panel).toContain("disabled={loading || !input.trim()}");
@@ -195,13 +196,20 @@ describe("first-use onboarding — chat empty state and composer", () => {
 
   it("Profundo discovers deepen without auto-activation; Essencial stays discreet", () => {
     expect(panel).toContain("Aprofundar esta resposta");
+    expect(panel).toContain("Aprofundar este tema");
     expect(panel).toContain("useState(false)");
-    expect(panel).toContain("Em situações complexas, você pode ativar");
+    expect(panel).toContain("Em situações complexas, use");
     expect(panel).toContain("antes de enviar");
     expect(panel).toContain("DeepUpsellHint");
     expect(upsell).toContain("Conhecer o Profundo");
     expect(upsell).toContain("/planos#aprofundar");
-    expect(panel).not.toContain("setPreferDeep(true)");
+    expect(panel).toContain("const [preferDeep, setPreferDeep] = useState(false)");
+    expect(panel).toContain("activateDeepenFromReply");
+    expect(panel).toContain("onClick={() => activateDeepenFromReply()}");
+    // No mount-time auto-activation — preferDeep starts false.
+    expect(panel).not.toMatch(
+      /useEffect\(\(\)\s*=>\s*\{[^}]*setPreferDeep\(true\)/,
+    );
   });
 
   it("surfaces clear recovery copy for session and response failures", () => {

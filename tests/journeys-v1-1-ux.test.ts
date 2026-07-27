@@ -69,7 +69,39 @@ describe("journeys V1.1 step completion UX", () => {
     );
     expect(detail).toContain("progress.isCompleted");
     expect(detail).toContain("Ver outras jornadas");
-    expect(detail).toContain("Rever etapas");
+    expect(detail).toContain("Rever Jornada");
+    expect(detail).toContain("completedAt");
+    expect(detail).toContain("o progresso fica salvo");
+  });
+
+  it("step page uses Escritura / Reflexão / Ação hierarchy", () => {
+    const page = read(
+      "src",
+      "app",
+      "(platform)",
+      "jornadas",
+      "[slug]",
+      "[step]",
+      "page.tsx",
+    );
+    expect(page).toContain("Escritura");
+    expect(page).toContain("Reflexão");
+    expect(page).toContain("Ação prática");
+    expect(page).toContain("Para conversar");
+    expect(page).toContain("Conclusão da etapa");
+    expect(page).toContain("Etapa ${step.number} de ${totalSteps}");
+  });
+
+  it("catalog cards use distinct accents and contextual CTAs", () => {
+    const catalog = read("src", "app", "(platform)", "jornadas", "page.tsx");
+    const display = read("src", "lib", "journeys", "display.ts");
+    expect(display).toContain("getJourneyVisual");
+    expect(display).toContain("Começar Jornada");
+    expect(display).toContain("Continuar etapa");
+    expect(display).toContain("Rever Jornada");
+    expect(catalog).toContain("getJourneyVisual");
+    expect(catalog).toContain("journeyDurationLabel");
+    expect(catalog).toContain("journeyCurrentStepNumber");
   });
 
   it("reset button keeps explicit confirmation", () => {

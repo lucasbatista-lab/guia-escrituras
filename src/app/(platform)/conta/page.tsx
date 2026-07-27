@@ -272,7 +272,13 @@ export default async function ContaPage() {
             </p>
             {hasDeepOnDemand ? (
               <p className="mt-3 text-sm text-ink-soft">
-                Resposta aprofundada sob demanda disponível no chat.
+                Inclui Aprofundar sob demanda no chat — use “Aprofundar este tema”
+                sob uma resposta quando a situação pedir mais análise.
+              </p>
+            ) : null}
+            {hasJourneys ? (
+              <p className="mt-2 text-sm text-ink-soft">
+                Inclui Jornadas de leitura com progresso salvo na conta.
               </p>
             ) : null}
             {level !== "normal" ? (
@@ -297,6 +303,7 @@ export default async function ContaPage() {
               />
             </div>
             <p className="mt-4 text-sm text-ink-soft">
+              Cancele a renovação pela sua conta quando quiser.{" "}
               <Link
                 href="/planos#comparar-uso"
                 className="text-ink underline underline-offset-4"

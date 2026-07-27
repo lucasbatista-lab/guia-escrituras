@@ -343,6 +343,11 @@ describe("deep response UI and plan copy", () => {
     const panel = read("src", "components", "chat", "chat-panel.tsx");
     const upsell = read("src", "components", "chat", "chat-plan-upsell.tsx");
     expect(panel).toContain("Aprofundar esta resposta");
+    expect(panel).toContain("Aprofundar este tema");
+    expect(panel).toContain("activateDeepenFromReply");
+    expect(panel).toContain("Aprofundar ativo para a próxima mensagem");
+    expect(panel).toContain("Cancelar Aprofundar");
+    expect(panel).toContain("O que você gostaria de explorar com mais atenção?");
     expect(panel).toContain("canDeepen");
     expect(panel).toContain("preferDeep: useDeep");
     expect(panel).toContain("DeepUpsellHint");
@@ -354,6 +359,7 @@ describe("deep response UI and plan copy", () => {
     expect(panel).toContain("Aprofundar e enviar");
     expect(panel).toContain("Resposta aprofundada · só nesta mensagem");
     expect(panel).toContain("deepened: useDeep");
+    expect(panel).toContain("safetyMode !== \"crisis\"");
   });
 
   it("conversar page passes server-resolved canDeepen", () => {
@@ -379,9 +385,8 @@ describe("deep response UI and plan copy", () => {
   it("conta surfaces deep availability for entitled plans", () => {
     const conta = read("src", "app", "(platform)", "conta", "page.tsx");
     expect(conta).toContain("canUseDeepResponseOnDemand");
-    expect(conta).toContain(
-      "Resposta aprofundada sob demanda disponível no chat.",
-    );
+    expect(conta).toContain("Inclui Aprofundar sob demanda no chat");
+    expect(conta).toContain("Aprofundar este tema");
   });
 
   it("planos page distinguishes profile depth from on-demand deepen", () => {

@@ -345,6 +345,23 @@ export function ChatPanel({
     inputRef.current?.focus();
   }
 
+  function activateDeepenFromReply() {
+    if (!canDeepen || deepenFeatureDisabled || loading || chatFeatureDisabled) {
+      return;
+    }
+    if (conversationHasCrisisSafetyMode(messages)) return;
+    setPreferDeep(true);
+    setStickToBottom(true);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }
+
+  function cancelDeepenMode() {
+    setPreferDeep(false);
+    pendingDeepRef.current = false;
+  }
+
   const profileBits = [traditionLabel, depthLabel].filter(Boolean).join(" · ");
   const suppressCommercialPrompts = conversationHasCrisisSafetyMode(messages);
   const deepenEligible =
@@ -414,8 +431,8 @@ export function ChatPanel({
             </p>
             {canDeepen && !suppressCommercialPrompts && !deepenFeatureDisabled ? (
               <p className="text-xs leading-relaxed text-ink-soft">
-                Em situações complexas, você pode ativar “Aprofundar esta
-                resposta” antes de enviar.
+                Em situações complexas, use “Aprofundar este tema” sob uma
+                resposta — ou a opção secundária no composer — antes de enviar.
               </p>
             ) : null}
           </div>
@@ -450,6 +467,28 @@ export function ChatPanel({
             ) : null}
             {message.meta ? (
               <AssistantMetaFooter meta={message.meta} />
+            ) : null}
+            {message.role === "assistant" &&
+            deepenEligible &&
+            !loading &&
+            !chatFeatureDisabled &&
+            message.content.trim().length > 0 &&
+            message.meta?.safetyMode !== "crisis" &&
+            !message.meta?.deepened ? (
+              <div className="mt-3 border-t border-border/50 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11 w-full border-wine/25 text-ink sm:w-auto"
+                  onClick={() => activateDeepenFromReply()}
+                >
+                  Aprofundar este tema
+                </Button>
+                <p className="mt-2 text-xs leading-relaxed text-ink-soft">
+                  Não envia sozinho — ativa o modo no composer para a próxima
+                  mensagem.
+                </p>
+              </div>
             ) : null}
           </article>
         ))}
@@ -521,58 +560,70 @@ export function ChatPanel({
         ) : null}
 
         {showDeepenControls ? (
-          <div
-            className={cn(
-              "mb-3 rounded-xl border px-3 py-2.5",
-              deepenActive
-                ? "border-wine/40 bg-wine/5"
-                : "border-border/70 bg-sand-50/50",
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <input
-                id={deepenId}
-                type="checkbox"
-                checked={preferDeep}
-                onChange={(e) => setPreferDeep(e.target.checked)}
-                disabled={loading}
-                aria-describedby={deepenHelpId}
-                className="mt-2 h-5 w-5 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-              <div className="min-w-0">
-                <label
-                  htmlFor={deepenId}
-                  className="block min-h-11 cursor-pointer pt-1.5 text-sm font-medium text-ink"
-                >
-                  Aprofundar esta resposta
-                  {deepenActive ? (
-                    <span className="ml-2 text-xs font-normal text-wine">
-                      · ativo nesta mensagem
-                    </span>
-                  ) : null}
-                </label>
-                <p
-                  id={deepenHelpId}
-                  className="mt-0.5 text-xs leading-relaxed text-ink-soft"
-                >
-                  Peça uma reflexão mais ampla desta mensagem: mais contexto da
-                  situação, conexões bíblicas e próximos passos práticos. Consome
-                  mais da sua margem de uso — só nesta resposta, sem alterar seu
-                  perfil.
-                </p>
-                {deepenActive ? (
-                  <p className="mt-2 rounded-lg border border-wine/20 bg-card/80 px-2.5 py-2 text-xs leading-relaxed text-ink">
-                    <span className="font-medium">Será aprofundado:</span>{" "}
-                    {input.trim()
-                      ? input.trim().length > 140
-                        ? `${input.trim().slice(0, 140).trim()}…`
-                        : input.trim()
-                      : "o texto que você escrever abaixo, nesta mensagem."}{" "}
-                    Desmarque a caixa se quiser uma resposta padrão.
+          <div className="mb-3 space-y-2">
+            {deepenActive ? (
+              <div
+                className="space-y-2 rounded-xl border border-wine/40 bg-wine/5 px-3 py-2.5"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-ink">
+                    Aprofundar ativo para a próxima mensagem
                   </p>
-                ) : null}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="min-h-11 shrink-0 text-ink-soft"
+                    disabled={loading}
+                    onClick={cancelDeepenMode}
+                  >
+                    Cancelar Aprofundar
+                  </Button>
+                </div>
+                <p className="rounded-lg border border-wine/20 bg-card/80 px-2.5 py-2 text-xs leading-relaxed text-ink">
+                  <span className="font-medium">Será aprofundado:</span>{" "}
+                  {input.trim()
+                    ? input.trim().length > 140
+                      ? `${input.trim().slice(0, 140).trim()}…`
+                      : input.trim()
+                    : "o texto que você escrever abaixo, nesta mensagem."}
+                </p>
               </div>
-            </div>
+            ) : null}
+            {/* Secondary entry — primary is “Aprofundar este tema” under replies.
+                Keep checkbox for retries/tests; remove post-launch if unused. */}
+            <details className="rounded-lg border border-border/50 bg-sand-50/40 px-3 py-2">
+              <summary className="cursor-pointer list-none text-xs font-medium text-ink-soft marker:content-none [&::-webkit-details-marker]:hidden">
+                Opção secundária no composer
+              </summary>
+              <div className="mt-2 flex items-start gap-3 border-t border-border/40 pt-2">
+                <input
+                  id={deepenId}
+                  type="checkbox"
+                  checked={preferDeep}
+                  onChange={(e) => setPreferDeep(e.target.checked)}
+                  disabled={loading}
+                  aria-describedby={deepenHelpId}
+                  className="mt-2 h-5 w-5 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <div className="min-w-0">
+                  <label
+                    htmlFor={deepenId}
+                    className="block min-h-11 cursor-pointer pt-1.5 text-sm font-medium text-ink"
+                  >
+                    Aprofundar esta resposta
+                  </label>
+                  <p
+                    id={deepenHelpId}
+                    className="mt-0.5 text-xs leading-relaxed text-ink-soft"
+                  >
+                    Entrada alternativa ao botão sob a resposta. Consome mais do
+                    espaço de uso — só nesta mensagem, sem alterar seu perfil.
+                  </p>
+                </div>
+              </div>
+            </details>
           </div>
         ) : showDeepUpsellHint ? (
           <DeepUpsellHint />
@@ -594,7 +645,11 @@ export function ChatPanel({
                 void send();
               }
             }}
-            placeholder="Conte o que você está vivendo…"
+            placeholder={
+              deepenActive
+                ? "O que você gostaria de explorar com mais atenção?"
+                : "Conte o que você está vivendo…"
+            }
             aria-invalid={Boolean(error)}
             aria-describedby={
               error

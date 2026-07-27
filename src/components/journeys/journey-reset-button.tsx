@@ -40,8 +40,8 @@ export function JourneyResetButton({ journeySlug }: { journeySlug: string }) {
     return (
       <Button
         type="button"
-        variant="outline"
-        className="min-h-11"
+        variant="ghost"
+        className="min-h-11 text-ink-soft"
         onClick={() => setOpen(true)}
       >
         Reiniciar jornada

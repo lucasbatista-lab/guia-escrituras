@@ -65,9 +65,10 @@ export default async function JornadaStepPage({
   const nextStep = nextSlug ? getJourneyStep(slug, nextSlug) : null;
   const chatHref = `/conversar?jornada=${encodeURIComponent(journey.slug)}&etapa=${encodeURIComponent(step.slug)}`;
   const isLastStep = !nextSlug;
+  const totalSteps = journey.steps.length;
 
   return (
-    <article className="space-y-8 pb-24">
+    <article className="space-y-8 pb-28">
       <nav className="text-sm text-ink-soft">
         <Link href="/jornadas" className="underline underline-offset-4">
           Jornadas
@@ -83,62 +84,119 @@ export default async function JornadaStepPage({
 
       <PlatformPageHeader
         title={step.title}
-        description={`Etapa ${step.number} de 7 · ${step.estimatedMinutes} min${
+        description={`Etapa ${step.number} de ${totalSteps} · ~${step.estimatedMinutes} min por etapa${
           stepCompleted ? " · concluída" : ""
         }`}
       />
 
       <p className="text-sm text-ink-soft">
-        <span className="font-medium text-ink">Referência:</span>{" "}
-        {step.bibleReference}
+        O progresso fica salvo — você pode pausar e retomar quando quiser.
       </p>
 
-      <section className="space-y-4 text-sm leading-relaxed text-ink-soft">
-        <div>
-          <h2 className="font-medium text-ink">Paráfrase</h2>
-          <p className="mt-2">{step.paraphrase}</p>
-        </div>
-        <div>
-          <h2 className="font-medium text-ink">Reflexão</h2>
-          <p className="mt-2">{step.reflection}</p>
-        </div>
-        <div>
-          <h2 className="font-medium text-ink">Para refletir</h2>
-          <p className="mt-2">{step.personalQuestion}</p>
-        </div>
-        <div>
-          <h2 className="font-medium text-ink">Ação prática</h2>
-          <p className="mt-2">{step.practicalAction}</p>
-        </div>
-        {step.safetyNote ? (
-          <div className="rounded-xl border border-border/70 bg-sand-50/80 p-4">
-            <h2 className="font-medium text-ink">Cuidado</h2>
-            <p className="mt-2">{step.safetyNote}</p>
-          </div>
-        ) : null}
+      {/* 1. Passagem / referência */}
+      <section
+        aria-labelledby="step-escritura-heading"
+        className="border-l-2 border-wine/30 pl-4"
+      >
+        <h2
+          id="step-escritura-heading"
+          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+        >
+          Escritura
+        </h2>
+        <p className="mt-2 font-display text-lg text-ink">
+          {step.bibleReference}
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+          {step.paraphrase}
+        </p>
       </section>
 
-      <JourneyStepCompleteButton
-        journeySlug={journey.slug}
-        stepId={step.id}
-        completed={stepCompleted}
-        nextStepHref={
-          nextSlug ? `/jornadas/${journey.slug}/${nextSlug}` : null
-        }
-        nextStepLabel={nextStep?.title ?? null}
-        journeyHref={`/jornadas/${journey.slug}`}
-        isLastStep={isLastStep}
-        journeyCompleted={progress.isCompleted}
-      />
+      {/* 2. Reflexão */}
+      <section aria-labelledby="step-reflexao-heading">
+        <h2
+          id="step-reflexao-heading"
+          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+        >
+          Reflexão
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          {step.reflection}
+        </p>
+      </section>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href={chatHref}>Conversar sobre esta etapa</Link>
-        </Button>
+      {/* 3. Aplicação prática */}
+      <section
+        aria-labelledby="step-acao-heading"
+        className="rounded-xl border border-gold/25 bg-sand-100/40 px-4 py-4"
+      >
+        <h2
+          id="step-acao-heading"
+          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+        >
+          Ação prática
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink">
+          {step.practicalAction}
+        </p>
+      </section>
+
+      {/* 4. Pergunta para conversar */}
+      <section aria-labelledby="step-pergunta-heading">
+        <h2
+          id="step-pergunta-heading"
+          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+        >
+          Para conversar
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          {step.personalQuestion}
+        </p>
+        <div className="mt-4">
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href={chatHref}>Conversar sobre esta etapa</Link>
+          </Button>
+        </div>
+      </section>
+
+      {step.safetyNote ? (
+        <div className="rounded-xl border border-border/70 bg-sand-50/80 p-4">
+          <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+            Cuidado
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            {step.safetyNote}
+          </p>
+        </div>
+      ) : null}
+
+      {/* 5. Conclusão da etapa */}
+      <section
+        aria-labelledby="step-conclusao-heading"
+        className="space-y-3 border-t border-border/60 pt-6"
+      >
+        <h2
+          id="step-conclusao-heading"
+          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+        >
+          Conclusão da etapa
+        </h2>
+        <JourneyStepCompleteButton
+          journeySlug={journey.slug}
+          stepId={step.id}
+          completed={stepCompleted}
+          nextStepHref={
+            nextSlug ? `/jornadas/${journey.slug}/${nextSlug}` : null
+          }
+          nextStepLabel={nextStep?.title ?? null}
+          journeyHref={`/jornadas/${journey.slug}`}
+          isLastStep={isLastStep}
+          journeyCompleted={progress.isCompleted}
+        />
         <Button asChild variant="ghost" className="min-h-11">
           <Link href={`/jornadas/${journey.slug}`}>Voltar à jornada</Link>
         </Button>
-      </div>
+      </section>
 
       <nav
         className="fixed inset-x-0 bottom-0 z-10 border-t border-border/70 bg-background/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm"

@@ -6,7 +6,10 @@ import { PlatformPageHeader } from "@/components/platform/page-header";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import {
+  getJourneyVisual,
   journeyCtaLabel,
+  journeyCurrentStepNumber,
+  journeyDurationLabel,
   journeyStatusLabel,
 } from "@/lib/journeys/display";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
@@ -18,6 +21,7 @@ import {
 import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { InlineNotice } from "@/components/platform/inline-notice";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -75,8 +79,20 @@ export default async function JornadasPage() {
 
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map(({ journey: j, progress, estimatedMinutes }) => {
+          const visual = getJourneyVisual(j.slug);
           const status = journeyStatusLabel(progress);
-          const cta = journeyCtaLabel(progress);
+          const stepNumber = journeyCurrentStepNumber(progress, j.steps);
+          const cta = journeyCtaLabel(progress, {
+            currentStepNumber: stepNumber,
+          });
+          const minutesPerStep =
+            j.steps.length > 0
+              ? Math.round(estimatedMinutes / j.steps.length)
+              : null;
+          const duration = journeyDurationLabel({
+            stepCount: j.steps.length,
+            minutesPerStep,
+          });
           const firstStep = j.steps[0];
           const continueHref =
             progress?.currentStepId && !progress.isCompleted
@@ -88,20 +104,39 @@ export default async function JornadasPage() {
           return (
             <li
               key={j.slug}
-              className="flex flex-col rounded-2xl border border-border/70 bg-card/60 p-5"
+              className={cn(
+                "flex flex-col rounded-2xl border bg-card/60 p-5",
+                visual.borderClass,
+              )}
             >
-              <h2 className="font-display text-xl text-ink">{j.title}</h2>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-soft">
-                {j.description}
+              <div className="flex items-start gap-3">
+                <span
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg",
+                    visual.markBgClass,
+                    visual.markTextClass,
+                  )}
+                  aria-hidden
+                >
+                  {visual.mark}
+                </span>
+                <div className="min-w-0">
+                  <h2 className="font-display text-xl text-ink">{j.title}</h2>
+                  <p className="mt-1 text-xs font-medium text-ink-soft">
+                    {status}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">
+                {j.objective}
               </p>
-              <p className="mt-3 text-xs text-ink-soft">
-                7 etapas · ~{estimatedMinutes} min · {status}
-              </p>
+              <p className="mt-3 text-xs text-ink-soft">{duration}</p>
               {entitled && !journeysDisabled && progress ? (
                 <div className="mt-4">
                   <JourneyProgressBar
                     progress={progress}
                     totalSteps={j.steps.length}
+                    journeySlug={j.slug}
                     labelId={`progress-${j.slug}`}
                   />
                 </div>
