@@ -65,11 +65,11 @@ export function ParticularAccessNote({ className }: { className?: string }) {
         id="particular-access-heading"
         className="font-display text-xl text-ink"
       >
-        Acompanhamento sob medida
+        Precisa de algo sob medida?
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-        {particular.tagline} Fora da comparação principal dos planos Essencial,
-        Caminho e Profundo.
+        O Particular é uma oferta separada, sob solicitação — não faz parte da
+        grade principal de Essencial, Caminho e Profundo. {particular.tagline}
       </p>
       <p className="mt-4">
         <TrackingLink

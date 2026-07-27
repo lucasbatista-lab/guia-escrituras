@@ -24,16 +24,17 @@ describe("purchase experience — home copy & flow order", () => {
       "Ver planos",
       'href="#demonstracao"',
       'id="demo-heading"',
-      "Situações reais que você pode trazer",
       "Como o Amém Chat transforma situação em reflexão",
+      "Situações reais que você pode trazer",
       "Como começar",
-      "Profundidades e tradições",
-      "Segurança, privacidade e limites",
-      "{/* 8. Planos */}",
+      "Tradições cristãs no perfil",
+      "{/* 7. Três planos */}",
       "Assinatura mensal a partir de",
       "Comparar todos os planos",
+      "<JourneyPreviewStatic",
+      "<DeepenComparisonStatic",
+      "Segurança, privacidade e limites",
       "Perguntas frequentes",
-      "Estamos começando",
       "Pronto para escolher um plano?",
     ];
     let last = -1;
@@ -118,10 +119,16 @@ describe("purchase experience — honest plan cards", () => {
   it("planos page explains renewal, cancellation and flexible use", () => {
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
     expect(planos).toContain("Assinatura mensal com renovação automática");
-    expect(planos).toContain("Cancelamento da renovação");
+    expect(planos).toContain("cancelamento da renovação");
     expect(planos).toContain("uso justo");
     expect(planos).toContain("Checkout seguro");
     expect(planos).toContain("comparar-uso");
+    expect(planos).toContain("Escolha o ritmo da sua reflexão");
+    expect(planos).toContain("Como escolher em 30 segundos");
+    expect(planos).toContain("<JourneyPreviewStatic");
+    expect(planos).toContain("<DeepenComparisonStatic");
+    expect(planos).toContain("<PlanCompareStatic");
+    expect(planos).toContain("Escolher o Caminho");
     const cards = read("src", "components", "marketing", "plan-cards.tsx");
     expect(cards).toContain("CAMINHO_HIGHLIGHT_BADGE");
     expect(cards).toContain("Melhor equilíbrio entre uso e acompanhamento");

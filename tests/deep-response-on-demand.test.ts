@@ -387,9 +387,18 @@ describe("deep response UI and plan copy", () => {
   it("planos page distinguishes profile depth from on-demand deepen", () => {
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
     const shared = read("src", "lib", "entitlements", "reserved.ts");
+    const deepen = read(
+      "src",
+      "components",
+      "marketing",
+      "deepen-comparison-static.tsx",
+    );
     expect(shared).toContain("Profundidade de estilo");
-    expect(planos).toContain("O que é Aprofundar?");
+    expect(planos).toContain("DeepenComparisonStatic");
+    expect(planos).toContain('id="aprofundar"');
     expect(planos).toContain("SHARED_PLAN_INCLUDES");
+    expect(deepen).toContain("Normal versus Aprofundar");
+    expect(deepen).toContain("Segunda análise sob demanda");
   });
 
   it("does not alter Stripe checkout or webhook", () => {

@@ -4,9 +4,10 @@ import dynamic from "next/dynamic";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
+import { DeepenComparisonStatic } from "@/components/marketing/deepen-comparison-static";
+import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-static";
 import { PlanCards, ParticularAccessNote } from "@/components/marketing/plan-cards";
 import { TrackingLink } from "@/components/marketing/tracking-link";
-import { PERSONALIZATION_DEPTHS } from "@/lib/journey/personalization-labels";
 import { CROSS_SURFACE_COMMERCIAL_FAQ } from "@/lib/marketing/plan-faq";
 import {
   socialOpenGraphImages,
@@ -39,14 +40,9 @@ export const metadata: Metadata = {
     images: socialTwitterImages(),
   },
 };
+
 /** Starting price for Essencial — kept in sync with plan catalog (R$ 38/mês). */
 const ESSENCIAL_PRICE_LABEL = "R$ 38";
-
-const DEPTH_BLURBS: Record<string, string> = {
-  brief: "Clareza direta",
-  balanced: "Reflexão e aplicação",
-  deep: "Análise mais desenvolvida",
-};
 
 const situations = [
   {
@@ -170,14 +166,14 @@ export default function HomePage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main id="conteudo-principal" tabIndex={-1} className="outline-none">
-        {/* 1–2. Hero + demonstração (demo ao lado no desktop, abaixo no mobile) */}
+        {/* 1. Hero enxuto */}
         <section className="relative overflow-hidden">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.16),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.10),_transparent_50%)]"
           />
-          <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pb-12 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12 lg:pb-16 lg:pt-10">
-            <div className="animate-fade-up max-w-xl">
+          <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 lg:pb-14 lg:pt-10">
+            <div className="animate-fade-up max-w-2xl">
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft sm:text-sm">
                 {brand.name}
               </p>
@@ -196,7 +192,7 @@ export default function HomePage() {
                 <Button
                   asChild
                   size="lg"
-                  className="min-h-11 bg-ink hover:bg-ink/90"
+                  className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
                 >
                   <TrackingLink href="/planos">Ver planos</TrackingLink>
                 </Button>
@@ -204,15 +200,15 @@ export default function HomePage() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="min-h-11 border-ink/20"
+                  className="min-h-11 w-full border-ink/20 sm:w-auto"
                 >
                   <a href="#demonstracao">Ver um exemplo</a>
                 </Button>
               </div>
-              <p className="mt-3 text-sm font-medium text-ink">
-                Planos a partir de {ESSENCIAL_PRICE_LABEL}/mês
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
+                {`Planos a partir de ${ESSENCIAL_PRICE_LABEL}/mês · pagamento pela Stripe · cancelamento da renovação na sua conta.`}
               </p>
-              <ul className="mt-5 flex flex-wrap gap-x-3 gap-y-2 text-xs text-ink-soft">
+              <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-xs text-ink-soft">
                 <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
                   Baseado nas Escrituras
                 </li>
@@ -227,27 +223,58 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-
-            <div className="min-w-0">
-              <h2
-                id="demo-heading"
-                className="font-display text-2xl text-ink sm:text-3xl lg:text-2xl"
-              >
-                Veja uma reflexão de exemplo
-              </h2>
-              <p className="mt-2 max-w-xl text-sm text-ink-soft sm:text-base">
-                Uma demonstração do tipo de reflexão que você pode receber —
-                sem criar conta e sem chamar a API.
-              </p>
-              <div className="mt-5">
-                <ChatDemo />
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* 3. Situações reais */}
+        {/* 2. Demonstração existente */}
+        <SectionShell tone="card">
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
+            <h2
+              id="demo-heading"
+              className="font-display text-2xl text-ink sm:text-3xl"
+            >
+              Veja uma reflexão de exemplo
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-ink-soft sm:text-base">
+              Uma demonstração do tipo de reflexão que você pode receber —
+              sem criar conta e sem chamar a API.
+            </p>
+            <div className="mt-6 max-w-2xl">
+              <ChatDemo />
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 3. Benefícios concretos */}
         <SectionShell>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Como o Amém Chat transforma situação em reflexão
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              Do que você vive às Escrituras — com interpretação identificada e
+              passos para a vida real.
+            </p>
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {pillars.map((pillar) => (
+                <div
+                  key={pillar.title}
+                  className="rounded-2xl border border-border/70 bg-background/80 p-5 shadow-sm"
+                >
+                  <h3 className="font-display text-xl text-ink">
+                    {pillar.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                    {pillar.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionShell>
+
+        {/* 4. Exemplos de situações */}
+        <SectionShell tone="sand">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
               Situações reais que você pode trazer
@@ -275,35 +302,7 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 4. Como o produto ajuda */}
-        <SectionShell tone="card">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Como o Amém Chat transforma situação em reflexão
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              Do que você vive às Escrituras — com interpretação identificada e
-              passos para a vida real.
-            </p>
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
-              {pillars.map((pillar) => (
-                <div
-                  key={pillar.title}
-                  className="rounded-2xl border border-border/70 bg-background/80 p-5 shadow-sm"
-                >
-                  <h3 className="font-display text-xl text-ink">
-                    {pillar.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                    {pillar.body}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </SectionShell>
-
-        {/* 5. Como começar */}
+        {/* 5. Como funciona em quatro passos */}
         <SectionShell>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
@@ -333,33 +332,17 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 6. Profundidades e tradições */}
-        <SectionShell tone="sand">
+        {/* 6. Tradições */}
+        <SectionShell tone="card">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Profundidades e tradições
+              Tradições cristãs no perfil
             </h2>
             <p className="mt-3 max-w-2xl text-ink-soft">
-              Você escolhe o ritmo da reflexão e a tradição que molda como ela é
-              apresentada — não apenas o tom.
+              Você escolhe a tradição que molda como a reflexão é apresentada —
+              não apenas o tom.
             </p>
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {PERSONALIZATION_DEPTHS.map((depth) => (
-                <div
-                  key={depth.key}
-                  className="rounded-2xl border border-border/70 bg-card/80 p-5 shadow-sm"
-                >
-                  <h3 className="font-display text-xl text-ink">{depth.label}</h3>
-                  <p className="mt-1 text-sm font-medium text-wine">
-                    {DEPTH_BLURBS[depth.key] ?? depth.description}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                    {depth.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
               {TRADITION_POLICIES.map((tradition) => (
                 <div
                   key={tradition.key}
@@ -377,48 +360,7 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 7. Segurança e limites */}
-        <SectionShell tone="card">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Segurança, privacidade e limites
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              O Amém Chat é inteligência artificial baseada nas Escrituras. Não
-              afirma ser Jesus, Deus ou revelação. Não substitui liderança
-              pastoral, terapia ou atendimento de emergência. Detalhes em{" "}
-              <TrackingLink
-                href="/transparencia-ia"
-                className="text-ink underline underline-offset-4"
-              >
-                Transparência sobre IA
-              </TrackingLink>
-              .
-            </p>
-            <ul className="mt-8 grid gap-3 text-sm text-ink-soft sm:grid-cols-2">
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Pagamento processado pela Stripe
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Renovação cancelável na sua conta
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Conversas privadas conforme a Política de Privacidade
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Referências bíblicas apresentadas por síntese
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Escolha de tradição cristã no perfil
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Sem pressão de doação ou culpa na conversa
-              </li>
-            </ul>
-          </div>
-        </SectionShell>
-
-        {/* 8. Planos */}
+        {/* 7. Três planos */}
         <SectionShell>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
@@ -446,7 +388,68 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 9. FAQ */}
+        {/* 8. Preview real de Jornada */}
+        <SectionShell tone="sand">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <JourneyPreviewStatic />
+          </div>
+        </SectionShell>
+
+        {/* 9. Normal versus Aprofundar */}
+        <SectionShell>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <DeepenComparisonStatic />
+          </div>
+        </SectionShell>
+
+        {/* 10. Confiança e limites */}
+        <SectionShell tone="card">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">
+              Segurança, privacidade e limites
+            </h2>
+            <p className="mt-3 max-w-2xl text-ink-soft">
+              O Amém Chat é inteligência artificial baseada nas Escrituras. Não
+              afirma ser Jesus, Deus ou revelação. Não substitui liderança
+              pastoral, terapia ou atendimento de emergência. Detalhes em{" "}
+              <TrackingLink
+                href="/transparencia-ia"
+                className="text-ink underline underline-offset-4"
+              >
+                Transparência sobre IA
+              </TrackingLink>
+              .
+            </p>
+            <ul className="mt-8 grid gap-3 text-sm text-ink-soft sm:grid-cols-2">
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Pagamento processado pela Stripe
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Renovação cancelável na sua conta — veja{" "}
+                <TrackingLink
+                  href="/cancelamento"
+                  className="text-ink underline underline-offset-4"
+                >
+                  cancelamento
+                </TrackingLink>
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Conversas privadas conforme a Política de Privacidade
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Referências bíblicas apresentadas por síntese
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Escolha de tradição cristã no perfil
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Sem pressão de doação ou culpa na conversa
+              </li>
+            </ul>
+          </div>
+        </SectionShell>
+
+        {/* 11. FAQ */}
         <SectionShell tone="sand">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
@@ -468,34 +471,7 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 10. Mensagem de lançamento */}
-        <SectionShell>
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-            <div className="rounded-3xl border border-border/70 bg-gradient-to-br from-sand-100/90 to-card px-6 py-10 sm:px-10">
-              <h2 className="font-display text-3xl text-ink">Estamos começando.</h2>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
-                O Amém Chat está em sua fase de lançamento. Os primeiros
-                assinantes ajudarão a aperfeiçoar uma ferramenta criada para
-                unir acolhimento, Escrituras e passos possíveis para a vida
-                real.
-              </p>
-              {brand.supportEmail ? (
-                <p className="mt-3 text-sm text-ink-soft">
-                  Dúvidas? Escreva para{" "}
-                  <a
-                    href={`mailto:${brand.supportEmail}`}
-                    className="text-ink underline underline-offset-4"
-                  >
-                    {brand.supportEmail}
-                  </a>
-                  .
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </SectionShell>
-
-        {/* 11. CTA final */}
+        {/* 12. CTA final */}
         <section className="mx-auto max-w-6xl px-4 pb-20 pt-4 sm:px-6">
           <div className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-12 text-center sm:px-10">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
@@ -504,19 +480,23 @@ export default function HomePage() {
             <p className="mx-auto mt-4 max-w-xl text-ink-soft">
               Compare Essencial, Caminho e Profundo, confirme o e-mail e comece a
               conversar com a tradição que faz sentido para você — a partir de{" "}
-              {ESSENCIAL_PRICE_LABEL}/mês.
+              {ESSENCIAL_PRICE_LABEL}/mês. O produto evolui com honestidade: o
+              que você contrata hoje está claro nos planos.
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               <Button
                 asChild
                 size="lg"
-                className="min-h-11 bg-wine hover:bg-wine-soft"
+                className="min-h-11 w-full bg-wine hover:bg-wine-soft sm:w-auto"
               >
-                <TrackingLink href="/planos">
-                  Ver planos
-                </TrackingLink>
+                <TrackingLink href="/planos">Ver planos</TrackingLink>
               </Button>
-              <Button asChild size="lg" variant="outline" className="min-h-11">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="min-h-11 w-full sm:w-auto"
+              >
                 <a href="#demonstracao">Ver um exemplo</a>
               </Button>
             </div>

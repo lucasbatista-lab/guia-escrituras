@@ -46,16 +46,21 @@ describe("launch conversion home", () => {
   it("places ChatDemo before plans and keeps trust anchors", () => {
     const demoIdx = home.indexOf("<ChatDemo");
     const plansIdx = home.indexOf("<PlanCards");
+    const journeyIdx = home.indexOf("<JourneyPreviewStatic");
+    const deepenIdx = home.indexOf("<DeepenComparisonStatic");
     expect(demoIdx).toBeGreaterThan(-1);
     expect(plansIdx).toBeGreaterThan(demoIdx);
+    expect(journeyIdx).toBeGreaterThan(plansIdx);
+    expect(deepenIdx).toBeGreaterThan(journeyIdx);
     expect(home).toContain("Situações reais que você pode trazer");
     expect(home).toContain("Tenho contas vencendo");
     expect(home).toContain("Parece que Deus está em silêncio");
     expect(home).toContain("Como o Amém Chat transforma situação em reflexão");
     expect(home).toContain("Como começar");
-    expect(home).toContain("Profundidades e tradições");
+    expect(home).toContain("Tradições cristãs no perfil");
     expect(home).toContain("Segurança, privacidade e limites");
-    expect(home).toContain("Estamos começando");
+    expect(home).toContain("pagamento pela Stripe");
+    expect(home).toContain("cancelamento da renovação na sua conta");
     expect(home).toContain("Stripe");
     expect(home).toContain("cancel");
   });
@@ -68,7 +73,6 @@ describe("launch conversion home", () => {
     expect(lowered).not.toMatch(/garantia de/);
     expect(lowered).not.toMatch(/whatsapp/);
     expect(lowered).not.toMatch(/respostas em áudio|respostas em audio/);
-    expect(lowered).not.toMatch(/jornadas de leitura/);
   });
 
   it("ships local interactive demo without API or OpenAI calls", () => {
