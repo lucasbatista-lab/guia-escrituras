@@ -168,7 +168,7 @@ export function AdminKpi({
       </div>
       <p
         className={cn(
-          "mt-1.5 font-display text-ink",
+          "mt-1.5 break-words font-display text-ink",
           compact ? "text-xl" : "text-2xl",
         )}
       >
@@ -179,9 +179,10 @@ export function AdminKpi({
   );
 
   const shell = cn(
-    "block rounded-xl border border-border/70 bg-card/60 transition",
+    "block min-w-0 rounded-xl border border-border/70 bg-card/60 transition",
     compact ? "px-3 py-2.5" : "p-4",
-    href && "hover:border-ink/25 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+    href &&
+      "hover:border-ink/25 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
     className,
   );
 

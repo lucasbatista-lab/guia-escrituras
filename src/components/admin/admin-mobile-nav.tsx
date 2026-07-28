@@ -118,6 +118,9 @@ export function AdminMobileNav() {
     const first = listFocusable(panel)[0];
     first?.focus();
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -154,6 +157,7 @@ export function AdminMobileNav() {
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointerDown);
     return () => {
+      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("pointerdown", onPointerDown);
     };
