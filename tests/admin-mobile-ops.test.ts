@@ -16,20 +16,21 @@ describe("admin mobile operations V1", () => {
     expect(layout).toContain("isAdmin");
   });
 
-  it("nav exposes primary ops links and mobile Mais panel", () => {
+  it("nav exposes primary ops links and mobile Menu panel", () => {
     const nav = read("src", "components", "admin", "admin-mobile-nav.tsx");
+    const config = read("src", "lib", "admin", "nav.ts");
     expect(nav).toContain('"use client"');
-    expect(nav).toContain("/admin/usuarios");
-    expect(nav).toContain("/admin/eventos");
-    expect(nav).toContain("/admin/relatorios");
-    expect(nav).toContain("Mais");
+    expect(config).toContain("/admin/usuarios");
+    expect(config).toContain("/admin/eventos");
+    expect(config).toContain("/admin/relatorios");
+    expect(nav).toContain("Menu");
     expect(nav).toContain("aria-expanded");
     expect(nav).toContain("aria-controls");
     expect(nav).toContain("Escape");
     expect(nav).toContain("min-h-11");
   });
 
-  it("contains Tab focus in Mais panel and restores trigger on close", () => {
+  it("contains Tab focus in Menu panel and restores trigger on close", () => {
     const nav = read("src", "components", "admin", "admin-mobile-nav.tsx");
     expect(nav).toContain('e.key !== "Tab"');
     expect(nav).toContain("shiftKey");

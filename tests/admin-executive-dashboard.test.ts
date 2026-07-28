@@ -74,14 +74,16 @@ describe("admin executive dashboard consolidation (BLOCO H)", () => {
     expect(source).not.toMatch(/Array\(\d{3,}\)/);
   });
 
-  it("desktop nav and mobile Mais menu both expose ativacao/suporte/incidentes", async () => {
+  it("desktop sidebar and mobile menu both expose ativacao/suporte/incidentes", async () => {
     const nav = await fs.readFile(
       "src/components/admin/admin-mobile-nav.tsx",
       "utf8",
     );
-    expect(nav).toContain("/admin/ativacao");
-    expect(nav).toContain("/admin/suporte");
-    expect(nav).toContain("/admin/incidentes");
-    expect(nav).toContain("...PRIMARY, ...MORE");
+    const config = await fs.readFile("src/lib/admin/nav.ts", "utf8");
+    expect(config).toContain("/admin/ativacao");
+    expect(config).toContain("/admin/suporte");
+    expect(config).toContain("/admin/incidentes");
+    expect(nav).toContain("ADMIN_NAV_GROUPS");
+    expect(nav).toContain("ADMIN_MOBILE_PRIMARY");
   });
 });

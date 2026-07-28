@@ -86,13 +86,11 @@ describe("admin incidentes page", () => {
   });
 });
 
-describe("admin nav exposes suporte and incidentes in Mais", () => {
-  it("adds both routes to the MORE menu", async () => {
-    const source = await fs.readFile(
-      "src/components/admin/admin-mobile-nav.tsx",
-      "utf8",
-    );
+describe("admin nav exposes suporte and incidentes", () => {
+  it("adds both routes to the grouped command navigation", async () => {
+    const source = await fs.readFile("src/lib/admin/nav.ts", "utf8");
     expect(source).toContain('"/admin/suporte"');
     expect(source).toContain('"/admin/incidentes"');
+    expect(source).toContain("ADMIN_NAV_GROUPS");
   });
 });

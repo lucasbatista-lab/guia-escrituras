@@ -27,26 +27,23 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-app">
-      <header className="border-b border-border/70 bg-card/50 pt-safe">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
-          <div>
-            <p className="font-display text-lg text-ink">Admin</p>
-            <p className="text-xs text-ink-soft">
-              Sem conteúdo privado de conversas · via admin_roles · otimizado
-              para operação no celular
-            </p>
-          </div>
-          <AdminMobileNav />
+    <div className="min-h-app lg:flex">
+      <AdminMobileNav />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="hidden border-b border-border/70 bg-card/50 px-6 py-3 lg:block">
+          <p className="text-xs text-ink-soft">
+            Sem conteúdo privado de conversas · via admin_roles · timezone
+            operacional America/Sao_Paulo · otimizado para operação no celular
+          </p>
         </div>
-      </header>
-      <main
-        id="conteudo-principal"
-        tabIndex={-1}
-        className="mx-auto max-w-6xl px-4 py-8 outline-none sm:px-6"
-      >
-        {children}
-      </main>
+        <main
+          id="conteudo-principal"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none sm:px-6 lg:py-8 pb-24 lg:pb-8"
+        >
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

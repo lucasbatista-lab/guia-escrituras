@@ -232,7 +232,7 @@ describe("acquisition admin + wiring contracts", () => {
     expect(layout).toContain("AdminMobileNav");
     expect(layout).toContain("isAdmin");
     const nav = await import("node:fs/promises").then((fs) =>
-      fs.readFile("src/components/admin/admin-mobile-nav.tsx", "utf8"),
+      fs.readFile("src/lib/admin/nav.ts", "utf8"),
     );
     expect(nav).toContain("/admin/aquisicao");
   });

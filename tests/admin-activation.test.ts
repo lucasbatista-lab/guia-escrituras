@@ -94,13 +94,11 @@ describe("admin activation source contracts", () => {
     expect(source).toContain("inactive_days=7");
   });
 
-  it("nav exposes activation in the admin Mais menu", async () => {
-    const source = await fs.readFile(
-      "src/components/admin/admin-mobile-nav.tsx",
-      "utf8",
-    );
+  it("nav exposes activation in the admin command navigation", async () => {
+    const source = await fs.readFile("src/lib/admin/nav.ts", "utf8");
     expect(source).toContain('"/admin/ativacao"');
     expect(source).toContain("Ativação");
+    expect(source).toContain("ADMIN_NAV_GROUPS");
   });
 
   it("activation metrics interface surfaces partial flags honestly", async () => {
