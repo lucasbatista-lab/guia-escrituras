@@ -67,6 +67,8 @@ export default async function AdminHomePage() {
         ) : null}
       </div>
 
+      <GroupHeader title="Hoje" subtitle="Dia operacional em Brasília (America/Sao_Paulo)." />
+
       <Section title="Resumo do dia">
         <p className="mb-3 text-sm text-ink-soft">
           Dia operacional em Brasília (America/Sao_Paulo):{" "}
@@ -171,75 +173,10 @@ export default async function AdminHomePage() {
         </Section>
       )}
 
-      <Section title="Filas operacionais">
-        <p className="mb-3 text-sm text-ink-soft">
-          Atalhos para filas de Customer Success. Contagens só aparecem quando já
-          são confiáveis neste painel; demais filas abrem a lista filtrada sem
-          inventar números.
-        </p>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/usuarios?awaiting_confirmation=1">
-            Aguardando confirmação (fluxo de cadastro)
-          </OpLink>
-          <OpLink href="/admin/usuarios?checkout_pending=1">
-            Checkout pendente/parado
-            {typeof metrics.checkoutsPending === "number"
-              ? ` (${metrics.checkoutsPending})`
-              : ""}
-          </OpLink>
-          <OpLink href="/admin/usuarios?active_no_conversation=1">
-            Assinou e nunca conversou
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=3">
-            Inativo ≥ 3 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=7">
-            Inativo ≥ 7 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=14">
-            Inativo ≥ 14 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=30">
-            Inativo ≥ 30 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?past_due=1">
-            Past due ({metrics.pastDueSubscriptions})
-          </OpLink>
-          <OpLink href="/admin/usuarios?canceling=1">
-            Cancelamento agendado ({cancelingLabel})
-          </OpLink>
-          <OpLink href="/admin/usuarios?duplicates=1">
-            Duplicidades ({metrics.usersWithDuplicateSubscriptions})
-          </OpLink>
-        </div>
-      </Section>
-
-      <Section title="Atalhos operacionais">
-        <div className="flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/usuarios?status=none">
-            Sem assinatura ({metrics.usersWithoutSubscription})
-          </OpLink>
-          <OpLink href="/admin/usuarios?canceling=1">
-            Cancelando no fim do período ({cancelingLabel})
-          </OpLink>
-          <OpLink href="/admin/usuarios?past_due=1">
-            Pagamento em atraso ({metrics.pastDueSubscriptions})
-          </OpLink>
-          <OpLink href="/admin/usuarios?checkout_pending=1">
-            Checkouts pendentes ({metrics.checkoutsPending})
-          </OpLink>
-          <OpLink href="/admin/eventos?status=failed">
-            Eventos failed ({metrics.paymentEventsFailed})
-          </OpLink>
-          <OpLink href="/admin/eventos?status=received_stuck">
-            Received presos ({metrics.paymentEventsReceivedStuck})
-          </OpLink>
-        </div>
-      </Section>
-
-      <Section title="Prontidão de pagamentos">
-        <StripeReadinessPanel />
-      </Section>
+      <GroupHeader
+        title="Estado atual"
+        subtitle="Snapshot agora — não confundir com métricas do dia."
+      />
 
       <Section title="Usuários">
         <p className="text-sm text-ink-soft">
@@ -285,16 +222,6 @@ export default async function AdminHomePage() {
             href="/admin/usuarios?status=trialing"
             partial={livePartial}
             hint={livePartial ? PARTIAL_HINT : undefined}
-          />
-          <Metric
-            label="Conversão cadastro → assinatura"
-            value={
-              metrics.signupToSubscriberRate == null
-                ? "—"
-                : `${(metrics.signupToSubscriberRate * 100).toFixed(1)}%`
-            }
-            hint="Assinantes efetivos ÷ usuários totais."
-            partial={livePartial}
           />
           <Metric
             label="Renovação cancelada (acesso vigente)"
@@ -351,6 +278,88 @@ export default async function AdminHomePage() {
         </ul>
       </Section>
 
+      <GroupHeader
+        title="Filas operacionais"
+        subtitle="Atalhos de Customer Success — contagens só quando confiáveis; sem inventar números."
+      />
+
+      <Section title="Filas operacionais">
+        <p className="mb-3 text-sm text-ink-soft">
+          Atalhos para filas de Customer Success. Contagens só aparecem quando já
+          são confiáveis neste painel; demais filas abrem a lista filtrada sem
+          inventar números.
+        </p>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/usuarios?status=none">
+            Sem assinatura ({metrics.usersWithoutSubscription})
+          </OpLink>
+          <OpLink href="/admin/usuarios?awaiting_confirmation=1">
+            Aguardando confirmação (fluxo de cadastro)
+          </OpLink>
+          <OpLink href="/admin/usuarios?checkout_pending=1">
+            Checkout pendente/parado
+            {typeof metrics.checkoutsPending === "number"
+              ? ` (${metrics.checkoutsPending})`
+              : ""}
+          </OpLink>
+          <OpLink href="/admin/usuarios?active_no_conversation=1">
+            Assinou e nunca conversou
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=3">
+            Inativo ≥ 3 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=7">
+            Inativo ≥ 7 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=14">
+            Inativo ≥ 14 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=30">
+            Inativo ≥ 30 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?past_due=1">
+            Past due ({metrics.pastDueSubscriptions})
+          </OpLink>
+          <OpLink href="/admin/usuarios?canceling=1">
+            Cancelamento agendado ({cancelingLabel})
+          </OpLink>
+          <OpLink href="/admin/usuarios?duplicates=1">
+            Duplicidades ({metrics.usersWithDuplicateSubscriptions})
+          </OpLink>
+        </div>
+      </Section>
+
+      <GroupHeader
+        title="Aquisição e conversão"
+        subtitle="Funil calculado só a partir de signup_intents (UTMs/ref) — não inclui visitas à home sem cadastro."
+      />
+
+      <Section title="Aquisição e conversão">
+        <p className="mb-3 text-sm text-ink-soft">
+          Funil de cadastro → checkout → assinatura, atribuído por UTMs/`ref`
+          gravados em signup_intents. Não medimos visitas à home nem tráfego
+          anônimo — o funil só começa quando existe um cadastro.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Metric
+            label="Conversão cadastro → assinatura"
+            value={
+              metrics.signupToSubscriberRate == null
+                ? "—"
+                : `${(metrics.signupToSubscriberRate * 100).toFixed(1)}%`
+            }
+            href="/admin/aquisicao"
+            hint="Assinantes efetivos ÷ usuários totais."
+            partial={livePartial}
+          />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/aquisicao">
+            Funil completo por UTM/campanha
+          </OpLink>
+        </div>
+      </Section>
+
       <Section title="Origem dos assinantes">
         {metrics.subscribersByUtmSource.length === 0 ? (
           <p className="text-sm text-ink-soft">
@@ -381,58 +390,43 @@ export default async function AdminHomePage() {
         )}
       </Section>
 
-      <Section title="Checkout e pagamento (acumulado)">
-        <p className="text-sm text-ink-soft">
-          Contadores all-time / estado atual de intents e payment_events — não
-          são totais &quot;de hoje&quot;.
-        </p>
+      <Section title="Indicações (acumulado)">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
-            label="Checkouts iniciados"
-            value={String(metrics.checkoutsStarted)}
+            label="Atribuídas"
+            value={String(metrics.referralsAttributed)}
           />
           <Metric
-            label="Checkouts concluídos"
-            value={String(metrics.checkoutsCompleted)}
+            label="1ª cobrança confirmada"
+            value={String(metrics.referralsFirstPayment)}
           />
           <Metric
-            label="Checkouts pendentes"
-            value={String(metrics.checkoutsPending)}
-            href="/admin/usuarios?checkout_pending=1"
+            label="2ª cobrança confirmada"
+            value={String(metrics.referralsSecondPayment)}
           />
           <Metric
-            label="Pendentes/expirados ou cancelados"
-            value={String(metrics.checkoutsExpiredOrCanceled)}
-          />
-          <Metric
-            label="Checkout stuck (>30 min)"
-            value={String(metrics.checkoutsStuckOver30m)}
-            href="/admin/usuarios?checkout_pending=1"
-          />
-          <Metric
-            label="payment_events received"
-            value={String(metrics.paymentEventsReceived)}
-            href="/admin/eventos?status=received"
-          />
-          <Metric
-            label="received presos (>3 min)"
-            value={String(metrics.paymentEventsReceivedStuck)}
-            href="/admin/eventos?status=received_stuck"
-          />
-          <Metric
-            label="payment_events failed"
-            value={String(metrics.paymentEventsFailed)}
-            href="/admin/eventos?status=failed"
-          />
-          <Metric
-            label="payment_events processed"
-            value={String(metrics.paymentEventsProcessed)}
+            label="Recompensas pendentes"
+            value={String(metrics.referralsRewardPending)}
           />
         </div>
-        <p className="mt-3 text-xs text-ink-soft">
-          past_due, events failed, received e checkout pendente são estados
-          distintos — não misturar sob “falha de pagamento”.
+      </Section>
+
+      <GroupHeader
+        title="Produto e ativação"
+        subtitle="Uso de jornadas e do chat — sem conteúdo de conversas."
+      />
+
+      <Section title="Produto e ativação">
+        <p className="mb-3 text-sm text-ink-soft">
+          Cadastro, primeiro uso, jornadas e consumo de IA vivem em telas
+          dedicadas para não sobrecarregar esta visão geral.
         </p>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/ativacao">
+            Ativação (jornadas, uso do chat)
+          </OpLink>
+          <OpLink href="/admin/uso">Uso e consumo</OpLink>
+        </div>
       </Section>
 
       <Section title="IA (estimativa do provedor / planning)">
@@ -496,26 +490,108 @@ export default async function AdminHomePage() {
         </div>
       </Section>
 
-      <Section title="Indicações (acumulado)">
+      <GroupHeader
+        title="Receita e billing"
+        subtitle="Checkouts, payment_events e prontidão da Stripe — leitura, sem mutações."
+      />
+
+      <Section title="Checkout e pagamento (acumulado)">
+        <p className="text-sm text-ink-soft">
+          Contadores all-time / estado atual de intents e payment_events — não
+          são totais &quot;de hoje&quot;.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
-            label="Atribuídas"
-            value={String(metrics.referralsAttributed)}
+            label="Checkouts iniciados"
+            value={String(metrics.checkoutsStarted)}
           />
           <Metric
-            label="1ª cobrança confirmada"
-            value={String(metrics.referralsFirstPayment)}
+            label="Checkouts concluídos"
+            value={String(metrics.checkoutsCompleted)}
           />
           <Metric
-            label="2ª cobrança confirmada"
-            value={String(metrics.referralsSecondPayment)}
+            label="Checkouts pendentes"
+            value={String(metrics.checkoutsPending)}
+            href="/admin/usuarios?checkout_pending=1"
           />
           <Metric
-            label="Recompensas pendentes"
-            value={String(metrics.referralsRewardPending)}
+            label="Pendentes/expirados ou cancelados"
+            value={String(metrics.checkoutsExpiredOrCanceled)}
+          />
+          <Metric
+            label="Checkout stuck (>30 min)"
+            value={String(metrics.checkoutsStuckOver30m)}
+            href="/admin/usuarios?checkout_pending=1"
+          />
+          <Metric
+            label="payment_events received"
+            value={String(metrics.paymentEventsReceived)}
+            href="/admin/eventos?status=received"
+          />
+          <Metric
+            label="received presos (>3 min)"
+            value={String(metrics.paymentEventsReceivedStuck)}
+            href="/admin/eventos?status=received_stuck"
+          />
+          <Metric
+            label="payment_events failed"
+            value={String(metrics.paymentEventsFailed)}
+            href="/admin/eventos?status=failed"
+          />
+          <Metric
+            label="payment_events processed"
+            value={String(metrics.paymentEventsProcessed)}
           />
         </div>
+        <p className="mt-3 text-xs text-ink-soft">
+          past_due, events failed, received e checkout pendente são estados
+          distintos — não misturar sob “falha de pagamento”.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/eventos">Eventos de pagamento (detalhe)</OpLink>
+        </div>
       </Section>
+
+      <Section title="Prontidão de pagamentos">
+        <StripeReadinessPanel />
+      </Section>
+
+      <GroupHeader
+        title="Suporte e incidentes"
+        subtitle="Canal único: e-mail. Sem ticketing neste painel."
+      />
+
+      <Section title="Suporte e incidentes">
+        <p className="mb-3 text-sm text-ink-soft">
+          Alertas operacionais aparecem em “Precisa da sua atenção”, no topo
+          desta página. Use os atalhos abaixo para a SOP de suporte e o
+          consolidado de incidentes/saúde do app.
+        </p>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/suporte">Suporte (SOP de triagem)</OpLink>
+          <OpLink href="/admin/incidentes">
+            Incidentes (saúde, crise, pagamentos parados)
+          </OpLink>
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+/**
+ * Top-level executive grouping (Hoje / Estado atual / Filas operacionais /
+ * Aquisição e conversão / Produto e ativação / Receita e billing / Suporte
+ * e incidentes). Purely organizational — the `Section`s underneath keep
+ * their own established titles/content so existing deep links and contract
+ * tests remain stable.
+ */
+function GroupHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="border-t border-border/70 pt-6 first:border-t-0 first:pt-0">
+      <h2 className="font-display text-2xl text-ink">{title}</h2>
+      {subtitle ? (
+        <p className="mt-1 text-sm text-ink-soft">{subtitle}</p>
+      ) : null}
     </div>
   );
 }
@@ -529,7 +605,7 @@ function Section({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="font-display text-xl text-ink">{title}</h2>
+      <h3 className="font-display text-xl text-ink">{title}</h3>
       {children}
     </section>
   );
