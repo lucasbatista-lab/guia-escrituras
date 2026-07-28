@@ -54,12 +54,15 @@ describe("admin mobile operations V1", () => {
     expect(loading).toContain("Carregando");
   });
 
-  it("user list remains card rows with touch-friendly pagination", () => {
+  it("user list uses dense desktop table and compact mobile cards", () => {
     const users = read("src", "app", "admin", "usuarios", "page.tsx");
     expect(users).toContain("Nenhum usuário encontrado");
     expect(users).toContain("min-h-11");
     expect(users).toContain("buildAdminUserDetailHref");
-    expect(users).not.toContain("<table");
+    expect(users).toContain("<table");
+    expect(users).toContain("md:hidden");
+    expect(users).toContain("hidden overflow-x-auto md:block");
+    expect(users).toContain("<caption");
   });
 
   it("user detail back link stays touch-friendly and filter-aware", () => {

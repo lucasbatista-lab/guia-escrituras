@@ -27,7 +27,7 @@ describe("admin mobile ops v1.1 — attention section", () => {
       join(root, "src", "app", "admin", "page.tsx"),
       "utf8",
     );
-    expect(page).toContain("Precisa da sua atenção");
+    expect(page).toContain("Alertas prioritários");
     expect(page).toContain("Nenhum alerta operacional agora");
     expect(page).toContain("min-h-11");
   });

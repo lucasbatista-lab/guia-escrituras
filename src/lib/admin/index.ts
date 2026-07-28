@@ -121,3 +121,8 @@ export {
   type AdminNavLink,
   type AdminNavGroup,
 } from "./nav";
+export {
+  describeAdminActiveQueue,
+  buildAdminActiveFilterChips,
+  type AdminActiveQueue,
+} from "./queue-labels";

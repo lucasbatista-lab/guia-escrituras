@@ -63,7 +63,6 @@ export default async function AdminHomePage() {
 
   const criticalAlerts = alerts.filter((a) => a.level === "critical");
   const attentionAlerts = alerts.filter((a) => a.level === "attention");
-  const infoAlerts = alerts.filter((a) => a.level === "info");
   const actionableCount = criticalAlerts.length + attentionAlerts.length;
 
   const primaryAction =

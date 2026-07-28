@@ -279,7 +279,7 @@ describe("admin subscriber ops UI contracts", () => {
     expect(page).toContain("trialingSubscriberUsers");
     expect(page).toContain("signupToSubscriberRate");
     expect(page).toContain("subscribersByUtmSource");
-    expect(page).toContain("Origem dos assinantes");
+    expect(page).toContain("utm_source");
     expect(metrics).toContain("trialingSubscriberUsers");
     expect(metrics).toContain("signupToSubscriberRate");
     expect(metrics).toContain("subscribersByUtmSource");

@@ -9,13 +9,12 @@ describe("admin daily ops V2", () => {
       join(process.cwd(), "src/app/admin/page.tsx"),
       "utf8",
     );
-    expect(page).toContain("Resumo do dia");
-    expect(page).toContain("Revisão rápida no celular");
+    expect(page).toContain('title="Hoje"');
     expect(page).toContain("Alertas abertos");
     expect(page).toContain("/admin/aquisicao");
     expect(page).toContain("Sem conteúdo de conversas");
     expect(page).toContain("America/Sao_Paulo");
-    expect(page).toContain("Checkout e pagamento (acumulado)");
+    expect(page).toContain("Estado atual (snapshot)");
   });
 });
 
