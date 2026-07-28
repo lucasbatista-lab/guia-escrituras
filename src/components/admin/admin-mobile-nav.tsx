@@ -29,6 +29,8 @@ const MORE = [
   { href: "/admin/uso", label: "Uso" },
   { href: "/admin/custos", label: "Custos" },
   { href: "/admin/parceiros", label: "Parceiros" },
+  { href: "/admin/suporte", label: "Suporte" },
+  { href: "/admin/incidentes", label: "Incidentes" },
 ] as const;
 
 const FOCUSABLE_SELECTOR =
