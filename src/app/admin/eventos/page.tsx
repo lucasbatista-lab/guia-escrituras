@@ -15,8 +15,6 @@ import {
   PAYMENT_EVENT_AMBIGUOUS_LABEL,
   PAYMENT_EVENT_UNCORRELATED_LABEL,
   STRIPE_DASHBOARD_EXTERNAL_LABEL,
-  EXTERNAL_LINK_TARGET,
-  EXTERNAL_LINK_REL,
   type AdminPaymentEventFilter,
 } from "@/lib/admin";
 import { cn } from "@/lib/utils";

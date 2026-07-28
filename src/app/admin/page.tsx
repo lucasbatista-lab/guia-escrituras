@@ -336,7 +336,11 @@ export default async function AdminHomePage() {
                 ? "medium"
                 : "low"
             }
-            explanation="Renovação cancelada com acesso ainda vigente."
+            explanation={
+              metrics.cancelingWithAccessCount == null
+                ? "Consulta à Stripe indisponível — não exibimos zero."
+                : "Renovação cancelada com acesso ainda vigente."
+            }
             href="/admin/usuarios?canceling=1"
           />
           <AdminQueueItem

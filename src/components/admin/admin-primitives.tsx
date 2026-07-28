@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  EXTERNAL_LINK_REL,
+  EXTERNAL_LINK_TARGET,
+} from "@/lib/admin/stripe-dashboard-links";
 
 export type AdminDataQuality = "parcial" | "estimada" | "indisponivel";
 
@@ -354,8 +358,8 @@ export function AdminExternalToolLink({
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={EXTERNAL_LINK_TARGET}
+      rel={EXTERNAL_LINK_REL}
       className={cn(
         "inline-flex min-h-11 items-center gap-1.5 rounded-md border border-dashed border-border/80 bg-sand-50/60 px-3 py-1.5 text-sm text-ink-soft transition hover:border-gold/50 hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         className,
