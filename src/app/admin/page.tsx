@@ -279,11 +279,12 @@ export default async function AdminHomePage() {
       </Section>
 
       <GroupHeader
+        id="admin-filas-operacionais"
         title="Filas operacionais"
         subtitle="Atalhos de Customer Success — contagens só quando confiáveis; sem inventar números."
       />
 
-      <Section title="Filas operacionais">
+      <Section labelledBy="admin-filas-operacionais">
         <p className="mb-3 text-sm text-ink-soft">
           Atalhos para filas de Customer Success. Contagens só aparecem quando já
           são confiáveis neste painel; demais filas abrem a lista filtrada sem
@@ -585,10 +586,20 @@ export default async function AdminHomePage() {
  * their own established titles/content so existing deep links and contract
  * tests remain stable.
  */
-function GroupHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+function GroupHeader({
+  title,
+  subtitle,
+  id,
+}: {
+  title: string;
+  subtitle?: string;
+  id?: string;
+}) {
   return (
     <div className="border-t border-border/70 pt-6 first:border-t-0 first:pt-0">
-      <h2 className="font-display text-2xl text-ink">{title}</h2>
+      <h2 id={id} className="font-display text-2xl text-ink">
+        {title}
+      </h2>
       {subtitle ? (
         <p className="mt-1 text-sm text-ink-soft">{subtitle}</p>
       ) : null}
@@ -598,14 +609,22 @@ function GroupHeader({ title, subtitle }: { title: string; subtitle?: string }) 
 
 function Section({
   title,
+  labelledBy,
   children,
 }: {
-  title: string;
+  title?: string;
+  /** When title is omitted, point at a GroupHeader id for accessible naming. */
+  labelledBy?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-4">
-      <h3 className="font-display text-xl text-ink">{title}</h3>
+    <section
+      className="space-y-4"
+      aria-labelledby={title ? undefined : labelledBy}
+    >
+      {title ? (
+        <h3 className="font-display text-xl text-ink">{title}</h3>
+      ) : null}
       {children}
     </section>
   );

@@ -69,4 +69,3 @@ export async function getAdminCrisisSnapshot(): Promise<AdminCrisisSnapshot> {
       "Contagem via marcador técnico usage_events.model = crisis_safety — nunca lê conteúdo de mensagens.",
   };
 }
-

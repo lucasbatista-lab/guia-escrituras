@@ -18,6 +18,14 @@ describe("admin executive dashboard consolidation (BLOCO H)", () => {
     expect(source).toContain("function GroupHeader(");
   });
 
+  it("keeps a single Filas operacionais heading (GroupHeader, not duplicated Section title)", async () => {
+    const source = await readOverview();
+    expect(source).toContain('title="Filas operacionais"');
+    expect(source).toContain('id="admin-filas-operacionais"');
+    expect(source).toContain('labelledBy="admin-filas-operacionais"');
+    expect(source).not.toMatch(/<Section title="Filas operacionais">/);
+  });
+
   it("keeps existing section titles/content intact so deep links don't rot", async () => {
     const source = await readOverview();
     // Original sub-section titles must still exist verbatim.

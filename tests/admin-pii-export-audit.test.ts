@@ -30,7 +30,6 @@ import { exportAdminUsersCsv } from "@/lib/admin";
 import { logger } from "@/lib/logging/logger";
 import { GET, POST } from "@/app/api/admin/usuarios/export/route";
 import { logAdminUserDetailViewed } from "@/lib/admin/audit-log";
-import { maskUserId } from "@/lib/admin/metrics";
 
 const CSV_RESULT = {
   csv: "id,email\nu1,test@example.com\n",
@@ -170,9 +169,9 @@ describe("admin user detail view audit log (app logs, not a ledger)", () => {
     vi.clearAllMocks();
   });
 
-  it("emits admin_user_detail_viewed with masked actor/target and no PII", () => {
-    const actorId = "11111111-2222-3333-4444-555555555555";
-    const targetId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+  it("emits admin_user_detail_viewed with correlatable full UUIDs and no PII", () => {
+    const actorId = "11111111-2222-4333-8444-555555555555";
+    const targetId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee";
     logAdminUserDetailViewed(actorId, targetId);
 
     const call = vi
@@ -180,24 +179,29 @@ describe("admin user detail view audit log (app logs, not a ledger)", () => {
       .mock.calls.find((c) => c[0] === "admin_user_detail_viewed");
     expect(call).toBeTruthy();
     const fields = call?.[1] as Record<string, unknown>;
-    expect(fields.actorMask).toBe(maskUserId(actorId));
-    expect(fields.targetMask).toBe(maskUserId(targetId));
-    expect(fields.actorMask).not.toBe(actorId);
-    expect(fields.targetMask).not.toBe(targetId);
-    expect(fields.actorRole).toBeTruthy();
-    expect(typeof fields.viewedAt).toBe("string");
+    expect(fields.action).toBe("admin_user_detail_viewed");
+    expect(fields.actor_user_id).toBe(actorId);
+    expect(fields.target_user_id).toBe(targetId);
+    expect(fields.actor_role).toBe("admin");
 
     const serialized = JSON.stringify(fields);
-    expect(serialized).not.toContain("@");
-    expect(serialized).not.toContain(actorId);
-    expect(serialized).not.toContain(targetId);
+    expect(serialized).toContain(actorId);
+    expect(serialized).toContain(targetId);
+    expect(serialized).not.toMatch(/@/);
+    expect(serialized).not.toMatch(/email|displayName|display_name|cookie|jwt|Bearer|sk_live_|whsec_|csv|utm_/i);
+    expect(serialized).not.toMatch(/message|content|resumo|espiritual|cart[aã]o/i);
+    expect(fields).not.toHaveProperty("actorMask");
+    expect(fields).not.toHaveProperty("targetMask");
   });
 
   it("source documents this is app logs, not a persistent audit ledger", async () => {
     const source = await fs.readFile("src/lib/admin/audit-log.ts", "utf8");
     expect(source).toMatch(/not a persistent audit ledger/i);
     expect(source).toContain("cache(");
+    expect(source).toContain("actor_user_id");
+    expect(source).toContain("target_user_id");
     expect(source).not.toMatch(/\.from\(["']audit/i);
+    expect(source).not.toContain("maskUserId");
   });
 
   it("getAdminUserDetail wires the audit log after resolving the target user", async () => {
