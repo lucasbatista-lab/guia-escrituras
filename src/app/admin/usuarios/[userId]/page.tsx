@@ -4,16 +4,21 @@ import {
   AdminMetricsError,
   getAdminUserDetail,
   paymentProcessingStatusLabelPt,
+  resolveAdminUsersReturnHref,
   subscriptionStatusLabelPt,
 } from "@/lib/admin";
 import { formatPriceBRL } from "@/lib/entitlements";
 
 export default async function AdminUsuarioDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ userId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { userId } = await params;
+  const rawSearch = await searchParams;
+  const backHref = resolveAdminUsersReturnHref(rawSearch.return);
 
   let detail;
   try {
@@ -39,10 +44,10 @@ export default async function AdminUsuarioDetailPage({
     <div className="space-y-6">
       <div>
         <Link
-          href="/admin/usuarios"
+          href={backHref}
           className="inline-flex min-h-11 items-center text-sm text-ink-soft underline"
         >
-          ← Usuários
+          ← Voltar para usuários
         </Link>
         <h1 className="mt-3 font-display text-3xl text-ink">
           {detail.displayName ?? "Usuário"}

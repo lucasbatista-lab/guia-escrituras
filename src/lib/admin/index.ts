@@ -43,6 +43,8 @@ export {
 export {
   parseAdminUserListSearchParams,
   buildAdminUserListQuery,
+  buildAdminUserDetailHref,
+  resolveAdminUsersReturnHref,
   ADMIN_USER_CSV_MAX_ROWS,
   ADMIN_USER_PAGE_SIZES,
 } from "./user-list-params";

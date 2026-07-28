@@ -3,6 +3,9 @@ import {
   getAdminPartnerMetrics,
 } from "@/lib/admin/metrics";
 
+const PARTIAL_HINT =
+  "PARCIAL — limite de leitura atingido; não é o total completo.";
+
 export default async function AdminParceirosPage() {
   let data;
   try {
@@ -20,6 +23,15 @@ export default async function AdminParceirosPage() {
       <p className="mt-2 text-sm text-ink-soft">
         Indicações e recompensas pendentes (sem pagamento automático).
       </p>
+
+      {data.partial ? (
+        <p className="mt-3 text-sm text-amber-800">
+          <span className="mr-1 inline-block rounded border border-amber-700/50 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950">
+            PARCIAL
+          </span>
+          {PARTIAL_HINT} Os totais abaixo não devem ser tratados como completos.
+        </p>
+      ) : null}
 
       {data.rows.length === 0 ? (
         <p className="mt-6 text-sm text-ink-soft">Nenhum código de parceiro ativo.</p>
@@ -42,6 +54,7 @@ export default async function AdminParceirosPage() {
 
       <p className="mt-6 text-sm text-ink-soft">
         Total de recompensas pendentes: {data.totalRewardPending}
+        {data.partial ? " · PARCIAL" : ""}
       </p>
     </div>
   );

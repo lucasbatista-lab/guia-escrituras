@@ -57,6 +57,22 @@ describe("admin mobile operations V1", () => {
     const users = read("src", "app", "admin", "usuarios", "page.tsx");
     expect(users).toContain("Nenhum usuário encontrado");
     expect(users).toContain("min-h-11");
+    expect(users).toContain("buildAdminUserDetailHref");
     expect(users).not.toContain("<table");
+  });
+
+  it("user detail back link stays touch-friendly and filter-aware", () => {
+    const detail = read("src", "app", "admin", "usuarios", "[userId]", "page.tsx");
+    expect(detail).toContain("resolveAdminUsersReturnHref");
+    expect(detail).toContain("Voltar para usuários");
+    expect(detail).toContain("min-h-11");
+    expect(detail).not.toContain("document.referrer");
+  });
+
+  it("admin error keeps retry CTA and safe digest copy on mobile", () => {
+    const errorPage = read("src", "app", "admin", "error.tsx");
+    expect(errorPage).toContain("min-h-11");
+    expect(errorPage).toContain("Identificador técnico");
+    expect(errorPage).toContain("Tentar de novo");
   });
 });

@@ -187,9 +187,66 @@ export function buildAdminUserListQuery(
   if (filters.pageSize && filters.pageSize !== 25) {
     qs.set("pageSize", String(filters.pageSize));
   }
+  if (filters.page && filters.page > 1) {
+    qs.set("page", String(filters.page));
+  }
   for (const [key, value] of Object.entries(overrides)) {
     if (value == null || value === "") qs.delete(key);
     else qs.set(key, value);
   }
   return qs.toString();
+}
+
+const ADMIN_USERS_RETURN_MAX_LENGTH = 1024;
+
+/**
+ * Detail href that carries a validated copy of the current list querystring
+ * (never document.referrer). Only Admin user-list keys survive round-trip.
+ */
+export function buildAdminUserDetailHref(
+  userId: string,
+  filters: AdminUserListFilters,
+): string {
+  const base = `/admin/usuarios/${userId}`;
+  const qs = buildAdminUserListQuery(filters);
+  if (!qs) return base;
+  return `${base}?return=${encodeURIComponent(qs)}`;
+}
+
+/**
+ * Resolve the "Voltar para usuários" target from a detail `return` param.
+ * Re-parses through the Admin allowlist; rejects foreign paths and open redirects.
+ */
+export function resolveAdminUsersReturnHref(
+  returnParam: string | string[] | undefined,
+): string {
+  const raw = Array.isArray(returnParam) ? returnParam[0] : returnParam;
+  if (!raw?.trim()) return "/admin/usuarios";
+
+  let qsRaw = raw.trim();
+  if (qsRaw.length > ADMIN_USERS_RETURN_MAX_LENGTH) return "/admin/usuarios";
+  if (/[\u0000-\u001F\u007F]/.test(qsRaw)) return "/admin/usuarios";
+  if (qsRaw.includes("\\") || qsRaw.includes("//")) return "/admin/usuarios";
+
+  if (qsRaw.startsWith("/")) {
+    if (!qsRaw.startsWith("/admin/usuarios")) return "/admin/usuarios";
+    if (/https?\s*:/i.test(qsRaw)) return "/admin/usuarios";
+    const qIdx = qsRaw.indexOf("?");
+    qsRaw = qIdx === -1 ? "" : qsRaw.slice(qIdx + 1);
+  }
+
+  if (qsRaw.startsWith("?")) qsRaw = qsRaw.slice(1);
+  if (!qsRaw) return "/admin/usuarios";
+  if (/(?:^|[&=/])(?:javascript|data|vbscript)\s*:/i.test(qsRaw)) {
+    return "/admin/usuarios";
+  }
+
+  const params = new URLSearchParams(qsRaw);
+  const record: Record<string, string> = {};
+  for (const [key, value] of params.entries()) {
+    record[key] = value;
+  }
+  const filters = parseAdminUserListSearchParams(record);
+  const rebuilt = buildAdminUserListQuery(filters);
+  return rebuilt ? `/admin/usuarios?${rebuilt}` : "/admin/usuarios";
 }

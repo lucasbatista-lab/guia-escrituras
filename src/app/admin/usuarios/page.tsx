@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   AdminMetricsError,
+  buildAdminUserDetailHref,
   buildAdminUserListQuery,
   getAdminUsers,
   parseAdminUserListSearchParams,
@@ -227,7 +228,7 @@ export default async function AdminUsuariosPage({
           {data.rows.map((user) => (
             <li key={user.userId}>
               <Link
-                href={`/admin/usuarios/${user.userId}`}
+                href={buildAdminUserDetailHref(user.userId, filters)}
                 className="grid gap-2 rounded-lg border border-border/60 px-3 py-3 hover:bg-sand-50 sm:grid-cols-4"
               >
                 <span className="text-ink">

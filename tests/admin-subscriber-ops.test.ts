@@ -3,9 +3,11 @@ import fs from "node:fs/promises";
 import { AppError } from "@/lib/safety";
 import {
   ADMIN_USER_CSV_MAX_ROWS,
+  buildAdminUserDetailHref,
   buildAdminUserListQuery,
   parseAdminDateParam,
   parseAdminUserListSearchParams,
+  resolveAdminUsersReturnHref,
 } from "@/lib/admin/user-list-params";
 import { maskStripeId } from "@/lib/admin/labels";
 
@@ -66,6 +68,11 @@ describe("admin user list params", () => {
       utmContent: "banner",
       sort: "created_asc",
       pageSize: 50,
+      page: 3,
+      pastDueOnly: true,
+      duplicatesOnly: true,
+      checkoutPendingOnly: true,
+      onboardingCompleted: "no",
     });
     expect(qs).toContain("q=a%40b.c");
     expect(qs).toContain("plan=essencial");
@@ -75,6 +82,58 @@ describe("admin user list params", () => {
     expect(qs).toContain("utm_content=banner");
     expect(qs).toContain("sort=created_asc");
     expect(qs).toContain("pageSize=50");
+    expect(qs).toContain("page=3");
+    expect(qs).toContain("past_due=1");
+    expect(qs).toContain("duplicates=1");
+    expect(qs).toContain("checkout_pending=1");
+    expect(qs).toContain("onboarding=no");
+  });
+
+  it("serializes and validates return query for detail back-link", () => {
+    const filters = parseAdminUserListSearchParams({
+      q: "cus_test",
+      status: "past_due",
+      page: "2",
+      canceling: "1",
+      utm: "share",
+    });
+    const detailHref = buildAdminUserDetailHref(
+      "11111111-1111-4111-8111-111111111111",
+      filters,
+    );
+    expect(detailHref).toContain("/admin/usuarios/11111111-1111-4111-8111-111111111111?");
+    expect(detailHref).toContain("return=");
+
+    const returnEncoded = new URL(detailHref, "https://example.local").searchParams.get(
+      "return",
+    );
+    expect(returnEncoded).toBeTruthy();
+    const back = resolveAdminUsersReturnHref(returnEncoded ?? undefined);
+    expect(back.startsWith("/admin/usuarios?")).toBe(true);
+    expect(back).toContain("status=past_due");
+    expect(back).toContain("canceling=1");
+    expect(back).toContain("utm=share");
+    expect(back).toContain("page=2");
+    expect(back).toContain("q=cus_test");
+  });
+
+  it("rejects hostile return params and keeps admin allowlist only", () => {
+    expect(resolveAdminUsersReturnHref("https://evil.example/phish")).toBe(
+      "/admin/usuarios",
+    );
+    expect(resolveAdminUsersReturnHref("//evil.example")).toBe("/admin/usuarios");
+    expect(resolveAdminUsersReturnHref("/entrar?next=/admin")).toBe(
+      "/admin/usuarios",
+    );
+    expect(resolveAdminUsersReturnHref("/admin/usuarios?status=hacked")).toBe(
+      "/admin/usuarios",
+    );
+    expect(
+      resolveAdminUsersReturnHref("/admin/usuarios?status=active&past_due=1"),
+    ).toBe("/admin/usuarios?status=active&past_due=1");
+    expect(resolveAdminUsersReturnHref("status=active&foo=bar")).toBe(
+      "/admin/usuarios?status=active",
+    );
   });
 
   it("caps CSV export size", () => {
@@ -163,13 +222,42 @@ describe("admin subscriber ops UI contracts", () => {
     expect(page).toContain("usageRequests7d");
     expect(page).toContain("conversationCount");
     expect(page).toContain("cancelAtPeriodEnd");
+    expect(page).toContain("resolveAdminUsersReturnHref");
+    expect(page).toContain("Voltar para usuários");
     expect(page).toContain("/admin/eventos");
     expect(page).toContain("/admin/uso");
     expect(page).toContain("/admin/aquisicao");
+    expect(page).not.toContain("document.referrer");
     expect(page).not.toContain("stripe_customer_id");
     expect(page).not.toContain("stripe_subscription_id");
     expect(page).not.toContain('from("messages")');
     expect(page).not.toContain(".content");
+  });
+
+  it("list detail links preserve operational querystring", async () => {
+    const page = await fs.readFile("src/app/admin/usuarios/page.tsx", "utf8");
+    expect(page).toContain("buildAdminUserDetailHref");
+    expect(page).not.toMatch(/href=\{`\/admin\/usuarios\/\$\{user\.userId\}`\}/);
+  });
+
+  it("parceiros surfaces partial read quality", async () => {
+    const page = await fs.readFile("src/app/admin/parceiros/page.tsx", "utf8");
+    expect(page).toContain("data.partial");
+    expect(page).toContain("PARCIAL");
+    expect(page).toContain("não é o total completo");
+  });
+
+  it("admin error shows only safe technical digest", async () => {
+    const page = await fs.readFile("src/app/admin/error.tsx", "utf8");
+    expect(page).toContain("error.digest");
+    expect(page).toContain("Identificador técnico");
+    expect(page).toContain("Copiar identificador");
+    expect(page).toContain("Tentar de novo");
+    expect(page).not.toContain("stack");
+    expect(page).not.toContain("error.message");
+    expect(page).not.toContain("error.stack");
+    expect(page).not.toContain("cookie");
+    expect(page).not.toContain("Authorization");
   });
 
   it("CSV route is admin-protected and no-store", async () => {
