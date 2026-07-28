@@ -206,20 +206,26 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 2. Demonstração existente */}
+        {/* 2. Demonstração — continuação imediata do hero */}
         <SectionShell tone="card">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
+          <div
+            id="demonstracao"
+            className="mx-auto max-w-6xl scroll-mt-6 px-4 py-8 sm:scroll-mt-8 sm:px-6 sm:py-12 lg:py-14"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">
+              Veja na prática
+            </p>
             <h2
               id="demo-heading"
-              className="font-display text-2xl text-ink sm:text-3xl"
+              className="mt-2 font-display text-2xl text-ink sm:text-3xl"
             >
-              Veja uma reflexão de exemplo
+              Uma conversa de exemplo
             </h2>
             <p className="mt-2 max-w-xl text-sm text-ink-soft sm:text-base">
-              Uma demonstração do tipo de reflexão que você pode receber —
-              sem criar conta e sem chamar a API.
+              Escolha uma situação e veja o tipo de reflexão que o Amém Chat pode
+              oferecer.
             </p>
-            <div className="mt-6 max-w-2xl">
+            <div className="mt-5 max-w-2xl sm:mt-6">
               <ChatDemo />
             </div>
           </div>

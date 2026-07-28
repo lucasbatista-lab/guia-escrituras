@@ -110,7 +110,6 @@ export function ChatDemo() {
 
   return (
     <div
-      id="demonstracao"
       className="animate-fade-up-delayed overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-md backdrop-blur-sm"
       aria-label="Demonstração interativa do chat"
     >
@@ -178,14 +177,14 @@ export function ChatDemo() {
 
       <div className="border-t border-border/70 px-4 py-4 sm:px-5">
         <p className="text-sm text-ink-soft">
-          Gostou do tom? Comece com a sua situação — com a tradição cristã que
+          Gostou do tom? Compare os planos e comece com a tradição cristã que
           você escolher.
         </p>
         <Button
           asChild
           className="mt-3 min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
         >
-          <TrackingLink href="/planos">Começar com a minha situação</TrackingLink>
+          <TrackingLink href="/planos">Ver os planos</TrackingLink>
         </Button>
       </div>
     </div>
