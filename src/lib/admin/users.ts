@@ -175,9 +175,10 @@ async function findUserIdsCancelingWithAccess(): Promise<string[]> {
   }
 }
 
-async function fetchLiveAndPastDueCandidates(): Promise<{
+export async function fetchLiveAndPastDueCandidates(): Promise<{
   live: SubscriptionCandidate[];
   pastDueUserIds: Set<string>;
+  partial: boolean;
 }> {
   const client = admin();
   const [livePage, pastDuePage] = await Promise.all([
@@ -209,6 +210,7 @@ async function fetchLiveAndPastDueCandidates(): Promise<{
   return {
     live: livePage.rows.map((row) => mapSubRow(row)),
     pastDueUserIds: new Set(pastDuePage.rows.map((r) => r.user_id as string)),
+    partial: livePage.partial || pastDuePage.partial,
   };
 }
 
@@ -252,6 +254,31 @@ async function fetchAwaitingConfirmationUserIds(): Promise<string[]> {
   return [...new Set(values.filter(Boolean))];
 }
 
+/**
+ * Distinct user_ids with at least one conversation row (paginated, no
+ * message content read). Callers must treat `partial: true` as an
+ * incomplete scan — do not infer "no conversation" from absence alone.
+ */
+export async function fetchDistinctConversationUserIds(): Promise<{
+  ids: Set<string>;
+  partial: boolean;
+}> {
+  const client = admin();
+  const { values, partial } = await collectColumnPaginated<
+    { user_id: string },
+    string
+  >(
+    (from, to) =>
+      client
+        .from("conversations")
+        .select("user_id")
+        .order("user_id", { ascending: true })
+        .range(from, to),
+    (row) => row.user_id as string,
+  );
+  return { ids: new Set(values), partial };
+}
+
 async function fetchActiveNoConversationUserIds(): Promise<{
   ids: string[];
   partial: boolean;
@@ -266,20 +293,8 @@ async function fetchActiveNoConversationUserIds(): Promise<{
   ];
   if (activeIds.length === 0) return { ids: [], partial: false };
 
-  const client = admin();
-  const { values, partial } = await collectColumnPaginated<
-    { user_id: string },
-    string
-  >(
-    (from, to) =>
-      client
-        .from("conversations")
-        .select("user_id")
-        .order("user_id", { ascending: true })
-        .range(from, to),
-    (row) => row.user_id as string,
-  );
-  const withConversation = new Set(values);
+  const { ids: withConversation, partial } =
+    await fetchDistinctConversationUserIds();
   return {
     ids: activeIds.filter((id) => !withConversation.has(id)),
     partial,

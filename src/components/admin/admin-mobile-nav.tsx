@@ -25,6 +25,7 @@ const PRIMARY = [
 
 const MORE = [
   { href: "/admin/aquisicao", label: "Aquisição" },
+  { href: "/admin/ativacao", label: "Ativação" },
   { href: "/admin/uso", label: "Uso" },
   { href: "/admin/custos", label: "Custos" },
   { href: "/admin/parceiros", label: "Parceiros" },

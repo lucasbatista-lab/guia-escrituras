@@ -82,6 +82,13 @@ export {
 } from "./payment-correlation";
 export { assertAdminServiceAccess } from "./require-admin";
 export {
+  getAdminActivationMetrics,
+  aggregateJourneyProgress,
+  type AdminActivationMetrics,
+  type AdminJourneyAggregates,
+  type AdminJourneyProgressRow,
+} from "./activation";
+export {
   buildOperationalAlerts,
   alertLevelToLegacy,
   ALERT_MIN_SUBSCRIBERS_FOR_ACTIVITY,
