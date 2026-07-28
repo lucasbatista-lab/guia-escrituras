@@ -17,18 +17,21 @@ describe("launch conversion home", () => {
   const chatService = read("src", "lib", "ai", "chat-service.ts");
   const adminMetrics = read("src", "lib", "admin", "metrics.ts");
 
-  it("keeps brand mother line and conversion hero hierarchy", () => {
-    expect(home).toContain("brand.name");
-    expect(home).toContain("brand.description");
+  it("keeps mother line out of hero and uses situation-first conversion copy", () => {
+    const chrome = read("src", "components", "marketing", "site-chrome.tsx");
+    expect(chrome).toContain("brand.description");
+    expect(chrome).toContain("md:block");
     expect(home).not.toContain("brand.tagline");
-    expect(home).toContain("Clareza à luz das Escrituras para o que pesa agora.");
-    expect(home).toContain("IA cristã transparente");
+    expect(home).toContain(
+      "Leve o que está pesando para uma reflexão à luz das Escrituras.",
+    );
+    expect(home).toContain("inteligência artificial e limites claros");
     expect(home).toContain("voz divina");
   });
 
-  it("makes plans the primary CTA and demo secondary", () => {
+  it("makes example the primary CTA and plans secondary", () => {
     expect(home).toContain('href="#demonstracao"');
-    expect(home).toContain("Ver um exemplo");
+    expect(home).toContain("Ver uma conversa de exemplo");
     expect(home).toContain("Ver planos");
     expect(home).toContain("TrackingLink");
     expect(home).toContain('href="/planos"');
@@ -37,10 +40,12 @@ describe("launch conversion home", () => {
       home.indexOf("animate-fade-up"),
       home.indexOf("demo-heading"),
     );
-    const primaryIdx = heroSlice.indexOf("Ver planos");
-    const secondaryIdx = heroSlice.indexOf("Ver um exemplo");
+    const primaryIdx = heroSlice.indexOf("Ver uma conversa de exemplo");
+    const secondaryIdx = heroSlice.indexOf("Ver planos");
     expect(primaryIdx).toBeGreaterThan(-1);
     expect(secondaryIdx).toBeGreaterThan(primaryIdx);
+    expect(heroSlice).not.toMatch(/Stripe/i);
+    expect(heroSlice).not.toContain("brand.description");
   });
 
   it("places ChatDemo before plans and keeps trust anchors", () => {
@@ -59,10 +64,10 @@ describe("launch conversion home", () => {
     expect(home).toContain("Como começar");
     expect(home).toContain("Tradições cristãs no perfil");
     expect(home).toContain("Segurança, privacidade e limites");
-    expect(home).toContain("pagamento pela Stripe");
-    expect(home).toContain("cancelamento da renovação na sua conta");
+    expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Stripe");
     expect(home).toContain("cancel");
+    expect(home).toContain('id="demonstracao"');
   });
 
   it("does not invent social proof, scarcity or unavailable features", () => {
@@ -77,7 +82,7 @@ describe("launch conversion home", () => {
 
   it("ships local interactive demo without API or OpenAI calls", () => {
     expect(demo).toContain('"use client"');
-    expect(demo).toContain("id=\"demonstracao\"");
+    expect(demo).not.toContain('id="demonstracao"');
     expect(demo).toContain("Ansiedade e decisões");
     expect(demo).toContain("Dinheiro e trabalho");
     expect(demo).toContain("Perdão e família");
@@ -92,6 +97,7 @@ describe("launch conversion home", () => {
     expect(demo).not.toContain("openai");
     expect(demo).toContain("TrackingLink");
     expect(demo).toContain('href="/planos"');
+    expect(demo).toContain("Ver os planos");
   });
 
   it("does not modify plans, stripe, chat or admin in this block", () => {

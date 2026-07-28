@@ -21,8 +21,8 @@ describe("purchase experience — home copy & flow order", () => {
 
   it("follows the conversion section order", () => {
     const markers = [
-      "Ver planos",
       'href="#demonstracao"',
+      "Ver uma conversa de exemplo",
       'id="demo-heading"',
       "Como o Amém Chat transforma situação em reflexão",
       "Situações reais que você pode trazer",
@@ -47,19 +47,21 @@ describe("purchase experience — home copy & flow order", () => {
 
   it("keeps CTAs and short hero transparency without defensive spam", () => {
     expect(home).toContain("Ver planos");
-    expect(home).toContain("Ver um exemplo");
+    expect(home).toContain("Ver uma conversa de exemplo");
     expect(home).toContain("#demonstracao");
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("Pagamento seguro");
-    expect(home).toContain("Cancele a renovação quando quiser");
+    expect(home).toContain("cancele a renovação quando quiser");
     expect(home).toContain("Tradição ecumênica, evangélica ou católica");
-    // Short transparency line is allowed; long "Não afirma" stays out of hero spam
-    const heroEnd = home.indexOf('id="demo-heading"');
-    const hero = home.slice(0, heroEnd);
-    expect(hero).toContain("voz divina");
+    const heroStart = home.indexOf("/* 1. Hero");
+    const heroEnd = home.indexOf("/* 2. Demonstração");
+    const hero = home.slice(heroStart, heroEnd);
+    expect(hero).toContain("limites claros");
+    expect(hero).not.toMatch(/Stripe/i);
     expect(hero).not.toMatch(/Não afirma ser Jesus/);
     expect(home).toContain("Transparência sobre IA");
     expect(home).toContain("inteligência artificial");
+    expect(home).toContain("voz divina");
   });
 
   it("how-to-start describes plan → email → pay → personalize → converse", () => {

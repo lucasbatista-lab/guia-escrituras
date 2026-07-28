@@ -18,7 +18,7 @@ Estado de produção (fechamento GO 2026-07-27/28): SHA **`8b8a7d1`**, health ok
 6. `pnpm build`
 7. `pnpm launch:check`
 8. Migrations: confirmar estado remoto em `docs/DATABASE.md` (001–004 e 008–012 aplicadas no GO; 005–007 confirmar se residual)
-9. Migration **004** (`20260712000004_production_hardening.sql`): **já aplicada 2026-07-27** — **não reaplicar**; novos deploys exigem smoke direcionado se houver mudança de RLS/chat
+9. Migration 004 (`20260712000004_production_hardening.sql`): **já aplicada 2026-07-27** — **não reaplicar**; novos deploys exigem smoke direcionado se houver mudança de RLS/chat
 
 ---
 

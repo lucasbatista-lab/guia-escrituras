@@ -178,9 +178,7 @@ export default function HomePage() {
                 Leve o que está pesando para uma reflexão à luz das Escrituras.
               </h1>
               <p className="mt-3 max-w-lg text-[0.95rem] leading-relaxed text-ink-soft sm:mt-4 sm:text-lg">
-                Conte sua situação e receba referências bíblicas, aplicação
-                prática e próximos passos — com inteligência artificial e limites
-                claros.
+                Conte sua situação e receba referências bíblicas, aplicação prática e próximos passos — com inteligência artificial e limites claros.
               </p>
               <div className="mt-5 flex flex-col gap-2.5 sm:mt-7 sm:flex-row sm:flex-wrap sm:gap-3">
                 <Button
@@ -414,7 +412,7 @@ export default function HomePage() {
                 Tradição ecumênica, evangélica ou católica
               </li>
               <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Pagamento processado pela Stripe
+                Pagamento seguro · processado pela Stripe
               </li>
               <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
                 Renovação cancelável na sua conta — veja{" "}
