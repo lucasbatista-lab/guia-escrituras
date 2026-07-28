@@ -25,9 +25,10 @@ describe("honest revenue / MRR labels", () => {
   it("keeps catalog MRR distinct from received revenue", async () => {
     const page = await fs.readFile("src/app/admin/page.tsx", "utf8");
     const { formatRevenueBrl } = await import("@/lib/admin/metrics");
-    expect(page).toContain("MRR estimado pelo preço de catálogo");
-    expect(page).toContain("não é receita recebida");
-    expect(page).toContain("Receita real recebida");
+    expect(page).toContain("MRR catálogo");
+    expect(page).toMatch(/Estimativa pelo catálogo/i);
+    expect(page).toContain("Receita real");
+    expect(page).toContain("Ainda não integrada");
     expect(formatRevenueBrl(null)).toBe("Ainda não integrada");
   });
 });
@@ -140,7 +141,7 @@ describe("admin APIs cache policy", () => {
 });
 
 describe("admin UX contracts", () => {
-  it("overview exposes operational filters and P0/P1 alerts", async () => {
+  it("overview exposes operational filters and priority alerts", async () => {
     const page = await fs.readFile("src/app/admin/page.tsx", "utf8");
     expect(page).toContain("/admin/usuarios?status=none");
     expect(page).toContain("/admin/usuarios?canceling=1");
@@ -149,10 +150,10 @@ describe("admin UX contracts", () => {
     expect(page).toContain("/admin/eventos?status=received_stuck");
     expect(page).toContain("/admin/usuarios?checkout_pending=1");
     expect(page).toContain("buildOperationalAlerts");
-    expect(page).toContain("alertLevelToLegacy");
+    expect(page).toContain("AdminAlertItem");
     expect(page).toContain("critical");
     expect(page).toContain("attention");
-    expect(page).toContain("Resumo do dia");
+    expect(page).toContain('title="Hoje"');
     expect(page).toContain("America/Sao_Paulo");
     expect(page).toContain("PARCIAL");
     expect(page).not.toContain("messages");

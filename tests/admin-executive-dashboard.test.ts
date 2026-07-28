@@ -5,71 +5,80 @@ async function readOverview(): Promise<string> {
   return fs.readFile("src/app/admin/page.tsx", "utf8");
 }
 
-describe("admin executive dashboard consolidation (BLOCO H)", () => {
-  it("groups the overview into the seven named command-center sections", async () => {
+describe("admin executive command dashboard (BLOCO J)", () => {
+  it("leads with command strip, priority alerts, today KPIs, then queues", async () => {
     const source = await readOverview();
-    expect(source).toContain('title="Hoje"');
-    expect(source).toContain('title="Estado atual"');
-    expect(source).toContain('title="Filas operacionais"');
-    expect(source).toContain('title="Aquisição e conversão"');
-    expect(source).toContain('title="Produto e ativação"');
-    expect(source).toContain('title="Receita e billing"');
-    expect(source).toContain('title="Suporte e incidentes"');
-    expect(source).toContain("function GroupHeader(");
+    const commandIdx = source.indexOf("admin-command-strip");
+    const alertsIdx = source.indexOf("Alertas prioritários");
+    const todayIdx = source.indexOf('title="Hoje"');
+    const queuesIdx = source.indexOf('id="admin-filas-operacionais"');
+    const pillarsIdx = source.indexOf("Visão por pilares");
+    expect(commandIdx).toBeGreaterThan(-1);
+    expect(alertsIdx).toBeGreaterThan(commandIdx);
+    expect(todayIdx).toBeGreaterThan(alertsIdx);
+    expect(queuesIdx).toBeGreaterThan(todayIdx);
+    expect(pillarsIdx).toBeGreaterThan(queuesIdx);
   });
 
-  it("keeps a single Filas operacionais heading (GroupHeader, not duplicated Section title)", async () => {
+  it("keeps a single Filas operacionais heading without duplicated Section title", async () => {
     const source = await readOverview();
-    expect(source).toContain('title="Filas operacionais"');
     expect(source).toContain('id="admin-filas-operacionais"');
     expect(source).toContain('labelledBy="admin-filas-operacionais"');
-    expect(source).not.toMatch(/<Section title="Filas operacionais">/);
+    expect(source).not.toMatch(/<AdminSection title="Filas operacionais"/);
   });
 
-  it("keeps existing section titles/content intact so deep links don't rot", async () => {
+  it("differentiates alert levels with text labels and uses honest calm status copy", async () => {
     const source = await readOverview();
-    // Original sub-section titles must still exist verbatim.
-    expect(source).toContain("Resumo do dia");
-    expect(source).toContain("Assinaturas (estado atual)");
-    expect(source).toContain("Origem dos assinantes");
-    expect(source).toContain("Checkout e pagamento (acumulado)");
-    expect(source).toContain("Prontidão de pagamentos");
-    expect(source).toContain("Indicações (acumulado)");
-    expect(source).toContain("Precisa da sua atenção");
-    expect(source).toContain("IA (estimativa do provedor / planning)");
+    expect(source).toContain("AdminAlertItem");
+    expect(source).toContain("Sem alertas críticos detectados");
+    expect(source).toMatch(/integrações disponíveis/i);
+    expect(source).toContain('level={alert.level}');
   });
 
-  it("acquisition section discloses signup_intents-only funnel scope", async () => {
+  it("surfaces priority queues with urgency and Ver fila actions", async () => {
     const source = await readOverview();
-    const section = source.slice(
-      source.indexOf('title="Aquisição e conversão"'),
-      source.indexOf('title="Origem dos assinantes"'),
-    );
-    expect(section).toMatch(/signup_intents/i);
-    expect(section).toMatch(/n[ãa]o medimos visitas à home/i);
-    expect(section).toContain("/admin/aquisicao");
+    expect(source).toContain("AdminQueueItem");
+    expect(source).toContain("Pagamentos em risco");
+    expect(source).toContain("Checkout parado");
+    expect(source).toContain("Assinou e nunca conversou");
+    expect(source).toContain("Aguardando confirmação");
+    expect(source).toContain("Cancelamento agendado");
+    expect(source).toContain("emphasize");
   });
 
-  it("product/activation and support/incidents sections are link-only (no invented metrics)", async () => {
+  it("acquisition pillar discloses signup_intents-only funnel scope", async () => {
     const source = await readOverview();
-    const productSection = source.slice(
-      source.indexOf('title="Produto e ativação">'),
-      source.indexOf('title="IA (estimativa'),
-    );
-    expect(productSection).toContain("/admin/ativacao");
-    expect(productSection).toContain("/admin/uso");
-
-    const supportSection = source.slice(
-      source.lastIndexOf('title="Suporte e incidentes"'),
-    );
-    expect(supportSection).toContain("/admin/suporte");
-    expect(supportSection).toContain("/admin/incidentes");
+    expect(source).toMatch(/signup_intents/i);
+    expect(source).toMatch(/n[ãa]o inclui visitas à home/i);
+    expect(source).toContain("/admin/aquisicao");
   });
 
-  it("does not introduce an unbounded/infinite grid of metric cards", async () => {
+  it("product and operation pillars link without inventing metrics", async () => {
     const source = await readOverview();
-    // No section should render an unbounded list without a container/limit —
-    // all list renders map over server-computed, already-bounded arrays.
+    expect(source).toContain("/admin/ativacao");
+    expect(source).toContain("/admin/uso");
+    expect(source).toContain("/admin/suporte");
+    expect(source).toContain("/admin/incidentes");
+    expect(source).toContain("AdminPillarBlock");
+  });
+
+  it("marks external tools distinctly from internal routes", async () => {
+    const source = await readOverview();
+    expect(source).toContain("AdminExternalToolLink");
+    expect(source).toContain("dashboard.stripe.com");
+    expect(source).toContain("Ferramentas externas");
+  });
+
+  it("preserves PARCIAL / INDISPONÍVEL honesty and America/Sao_Paulo", async () => {
+    const source = await readOverview();
+    expect(source).toContain("PARCIAL");
+    expect(source).toContain("America/Sao_Paulo");
+    expect(source).toContain("unavailable");
+    expect(source).toContain("operationalDayLabel");
+  });
+
+  it("does not introduce an unbounded grid of metric cards", async () => {
+    const source = await readOverview();
     expect(source).not.toContain(".map((_, i) =>");
     expect(source).not.toMatch(/Array\(\d{3,}\)/);
   });

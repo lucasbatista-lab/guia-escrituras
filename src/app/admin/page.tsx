@@ -5,12 +5,19 @@ import {
   getAdminOverviewMetrics,
 } from "@/lib/admin/metrics";
 import { formatCancelingWithAccessMetric } from "@/lib/admin/format-canceling-metric";
-import {
-  alertLevelToLegacy,
-  buildOperationalAlerts,
-} from "@/lib/admin/operational-alerts";
+import { buildOperationalAlerts } from "@/lib/admin/operational-alerts";
 import { formatPriceBRL } from "@/lib/entitlements";
 import { StripeReadinessPanel } from "@/components/admin/stripe-readiness-panel";
+import {
+  AdminAlertItem,
+  AdminEmptyState,
+  AdminExternalToolLink,
+  AdminKpi,
+  AdminOpLink,
+  AdminPillarBlock,
+  AdminQueueItem,
+  AdminSection,
+} from "@/components/admin/admin-primitives";
 
 const PARTIAL_HINT =
   "PARCIAL — limite de leitura atingido; não é o total completo.";
@@ -21,7 +28,15 @@ export default async function AdminHomePage() {
     metrics = await getAdminOverviewMetrics();
   } catch (error) {
     if (error instanceof AdminMetricsError) {
-      return <AdminError message={error.message} />;
+      return (
+        <AdminEmptyState
+          tone="error"
+          title="Não foi possível carregar a visão geral"
+          description={error.message}
+          actionHref="/admin"
+          actionLabel="Tentar de novo"
+        />
+      );
     }
     throw error;
   }
@@ -46,44 +61,166 @@ export default async function AdminHomePage() {
   const aiTodayPartial = metrics.aiMetricsPartialToday;
   const ai30Partial = metrics.aiMetricsPartial30d;
 
+  const criticalAlerts = alerts.filter((a) => a.level === "critical");
+  const attentionAlerts = alerts.filter((a) => a.level === "attention");
+  const infoAlerts = alerts.filter((a) => a.level === "info");
+  const actionableCount = criticalAlerts.length + attentionAlerts.length;
+
+  const primaryAction =
+    criticalAlerts[0] ??
+    attentionAlerts[0] ??
+    null;
+
+  const operationStatus =
+    criticalAlerts.length > 0
+      ? {
+          label: "Atenção crítica",
+          detail: `${criticalAlerts.length} alerta(s) crítico(s) exigem investigação.`,
+          tone: "critical" as const,
+        }
+      : attentionAlerts.length > 0
+        ? {
+            label: "Atenção operacional",
+            detail: `${attentionAlerts.length} item(ns) de atenção nas integrações disponíveis.`,
+            tone: "attention" as const,
+          }
+        : {
+            label: "Sem alertas críticos detectados",
+            detail:
+              "Sem alertas críticos detectados pelas integrações disponíveis. Continue as revisões de rotina.",
+            tone: "calm" as const,
+          };
+
+  const updatedLabel = new Date(metrics.generatedAt).toLocaleString("pt-BR", {
+    timeZone: metrics.operationalTimezone,
+  });
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-ink">Visão geral</h1>
-        <p className="mt-2 text-sm text-ink-soft">
-          Dados reais do banco. Sem conteúdo de conversas. Métricas de IA são
-          estimativas (não fatura do provedor). Atualizado em{" "}
-          {new Date(metrics.generatedAt).toLocaleString("pt-BR", {
-            timeZone: metrics.operationalTimezone,
-          })}{" "}
-          (America/Sao_Paulo).
-        </p>
+      {/* 1. Faixa de comando */}
+      <section
+        aria-labelledby="admin-command-strip"
+        className="overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-card via-sand-50/80 to-wine/[0.06] shadow-[0_1px_0_rgba(44,36,28,0.05)]"
+      >
+        <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-end">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-gold">
+              Comando · America/Sao_Paulo
+            </p>
+            <h1
+              id="admin-command-strip"
+              className="mt-1.5 font-display text-3xl tracking-tight text-ink sm:text-[2.15rem]"
+            >
+              Visão geral
+            </h1>
+            <p className="mt-2 text-sm capitalize text-ink">
+              {metrics.operationalDayLabel}
+            </p>
+            <p className="mt-1 text-xs text-ink-soft">
+              Atualizado em {updatedLabel}. Sem conteúdo de conversas. Métricas
+              de IA são estimativas (não fatura do provedor).
+            </p>
+          </div>
+
+          <div
+            className={
+              operationStatus.tone === "critical"
+                ? "rounded-xl border border-red-700/40 bg-red-50 px-3 py-3"
+                : operationStatus.tone === "attention"
+                  ? "rounded-xl border border-amber-700/40 bg-amber-50 px-3 py-3"
+                  : "rounded-xl border border-border/70 bg-card/80 px-3 py-3"
+            }
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
+              Estado da operação
+            </p>
+            <p className="mt-1 font-display text-xl text-ink">
+              {operationStatus.label}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+              {operationStatus.detail}
+            </p>
+            <p className="mt-2 text-xs text-ink">
+              Alertas acionáveis:{" "}
+              <span className="font-medium">{actionableCount}</span>
+              {alerts.length !== actionableCount
+                ? ` · ${alerts.length} no total (inclui informativos)`
+                : null}
+            </p>
+            {primaryAction ? (
+              <Link
+                href={primaryAction.href}
+                className="mt-3 inline-flex min-h-11 items-center rounded-md bg-ink px-3 text-sm text-sand-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {primaryAction.cta}
+              </Link>
+            ) : (
+              <Link
+                href="#admin-filas-operacionais"
+                className="mt-3 inline-flex min-h-11 items-center rounded-md border border-border/80 bg-card px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                Revisar filas
+              </Link>
+            )}
+          </div>
+        </div>
         {metrics.aiMetricsPartial || livePartial ? (
-          <p className="mt-2 text-sm text-amber-800">
+          <p className="border-t border-amber-700/25 bg-amber-50/70 px-4 py-2 text-xs text-amber-950 sm:px-5">
             Há leituras parciais neste painel — números marcados com{" "}
             <span className="font-medium">PARCIAL</span> não são totais
             completos.
           </p>
         ) : null}
-      </div>
+      </section>
 
-      <GroupHeader title="Hoje" subtitle="Dia operacional em Brasília (America/Sao_Paulo)." />
+      {/* 2. Alertas prioritários */}
+      <AdminSection
+        title="Alertas prioritários"
+        description="Críticos e de atenção aparecem antes dos KPIs secundários. Nível indicado por texto e cor."
+        tone="priority"
+      >
+        {alerts.length === 0 ? (
+          <AdminEmptyState
+            tone="empty"
+            title="Nenhum alerta operacional agora"
+            description="Sem alertas críticos detectados pelas integrações disponíveis. Use as filas e os pilares abaixo para revisões de rotina."
+            actionHref="/admin/incidentes"
+            actionLabel="Abrir incidentes"
+          />
+        ) : (
+          <ul className="space-y-2">
+            {alerts.map((alert) => (
+              <AdminAlertItem
+                key={alert.key}
+                level={alert.level}
+                title={alert.message}
+                context={`${alert.meaning} → ${alert.investigate}`}
+                period="Snapshot agora"
+                actionLabel={alert.cta}
+                href={alert.href}
+                source="Integrações do Admin"
+              />
+            ))}
+          </ul>
+        )}
+      </AdminSection>
 
-      <Section title="Resumo do dia">
-        <p className="mb-3 text-sm text-ink-soft">
-          Dia operacional em Brasília (America/Sao_Paulo):{" "}
-          <span className="capitalize text-ink">{metrics.operationalDayLabel}</span>
-          . Revisão rápida no celular — números agregados, sem mensagens.
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Novos usuários hoje"
+      {/* 3. Hoje — faixa compacta */}
+      <AdminSection
+        title="Hoje"
+        description="Dia operacional em Brasília (America/Sao_Paulo). Faixa compacta — não confundir com snapshot ou acumulado."
+      >
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <AdminKpi
+            compact
+            label="Novos usuários"
             value={String(metrics.newUsersToday)}
             href="/admin/usuarios"
             hint="Desde a meia-noite em Brasília."
           />
-          <Metric
-            label="Pedidos de IA hoje"
+          <AdminKpi
+            compact
+            label="Pedidos de IA"
             value={String(metrics.aiRequestsToday)}
             href="/admin/custos"
             partial={aiTodayPartial}
@@ -93,17 +230,19 @@ export default async function AdminHomePage() {
                 : "Estimativa operacional desde meia-noite em Brasília."
             }
           />
-          <Metric
+          <AdminKpi
+            compact
             label="Alertas abertos"
             value={String(alerts.length)}
             hint={
               alerts.length === 0
                 ? "Snapshot agora — nenhum item na faixa de atenção."
-                : "Snapshot agora — priorize a seção Precisa da sua atenção."
+                : "Snapshot agora — priorize Alertas prioritários."
             }
           />
-          <Metric
-            label="Assinantes ativos (agora)"
+          <AdminKpi
+            compact
+            label="Assinantes ativos"
             value={String(metrics.activeSubscriberUsers)}
             href="/admin/usuarios?status=active"
             partial={livePartial}
@@ -115,365 +254,420 @@ export default async function AdminHomePage() {
           />
         </div>
         <div className="mt-3 flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/usuarios?canceling=1">
+          <AdminOpLink href="/admin/usuarios?canceling=1">
             Cancelando ({cancelingLabel})
-          </OpLink>
-          <OpLink href="/admin/usuarios?past_due=1">
+          </AdminOpLink>
+          <AdminOpLink href="/admin/usuarios?past_due=1">
             Past due ({metrics.pastDueSubscriptions})
-          </OpLink>
-          <OpLink href="/admin/aquisicao">Aquisição</OpLink>
-          <OpLink href="/admin/eventos">Eventos</OpLink>
+          </AdminOpLink>
+          <AdminOpLink href="/admin/aquisicao">Aquisição</AdminOpLink>
+          <AdminOpLink href="/admin/eventos">Eventos</AdminOpLink>
         </div>
-      </Section>
+      </AdminSection>
 
-      {alerts.length > 0 ? (
-        <Section title="Precisa da sua atenção">
-          <p className="mb-3 text-sm text-ink-soft">
-            Itens operacionais com ação sugerida — toque para investigar no
-            celular.
-          </p>
-          <ul className="space-y-2">
-            {alerts.map((alert) => {
-              const legacy = alertLevelToLegacy(alert.level);
-              return (
-                <li key={alert.key}>
-                  <Link
-                    href={alert.href}
-                    className={
-                      alert.level === "critical"
-                        ? "flex min-h-11 flex-col gap-1 rounded-lg border border-red-700/40 bg-red-50 px-3 py-3 text-sm text-red-950 sm:flex-row sm:items-start sm:justify-between"
-                        : alert.level === "attention"
-                          ? "flex min-h-11 flex-col gap-1 rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-3 text-sm text-amber-950 sm:flex-row sm:items-start sm:justify-between"
-                          : "flex min-h-11 flex-col gap-1 rounded-lg border border-border/70 bg-sand-50 px-3 py-3 text-sm text-ink sm:flex-row sm:items-start sm:justify-between"
-                    }
-                  >
-                    <span>
-                      <span className="font-medium">{legacy}</span>
-                      {" · "}
-                      {alert.message}
-                      <span className="mt-1 block text-xs opacity-90">
-                        {alert.meaning} → {alert.investigate}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-xs underline underline-offset-2">
-                      {alert.cta}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Section>
-      ) : (
-        <Section title="Precisa da sua atenção">
-          <p className="rounded-lg border border-border/60 bg-sand-50/80 px-3 py-3 text-sm text-ink-soft">
-            Nenhum alerta operacional agora. Use os atalhos abaixo para revisões
-            de rotina.
-          </p>
-        </Section>
-      )}
-
-      <GroupHeader
-        title="Estado atual"
-        subtitle="Snapshot agora — não confundir com métricas do dia."
-      />
-
-      <Section title="Usuários">
-        <p className="text-sm text-ink-soft">
-          “Novos hoje” usa o dia de Brasília; totais e janelas 7/30 dias são
-          acumulados / rolling.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Usuários totais (acumulado)"
-            value={String(metrics.totalUsers)}
-          />
-          <Metric
-            label="Novos hoje (Brasília)"
-            value={String(metrics.newUsersToday)}
-          />
-          <Metric label="Novos (7 dias)" value={String(metrics.newUsers7d)} />
-          <Metric label="Novos (30 dias)" value={String(metrics.newUsers30d)} />
-          <Metric
-            label="Confirmados sem assinatura"
-            value={String(metrics.usersWithoutSubscription)}
-            href="/admin/usuarios?status=none"
-            partial={livePartial}
-            hint={livePartial ? PARTIAL_HINT : undefined}
-          />
+      {/* 4. Filas operacionais — superfície central */}
+      <AdminSection
+        labelledBy="admin-filas-operacionais"
+        description="Customer Success — prioridade visual por risco. Contagens só quando confiáveis."
+      >
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2
+              id="admin-filas-operacionais"
+              className="font-display text-xl text-ink"
+            >
+              Filas operacionais
+            </h2>
+            <p className="mt-1 text-sm text-ink-soft">
+              Atalhos acionáveis. Contagens só quando já são confiáveis neste
+              painel; demais filas abrem a lista filtrada sem inventar números.
+            </p>
+          </div>
         </div>
-      </Section>
-
-      <Section title="Assinaturas (estado atual)">
-        <p className="text-sm text-ink-soft">
-          Snapshot das assinaturas efetivas agora — não confundir com métricas
-          do dia.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Assinaturas ativas (efetivas)"
-            value={String(metrics.activeSubscriberUsers)}
-            partial={livePartial}
-            hint={livePartial ? PARTIAL_HINT : undefined}
-          />
-          <Metric
-            label="Em teste (trialing)"
-            value={String(metrics.trialingSubscriberUsers)}
-            href="/admin/usuarios?status=trialing"
-            partial={livePartial}
-            hint={livePartial ? PARTIAL_HINT : undefined}
-          />
-          <Metric
-            label="Renovação cancelada (acesso vigente)"
-            value={cancelingLabel}
-            href="/admin/usuarios?canceling=1"
-            hint={
-              metrics.cancelingWithAccessCount == null
-                ? "Consulta à Stripe indisponível — não exibimos zero."
-                : undefined
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <AdminQueueItem
+            emphasize
+            name="Pagamentos em risco"
+            count={metrics.pastDueSubscriptions}
+            urgency={
+              metrics.pastDueSubscriptions > 0 ? "critical" : "low"
             }
-          />
-          <Metric
-            label="Pagamento em atraso (past_due)"
-            value={String(metrics.pastDueSubscriptions)}
+            explanation="Assinaturas past_due — cobrança em atraso."
             href="/admin/usuarios?past_due=1"
           />
-          <Metric
-            label="Assinaturas encerradas"
-            value={String(metrics.canceledSubscriptions)}
-            href="/admin/usuarios?status=canceled"
-          />
-          <Metric
-            label="MRR estimado pelo preço de catálogo"
-            value={formatPriceBRL(metrics.mrrCatalogBrlCents)}
-            hint="Estimativa pelo catálogo — não é receita recebida da Stripe."
-            partial={livePartial}
-          />
-          <Metric
-            label="Receita real recebida"
-            value={formatRevenueBrl(metrics.realRevenueBrlCents)}
-            hint="Ainda não integrada."
-          />
-          <Metric
-            label="Usuários com assinaturas duplicadas"
-            value={String(metrics.usersWithDuplicateSubscriptions)}
-            href="/admin/usuarios?duplicates=1"
-            partial={livePartial}
-            hint={livePartial ? PARTIAL_HINT : undefined}
-          />
-        </div>
-        <ul className="mt-4 space-y-2 text-sm">
-          {metrics.subscribersByPlan.map((row) => (
-            <li
-              key={row.planKey}
-              className="flex justify-between rounded-lg border border-border/60 px-3 py-2"
-            >
-              <span className="capitalize text-ink">{row.planKey}</span>
-              <span className="text-ink-soft">
-                {row.count}
-                {livePartial ? " · PARCIAL" : ""}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <GroupHeader
-        id="admin-filas-operacionais"
-        title="Filas operacionais"
-        subtitle="Atalhos de Customer Success — contagens só quando confiáveis; sem inventar números."
-      />
-
-      <Section labelledBy="admin-filas-operacionais">
-        <p className="mb-3 text-sm text-ink-soft">
-          Atalhos para filas de Customer Success. Contagens só aparecem quando já
-          são confiáveis neste painel; demais filas abrem a lista filtrada sem
-          inventar números.
-        </p>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/usuarios?status=none">
-            Sem assinatura ({metrics.usersWithoutSubscription})
-          </OpLink>
-          <OpLink href="/admin/usuarios?awaiting_confirmation=1">
-            Aguardando confirmação (fluxo de cadastro)
-          </OpLink>
-          <OpLink href="/admin/usuarios?checkout_pending=1">
-            Checkout pendente/parado
-            {typeof metrics.checkoutsPending === "number"
-              ? ` (${metrics.checkoutsPending})`
-              : ""}
-          </OpLink>
-          <OpLink href="/admin/usuarios?active_no_conversation=1">
-            Assinou e nunca conversou
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=3">
-            Inativo ≥ 3 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=7">
-            Inativo ≥ 7 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=14">
-            Inativo ≥ 14 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?inactive_days=30">
-            Inativo ≥ 30 dias
-          </OpLink>
-          <OpLink href="/admin/usuarios?past_due=1">
-            Past due ({metrics.pastDueSubscriptions})
-          </OpLink>
-          <OpLink href="/admin/usuarios?canceling=1">
-            Cancelamento agendado ({cancelingLabel})
-          </OpLink>
-          <OpLink href="/admin/usuarios?duplicates=1">
-            Duplicidades ({metrics.usersWithDuplicateSubscriptions})
-          </OpLink>
-        </div>
-      </Section>
-
-      <GroupHeader
-        title="Aquisição e conversão"
-        subtitle="Funil calculado só a partir de signup_intents (UTMs/ref) — não inclui visitas à home sem cadastro."
-      />
-
-      <Section title="Aquisição e conversão">
-        <p className="mb-3 text-sm text-ink-soft">
-          Funil de cadastro → checkout → assinatura, atribuído por UTMs/`ref`
-          gravados em signup_intents. Não medimos visitas à home nem tráfego
-          anônimo — o funil só começa quando existe um cadastro.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Conversão cadastro → assinatura"
-            value={
-              metrics.signupToSubscriberRate == null
-                ? "—"
-                : `${(metrics.signupToSubscriberRate * 100).toFixed(1)}%`
+          <AdminQueueItem
+            emphasize
+            name="Checkout parado"
+            count={
+              typeof metrics.checkoutsStuckOver30m === "number"
+                ? metrics.checkoutsStuckOver30m
+                : metrics.checkoutsPending
             }
-            href="/admin/aquisicao"
-            hint="Assinantes efetivos ÷ usuários totais."
-            partial={livePartial}
+            urgency={
+              metrics.checkoutsStuckOver30m > 0 ? "high" : "medium"
+            }
+            explanation="Checkout pendente ou stuck (>30 min)."
+            href="/admin/usuarios?checkout_pending=1"
+          />
+          <AdminQueueItem
+            emphasize
+            name="Assinou e nunca conversou"
+            urgency="high"
+            explanation="Ativação falhou após assinatura efetiva."
+            href="/admin/usuarios?active_no_conversation=1"
+          />
+          <AdminQueueItem
+            name="Aguardando confirmação"
+            urgency="medium"
+            explanation="Fluxo de cadastro — e-mail ainda não confirmado."
+            href="/admin/usuarios?awaiting_confirmation=1"
+          />
+          <AdminQueueItem
+            name="Inatividade ≥ 7 dias"
+            urgency="medium"
+            explanation="Assinantes sem atividade recente."
+            href="/admin/usuarios?inactive_days=7"
+          />
+          <AdminQueueItem
+            name="Cancelamento agendado"
+            count={cancelingLabel}
+            urgency={
+              metrics.cancelingWithAccessCount &&
+              metrics.cancelingWithAccessCount > 0
+                ? "medium"
+                : "low"
+            }
+            explanation="Renovação cancelada com acesso ainda vigente."
+            href="/admin/usuarios?canceling=1"
+          />
+          <AdminQueueItem
+            name="Sem assinatura"
+            count={metrics.usersWithoutSubscription}
+            urgency="low"
+            explanation="Confirmados sem plano efetivo."
+            href="/admin/usuarios?status=none"
+          />
+          <AdminQueueItem
+            name="Duplicidades"
+            count={metrics.usersWithDuplicateSubscriptions}
+            urgency={
+              metrics.usersWithDuplicateSubscriptions > 0 ? "high" : "low"
+            }
+            explanation="Assinaturas ativas duplicadas."
+            href="/admin/usuarios?duplicates=1"
+          />
+          <AdminQueueItem
+            name="Inativo ≥ 3 / 14 / 30 dias"
+            urgency="low"
+            explanation="Outros limiares de inatividade contínua."
+            href="/admin/usuarios?inactive_days=3"
           />
         </div>
-        <div className="mt-3 flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/aquisicao">
-            Funil completo por UTM/campanha
-          </OpLink>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs text-ink-soft">
+          <AdminOpLink href="/admin/usuarios?inactive_days=14">
+            Inativo ≥ 14
+          </AdminOpLink>
+          <AdminOpLink href="/admin/usuarios?inactive_days=30">
+            Inativo ≥ 30
+          </AdminOpLink>
         </div>
-      </Section>
+      </AdminSection>
 
-      <Section title="Origem dos assinantes">
-        {metrics.subscribersByUtmSource.length === 0 ? (
+      {/* 5. Visão por pilares */}
+      <div>
+        <h2 className="font-display text-xl text-ink">Visão por pilares</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Resumos distintos — aprofunde nas páginas dedicadas. Hoje, snapshot,
+          rolling e acumulado não se misturam.
+        </p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          <AdminPillarBlock
+            eyebrow="Aquisição"
+            title="Cadastro → assinatura"
+            limitation="Funil só a partir de signup_intents (UTMs/ref). Não inclui visitas à home sem cadastro."
+            href="/admin/aquisicao"
+            hrefLabel="Abrir aquisição"
+          >
+            <AdminKpi
+              compact
+              label="Conversão cadastro → assinatura"
+              value={
+                metrics.signupToSubscriberRate == null
+                  ? "—"
+                  : `${(metrics.signupToSubscriberRate * 100).toFixed(1)}%`
+              }
+              partial={livePartial}
+              hint="Assinantes efetivos ÷ usuários totais."
+            />
+            {metrics.subscribersByUtmSource.length > 0 ? (
+              <ul className="mt-2 space-y-1 text-xs text-ink-soft">
+                {metrics.subscribersByUtmSource.slice(0, 3).map((row) => (
+                  <li key={row.source} className="flex justify-between gap-2">
+                    <span className="truncate">{row.source}</span>
+                    <span>
+                      {row.count}
+                      {livePartial ? " · PARCIAL" : ""}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-xs text-ink-soft">
+                Sem utm_source registrado nos signup_intents dos assinantes
+                efetivos.
+              </p>
+            )}
+          </AdminPillarBlock>
+
+          <AdminPillarBlock
+            eyebrow="Produto"
+            title="Ativação e uso"
+            limitation="Sem conteúdo de conversas. Detalhes de jornadas e consumo nas telas dedicadas."
+            href="/admin/ativacao"
+            hrefLabel="Abrir ativação"
+          >
+            <div className="flex flex-wrap gap-2">
+              <AdminOpLink href="/admin/ativacao">Ativação</AdminOpLink>
+              <AdminOpLink href="/admin/uso">Uso</AdminOpLink>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <AdminKpi
+                compact
+                label="IA hoje"
+                value={String(metrics.aiRequestsToday)}
+                partial={aiTodayPartial}
+                hint={aiTodayPartial ? PARTIAL_HINT : undefined}
+              />
+              <AdminKpi
+                compact
+                label="IA 30d"
+                value={String(metrics.aiRequests30d)}
+                partial={ai30Partial}
+                hint={ai30Partial ? PARTIAL_HINT : undefined}
+              />
+            </div>
+          </AdminPillarBlock>
+
+          <AdminPillarBlock
+            eyebrow="Receita"
+            title="Billing e eventos"
+            limitation="Checkouts e payment_events são acumulados / estado atual — não totais “de hoje”. Receita real ainda não integrada."
+            href="/admin/eventos"
+            hrefLabel="Abrir eventos"
+          >
+            <div className="grid grid-cols-2 gap-2">
+              <AdminKpi
+                compact
+                label="MRR catálogo"
+                value={formatPriceBRL(metrics.mrrCatalogBrlCents)}
+                partial={livePartial}
+                hint="Estimativa pelo catálogo."
+              />
+              <AdminKpi
+                compact
+                label="Receita real"
+                value={formatRevenueBrl(metrics.realRevenueBrlCents)}
+                unavailable
+                hint="Ainda não integrada."
+              />
+              <AdminKpi
+                compact
+                label="Events failed"
+                value={String(metrics.paymentEventsFailed)}
+                href="/admin/eventos?status=failed"
+              />
+              <AdminKpi
+                compact
+                label="Received stuck"
+                value={String(metrics.paymentEventsReceivedStuck)}
+                href="/admin/eventos?status=received_stuck"
+              />
+            </div>
+          </AdminPillarBlock>
+
+          <AdminPillarBlock
+            eyebrow="Operação"
+            title="Suporte e incidentes"
+            limitation="Canal único: e-mail. Sem ticketing neste painel. Health sob demanda."
+            href="/admin/incidentes"
+            hrefLabel="Abrir incidentes"
+          >
+            <div className="flex flex-wrap gap-2">
+              <AdminOpLink href="/admin/suporte">Suporte (SOP)</AdminOpLink>
+              <AdminOpLink href="/admin/incidentes">Incidentes</AdminOpLink>
+              <AdminOpLink href="/admin/relatorios">Relatórios</AdminOpLink>
+            </div>
+          </AdminPillarBlock>
+        </div>
+      </div>
+
+      {/* Snapshot secundário — estado atual, sem competir com o comando */}
+      <details className="group rounded-2xl border border-border/60 bg-sand-50/40 open:bg-card/40">
+        <summary className="cursor-pointer list-none px-4 py-3 font-display text-lg text-ink marker:content-none [&::-webkit-details-marker]:hidden">
+          <span className="inline-flex min-h-11 items-center gap-2">
+            Estado atual (snapshot)
+            <span className="text-xs font-sans font-normal text-ink-soft group-open:hidden">
+              — expandir assinaturas e totais
+            </span>
+          </span>
+        </summary>
+        <div className="space-y-4 border-t border-border/50 px-4 py-4">
           <p className="text-sm text-ink-soft">
-            Sem utm_source registrado nos signup_intents dos assinantes
-            efetivos.
+            Snapshot agora — não confundir com métricas do dia. “Novos hoje”
+            usa Brasília; totais e janelas 7/30 dias são acumulados / rolling.
           </p>
-        ) : (
-          <ul className="space-y-2 text-sm">
-            {metrics.subscribersByUtmSource.map((row) => (
-              <li key={row.source}>
-                <Link
-                  href={
-                    row.source === "(sem source)"
-                      ? "/admin/usuarios"
-                      : `/admin/usuarios?utm=${encodeURIComponent(row.source)}`
-                  }
-                  className="flex justify-between rounded-lg border border-border/60 px-3 py-2 hover:bg-sand-50"
-                >
-                  <span className="text-ink">{row.source}</span>
-                  <span className="text-ink-soft">
-                    {row.count}
-                    {livePartial ? " · PARCIAL" : ""}
-                  </span>
-                </Link>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <AdminKpi
+              compact
+              label="Usuários totais"
+              value={String(metrics.totalUsers)}
+            />
+            <AdminKpi
+              compact
+              label="Novos (7 dias)"
+              value={String(metrics.newUsers7d)}
+            />
+            <AdminKpi
+              compact
+              label="Novos (30 dias)"
+              value={String(metrics.newUsers30d)}
+            />
+            <AdminKpi
+              compact
+              label="Sem assinatura"
+              value={String(metrics.usersWithoutSubscription)}
+              href="/admin/usuarios?status=none"
+              partial={livePartial}
+              hint={livePartial ? PARTIAL_HINT : undefined}
+            />
+            <AdminKpi
+              compact
+              label="Assinaturas ativas"
+              value={String(metrics.activeSubscriberUsers)}
+              partial={livePartial}
+              hint={livePartial ? PARTIAL_HINT : undefined}
+            />
+            <AdminKpi
+              compact
+              label="Em teste"
+              value={String(metrics.trialingSubscriberUsers)}
+              href="/admin/usuarios?status=trialing"
+              partial={livePartial}
+              hint={livePartial ? PARTIAL_HINT : undefined}
+            />
+            <AdminKpi
+              compact
+              label="Encerradas"
+              value={String(metrics.canceledSubscriptions)}
+              href="/admin/usuarios?status=canceled"
+            />
+            <AdminKpi
+              compact
+              label="Checkouts concluídos"
+              value={String(metrics.checkoutsCompleted)}
+            />
+          </div>
+          <ul className="space-y-1 text-sm">
+            {metrics.subscribersByPlan.map((row) => (
+              <li
+                key={row.planKey}
+                className="flex justify-between rounded-lg border border-border/50 px-3 py-2"
+              >
+                <span className="capitalize text-ink">{row.planKey}</span>
+                <span className="text-ink-soft">
+                  {row.count}
+                  {livePartial ? " · PARCIAL" : ""}
+                </span>
               </li>
             ))}
           </ul>
-        )}
-      </Section>
-
-      <Section title="Indicações (acumulado)">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Atribuídas"
-            value={String(metrics.referralsAttributed)}
-          />
-          <Metric
-            label="1ª cobrança confirmada"
-            value={String(metrics.referralsFirstPayment)}
-          />
-          <Metric
-            label="2ª cobrança confirmada"
-            value={String(metrics.referralsSecondPayment)}
-          />
-          <Metric
-            label="Recompensas pendentes"
-            value={String(metrics.referralsRewardPending)}
-          />
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <AdminKpi
+              compact
+              label="Checkouts iniciados"
+              value={String(metrics.checkoutsStarted)}
+            />
+            <AdminKpi
+              compact
+              label="Pendentes"
+              value={String(metrics.checkoutsPending)}
+              href="/admin/usuarios?checkout_pending=1"
+            />
+            <AdminKpi
+              compact
+              label="Expirados/cancelados"
+              value={String(metrics.checkoutsExpiredOrCanceled)}
+            />
+            <AdminKpi
+              compact
+              label="Events processed"
+              value={String(metrics.paymentEventsProcessed)}
+            />
+            <AdminKpi
+              compact
+              label="Events received"
+              value={String(metrics.paymentEventsReceived)}
+              href="/admin/eventos?status=received"
+            />
+            <AdminKpi
+              compact
+              label="Indicações atribuídas"
+              value={String(metrics.referralsAttributed)}
+            />
+            <AdminKpi
+              compact
+              label="1ª cobrança"
+              value={String(metrics.referralsFirstPayment)}
+            />
+            <AdminKpi
+              compact
+              label="Recompensas pendentes"
+              value={String(metrics.referralsRewardPending)}
+            />
+          </div>
+          <p className="text-xs text-ink-soft">
+            past_due, events failed, received e checkout pendente são estados
+            distintos — não misturar sob “falha de pagamento”.
+          </p>
         </div>
-      </Section>
+      </details>
 
-      <GroupHeader
-        title="Produto e ativação"
-        subtitle="Uso de jornadas e do chat — sem conteúdo de conversas."
-      />
-
-      <Section title="Produto e ativação">
-        <p className="mb-3 text-sm text-ink-soft">
-          Cadastro, primeiro uso, jornadas e consumo de IA vivem em telas
-          dedicadas para não sobrecarregar esta visão geral.
-        </p>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/ativacao">
-            Ativação (jornadas, uso do chat)
-          </OpLink>
-          <OpLink href="/admin/uso">Uso e consumo</OpLink>
-        </div>
-      </Section>
-
-      <Section title="IA (estimativa do provedor / planning)">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Solicitações hoje (Brasília)"
-            value={String(metrics.aiRequestsToday)}
-            partial={aiTodayPartial}
-            hint={aiTodayPartial ? PARTIAL_HINT : undefined}
-          />
-          <Metric
-            label="Solicitações (30 dias)"
-            value={String(metrics.aiRequests30d)}
-            partial={ai30Partial}
-            hint={ai30Partial ? PARTIAL_HINT : undefined}
-          />
-          <Metric
-            label="Tokens entrada (30d)"
+      <details className="group rounded-2xl border border-border/60 bg-sand-50/40">
+        <summary className="cursor-pointer list-none px-4 py-3 font-display text-lg text-ink [&::-webkit-details-marker]:hidden">
+          <span className="inline-flex min-h-11 items-center">
+            IA (estimativa / planning) — 30 dias
+          </span>
+        </summary>
+        <div className="grid gap-2 border-t border-border/50 px-4 py-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AdminKpi
+            compact
+            label="Tokens entrada"
             value={metrics.aiInputTokens30d.toLocaleString("pt-BR")}
             partial={ai30Partial}
             hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
-          <Metric
-            label="Tokens saída (30d)"
+          <AdminKpi
+            compact
+            label="Tokens saída"
             value={metrics.aiOutputTokens30d.toLocaleString("pt-BR")}
             partial={ai30Partial}
             hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
-          <Metric
-            label="Custo estimado BRL (30d)"
+          <AdminKpi
+            compact
+            label="Custo est. BRL"
             value={formatPriceBRL(metrics.aiEstimatedCostBrlCents30d)}
+            partial={ai30Partial}
+            estimated
             hint={
               ai30Partial
                 ? PARTIAL_HINT
                 : "Estimativa interna — não é fatura OpenAI."
             }
-            partial={ai30Partial}
           />
-          <Metric
-            label="Custo estimado USD micros (30d)"
-            value={String(metrics.aiEstimatedCostUsdMicros30d)}
-            partial={ai30Partial}
-            hint={ai30Partial ? PARTIAL_HINT : undefined}
-          />
-          <Metric
-            label="Latência média (30d)"
+          <AdminKpi
+            compact
+            label="Latência média"
             value={
               metrics.aiAvgLatencyMs30d == null
                 ? "—"
@@ -482,223 +676,49 @@ export default async function AdminHomePage() {
             partial={ai30Partial}
             hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
-          <Metric
-            label="Erros de IA (30d)"
+          <AdminKpi
+            compact
+            label="Erros de IA"
             value={String(metrics.aiErrors30d)}
             partial={ai30Partial}
             hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
-        </div>
-      </Section>
-
-      <GroupHeader
-        title="Receita e billing"
-        subtitle="Checkouts, payment_events e prontidão da Stripe — leitura, sem mutações."
-      />
-
-      <Section title="Checkout e pagamento (acumulado)">
-        <p className="text-sm text-ink-soft">
-          Contadores all-time / estado atual de intents e payment_events — não
-          são totais &quot;de hoje&quot;.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Checkouts iniciados"
-            value={String(metrics.checkoutsStarted)}
+          <AdminKpi
+            compact
+            label="Custo USD micros"
+            value={String(metrics.aiEstimatedCostUsdMicros30d)}
+            partial={ai30Partial}
+            hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
-          <Metric
-            label="Checkouts concluídos"
-            value={String(metrics.checkoutsCompleted)}
-          />
-          <Metric
-            label="Checkouts pendentes"
-            value={String(metrics.checkoutsPending)}
-            href="/admin/usuarios?checkout_pending=1"
-          />
-          <Metric
-            label="Pendentes/expirados ou cancelados"
-            value={String(metrics.checkoutsExpiredOrCanceled)}
-          />
-          <Metric
-            label="Checkout stuck (>30 min)"
-            value={String(metrics.checkoutsStuckOver30m)}
-            href="/admin/usuarios?checkout_pending=1"
-          />
-          <Metric
-            label="payment_events received"
-            value={String(metrics.paymentEventsReceived)}
-            href="/admin/eventos?status=received"
-          />
-          <Metric
-            label="received presos (>3 min)"
-            value={String(metrics.paymentEventsReceivedStuck)}
-            href="/admin/eventos?status=received_stuck"
-          />
-          <Metric
-            label="payment_events failed"
-            value={String(metrics.paymentEventsFailed)}
-            href="/admin/eventos?status=failed"
-          />
-          <Metric
-            label="payment_events processed"
-            value={String(metrics.paymentEventsProcessed)}
+          <AdminKpi
+            compact
+            label="2ª cobrança (indicações)"
+            value={String(metrics.referralsSecondPayment)}
           />
         </div>
-        <p className="mt-3 text-xs text-ink-soft">
-          past_due, events failed, received e checkout pendente são estados
-          distintos — não misturar sob “falha de pagamento”.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/eventos">Eventos de pagamento (detalhe)</OpLink>
-        </div>
-      </Section>
+      </details>
 
-      <Section title="Prontidão de pagamentos">
-        <StripeReadinessPanel />
-      </Section>
-
-      <GroupHeader
-        title="Suporte e incidentes"
-        subtitle="Canal único: e-mail. Sem ticketing neste painel."
-      />
-
-      <Section title="Suporte e incidentes">
-        <p className="mb-3 text-sm text-ink-soft">
-          Alertas operacionais aparecem em “Precisa da sua atenção”, no topo
-          desta página. Use os atalhos abaixo para a SOP de suporte e o
-          consolidado de incidentes/saúde do app.
-        </p>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <OpLink href="/admin/suporte">Suporte (SOP de triagem)</OpLink>
-          <OpLink href="/admin/incidentes">
-            Incidentes (saúde, crise, pagamentos parados)
-          </OpLink>
-        </div>
-      </Section>
-    </div>
-  );
-}
-
-/**
- * Top-level executive grouping (Hoje / Estado atual / Filas operacionais /
- * Aquisição e conversão / Produto e ativação / Receita e billing / Suporte
- * e incidentes). Purely organizational — the `Section`s underneath keep
- * their own established titles/content so existing deep links and contract
- * tests remain stable.
- */
-function GroupHeader({
-  title,
-  subtitle,
-  id,
-}: {
-  title: string;
-  subtitle?: string;
-  id?: string;
-}) {
-  return (
-    <div className="border-t border-border/70 pt-6 first:border-t-0 first:pt-0">
-      <h2 id={id} className="font-display text-2xl text-ink">
-        {title}
-      </h2>
-      {subtitle ? (
-        <p className="mt-1 text-sm text-ink-soft">{subtitle}</p>
-      ) : null}
-    </div>
-  );
-}
-
-function Section({
-  title,
-  labelledBy,
-  children,
-}: {
-  title?: string;
-  /** When title is omitted, point at a GroupHeader id for accessible naming. */
-  labelledBy?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      className="space-y-4"
-      aria-labelledby={title ? undefined : labelledBy}
-    >
-      {title ? (
-        <h3 className="font-display text-xl text-ink">{title}</h3>
-      ) : null}
-      {children}
-    </section>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  hint,
-  href,
-  partial = false,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  href?: string;
-  partial?: boolean;
-}) {
-  const body = (
-    <>
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="text-xs uppercase tracking-wide text-ink-soft">{label}</p>
-        {partial ? (
-          <span className="rounded border border-amber-700/50 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950">
-            PARCIAL
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-2 font-display text-2xl text-ink">
-        {partial ? `${value} · PARCIAL` : value}
-      </p>
-      {hint ? <p className="mt-1 text-xs text-ink-soft">{hint}</p> : null}
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className="block rounded-2xl border border-border/70 bg-card/60 p-4 transition hover:border-ink/30"
+      {/* 6. Ferramentas externas */}
+      <AdminSection
+        title="Ferramentas externas"
+        description="Atalhos auxiliares — visualmente distintos de rotas internas do Admin."
+        tone="muted"
       >
-        {body}
-      </Link>
-    );
-  }
-
-  return (
-    <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-      {body}
-    </div>
-  );
-}
-
-function OpLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="rounded-md border border-border/70 bg-card/50 px-3 py-1.5 text-ink hover:bg-sand-50"
-    >
-      {children}
-    </Link>
-  );
-}
-
-function AdminError({ message }: { message: string }) {
-  return (
-    <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-      {message}
+        <div className="flex flex-wrap gap-2">
+          <AdminExternalToolLink href="https://dashboard.stripe.com">
+            Stripe Dashboard
+          </AdminExternalToolLink>
+          <AdminExternalToolLink href="https://vercel.com/dashboard">
+            Vercel
+          </AdminExternalToolLink>
+        </div>
+        <div className="mt-4">
+          <p className="mb-2 text-sm font-medium text-ink">
+            Prontidão de pagamentos
+          </p>
+          <StripeReadinessPanel />
+        </div>
+      </AdminSection>
     </div>
   );
 }

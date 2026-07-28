@@ -221,10 +221,10 @@ describe("admin pages source contracts", () => {
     const source = await import("node:fs/promises").then((fs) =>
       fs.readFile("src/app/admin/page.tsx", "utf8"),
     );
-    expect(source).toContain("MRR estimado pelo preço de catálogo");
-    expect(source).toContain("Receita real recebida");
-    expect(source).toContain("payment_events failed");
-    expect(source).toContain("Checkout stuck");
+    expect(source).toContain("MRR catálogo");
+    expect(source).toContain("Receita real");
+    expect(source).toContain("Events failed");
+    expect(source).toContain("Checkout parado");
     expect(source).not.toContain("Falhas de pagamento");
   });
 
@@ -232,14 +232,13 @@ describe("admin pages source contracts", () => {
     const source = await import("node:fs/promises").then((fs) =>
       fs.readFile("src/app/admin/page.tsx", "utf8"),
     );
-    expect(source).toContain("Resumo do dia");
+    expect(source).toContain('title="Hoje"');
     expect(source).toContain("America/Sao_Paulo");
     expect(source).toContain("operationalDayLabel");
-    expect(source).toContain("Checkout e pagamento (acumulado)");
-    expect(source).toContain("Assinaturas (estado atual)");
-    expect(source).toContain("Indicações (acumulado)");
-    expect(source).toMatch(/n[aã]o\s+s[aã]o totais/);
+    expect(source).toContain("Estado atual (snapshot)");
+    expect(source).toMatch(/n[aã]o totais/);
     expect(source).toContain("de hoje");
+    expect(source).toContain("referralsAttributed");
   });
 
   it("overview surfaces PARCIAL for AI and live subscription truncation", async () => {
