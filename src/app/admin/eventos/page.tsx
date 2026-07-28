@@ -2,7 +2,13 @@ import Link from "next/link";
 import {
   AdminMetricsError,
   getAdminPaymentEvents,
+  paymentProcessingStatusHumanLabelPt,
   paymentProcessingStatusLabelPt,
+  PAYMENT_EVENT_AMBIGUOUS_LABEL,
+  PAYMENT_EVENT_UNCORRELATED_LABEL,
+  STRIPE_DASHBOARD_EXTERNAL_LABEL,
+  EXTERNAL_LINK_TARGET,
+  EXTERNAL_LINK_REL,
   type AdminPaymentEventFilter,
 } from "@/lib/admin";
 
@@ -50,7 +56,9 @@ export default async function AdminEventosPage({
         <h1 className="font-display text-3xl text-ink">Eventos de pagamento</h1>
         <p className="mt-2 text-sm text-ink-soft">
           Estados do webhook. Sem payload bruto, sem secrets e sem conteúdo de
-          conversas. Atualizado em {new Date().toLocaleString("pt-BR")}.
+          conversas. IDs Stripe seguem mascarados; o link do Dashboard é
+          montado no servidor a partir do id completo. Atualizado em{" "}
+          {new Date().toLocaleString("pt-BR")}.
         </p>
       </div>
 
@@ -88,10 +96,50 @@ export default async function AdminEventosPage({
             >
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-ink">{row.eventType || "evento"}</p>
+                  <p className="text-ink">
+                    {paymentProcessingStatusHumanLabelPt(
+                      row.processingStatus,
+                      row.isStuck,
+                    )}
+                    <span className="ml-2 text-xs text-ink-soft">
+                      {row.eventType || "evento"}
+                    </span>
+                  </p>
                   <p className="text-ink-soft">
+                    Status técnico:{" "}
                     {paymentProcessingStatusLabelPt(row.processingStatus)}
                     {row.objectIdMasked ? ` · ${row.objectIdMasked}` : ""}
+                  </p>
+                  <p className="mt-1 text-xs">
+                    {row.correlationAmbiguous ? (
+                      <span className="text-amber-800">
+                        {PAYMENT_EVENT_AMBIGUOUS_LABEL}
+                      </span>
+                    ) : row.correlatedUserId ? (
+                      <Link
+                        href={`/admin/usuarios/${row.correlatedUserId}`}
+                        className="text-ink underline underline-offset-2"
+                      >
+                        Ver assinante correlacionado
+                      </Link>
+                    ) : (
+                      <span className="text-ink-soft">
+                        {PAYMENT_EVENT_UNCORRELATED_LABEL}
+                      </span>
+                    )}
+                    {row.stripeDashboardHref ? (
+                      <>
+                        {" · "}
+                        <a
+                          href={row.stripeDashboardHref}
+                          target={EXTERNAL_LINK_TARGET}
+                          rel={EXTERNAL_LINK_REL}
+                          className="text-ink-soft underline underline-offset-2"
+                        >
+                          {STRIPE_DASHBOARD_EXTERNAL_LABEL}
+                        </a>
+                      </>
+                    ) : null}
                   </p>
                 </div>
                 <div className="text-xs text-ink-soft sm:text-right">

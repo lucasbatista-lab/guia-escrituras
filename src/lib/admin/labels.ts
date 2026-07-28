@@ -38,6 +38,25 @@ export function paymentProcessingStatusLabelPt(status: string): string {
   }
 }
 
+/**
+ * Humanized status for operator scanning — same states as
+ * `paymentProcessingStatusLabelPt`, plus "Parado" for a `received` event
+ * stuck past the webhook lease. Technical status stays visible separately.
+ */
+export function paymentProcessingStatusHumanLabelPt(
+  status: string,
+  isStuck: boolean,
+): string {
+  if (status === "received" && isStuck) return "Parado";
+  return paymentProcessingStatusLabelPt(status);
+}
+
+/** Label shown when a payment_events row cannot be linked to exactly one user. */
+export const PAYMENT_EVENT_UNCORRELATED_LABEL = "Não correlacionado";
+
+/** Label shown when more than one user matches the same Stripe object id. */
+export const PAYMENT_EVENT_AMBIGUOUS_LABEL = "Correlação ambígua (mais de um usuário)";
+
 /** Mask Stripe object IDs for safe admin display (cus_/sub_/pi_/evt_). */
 export function maskStripeId(id: string | null | undefined): string | null {
   if (!id?.trim()) return null;

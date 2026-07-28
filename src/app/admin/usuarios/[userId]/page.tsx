@@ -6,6 +6,9 @@ import {
   paymentProcessingStatusLabelPt,
   resolveAdminUsersReturnHref,
   subscriptionStatusLabelPt,
+  STRIPE_DASHBOARD_EXTERNAL_LABEL,
+  EXTERNAL_LINK_TARGET,
+  EXTERNAL_LINK_REL,
 } from "@/lib/admin";
 import { formatPriceBRL } from "@/lib/entitlements";
 
@@ -106,13 +109,15 @@ export default async function AdminUsuarioDetailPage({
           }
         />
         <Item label="Cartão" value={detail.cardLabel ?? "—"} />
-        <Item
+        <ItemWithExternalLink
           label="Customer (mascarado)"
           value={detail.stripeCustomerIdMasked ?? "—"}
+          href={detail.stripeCustomerDashboardHref}
         />
-        <Item
+        <ItemWithExternalLink
           label="Subscription (mascarado)"
           value={detail.stripeSubscriptionIdMasked ?? "—"}
+          href={detail.stripeSubscriptionDashboardHref}
         />
         <Item
           label="Consumo do mês"
@@ -246,6 +251,39 @@ function Item({ label, value }: { label: string; value: string }) {
     <div>
       <dt className="text-ink-soft">{label}</dt>
       <dd className="text-ink">{value}</dd>
+    </div>
+  );
+}
+
+/** Masked id text + optional external Stripe search link (never renders the full id). */
+function ItemWithExternalLink({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: string;
+  href: string | null;
+}) {
+  return (
+    <div>
+      <dt className="text-ink-soft">{label}</dt>
+      <dd className="text-ink">
+        {value}
+        {href ? (
+          <>
+            {" · "}
+            <a
+              href={href}
+              target={EXTERNAL_LINK_TARGET}
+              rel={EXTERNAL_LINK_REL}
+              className="text-xs underline underline-offset-2"
+            >
+              {STRIPE_DASHBOARD_EXTERNAL_LABEL}
+            </a>
+          </>
+        ) : null}
+      </dd>
     </div>
   );
 }

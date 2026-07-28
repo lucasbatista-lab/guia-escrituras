@@ -32,6 +32,7 @@ import {
   type AdminUserListFilters,
 } from "./user-list-params";
 import { maskStripeId } from "./labels";
+import { buildStripeDashboardSearchUrl } from "./stripe-dashboard-links";
 import {
   classifyAdminTechnicalLookup,
   inactivityThresholdIso,
@@ -1153,6 +1154,12 @@ export interface AdminUserDetail {
   /** Masked Stripe IDs for support — never full secrets. */
   stripeCustomerIdMasked: string | null;
   stripeSubscriptionIdMasked: string | null;
+  /**
+   * External Stripe Dashboard search links, built server-side from the full
+   * (unmasked) id. The UI must keep showing only the masked id as text.
+   */
+  stripeCustomerDashboardHref: string | null;
+  stripeSubscriptionDashboardHref: string | null;
   cardLabel: string | null;
   monthlyUsedBrlCents: number;
   monthlyRequests: number;
@@ -1463,6 +1470,12 @@ export async function getAdminUserDetail(
     cancelAtPeriodEnd,
     stripeCustomerIdMasked: maskStripeId(effectiveSub?.stripeCustomerId),
     stripeSubscriptionIdMasked: maskStripeId(effectiveSub?.stripeSubscriptionId),
+    stripeCustomerDashboardHref: effectiveSub?.stripeCustomerId?.trim()
+      ? buildStripeDashboardSearchUrl(effectiveSub.stripeCustomerId)
+      : null,
+    stripeSubscriptionDashboardHref: effectiveSub?.stripeSubscriptionId?.trim()
+      ? buildStripeDashboardSearchUrl(effectiveSub.stripeSubscriptionId)
+      : null,
     cardLabel,
     monthlyUsedBrlCents: used,
     monthlyRequests: requests,

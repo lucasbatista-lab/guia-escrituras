@@ -62,8 +62,24 @@ export { buildAdminOperationalMilestones } from "./operational-milestones";
 export {
   subscriptionStatusLabelPt,
   paymentProcessingStatusLabelPt,
+  paymentProcessingStatusHumanLabelPt,
   maskStripeId,
+  PAYMENT_EVENT_UNCORRELATED_LABEL,
+  PAYMENT_EVENT_AMBIGUOUS_LABEL,
 } from "./labels";
+export {
+  buildStripeDashboardSearchUrl,
+  buildStripeDashboardLinkAttrs,
+  externalLinkAttrs,
+  STRIPE_DASHBOARD_EXTERNAL_LABEL,
+  EXTERNAL_LINK_TARGET,
+  EXTERNAL_LINK_REL,
+  type ExternalLinkAttrs,
+} from "./stripe-dashboard-links";
+export {
+  correlatePaymentEventsToUsers,
+  type PaymentEventCorrelation,
+} from "./payment-correlation";
 export { assertAdminServiceAccess } from "./require-admin";
 export {
   buildOperationalAlerts,

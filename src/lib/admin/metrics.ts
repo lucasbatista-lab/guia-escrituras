@@ -11,6 +11,8 @@ import {
 } from "@/lib/billing/effective-subscription";
 import { PAYMENT_EVENT_LEASE_MS } from "@/lib/stripe/payment-event-claim";
 import { maskStripeId } from "./labels";
+import { correlatePaymentEventsToUsers } from "./payment-correlation";
+import { buildStripeDashboardSearchUrl } from "./stripe-dashboard-links";
 import {
   ADMIN_QUERY_MAX_PAGES,
   ADMIN_QUERY_PAGE_SIZE,
@@ -814,6 +816,16 @@ export interface AdminPaymentEventRow {
   createdAt: string;
   updatedAt: string;
   objectIdMasked: string | null;
+  /** received past the webhook lease — same rule as received_stuck filter. */
+  isStuck: boolean;
+  /**
+   * Exact technical match only (Stripe customer/subscription/checkout
+   * session id) — never guessed by email/name. Null when uncorrelated.
+   */
+  correlatedUserId: string | null;
+  correlationAmbiguous: boolean;
+  /** Built server-side from the full object_id — UI must keep the id masked. */
+  stripeDashboardHref: string | null;
 }
 
 export async function getAdminPaymentEvents(options: {
@@ -849,16 +861,34 @@ export async function getAdminPaymentEvents(options: {
     throw new AppError("admin_query_failed", "admin_query_failed", 500);
   }
 
-  return (data ?? []).map((row) => ({
-    id: String(row.id),
-    eventType: String(row.event_type ?? ""),
-    processingStatus: String(row.processing_status ?? ""),
-    createdAt: String(row.created_at ?? ""),
-    updatedAt: String(row.updated_at ?? ""),
-    objectIdMasked: maskStripeId(
-      typeof row.object_id === "string" ? row.object_id : null,
-    ),
-  }));
+  const rows = data ?? [];
+  const objectIds = rows
+    .map((row) => (typeof row.object_id === "string" ? row.object_id : null))
+    .filter((id): id is string => Boolean(id?.trim()));
+  const correlations = await correlatePaymentEventsToUsers(client, objectIds);
+
+  return rows.map((row) => {
+    const objectId =
+      typeof row.object_id === "string" ? row.object_id.trim() : null;
+    const correlation = objectId ? correlations.get(objectId) : undefined;
+    const processingStatus = String(row.processing_status ?? "");
+    return {
+      id: String(row.id),
+      eventType: String(row.event_type ?? ""),
+      processingStatus,
+      createdAt: String(row.created_at ?? ""),
+      updatedAt: String(row.updated_at ?? ""),
+      objectIdMasked: maskStripeId(objectId),
+      isStuck:
+        processingStatus === "received" &&
+        String(row.updated_at ?? "") < stuckCutoff,
+      correlatedUserId: correlation?.userId ?? null,
+      correlationAmbiguous: correlation?.ambiguous ?? false,
+      stripeDashboardHref: objectId
+        ? buildStripeDashboardSearchUrl(objectId)
+        : null,
+    };
+  });
 }
 
 export async function getAdminPartnerMetrics(): Promise<{
