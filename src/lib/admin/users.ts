@@ -21,6 +21,7 @@ import {
   paginateSortedIds,
 } from "./paginate";
 import { assertAdminServiceAccess } from "./require-admin";
+import { logAdminUserDetailViewed } from "./audit-log";
 import { logger } from "@/lib/logging/logger";
 import {
   buildUserSubscriptionViews,
@@ -1216,7 +1217,7 @@ export interface AdminUserDetail {
 export async function getAdminUserDetail(
   userId: string,
 ): Promise<AdminUserDetail | null> {
-  await assertAdminServiceAccess();
+  const actor = await assertAdminServiceAccess();
   if (!isAdminUuid(userId)) return null;
   const client = admin();
 
@@ -1226,6 +1227,8 @@ export async function getAdminUserDetail(
     .eq("id", userId)
     .maybeSingle();
   if (!profile) return null;
+
+  logAdminUserDetailViewed(actor.userId, userId);
 
   const yearMonth = currentYearMonth();
   const now = Date.now();

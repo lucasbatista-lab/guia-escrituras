@@ -81,6 +81,7 @@ export {
   type PaymentEventCorrelation,
 } from "./payment-correlation";
 export { assertAdminServiceAccess } from "./require-admin";
+export { logAdminUserDetailViewed } from "./audit-log";
 export {
   getAdminActivationMetrics,
   aggregateJourneyProgress,

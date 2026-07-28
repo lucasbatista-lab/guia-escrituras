@@ -8,6 +8,7 @@ import {
   parseAdminUserListSearchParams,
   subscriptionStatusLabelPt,
 } from "@/lib/admin";
+import { CsvExportForm } from "@/components/admin/csv-export-form";
 
 export default async function AdminUsuariosPage({
   searchParams,
@@ -30,7 +31,7 @@ export default async function AdminUsuariosPage({
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
   const page = data.page;
   const baseQs = buildAdminUserListQuery(filters);
-  const csvHref = `/api/admin/usuarios/export?${baseQs}`;
+  const csvExportFields = Array.from(new URLSearchParams(baseQs).entries());
 
   function pageHref(p: number) {
     const qs = buildAdminUserListQuery(filters, { page: String(p) });
@@ -50,12 +51,10 @@ export default async function AdminUsuariosPage({
             {new Date().toLocaleString("pt-BR")}.
           </p>
         </div>
-        <a
-          href={csvHref}
-          className="inline-flex min-h-11 items-center justify-center rounded-md border border-border px-3 py-2 text-sm text-ink hover:bg-sand-50"
-        >
-          Exportar CSV (máx. 500)
-        </a>
+        <CsvExportForm
+          action="/api/admin/usuarios/export"
+          fields={csvExportFields}
+        />
       </div>
 
       <form
