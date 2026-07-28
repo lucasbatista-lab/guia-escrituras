@@ -32,8 +32,25 @@ import {
   type AdminUserListFilters,
 } from "./user-list-params";
 import { maskStripeId } from "./labels";
+import {
+  classifyAdminTechnicalLookup,
+  inactivityThresholdIso,
+  isAdminUuid,
+  type AdminInactiveDays,
+} from "./technical-lookup";
+import {
+  buildAdminOperationalMilestones,
+  type AdminOperationalMilestone,
+} from "./operational-milestones";
 
 export type { AdminUserListFilters } from "./user-list-params";
+export type { AdminOperationalMilestone } from "./operational-milestones";
+
+/** Soft cap note: paginated reads use ADMIN_QUERY_MAX_PAGES × PAGE_SIZE (~100k rows).
+ * Adequate for ~500 subscribers; at ~5k heavy users inactivity/conversation queues
+ * may return partial=true and must not be treated as complete totals.
+ */
+const TECHNICAL_LOOKUP_RESULT_CAP = 25;
 
 function admin() {
   try {
@@ -56,12 +73,6 @@ function mapSubRow(row: Record<string, unknown>): SubscriptionCandidate {
     currentPeriodEnd: (row.current_period_end as string | null) ?? null,
     createdAt: row.created_at as string,
   };
-}
-
-function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value.trim(),
-  );
 }
 
 async function lookupAuthUser(
@@ -221,6 +232,260 @@ async function fetchOnboardingByUser(): Promise<Map<string, boolean>> {
   return map;
 }
 
+async function fetchAwaitingConfirmationUserIds(): Promise<string[]> {
+  const client = admin();
+  const { values } = await collectColumnPaginated<
+    { user_id: string | null },
+    string
+  >(
+    (from, to) =>
+      client
+        .from("signup_intents")
+        .select("user_id")
+        .eq("status", "awaiting_confirmation")
+        .not("user_id", "is", null)
+        .order("updated_at", { ascending: false })
+        .range(from, to),
+    (row) => row.user_id,
+  );
+  return [...new Set(values.filter(Boolean))];
+}
+
+async function fetchActiveNoConversationUserIds(): Promise<{
+  ids: string[];
+  partial: boolean;
+}> {
+  const { live } = await fetchLiveAndPastDueCandidates();
+  const activeIds = [
+    ...new Set(
+      live
+        .filter((s) => s.status === "active" || s.status === "trialing")
+        .map((s) => s.userId),
+    ),
+  ];
+  if (activeIds.length === 0) return { ids: [], partial: false };
+
+  const client = admin();
+  const { values, partial } = await collectColumnPaginated<
+    { user_id: string },
+    string
+  >(
+    (from, to) =>
+      client
+        .from("conversations")
+        .select("user_id")
+        .order("user_id", { ascending: true })
+        .range(from, to),
+    (row) => row.user_id as string,
+  );
+  const withConversation = new Set(values);
+  return {
+    ids: activeIds.filter((id) => !withConversation.has(id)),
+    partial,
+  };
+}
+
+/**
+ * Build last-activity map from usage_events (timestamps only).
+ * When the read is capped, "never seen" is unreliable — callers must not
+ * treat missing keys as proven inactivity unless partial=false.
+ */
+async function fetchLastActivityByUser(): Promise<{
+  lastActivity: Map<string, string>;
+  partial: boolean;
+}> {
+  const client = admin();
+  const lastActivity = new Map<string, string>();
+  const { rows, partial } = await fetchAllRowsPaginated<{
+    user_id: string;
+    created_at: string;
+  }>(
+    (from, to) =>
+      client
+        .from("usage_events")
+        .select("user_id, created_at")
+        .order("created_at", { ascending: false })
+        .order("user_id", { ascending: true })
+        .range(from, to),
+    { pageSize: ADMIN_QUERY_PAGE_SIZE, maxPages: ADMIN_QUERY_MAX_PAGES },
+  );
+  for (const row of rows) {
+    const uid = row.user_id as string;
+    const at = row.created_at as string;
+    const prev = lastActivity.get(uid);
+    if (!prev || at > prev) lastActivity.set(uid, at);
+  }
+  return { lastActivity, partial };
+}
+
+async function fetchInactiveUserIds(
+  days: AdminInactiveDays,
+): Promise<{ ids: string[]; partial: boolean }> {
+  const threshold = inactivityThresholdIso(days);
+  const profiles = await fetchAllProfileIdsOrdered();
+  const { lastActivity, partial } = await fetchLastActivityByUser();
+  const ids: string[] = [];
+  for (const profile of profiles) {
+    const last = lastActivity.get(profile.id);
+    if (!last) {
+      // Only treat "no activity" as inactive when the usage scan is complete.
+      if (!partial) ids.push(profile.id);
+      continue;
+    }
+    if (last < threshold) ids.push(profile.id);
+  }
+  return { ids, partial };
+}
+
+export interface AdminTechnicalLookupResult {
+  userIds: string[];
+  kind: string;
+  ambiguous: boolean;
+  emptyReason?: string;
+}
+
+/**
+ * Exact technical resolution → user_ids. Never approximates IDs.
+ * Does not search message bodies or summary tables.
+ */
+export async function resolveAdminTechnicalLookup(
+  rawQuery: string,
+): Promise<AdminTechnicalLookupResult> {
+  const classified = classifyAdminTechnicalLookup(rawQuery);
+  if (classified.kind === "empty") {
+    return { userIds: [], kind: "empty", ambiguous: false };
+  }
+  if (classified.kind === "unsupported") {
+    return {
+      userIds: [],
+      kind: "unsupported",
+      ambiguous: false,
+      emptyReason: classified.hint,
+    };
+  }
+
+  const client = admin();
+  const needle = classified.needle;
+
+  if (classified.kind === "stripe_customer") {
+    const [billing, subs] = await Promise.all([
+      client
+        .from("billing_customers")
+        .select("user_id")
+        .eq("stripe_customer_id", needle)
+        .limit(TECHNICAL_LOOKUP_RESULT_CAP),
+      client
+        .from("subscriptions")
+        .select("user_id")
+        .eq("stripe_customer_id", needle)
+        .limit(TECHNICAL_LOOKUP_RESULT_CAP),
+    ]);
+    const ids = [
+      ...new Set(
+        [
+          ...(billing.data ?? []).map((r) => r.user_id as string),
+          ...(subs.data ?? []).map((r) => r.user_id as string),
+        ].filter(Boolean),
+      ),
+    ];
+    return {
+      userIds: ids.slice(0, TECHNICAL_LOOKUP_RESULT_CAP),
+      kind: "stripe_customer",
+      ambiguous: ids.length > 1,
+    };
+  }
+
+  if (classified.kind === "stripe_subscription") {
+    const { data } = await client
+      .from("subscriptions")
+      .select("user_id")
+      .eq("stripe_subscription_id", needle)
+      .limit(TECHNICAL_LOOKUP_RESULT_CAP);
+    const ids = [
+      ...new Set((data ?? []).map((r) => r.user_id as string).filter(Boolean)),
+    ];
+    return {
+      userIds: ids,
+      kind: "stripe_subscription",
+      ambiguous: ids.length > 1,
+    };
+  }
+
+  if (classified.kind === "email") {
+    const ids = await findUserIdsByEmail(needle);
+    return {
+      userIds: ids.slice(0, TECHNICAL_LOOKUP_RESULT_CAP),
+      kind: "email",
+      ambiguous: ids.length > 1,
+    };
+  }
+
+  if (classified.kind === "ambiguous_uuid") {
+    const sources: string[] = [];
+    const { data: profile } = await client
+      .from("profiles")
+      .select("id")
+      .eq("id", needle)
+      .maybeSingle();
+    if (profile?.id) sources.push(profile.id as string);
+
+    const { data: conversation } = await client
+      .from("conversations")
+      .select("user_id")
+      .eq("id", needle)
+      .maybeSingle();
+    if (conversation?.user_id) sources.push(conversation.user_id as string);
+
+    const { data: usageRows } = await client
+      .from("usage_events")
+      .select("user_id")
+      .eq("request_id", needle)
+      .limit(TECHNICAL_LOOKUP_RESULT_CAP);
+    for (const row of usageRows ?? []) {
+      if (row.user_id) sources.push(row.user_id as string);
+    }
+
+    const ids = [...new Set(sources)];
+    // Prefer exact profile match alone when present — never approximate.
+    if (profile?.id && ids.length === 1) {
+      return { userIds: [profile.id as string], kind: "user_uuid", ambiguous: false };
+    }
+    if (profile?.id && ids.every((id) => id === profile.id)) {
+      return { userIds: [profile.id as string], kind: "user_uuid", ambiguous: false };
+    }
+    if (ids.length === 0) {
+      return { userIds: [], kind: "ambiguous_uuid", ambiguous: false };
+    }
+    const kind = conversation?.user_id
+      ? "conversation_uuid"
+      : usageRows && usageRows.length > 0
+        ? "request_id"
+        : "user_uuid";
+    return {
+      userIds: ids.slice(0, TECHNICAL_LOOKUP_RESULT_CAP),
+      kind,
+      ambiguous: ids.length > 1,
+    };
+  }
+
+  // display_name — bounded ILIKE (existing behaviour for free text).
+  const { values } = await collectColumnPaginated<{ id: string }, string>(
+    (from, to) =>
+      client
+        .from("profiles")
+        .select("id")
+        .ilike("display_name", `%${needle}%`)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    (row) => row.id,
+  );
+  return {
+    userIds: values.slice(0, TECHNICAL_LOOKUP_RESULT_CAP),
+    kind: "display_name",
+    ambiguous: values.length > 1,
+  };
+}
+
 async function fetchCheckoutPendingUserIds(): Promise<string[]> {
   const client = admin();
   const { values } = await collectColumnPaginated<
@@ -357,7 +622,16 @@ function withinCreatedBounds(
 
 export async function getAdminUsers(
   params: AdminUserListFilters = {},
-): Promise<{ rows: AdminUserRow[]; total: number; page: number; pageSize: number }> {
+): Promise<{
+  rows: AdminUserRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+  partial?: boolean;
+  partialReason?: string;
+  lookupKind?: string;
+  lookupAmbiguous?: boolean;
+}> {
   await assertAdminServiceAccess();
   const client = admin();
   const page = Math.max(1, params.page ?? 1);
@@ -380,6 +654,10 @@ export async function getAdminUsers(
   };
 
   let restriction: Set<string> | null = null;
+  let listPartial = false;
+  let partialReason: string | undefined;
+  let lookupKind: string | undefined;
+  let lookupAmbiguous = false;
 
   if (params.cancelingOnly) {
     const cancelingIds = await findUserIdsCancelingWithAccess();
@@ -395,6 +673,54 @@ export async function getAdminUsers(
       return { rows: [], total: 0, page, pageSize };
     }
     restriction = intersectIdSets(restriction, pendingIds);
+  }
+
+  if (params.awaitingConfirmationOnly) {
+    const awaitingIds = await fetchAwaitingConfirmationUserIds();
+    if (awaitingIds.length === 0) {
+      return { rows: [], total: 0, page, pageSize };
+    }
+    restriction = intersectIdSets(restriction, awaitingIds);
+  }
+
+  if (params.activeNoConversationOnly) {
+    const { ids, partial } = await fetchActiveNoConversationUserIds();
+    if (partial) {
+      listPartial = true;
+      partialReason =
+        "Fila assinou-sem-conversa: leitura de conversations atingiu o limite; total pode estar incompleto.";
+    }
+    if (ids.length === 0) {
+      return {
+        rows: [],
+        total: 0,
+        page,
+        pageSize,
+        partial: listPartial,
+        partialReason,
+      };
+    }
+    restriction = intersectIdSets(restriction, ids);
+  }
+
+  if (params.inactiveDays) {
+    const { ids, partial } = await fetchInactiveUserIds(params.inactiveDays);
+    if (partial) {
+      listPartial = true;
+      partialReason =
+        "Fila de inatividade: leitura de usage_events atingiu o limite; usuários sem evento observado não entram enquanto a leitura for parcial.";
+    }
+    if (ids.length === 0) {
+      return {
+        rows: [],
+        total: 0,
+        page,
+        pageSize,
+        partial: listPartial,
+        partialReason,
+      };
+    }
+    restriction = intersectIdSets(restriction, ids);
   }
 
   if (params.utmSource) {
@@ -430,28 +756,30 @@ export async function getAdminUsers(
   }
 
   if (q) {
-    let fromQuery: string[];
-    if (isUuid(q)) {
-      fromQuery = [q];
-    } else if (q.includes("@")) {
-      fromQuery = await findUserIdsByEmail(q);
-    } else {
-      const { values } = await collectColumnPaginated<{ id: string }, string>(
-        (from, to) =>
-          client
-            .from("profiles")
-            .select("id")
-            .ilike("display_name", `%${q}%`)
-            .order("created_at", { ascending: false })
-            .range(from, to),
-        (row) => row.id,
-      );
-      fromQuery = values;
+    const lookup = await resolveAdminTechnicalLookup(q);
+    lookupKind = lookup.kind;
+    lookupAmbiguous = lookup.ambiguous;
+    if (lookup.kind === "unsupported") {
+      return {
+        rows: [],
+        total: 0,
+        page,
+        pageSize,
+        lookupKind,
+        lookupAmbiguous: false,
+      };
     }
-    if (fromQuery.length === 0) {
-      return { rows: [], total: 0, page, pageSize };
+    if (lookup.userIds.length === 0) {
+      return {
+        rows: [],
+        total: 0,
+        page,
+        pageSize,
+        lookupKind,
+        lookupAmbiguous: false,
+      };
     }
-    restriction = intersectIdSets(restriction, fromQuery);
+    restriction = intersectIdSets(restriction, lookup.userIds);
   }
 
   const derived = hasDerivedFilters(filterMatch);
@@ -506,6 +834,10 @@ export async function getAdminUsers(
       total: count ?? 0,
       page,
       pageSize,
+      partial: listPartial || undefined,
+      partialReason,
+      lookupKind,
+      lookupAmbiguous: lookupAmbiguous || undefined,
     };
   }
 
@@ -618,7 +950,16 @@ export async function getAdminUsers(
     onboardingByUser,
   });
 
-  return { rows, total, page, pageSize };
+  return {
+    rows,
+    total,
+    page,
+    pageSize,
+    partial: listPartial || undefined,
+    partialReason,
+    lookupKind,
+    lookupAmbiguous: lookupAmbiguous || undefined,
+  };
 }
 
 async function enrichAdminUserRows(
@@ -846,13 +1187,15 @@ export interface AdminUserDetail {
     blockedByLimit: boolean;
     pastDue: boolean;
   };
+  /** Timestamp/metadata milestones only — never message content. */
+  operationalMilestones: AdminOperationalMilestone[];
 }
 
 export async function getAdminUserDetail(
   userId: string,
 ): Promise<AdminUserDetail | null> {
   await assertAdminServiceAccess();
-  if (!isUuid(userId)) return null;
+  if (!isAdminUuid(userId)) return null;
   const client = admin();
 
   const { data: profile } = await client
@@ -875,6 +1218,7 @@ export async function getAdminUserDetail(
     intents,
     referrals,
     conversationsCount,
+    firstConversation,
     usage7,
     usage30,
     usageTotal,
@@ -916,6 +1260,13 @@ export async function getAdminUserDetail(
       .from("conversations")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId),
+    client
+      .from("conversations")
+      .select("created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
     client
       .from("usage_events")
       .select("id", { count: "exact", head: true })
@@ -1053,6 +1404,46 @@ export async function getAdminUserDetail(
       .sort()
       .at(-1) ?? null;
 
+  const firstJourneyStartedAt =
+    journeys
+      .map((j) => j.started_at as string | null)
+      .filter(Boolean)
+      .sort()
+      .at(0) ?? null;
+  const journeyCompletedAt =
+    journeys
+      .map((j) => j.completed_at as string | null)
+      .filter(Boolean)
+      .sort()
+      .at(0) ?? null;
+
+  const subscriptionStatus = pastDue
+    ? "past_due"
+    : (resolved?.subscription.status ?? null);
+
+  const earliestSubCreatedAt =
+    candidates
+      .map((c) => c.createdAt)
+      .filter(Boolean)
+      .sort()
+      .at(0) ?? null;
+
+  const operationalMilestones = buildAdminOperationalMilestones({
+    createdAt: profile.created_at as string,
+    signupIntentStatus: (latestIntent?.status as string | null) ?? null,
+    checkoutCreatedAt:
+      (latestIntent?.checkout_created_at as string | null) ?? null,
+    subscriptionCreatedAt: earliestSubCreatedAt,
+    subscriptionStatus,
+    firstConversationAt:
+      (firstConversation.data?.created_at as string | null) ?? null,
+    lastActivityAt: (lastUsage.data?.created_at as string | null) ?? null,
+    firstJourneyStartedAt,
+    journeyCompletedAt,
+    cancelAtPeriodEnd,
+    currentPeriodEnd: effectiveSub?.currentPeriodEnd ?? null,
+  });
+
   return {
     userId,
     userIdMask: maskUserId(userId),
@@ -1066,9 +1457,7 @@ export async function getAdminUserDetail(
     traditionLabel,
     planKey,
     planName: plan?.name ?? null,
-    subscriptionStatus: pastDue
-      ? "past_due"
-      : (resolved?.subscription.status ?? null),
+    subscriptionStatus,
     currentPeriodEnd: effectiveSub?.currentPeriodEnd ?? null,
     renewsAutomatically,
     cancelAtPeriodEnd,
@@ -1105,6 +1494,7 @@ export async function getAdminUserDetail(
       blockedByLimit: budgetLevel === "blocked",
       pastDue,
     },
+    operationalMilestones,
   };
 }
 

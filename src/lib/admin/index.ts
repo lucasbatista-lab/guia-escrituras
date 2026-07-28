@@ -36,9 +36,12 @@ export {
   getAdminUsers,
   getAdminUserDetail,
   exportAdminUsersCsv,
+  resolveAdminTechnicalLookup,
   type AdminUserRow,
   type AdminUserListFilters,
   type AdminUserDetail,
+  type AdminOperationalMilestone,
+  type AdminTechnicalLookupResult,
 } from "./users";
 export {
   parseAdminUserListSearchParams,
@@ -48,6 +51,14 @@ export {
   ADMIN_USER_CSV_MAX_ROWS,
   ADMIN_USER_PAGE_SIZES,
 } from "./user-list-params";
+export {
+  classifyAdminTechnicalLookup,
+  ADMIN_TECHNICAL_SEARCH_HINT,
+  ADMIN_INACTIVE_DAY_THRESHOLDS,
+  inactivityThresholdIso,
+  parseAdminInactiveDays,
+} from "./technical-lookup";
+export { buildAdminOperationalMilestones } from "./operational-milestones";
 export {
   subscriptionStatusLabelPt,
   paymentProcessingStatusLabelPt,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   AdminMetricsError,
+  ADMIN_TECHNICAL_SEARCH_HINT,
   buildAdminUserDetailHref,
   buildAdminUserListQuery,
   getAdminUsers,
@@ -61,13 +62,17 @@ export default async function AdminUsuariosPage({
         method="get"
         className="grid gap-3 rounded-xl border border-border/70 p-4 sm:grid-cols-2 lg:grid-cols-3"
       >
-        <label className="text-sm">
-          <span className="text-ink-soft">Busca (e-mail, nome ou UUID)</span>
+        <label className="text-sm sm:col-span-2 lg:col-span-3">
+          <span className="text-ink-soft">Busca operacional</span>
           <input
             name="q"
             defaultValue={filters.q ?? ""}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+            placeholder="e-mail, nome, UUID, cus_…, sub_…, requestId"
           />
+          <span className="mt-1 block text-xs text-ink-soft">
+            {ADMIN_TECHNICAL_SEARCH_HINT}
+          </span>
         </label>
         <label className="text-sm">
           <span className="text-ink-soft">Plano</span>
@@ -108,6 +113,22 @@ export default async function AdminUsuariosPage({
             <option value="any">Qualquer</option>
             <option value="yes">Concluído</option>
             <option value="no">Pendente</option>
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className="text-ink-soft">Fila operacional</span>
+          <select
+            name="inactive_days"
+            defaultValue={
+              filters.inactiveDays ? String(filters.inactiveDays) : ""
+            }
+            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          >
+            <option value="">Sem filtro de inatividade</option>
+            <option value="3">Inativo ≥ 3 dias (contínuos)</option>
+            <option value="7">Inativo ≥ 7 dias (contínuos)</option>
+            <option value="14">Inativo ≥ 14 dias (contínuos)</option>
+            <option value="30">Inativo ≥ 30 dias (contínuos)</option>
           </select>
         </label>
         <label className="text-sm">
@@ -211,7 +232,25 @@ export default async function AdminUsuariosPage({
             value="1"
             defaultChecked={Boolean(filters.checkoutPendingOnly)}
           />
-          Checkout pendente
+          Checkout pendente/parado
+        </label>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="awaiting_confirmation"
+            value="1"
+            defaultChecked={Boolean(filters.awaitingConfirmationOnly)}
+          />
+          Aguardando confirmação (fluxo de cadastro)
+        </label>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="active_no_conversation"
+            value="1"
+            defaultChecked={Boolean(filters.activeNoConversationOnly)}
+          />
+          Assinou e nunca conversou
         </label>
         <button
           type="submit"
@@ -220,6 +259,27 @@ export default async function AdminUsuariosPage({
           Filtrar
         </button>
       </form>
+
+      {data.partial ? (
+        <p className="rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          <span className="font-medium">PARCIAL</span>
+          {" — "}
+          {data.partialReason ??
+            "Leitura limitada; não trate o total como completo."}
+        </p>
+      ) : null}
+      {data.lookupAmbiguous ? (
+        <p className="rounded-lg border border-border/70 bg-sand-50 px-3 py-2 text-sm text-ink-soft">
+          Busca técnica ambígua ({data.lookupKind}): múltiplos usuários
+          encontrados — revise antes de agir.
+        </p>
+      ) : null}
+      {data.lookupKind && data.total === 0 ? (
+        <p className="text-sm text-ink-soft">
+          Nenhum usuário para a busca técnica ({data.lookupKind}). IDs são
+          correspondência exata — sem aproximação.
+        </p>
+      ) : null}
 
       {data.rows.length === 0 ? (
         <p className="text-sm text-ink-soft">Nenhum usuário encontrado.</p>
@@ -271,7 +331,8 @@ export default async function AdminUsuariosPage({
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <p className="text-ink-soft">
-          Total: {data.total} · Página {page} de {totalPages} ·{" "}
+          Total: {data.total}
+          {data.partial ? " · PARCIAL" : ""} · Página {page} de {totalPages} ·{" "}
           {data.pageSize} por página
         </p>
         <div className="flex gap-2">

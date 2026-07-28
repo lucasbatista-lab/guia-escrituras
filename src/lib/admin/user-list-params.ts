@@ -3,6 +3,10 @@
  */
 
 import type { PlanKey } from "@/lib/entitlements";
+import {
+  parseAdminInactiveDays,
+  type AdminInactiveDays,
+} from "./technical-lookup";
 
 export interface AdminUserListFilters {
   page?: number;
@@ -17,6 +21,18 @@ export interface AdminUserListFilters {
   cancelingOnly?: boolean;
   /** Users with signup_intent still in checkout_created. */
   checkoutPendingOnly?: boolean;
+  /**
+   * Users with signup_intent status awaiting_confirmation
+   * (evidence from cadastro flow — not Auth API absence alone).
+   */
+  awaitingConfirmationOnly?: boolean;
+  /** Active/trialing with zero conversations. */
+  activeNoConversationOnly?: boolean;
+  /**
+   * Continuous inactivity threshold in days (3|7|14|30).
+   * Includes subscribers with no recorded activity.
+   */
+  inactiveDays?: AdminInactiveDays;
   /** Exact utm_source from signup_intents (normalized). */
   utmSource?: string;
   /** Exact utm_medium from signup_intents (normalized). */
@@ -145,6 +161,9 @@ export function parseAdminUserListSearchParams(
     pastDueOnly: one("past_due") === "1",
     cancelingOnly: one("canceling") === "1",
     checkoutPendingOnly: one("checkout_pending") === "1",
+    awaitingConfirmationOnly: one("awaiting_confirmation") === "1",
+    activeNoConversationOnly: one("active_no_conversation") === "1",
+    inactiveDays: parseAdminInactiveDays(one("inactive_days")),
     utmSource: utmSource || undefined,
     utmMedium: utmMedium || undefined,
     utmContent: utmContent || undefined,
@@ -172,6 +191,11 @@ export function buildAdminUserListQuery(
   if (filters.pastDueOnly) qs.set("past_due", "1");
   if (filters.cancelingOnly) qs.set("canceling", "1");
   if (filters.checkoutPendingOnly) qs.set("checkout_pending", "1");
+  if (filters.awaitingConfirmationOnly) qs.set("awaiting_confirmation", "1");
+  if (filters.activeNoConversationOnly) qs.set("active_no_conversation", "1");
+  if (filters.inactiveDays) {
+    qs.set("inactive_days", String(filters.inactiveDays));
+  }
   if (filters.utmSource) qs.set("utm", filters.utmSource);
   if (filters.utmMedium) qs.set("utm_medium", filters.utmMedium);
   if (filters.utmContent) qs.set("utm_content", filters.utmContent);

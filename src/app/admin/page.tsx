@@ -171,6 +171,49 @@ export default async function AdminHomePage() {
         </Section>
       )}
 
+      <Section title="Filas operacionais">
+        <p className="mb-3 text-sm text-ink-soft">
+          Atalhos para filas de Customer Success. Contagens só aparecem quando já
+          são confiáveis neste painel; demais filas abrem a lista filtrada sem
+          inventar números.
+        </p>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <OpLink href="/admin/usuarios?awaiting_confirmation=1">
+            Aguardando confirmação (fluxo de cadastro)
+          </OpLink>
+          <OpLink href="/admin/usuarios?checkout_pending=1">
+            Checkout pendente/parado
+            {typeof metrics.checkoutsPending === "number"
+              ? ` (${metrics.checkoutsPending})`
+              : ""}
+          </OpLink>
+          <OpLink href="/admin/usuarios?active_no_conversation=1">
+            Assinou e nunca conversou
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=3">
+            Inativo ≥ 3 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=7">
+            Inativo ≥ 7 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=14">
+            Inativo ≥ 14 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?inactive_days=30">
+            Inativo ≥ 30 dias
+          </OpLink>
+          <OpLink href="/admin/usuarios?past_due=1">
+            Past due ({metrics.pastDueSubscriptions})
+          </OpLink>
+          <OpLink href="/admin/usuarios?canceling=1">
+            Cancelamento agendado ({cancelingLabel})
+          </OpLink>
+          <OpLink href="/admin/usuarios?duplicates=1">
+            Duplicidades ({metrics.usersWithDuplicateSubscriptions})
+          </OpLink>
+        </div>
+      </Section>
+
       <Section title="Atalhos operacionais">
         <div className="flex flex-wrap gap-2 text-sm">
           <OpLink href="/admin/usuarios?status=none">

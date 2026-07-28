@@ -172,6 +172,32 @@ export default async function AdminUsuarioDetailPage({
       </p>
 
       <section>
+        <h2 className="font-display text-xl text-ink">Marcos operacionais</h2>
+        <p className="mt-1 text-xs text-ink-soft">
+          Timestamps e metadados existentes — com lacunas possíveis. Sem
+          conteúdo de mensagens.
+        </p>
+        <ol className="mt-3 space-y-2 text-sm">
+          {detail.operationalMilestones.map((m) => (
+            <li
+              key={m.key}
+              className="rounded-lg border border-border/60 px-3 py-2"
+            >
+              <p className="text-ink">{m.label}</p>
+              <p className="text-xs text-ink-soft">
+                {m.at
+                  ? new Date(m.at).toLocaleString("pt-BR")
+                  : m.known
+                    ? "Sem timestamp"
+                    : "Lacuna / desconhecido"}
+                {m.detail ? ` · ${m.detail}` : ""}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section>
         <h2 className="font-display text-xl text-ink">Flags operacionais</h2>
         <ul className="mt-3 flex flex-wrap gap-2 text-sm">
           {Object.entries(detail.flags).map(([key, on]) => (
