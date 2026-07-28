@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { AdminEmptyState } from "@/components/admin/admin-primitives";
 
 export default function AdminError({
   error,
@@ -38,16 +39,15 @@ export default function AdminError({
 
   return (
     <div className="mx-auto flex min-h-[40vh] max-w-lg flex-col justify-center py-10">
-      <h1
-        ref={titleRef}
-        tabIndex={-1}
-        className="font-display text-2xl text-ink outline-none"
-      >
+      <AdminEmptyState
+        tone="error"
+        title="Erro na área administrativa"
+        description="Não foi possível concluir esta consulta. Tente novamente."
+        className="text-left"
+      />
+      <h1 ref={titleRef} tabIndex={-1} className="sr-only">
         Erro na área administrativa
       </h1>
-      <p className="mt-3 text-sm text-ink-soft">
-        Não foi possível concluir esta consulta. Tente novamente.
-      </p>
       {digest ? (
         <div className="mt-4 rounded-lg border border-border/70 bg-card/50 p-3">
           <p className="text-xs uppercase tracking-wide text-ink-soft">

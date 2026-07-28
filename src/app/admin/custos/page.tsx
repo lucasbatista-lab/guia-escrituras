@@ -1,4 +1,10 @@
-import Link from "next/link";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import {
+  AdminEmptyState,
+  AdminKpi,
+  AdminOpLink,
+  AdminSection,
+} from "@/components/admin/admin-primitives";
 import {
   AdminMetricsError,
   getAdminAiCostMetrics,
@@ -11,7 +17,15 @@ export default async function AdminCustosPage() {
     metrics = await getAdminAiCostMetrics();
   } catch (error) {
     if (error instanceof AdminMetricsError) {
-      return <p className="text-sm text-destructive">{error.message}</p>;
+      return (
+        <AdminEmptyState
+          tone="error"
+          title="Falha ao carregar custos"
+          description={error.message}
+          actionHref="/admin/custos"
+          actionLabel="Tentar de novo"
+        />
+      );
     }
     throw error;
   }
@@ -22,52 +36,65 @@ export default async function AdminCustosPage() {
       : 0;
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-ink">Custos</h1>
-      <p className="mt-2 text-sm text-ink-soft">
-        Estimativas internas de planejamento a partir de usage_events (30 dias).
-        Não confundir com fatura OpenAI nem com receita Stripe.
-      </p>
-      {metrics.aiMetricsPartial ? (
-        <p className="mt-2 text-sm text-amber-800">
-          Agregação parcial: limite de páginas atingido.
+    <div className="space-y-8">
+      <AdminPageHeader
+        eyebrow="Receita"
+        title="Custos"
+        description="Estimativas internas de planejamento a partir de usage_events (30 dias). Não confundir com fatura OpenAI nem com receita Stripe."
+        meta={
+          metrics.aiMetricsPartial
+            ? "Leitura parcial — limite de páginas atingido; totais não são completos."
+            : "Todas as métricas abaixo são ESTIMADAS — não são valores de caixa."
+        }
+      />
+
+      <AdminSection
+        title="Estimativa de IA (30 dias)"
+        description="Heurística interna — honestidade de qualidade antes de tomar decisões financeiras."
+        tone="priority"
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <AdminKpi
+            label="Custo estimado de IA (BRL, 30d)"
+            value={formatPriceBRL(metrics.aiEstimatedCostBrlCents30d)}
+            estimated
+            partial={metrics.aiMetricsPartial}
+          />
+          <AdminKpi
+            label="Custo estimado (USD micros, 30d)"
+            value={metrics.aiEstimatedCostUsdMicros30d.toLocaleString("pt-BR")}
+            estimated
+            partial={metrics.aiMetricsPartial}
+          />
+          <AdminKpi
+            label="Requisições de IA (30d)"
+            value={metrics.aiRequests30d.toLocaleString("pt-BR")}
+            partial={metrics.aiMetricsPartial}
+            hint="Contagem real de eventos — o custo derivado continua estimado."
+          />
+          <AdminKpi
+            label="Estimativa média por usuário cadastrado"
+            value={formatPriceBRL(avgPerUser)}
+            estimated
+            partial={metrics.aiMetricsPartial}
+          />
+        </div>
+        {metrics.aiRequests30d === 0 ? (
+          <AdminEmptyState
+            tone="empty"
+            title="Nenhum custo de IA registrado no período"
+            description="Sem usage_events de IA nos últimos 30 dias."
+          />
+        ) : null}
+      </AdminSection>
+
+      <AdminSection title="Receita e MRR" tone="muted">
+        <p className="text-sm text-ink-soft">
+          MRR e receita de assinatura ficam na visão geral — são distintos destas
+          estimativas de custo.
         </p>
-      ) : null}
-      <ul className="mt-8 space-y-3 text-sm">
-        <li className="flex justify-between border-b border-border/50 py-3">
-          <span>Custo estimado de IA (BRL, 30d)</span>
-          <span>{formatPriceBRL(metrics.aiEstimatedCostBrlCents30d)}</span>
-        </li>
-        <li className="flex justify-between border-b border-border/50 py-3">
-          <span>Custo estimado (USD micros, 30d)</span>
-          <span>
-            {metrics.aiEstimatedCostUsdMicros30d.toLocaleString("pt-BR")}
-          </span>
-        </li>
-        <li className="flex justify-between border-b border-border/50 py-3">
-          <span>Requisições de IA (30d)</span>
-          <span>{metrics.aiRequests30d.toLocaleString("pt-BR")}</span>
-        </li>
-        <li className="flex justify-between border-b border-border/50 py-3">
-          <span>Estimativa média por usuário cadastrado</span>
-          <span>{formatPriceBRL(avgPerUser)}</span>
-        </li>
-      </ul>
-      <p className="mt-6 text-sm text-ink-soft">
-        MRR e receita de assinatura ficam na{" "}
-        <Link
-          href="/admin"
-          className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          visão geral
-        </Link>
-        .
-      </p>
-      {metrics.aiRequests30d === 0 && (
-        <p className="mt-4 text-sm text-ink-soft">
-          Nenhum custo de IA registrado no período.
-        </p>
-      )}
+        <AdminOpLink href="/admin">Visão geral (receita)</AdminOpLink>
+      </AdminSection>
     </div>
   );
 }

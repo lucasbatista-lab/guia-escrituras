@@ -1,3 +1,10 @@
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import {
+  AdminDataQualityBadge,
+  AdminEmptyState,
+  AdminKpi,
+  AdminSection,
+} from "@/components/admin/admin-primitives";
 import {
   AdminMetricsError,
   getAdminPartnerMetrics,
@@ -12,50 +19,84 @@ export default async function AdminParceirosPage() {
     data = await getAdminPartnerMetrics();
   } catch (error) {
     if (error instanceof AdminMetricsError) {
-      return <p className="text-sm text-destructive">{error.message}</p>;
+      return (
+        <AdminEmptyState
+          tone="error"
+          title="Falha ao carregar parceiros"
+          description={error.message}
+          actionHref="/admin/parceiros"
+          actionLabel="Tentar de novo"
+        />
+      );
     }
     throw error;
   }
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-ink">Parceiros</h1>
-      <p className="mt-2 text-sm text-ink-soft">
-        Indicações e recompensas pendentes (sem pagamento automático).
-      </p>
+    <div className="space-y-8">
+      <AdminPageHeader
+        eyebrow="Crescimento"
+        title="Parceiros"
+        description="Indicações e recompensas pendentes (sem pagamento automático)."
+        meta={
+          data.partial ? (
+            <span className="inline-flex flex-wrap items-center gap-2">
+              <AdminDataQualityBadge quality="parcial" />
+              {PARTIAL_HINT} Os totais abaixo não devem ser tratados como
+              completos.
+            </span>
+          ) : (
+            "Leitura completa das páginas consultadas."
+          )
+        }
+      />
 
-      {data.partial ? (
-        <p className="mt-3 text-sm text-amber-800">
-          <span className="mr-1 inline-block rounded border border-amber-700/50 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950">
-            PARCIAL
-          </span>
-          {PARTIAL_HINT} Os totais abaixo não devem ser tratados como completos.
-        </p>
-      ) : null}
+      <AdminSection
+        title="Resumo"
+        description="Totais agregados por código de parceiro."
+      >
+        <AdminKpi
+          label="Recompensas pendentes (total)"
+          value={String(data.totalRewardPending)}
+          partial={data.partial}
+        />
+      </AdminSection>
 
       {data.rows.length === 0 ? (
-        <p className="mt-6 text-sm text-ink-soft">Nenhum código de parceiro ativo.</p>
+        <AdminEmptyState
+          tone="empty"
+          title="Nenhum código de parceiro ativo"
+          description="Quando referral_codes estiverem ativos, a lista por código aparece aqui."
+        />
       ) : (
-        <ul className="mt-6 space-y-2 text-sm">
-          {data.rows.map((partner) => (
-            <li
-              key={partner.code}
-              className="grid grid-cols-2 gap-2 rounded-lg border border-border/60 px-3 py-2 sm:grid-cols-5"
-            >
-              <span className="font-mono text-ink">{partner.code}</span>
-              <span className="text-ink-soft">{partner.attributions} atrib.</span>
-              <span className="text-ink-soft">{partner.firstPayments} 1ª cobr.</span>
-              <span className="text-ink-soft">{partner.secondPayments} 2ª cobr.</span>
-              <span className="text-ink-soft">{partner.rewardPending} pend.</span>
-            </li>
-          ))}
-        </ul>
+        <AdminSection title="Por código">
+          <ul className="space-y-2 text-sm">
+            {data.rows.map((partner) => (
+              <li
+                key={partner.code}
+                className="grid grid-cols-2 gap-2 rounded-lg border border-border/60 px-3 py-2 sm:grid-cols-5"
+              >
+                <span className="font-mono text-ink">{partner.code}</span>
+                <span className="text-ink-soft">
+                  {partner.attributions} atrib.
+                </span>
+                <span className="text-ink-soft">
+                  {partner.firstPayments} 1ª cobr.
+                </span>
+                <span className="text-ink-soft">
+                  {partner.secondPayments} 2ª cobr.
+                </span>
+                <span className="flex flex-wrap items-center gap-2 text-ink-soft">
+                  {partner.rewardPending} pend.
+                  {data.partial ? (
+                    <AdminDataQualityBadge quality="parcial" />
+                  ) : null}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </AdminSection>
       )}
-
-      <p className="mt-6 text-sm text-ink-soft">
-        Total de recompensas pendentes: {data.totalRewardPending}
-        {data.partial ? " · PARCIAL" : ""}
-      </p>
     </div>
   );
 }

@@ -84,8 +84,9 @@ describe("admin activation source contracts", () => {
   it("page shows honest timezone labels, badges and no forbidden metrics", async () => {
     const source = await fs.readFile("src/app/admin/ativacao/page.tsx", "utf8");
     expect(source).toContain("America/Sao_Paulo");
-    expect(source).toContain("PARCIAL");
-    expect(source).toContain("INDISPONÍVEL");
+    expect(source).toContain('partial={metrics.activeOrTrialingWithZeroConversationsPartial}');
+    expect(source).toContain('quality="indisponivel"');
+    expect(source).toContain('quality="parcial"');
     expect(source).toContain("aprofundarAvailabilityNote");
     expect(source).toContain("rolante");
     // Only usage_events-backed exact totals are forbidden — activation.ts

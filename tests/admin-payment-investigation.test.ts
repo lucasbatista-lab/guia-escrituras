@@ -238,8 +238,9 @@ describe("admin payment investigation stays read-only", () => {
     expect(source).toContain("PAYMENT_EVENT_AMBIGUOUS_LABEL");
     expect(source).toContain("stripeDashboardHref");
     expect(source).toContain("STRIPE_DASHBOARD_EXTERNAL_LABEL");
-    expect(source).toContain('target={EXTERNAL_LINK_TARGET}');
-    expect(source).toContain('rel={EXTERNAL_LINK_REL}');
+    expect(source).toContain("AdminExternalToolLink");
+    expect(source).toContain("EXTERNAL_LINK_TARGET");
+    expect(source).toContain("EXTERNAL_LINK_REL");
     expect(source).toContain("objectIdMasked");
   });
 

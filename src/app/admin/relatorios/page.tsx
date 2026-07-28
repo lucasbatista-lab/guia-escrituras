@@ -1,3 +1,9 @@
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import {
+  AdminDataQualityBadge,
+  AdminEmptyState,
+  AdminSection,
+} from "@/components/admin/admin-primitives";
 import {
   AdminMetricsError,
   formatRevenueBrl,
@@ -13,7 +19,15 @@ export default async function AdminRelatoriosPage() {
     reports = await getStoredDailyReports(14);
   } catch (error) {
     if (error instanceof AdminMetricsError) {
-      return <p className="text-sm text-destructive">{error.message}</p>;
+      return (
+        <AdminEmptyState
+          tone="error"
+          title="Falha ao carregar relatórios"
+          description={error.message}
+          actionHref="/admin/relatorios"
+          actionLabel="Tentar de novo"
+        />
+      );
     }
     throw error;
   }
@@ -22,21 +36,32 @@ export default async function AdminRelatoriosPage() {
   const yesterdayPresent = reports.some((r) => r.reportDate === yesterday);
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-3xl text-ink">Relatórios</h1>
-        <p className="mt-2 text-sm text-ink-soft">
-          Agregados operacionais em UTC (sem conteúdo de conversas). Receita em
-          dinheiro Stripe aparece como &quot;Ainda não integrada&quot;. MRR de
-          catálogo, quando presente, é estimativa de preço — não caixa.
-        </p>
-        {!yesterdayPresent ? (
-          <p className="mt-3 rounded-lg border border-amber-700/30 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-            Relatório de ontem ({yesterday}) ainda não está no banco. Confira o
-            cron ou gere manualmente abaixo.
-          </p>
-        ) : null}
-      </div>
+    <div className="space-y-8">
+      <AdminPageHeader
+        eyebrow="Receita"
+        title="Relatórios"
+        description="Agregados operacionais em UTC (sem conteúdo de conversas). Receita em dinheiro Stripe aparece como “Ainda não integrada”. MRR de catálogo, quando presente, é estimativa de preço — não caixa."
+        meta={
+          <>
+            Fonte: daily_reports · Período exibido: últimos 14 dias UTC
+            {!yesterdayPresent ? (
+              <>
+                {" "}
+                ·{" "}
+                <span className="text-amber-950">
+                  Relatório de ontem ({yesterday}) ainda não está no banco
+                </span>
+              </>
+            ) : null}
+          </>
+        }
+      />
+
+      {!yesterdayPresent ? (
+        <div className="rounded-xl border border-amber-700/30 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          Confira o cron ou gere manualmente abaixo.
+        </div>
+      ) : null}
 
       <DailyReportGeneratePanel
         yesterdayDate={yesterday}
@@ -44,82 +69,96 @@ export default async function AdminRelatoriosPage() {
       />
 
       {reports.length === 0 ? (
-        <p className="text-sm text-ink-soft">
-          Nenhum daily_report armazenado ainda. Após configurar CRON_SECRET na
-          Vercel, o job 00:15 UTC grava o dia anterior automaticamente.
-        </p>
+        <AdminEmptyState
+          tone="empty"
+          title="Nenhum daily_report armazenado ainda"
+          description="Após configurar CRON_SECRET na Vercel, o job 00:15 UTC grava o dia anterior automaticamente."
+        />
       ) : (
-        reports.map((report) => {
-          const agg = report.aggregates;
-          const interpretation = dailyReportService.interpretWithRules(agg);
-          return (
-            <section
-              key={report.reportDate}
-              className="rounded-xl border border-border/70 p-5"
-            >
-              <h2 className="font-display text-xl text-ink">
-                {report.reportDate}{" "}
-                <span className="text-sm font-normal text-ink-soft">(UTC)</span>
-              </h2>
-              <div className="mt-3 grid gap-2 text-sm text-ink-soft sm:grid-cols-2">
-                <p>Receita (caixa): {formatRevenueBrl(agg.revenueBrlCents)}</p>
-                <p>
-                  MRR catálogo:{" "}
-                  {agg.catalogMrrBrlCents != null
-                    ? formatRevenueBrl(agg.catalogMrrBrlCents)
-                    : "—"}
-                </p>
-                <p>
-                  Turnos: {agg.totalRequests} (padrão {agg.standardRequests ?? "—"} ·
-                  Profundo {agg.deepRequests ?? "—"})
-                </p>
-                <p>
-                  Novos usuários: {agg.newUsers ?? "—"} · Conversas:{" "}
-                  {agg.conversationsStarted ?? "—"}
-                </p>
-                <p>
-                  Checkouts abertos/concluídos: {agg.checkoutsOpened ?? "—"} /{" "}
-                  {agg.checkoutsCompleted ?? "—"}
-                </p>
-                <p>
-                  past_due (snapshot): {agg.pastDueSubscriptions ?? "—"} ·
-                  referrals: {agg.referralsAttributed ?? "—"}
-                </p>
-              </div>
-              <p className="mt-4 text-ink">{interpretation.summary}</p>
-              <div className="mt-4">
-                <h3 className="font-medium text-ink">Destaques</h3>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-soft">
-                  {interpretation.highlights.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-4">
-                <h3 className="font-medium text-ink">Riscos</h3>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-soft">
-                  {interpretation.risks.length === 0 ? (
-                    <li>Nenhum risco sinalizado.</li>
-                  ) : (
-                    interpretation.risks.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))
-                  )}
-                </ul>
-              </div>
-              {agg.metricNotes && agg.metricNotes.length > 0 ? (
-                <div className="mt-4">
-                  <h3 className="font-medium text-ink">Notas de métrica</h3>
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-ink-soft">
-                    {agg.metricNotes.map((item) => (
+        <div className="space-y-6">
+          {reports.map((report) => {
+            const agg = report.aggregates;
+            const interpretation = dailyReportService.interpretWithRules(agg);
+            const mrrIsEstimate = agg.catalogMrrBrlCents != null;
+
+            return (
+              <AdminSection
+                key={report.reportDate}
+                title={`${report.reportDate} (UTC)`}
+                description="Dia fechado em UTC — não confundir com o dia operacional em Brasília."
+                className="rounded-xl border border-border/70 p-5"
+              >
+                <div className="grid gap-3 text-sm sm:grid-cols-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-ink-soft">Receita (caixa):</span>
+                    <span className="text-ink">
+                      {formatRevenueBrl(agg.revenueBrlCents)}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-ink-soft">MRR catálogo:</span>
+                    <span className="text-ink">
+                      {agg.catalogMrrBrlCents != null
+                        ? formatRevenueBrl(agg.catalogMrrBrlCents)
+                        : "—"}
+                    </span>
+                    {mrrIsEstimate ? (
+                      <AdminDataQualityBadge quality="estimada" />
+                    ) : null}
+                  </div>
+                  <p className="text-ink-soft">
+                    Turnos: {agg.totalRequests} (padrão{" "}
+                    {agg.standardRequests ?? "—"} · Profundo{" "}
+                    {agg.deepRequests ?? "—"})
+                  </p>
+                  <p className="text-ink-soft">
+                    Novos usuários: {agg.newUsers ?? "—"} · Conversas:{" "}
+                    {agg.conversationsStarted ?? "—"}
+                  </p>
+                  <p className="text-ink-soft">
+                    Checkouts abertos/concluídos: {agg.checkoutsOpened ?? "—"} /{" "}
+                    {agg.checkoutsCompleted ?? "—"}
+                  </p>
+                  <p className="text-ink-soft">
+                    past_due (snapshot): {agg.pastDueSubscriptions ?? "—"} ·
+                    referrals: {agg.referralsAttributed ?? "—"}
+                  </p>
+                </div>
+                <p className="text-ink">{interpretation.summary}</p>
+                <div>
+                  <h3 className="font-medium text-ink">Destaques</h3>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-soft">
+                    {interpretation.highlights.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
                 </div>
-              ) : null}
-            </section>
-          );
-        })
+                <div>
+                  <h3 className="font-medium text-ink">Riscos</h3>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-soft">
+                    {interpretation.risks.length === 0 ? (
+                      <li>Nenhum risco sinalizado.</li>
+                    ) : (
+                      interpretation.risks.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+                {agg.metricNotes && agg.metricNotes.length > 0 ? (
+                  <div>
+                    <h3 className="font-medium text-ink">Notas de métrica</h3>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-ink-soft">
+                      {agg.metricNotes.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </AdminSection>
+            );
+          })}
+        </div>
       )}
     </div>
   );

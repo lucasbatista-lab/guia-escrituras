@@ -1,13 +1,20 @@
 import Link from "next/link";
 import {
   AdminMetricsError,
-  alertLevelToLegacy,
   buildOperationalAlerts,
   getAdminCrisisSnapshot,
   getAdminOverviewMetrics,
   getStoredDailyReports,
 } from "@/lib/admin";
 import { HealthStatusPanel } from "@/components/admin/health-status-panel";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import {
+  AdminAlertItem,
+  AdminEmptyState,
+  AdminKpi,
+  AdminOpLink,
+  AdminSection,
+} from "@/components/admin/admin-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +30,15 @@ export default async function AdminIncidentesPage() {
     ]);
   } catch (error) {
     if (error instanceof AdminMetricsError) {
-      return <p className="text-sm text-destructive">{error.message}</p>;
+      return (
+        <AdminEmptyState
+          tone="error"
+          title="Falha ao carregar incidentes"
+          description={error.message}
+          actionHref="/admin/incidentes"
+          actionLabel="Tentar de novo"
+        />
+      );
     }
     throw error;
   }
@@ -42,116 +57,140 @@ export default async function AdminIncidentesPage() {
     aiEstimatedCostBrlCentsToday: metrics.aiEstimatedCostBrlCentsToday,
   });
 
+  const criticalCount = alerts.filter((a) => a.level === "critical").length;
+  const attentionCount = alerts.filter((a) => a.level === "attention").length;
+
+  const operationStatus =
+    criticalCount > 0
+      ? {
+          label: "Crítico",
+          detail: `${criticalCount} alerta(s) crítico(s) exigem investigação imediata.`,
+        }
+      : attentionCount > 0
+        ? {
+            label: "Atenção",
+            detail: `${attentionCount} item(ns) de atenção nas integrações disponíveis.`,
+          }
+        : {
+            label: "Saudável",
+            detail:
+              "Sem alertas críticos ou de atenção detectados pelas integrações disponíveis.",
+          };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-ink">Incidentes</h1>
-        <p className="mt-2 max-w-2xl text-sm text-ink-soft">
-          Retrospectivo + alertas de billing/webhook. Não substitui logs da
-          Vercel/Supabase nem é um NOC completo. Health check é sob demanda,
-          não automático a cada visita.
-        </p>
-      </div>
+      <AdminPageHeader
+        eyebrow="Operação"
+        title="Incidentes"
+        description="Retrospectivo + alertas de billing/webhook. Não substitui logs da Vercel/Supabase nem é um NOC completo."
+        meta={
+          <>
+            Status operacional:{" "}
+            <span className="font-medium text-ink">{operationStatus.label}</span>
+            {" · "}
+            {operationStatus.detail} Health check é sob demanda — indisponível
+            para verificação ≠ serviço confirmado fora do ar.
+          </>
+        }
+      />
 
-      <section className="space-y-3">
-        <h2 className="font-display text-xl text-ink">Saúde da aplicação</h2>
+      <AdminSection
+        title="Saúde da aplicação"
+        description="App e banco — verificação manual com timeout. Resultado indisponível não confirma queda."
+      >
         <HealthStatusPanel />
-      </section>
+      </AdminSection>
 
-      <section className="space-y-3">
-        <h2 className="font-display text-xl text-ink">Alertas operacionais</h2>
+      <AdminSection
+        title="Alertas operacionais"
+        description="Billing, relatórios, pagamentos e IA — priorize críticos e atenção."
+        tone={alerts.length > 0 ? "priority" : undefined}
+      >
         {alerts.length === 0 ? (
-          <p className="rounded-lg border border-border/60 bg-sand-50/80 px-3 py-3 text-sm text-ink-soft">
-            Nenhum alerta operacional agora.
-          </p>
+          <AdminEmptyState
+            tone="empty"
+            title="Nenhum alerta operacional agora"
+            description="Integrações disponíveis não sinalizaram itens críticos ou de atenção. Continue revisões de rotina."
+            actionHref="/admin/eventos"
+            actionLabel="Ver eventos de pagamento"
+          />
         ) : (
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-2">
             {alerts.map((alert) => (
-              <li key={alert.key}>
-                <Link
-                  href={alert.href}
-                  className={
-                    alert.level === "critical"
-                      ? "flex min-h-11 flex-col gap-1 rounded-lg border border-red-700/40 bg-red-50 px-3 py-3 text-sm text-red-950"
-                      : alert.level === "attention"
-                        ? "flex min-h-11 flex-col gap-1 rounded-lg border border-amber-700/40 bg-amber-50 px-3 py-3 text-sm text-amber-950"
-                        : "flex min-h-11 flex-col gap-1 rounded-lg border border-border/70 bg-sand-50 px-3 py-3 text-sm text-ink"
-                  }
-                >
-                  <span>
-                    <span className="font-medium">
-                      {alertLevelToLegacy(alert.level)}
-                    </span>{" "}
-                    · {alert.message}
-                  </span>
-                </Link>
-              </li>
+              <AdminAlertItem
+                key={alert.key}
+                level={alert.level}
+                title={alert.message}
+                context={`${alert.meaning} → ${alert.investigate}`}
+                period="Snapshot agora"
+                actionLabel={alert.cta}
+                href={alert.href}
+                source="Integrações do Admin"
+              />
             ))}
           </ul>
         )}
-      </section>
+      </AdminSection>
 
-      <section className="space-y-3">
-        <h2 className="font-display text-xl text-ink">
-          Interceptações de crise
-        </h2>
+      <AdminSection
+        title="Interceptações de crise"
+        description="Contagem via marcador técnico — sem conteúdo de conversas."
+      >
         <p className="text-xs text-ink-soft">{crisis.markerNote}</p>
         <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Hoje" value={crisis.interceptionsToday} />
-          <MetricCard label="7 dias (rolante)" value={crisis.interceptions7d} />
-          <MetricCard label="30 dias (rolante)" value={crisis.interceptions30d} />
+          <AdminKpi label="Hoje" value={String(crisis.interceptionsToday)} />
+          <AdminKpi
+            label="7 dias (rolante)"
+            value={String(crisis.interceptions7d)}
+          />
+          <AdminKpi
+            label="30 dias (rolante)"
+            value={String(crisis.interceptions30d)}
+          />
         </div>
-      </section>
+      </AdminSection>
 
-      <section className="space-y-3">
-        <h2 className="font-display text-xl text-ink">Pagamentos parados</h2>
+      <AdminSection
+        title="Pagamentos parados"
+        description="Atalhos para filas failed, received presos e past due."
+      >
         <div className="flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/admin/eventos?status=received_stuck"
-            className="rounded-md border border-border/70 bg-card/50 px-3 py-1.5 text-ink hover:bg-sand-50"
-          >
+          <AdminOpLink href="/admin/eventos?status=received_stuck">
             Received presos ({metrics.paymentEventsReceivedStuck})
-          </Link>
-          <Link
-            href="/admin/eventos?status=failed"
-            className="rounded-md border border-border/70 bg-card/50 px-3 py-1.5 text-ink hover:bg-sand-50"
-          >
+          </AdminOpLink>
+          <AdminOpLink href="/admin/eventos?status=failed">
             Failed ({metrics.paymentEventsFailed})
-          </Link>
-          <Link
-            href="/admin/usuarios?past_due=1"
-            className="rounded-md border border-border/70 bg-card/50 px-3 py-1.5 text-ink hover:bg-sand-50"
-          >
+          </AdminOpLink>
+          <AdminOpLink href="/admin/usuarios?past_due=1">
             Past due ({metrics.pastDueSubscriptions})
-          </Link>
+          </AdminOpLink>
         </div>
-      </section>
+      </AdminSection>
 
-      <section className="space-y-3">
-        <h2 className="font-display text-xl text-ink">Relatório diário</h2>
+      <AdminSection
+        title="Relatório diário"
+        description="Último daily_report UTC — ausência gera alerta acima, não significa app fora do ar."
+      >
         {reports.length === 0 ? (
-          <p className="text-sm text-ink-soft">
-            Nenhum daily_report armazenado ainda para o dia anterior UTC (
-            {metrics.yesterdayReportDate}).
-          </p>
+          <AdminEmptyState
+            tone="unavailable"
+            title="Nenhum daily_report armazenado"
+            description={`Nenhum relatório para o dia anterior UTC (${metrics.yesterdayReportDate}). Confira cron ou gere manualmente.`}
+            actionHref="/admin/relatorios"
+            actionLabel="Abrir relatórios"
+          />
         ) : (
           <p className="text-sm text-ink-soft">
             Último relatório disponível: {reports[0]?.reportDate}.{" "}
-            <Link href="/admin/relatorios" className="underline underline-offset-2">
+            <Link
+              href="/admin/relatorios"
+              className="underline underline-offset-2"
+            >
               Ver relatórios
             </Link>
           </p>
         )}
-      </section>
-    </div>
-  );
-}
-
-function MetricCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-      <p className="text-xs uppercase tracking-wide text-ink-soft">{label}</p>
-      <p className="mt-2 font-display text-2xl text-ink">{value}</p>
+      </AdminSection>
     </div>
   );
 }
