@@ -166,35 +166,29 @@ export default function HomePage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main id="conteudo-principal" tabIndex={-1} className="outline-none">
-        {/* 1. Hero enxuto */}
+        {/* 1. Hero — mobile-first conversion */}
         <section className="relative overflow-hidden">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.16),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.10),_transparent_50%)]"
           />
-          <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 lg:pb-14 lg:pt-10">
+          <div className="relative mx-auto max-w-6xl px-4 pb-6 pt-3 sm:px-6 sm:pb-10 sm:pt-6 lg:pb-12 lg:pt-8">
             <div className="animate-fade-up max-w-2xl">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft sm:text-sm">
-                {brand.name}
-              </p>
-              <p className="mt-4 font-display text-xl leading-snug tracking-tight text-wine sm:text-2xl">
-                {brand.name} — {brand.description}
-              </p>
-              <h1 className="mt-5 text-balance font-display text-3xl leading-[1.15] text-ink sm:text-4xl lg:text-[2.65rem]">
-                Clareza à luz das Escrituras para o que pesa agora.
+              <h1 className="text-balance font-display text-[1.65rem] leading-[1.18] text-ink sm:text-4xl lg:text-[2.65rem]">
+                Leve o que está pesando para uma reflexão à luz das Escrituras.
               </h1>
-              <p className="mt-5 max-w-lg text-base leading-relaxed text-ink-soft sm:text-lg">
-                Converse com uma IA cristã transparente, receba referências
-                bíblicas, aplicação prática e próximos passos — sem se apresentar
-                como voz divina.
+              <p className="mt-3 max-w-lg text-[0.95rem] leading-relaxed text-ink-soft sm:mt-4 sm:text-lg">
+                Conte sua situação e receba referências bíblicas, aplicação
+                prática e próximos passos — com inteligência artificial e limites
+                claros.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <div className="mt-5 flex flex-col gap-2.5 sm:mt-7 sm:flex-row sm:flex-wrap sm:gap-3">
                 <Button
                   asChild
                   size="lg"
                   className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
                 >
-                  <TrackingLink href="/planos">Ver planos</TrackingLink>
+                  <a href="#demonstracao">Ver uma conversa de exemplo</a>
                 </Button>
                 <Button
                   asChild
@@ -202,26 +196,12 @@ export default function HomePage() {
                   variant="outline"
                   className="min-h-11 w-full border-ink/20 sm:w-auto"
                 >
-                  <a href="#demonstracao">Ver um exemplo</a>
+                  <TrackingLink href="/planos">Ver planos</TrackingLink>
                 </Button>
               </div>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
-                {`Planos a partir de ${ESSENCIAL_PRICE_LABEL}/mês · pagamento pela Stripe · cancelamento da renovação na sua conta.`}
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft sm:mt-4">
+                {`Planos a partir de ${ESSENCIAL_PRICE_LABEL}/mês · cancele a renovação quando quiser.`}
               </p>
-              <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-xs text-ink-soft">
-                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
-                  Baseado nas Escrituras
-                </li>
-                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
-                  Tradição ecumênica, evangélica ou católica
-                </li>
-                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
-                  Cancele a renovação quando quiser
-                </li>
-                <li className="rounded-md border border-border/70 bg-card/70 px-2.5 py-1.5">
-                  Pagamento seguro
-                </li>
-              </ul>
             </div>
           </div>
         </section>
@@ -421,6 +401,12 @@ export default function HomePage() {
               .
             </p>
             <ul className="mt-8 grid gap-3 text-sm text-ink-soft sm:grid-cols-2">
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Baseado nas Escrituras
+              </li>
+              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+                Tradição ecumênica, evangélica ou católica
+              </li>
               <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
                 Pagamento processado pela Stripe
               </li>

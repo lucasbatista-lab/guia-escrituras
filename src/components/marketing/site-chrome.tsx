@@ -28,16 +28,16 @@ export function SiteHeader({ className }: { className?: string }) {
   return (
     <header
       className={cn(
-        "mx-auto w-full max-w-6xl px-4 pb-5 pt-safe sm:px-6",
+        "mx-auto w-full max-w-6xl px-4 pb-2 pt-safe sm:px-6 sm:pb-4",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-4 pt-5">
+      <div className="flex items-center justify-between gap-3 pt-3 sm:gap-4 sm:pt-5">
         <TrackingLink href="/" className="group min-h-11 py-1">
           <span className="font-display text-xl tracking-tight text-ink sm:text-2xl">
             {brand.name}
           </span>
-          <span className="mt-0.5 block text-[11px] uppercase tracking-[0.18em] text-ink-soft/80 transition group-hover:text-wine">
+          <span className="mt-0.5 hidden text-[11px] uppercase tracking-[0.18em] text-ink-soft/80 transition group-hover:text-wine md:block">
             {brand.description}
           </span>
         </TrackingLink>
