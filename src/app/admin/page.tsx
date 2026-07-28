@@ -12,6 +12,9 @@ import {
 import { formatPriceBRL } from "@/lib/entitlements";
 import { StripeReadinessPanel } from "@/components/admin/stripe-readiness-panel";
 
+const PARTIAL_HINT =
+  "PARCIAL — limite de leitura atingido; não é o total completo.";
+
 export default async function AdminHomePage() {
   let metrics;
   try {
@@ -39,6 +42,9 @@ export default async function AdminHomePage() {
   const cancelingLabel = formatCancelingWithAccessMetric(
     metrics.cancelingWithAccessCount,
   );
+  const livePartial = metrics.liveSubscriptionsPartial;
+  const aiTodayPartial = metrics.aiMetricsPartialToday;
+  const ai30Partial = metrics.aiMetricsPartial30d;
 
   return (
     <div className="space-y-8">
@@ -47,44 +53,62 @@ export default async function AdminHomePage() {
         <p className="mt-2 text-sm text-ink-soft">
           Dados reais do banco. Sem conteúdo de conversas. Métricas de IA são
           estimativas (não fatura do provedor). Atualizado em{" "}
-          {new Date(metrics.generatedAt).toLocaleString("pt-BR")}.
+          {new Date(metrics.generatedAt).toLocaleString("pt-BR", {
+            timeZone: metrics.operationalTimezone,
+          })}{" "}
+          (America/Sao_Paulo).
         </p>
-        {metrics.aiMetricsPartial ? (
+        {metrics.aiMetricsPartial || livePartial ? (
           <p className="mt-2 text-sm text-amber-800">
-            Atenção: agregados de IA atingiram o limite de páginas e podem estar
-            parciais.
+            Há leituras parciais neste painel — números marcados com{" "}
+            <span className="font-medium">PARCIAL</span> não são totais
+            completos.
           </p>
         ) : null}
       </div>
 
       <Section title="Resumo do dia">
         <p className="mb-3 text-sm text-ink-soft">
-          Revisão rápida no celular — números agregados, sem mensagens.
+          Dia operacional em Brasília (America/Sao_Paulo):{" "}
+          <span className="capitalize text-ink">{metrics.operationalDayLabel}</span>
+          . Revisão rápida no celular — números agregados, sem mensagens.
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric
-            label="Assinantes ativos"
-            value={String(metrics.activeSubscriberUsers)}
-            href="/admin/usuarios?status=active"
-          />
           <Metric
             label="Novos usuários hoje"
             value={String(metrics.newUsersToday)}
             href="/admin/usuarios"
+            hint="Desde a meia-noite em Brasília."
           />
           <Metric
             label="Pedidos de IA hoje"
             value={String(metrics.aiRequestsToday)}
             href="/admin/custos"
-            hint="Estimativa operacional."
+            partial={aiTodayPartial}
+            hint={
+              aiTodayPartial
+                ? PARTIAL_HINT
+                : "Estimativa operacional desde meia-noite em Brasília."
+            }
           />
           <Metric
             label="Alertas abertos"
             value={String(alerts.length)}
             hint={
               alerts.length === 0
-                ? "Nenhum item na faixa de atenção."
-                : "Priorize a seção Precisa da sua atenção."
+                ? "Snapshot agora — nenhum item na faixa de atenção."
+                : "Snapshot agora — priorize a seção Precisa da sua atenção."
+            }
+          />
+          <Metric
+            label="Assinantes ativos (agora)"
+            value={String(metrics.activeSubscriberUsers)}
+            href="/admin/usuarios?status=active"
+            partial={livePartial}
+            hint={
+              livePartial
+                ? PARTIAL_HINT
+                : "Snapshot do estado atual — não é contagem “de hoje”."
             }
           />
         </div>
@@ -175,29 +199,49 @@ export default async function AdminHomePage() {
       </Section>
 
       <Section title="Usuários">
+        <p className="text-sm text-ink-soft">
+          “Novos hoje” usa o dia de Brasília; totais e janelas 7/30 dias são
+          acumulados / rolling.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric label="Usuários totais" value={String(metrics.totalUsers)} />
-          <Metric label="Novos hoje" value={String(metrics.newUsersToday)} />
+          <Metric
+            label="Usuários totais (acumulado)"
+            value={String(metrics.totalUsers)}
+          />
+          <Metric
+            label="Novos hoje (Brasília)"
+            value={String(metrics.newUsersToday)}
+          />
           <Metric label="Novos (7 dias)" value={String(metrics.newUsers7d)} />
           <Metric label="Novos (30 dias)" value={String(metrics.newUsers30d)} />
           <Metric
             label="Confirmados sem assinatura"
             value={String(metrics.usersWithoutSubscription)}
             href="/admin/usuarios?status=none"
+            partial={livePartial}
+            hint={livePartial ? PARTIAL_HINT : undefined}
           />
         </div>
       </Section>
 
-      <Section title="Assinaturas (efetivas)">
+      <Section title="Assinaturas (estado atual)">
+        <p className="text-sm text-ink-soft">
+          Snapshot das assinaturas efetivas agora — não confundir com métricas
+          do dia.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
             label="Assinaturas ativas (efetivas)"
             value={String(metrics.activeSubscriberUsers)}
+            partial={livePartial}
+            hint={livePartial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Em teste (trialing)"
             value={String(metrics.trialingSubscriberUsers)}
             href="/admin/usuarios?status=trialing"
+            partial={livePartial}
+            hint={livePartial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Conversão cadastro → assinatura"
@@ -207,6 +251,7 @@ export default async function AdminHomePage() {
                 : `${(metrics.signupToSubscriberRate * 100).toFixed(1)}%`
             }
             hint="Assinantes efetivos ÷ usuários totais."
+            partial={livePartial}
           />
           <Metric
             label="Renovação cancelada (acesso vigente)"
@@ -232,6 +277,7 @@ export default async function AdminHomePage() {
             label="MRR estimado pelo preço de catálogo"
             value={formatPriceBRL(metrics.mrrCatalogBrlCents)}
             hint="Estimativa pelo catálogo — não é receita recebida da Stripe."
+            partial={livePartial}
           />
           <Metric
             label="Receita real recebida"
@@ -242,6 +288,8 @@ export default async function AdminHomePage() {
             label="Usuários com assinaturas duplicadas"
             value={String(metrics.usersWithDuplicateSubscriptions)}
             href="/admin/usuarios?duplicates=1"
+            partial={livePartial}
+            hint={livePartial ? PARTIAL_HINT : undefined}
           />
         </div>
         <ul className="mt-4 space-y-2 text-sm">
@@ -251,7 +299,10 @@ export default async function AdminHomePage() {
               className="flex justify-between rounded-lg border border-border/60 px-3 py-2"
             >
               <span className="capitalize text-ink">{row.planKey}</span>
-              <span className="text-ink-soft">{row.count}</span>
+              <span className="text-ink-soft">
+                {row.count}
+                {livePartial ? " · PARCIAL" : ""}
+              </span>
             </li>
           ))}
         </ul>
@@ -276,7 +327,10 @@ export default async function AdminHomePage() {
                   className="flex justify-between rounded-lg border border-border/60 px-3 py-2 hover:bg-sand-50"
                 >
                   <span className="text-ink">{row.source}</span>
-                  <span className="text-ink-soft">{row.count}</span>
+                  <span className="text-ink-soft">
+                    {row.count}
+                    {livePartial ? " · PARCIAL" : ""}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -284,7 +338,11 @@ export default async function AdminHomePage() {
         )}
       </Section>
 
-      <Section title="Checkout e pagamento">
+      <Section title="Checkout e pagamento (acumulado)">
+        <p className="text-sm text-ink-soft">
+          Contadores all-time / estado atual de intents e payment_events — não
+          são totais &quot;de hoje&quot;.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
             label="Checkouts iniciados"
@@ -337,29 +395,44 @@ export default async function AdminHomePage() {
       <Section title="IA (estimativa do provedor / planning)">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
-            label="Solicitações hoje"
+            label="Solicitações hoje (Brasília)"
             value={String(metrics.aiRequestsToday)}
+            partial={aiTodayPartial}
+            hint={aiTodayPartial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Solicitações (30 dias)"
             value={String(metrics.aiRequests30d)}
+            partial={ai30Partial}
+            hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Tokens entrada (30d)"
             value={metrics.aiInputTokens30d.toLocaleString("pt-BR")}
+            partial={ai30Partial}
+            hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Tokens saída (30d)"
             value={metrics.aiOutputTokens30d.toLocaleString("pt-BR")}
+            partial={ai30Partial}
+            hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Custo estimado BRL (30d)"
             value={formatPriceBRL(metrics.aiEstimatedCostBrlCents30d)}
-            hint="Estimativa interna — não é fatura OpenAI."
+            hint={
+              ai30Partial
+                ? PARTIAL_HINT
+                : "Estimativa interna — não é fatura OpenAI."
+            }
+            partial={ai30Partial}
           />
           <Metric
             label="Custo estimado USD micros (30d)"
             value={String(metrics.aiEstimatedCostUsdMicros30d)}
+            partial={ai30Partial}
+            hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Latência média (30d)"
@@ -368,15 +441,19 @@ export default async function AdminHomePage() {
                 ? "—"
                 : `${metrics.aiAvgLatencyMs30d} ms`
             }
+            partial={ai30Partial}
+            hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
           <Metric
             label="Erros de IA (30d)"
             value={String(metrics.aiErrors30d)}
+            partial={ai30Partial}
+            hint={ai30Partial ? PARTIAL_HINT : undefined}
           />
         </div>
       </Section>
 
-      <Section title="Indicações">
+      <Section title="Indicações (acumulado)">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
             label="Atribuídas"
@@ -420,16 +497,27 @@ function Metric({
   value,
   hint,
   href,
+  partial = false,
 }: {
   label: string;
   value: string;
   hint?: string;
   href?: string;
+  partial?: boolean;
 }) {
   const body = (
     <>
-      <p className="text-xs uppercase tracking-wide text-ink-soft">{label}</p>
-      <p className="mt-2 font-display text-2xl text-ink">{value}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs uppercase tracking-wide text-ink-soft">{label}</p>
+        {partial ? (
+          <span className="rounded border border-amber-700/50 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950">
+            PARCIAL
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-2 font-display text-2xl text-ink">
+        {partial ? `${value} · PARCIAL` : value}
+      </p>
       {hint ? <p className="mt-1 text-xs text-ink-soft">{hint}</p> : null}
     </>
   );

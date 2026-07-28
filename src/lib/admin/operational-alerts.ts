@@ -141,9 +141,10 @@ export function buildOperationalAlerts(
     alerts.push({
       key: "no_ai_activity",
       level: "info",
-      message: "Há assinantes ativos, mas nenhum turno de IA registrado hoje (UTC).",
+      message:
+        "Há assinantes ativos, mas nenhum turno de IA registrado hoje (Brasília).",
       meaning:
-        "Pode ser silêncio real, outage de chat/OpenAI, ou dia ainda cedo em UTC.",
+        "Pode ser silêncio real, outage de chat/OpenAI, ou dia ainda cedo em America/Sao_Paulo.",
       investigate: "Checar /api/health, logs de chat e uso em /admin/uso.",
       href: "/admin/uso",
       cta: "Ver uso",

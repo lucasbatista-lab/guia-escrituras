@@ -14,6 +14,8 @@ describe("admin daily ops V2", () => {
     expect(page).toContain("Alertas abertos");
     expect(page).toContain("/admin/aquisicao");
     expect(page).toContain("Sem conteúdo de conversas");
+    expect(page).toContain("America/Sao_Paulo");
+    expect(page).toContain("Checkout e pagamento (acumulado)");
   });
 });
 

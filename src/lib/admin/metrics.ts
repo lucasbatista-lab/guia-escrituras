@@ -57,6 +57,144 @@ export function startOfUtcDayIso(date = new Date()): string {
   ).toISOString();
 }
 
+/** Canonical timezone for Admin “hoje” / Resumo do dia (not Vercel runtime TZ). */
+export const ADMIN_OPERATIONAL_TIMEZONE = "America/Sao_Paulo" as const;
+
+type ZonedCivilParts = {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+};
+
+function zonedCivilParts(date: Date, timeZone: string): ZonedCivilParts {
+  const dtf = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
+  const map: Record<string, string> = {};
+  for (const part of dtf.formatToParts(date)) {
+    if (part.type !== "literal") map[part.type] = part.value;
+  }
+  return {
+    year: Number(map.year),
+    month: Number(map.month),
+    day: Number(map.day),
+    hour: Number(map.hour),
+    minute: Number(map.minute),
+    second: Number(map.second),
+  };
+}
+
+/**
+ * Convert a civil wall-clock time in `timeZone` to a UTC Date.
+ * Iteratively corrects offset so results do not depend on process TZ.
+ */
+export function zonedCivilTimeToUtc(
+  timeZone: string,
+  year: number,
+  month: number,
+  day: number,
+  hour = 0,
+  minute = 0,
+  second = 0,
+): Date {
+  let utcMs = Date.UTC(year, month - 1, day, hour, minute, second);
+  for (let i = 0; i < 4; i += 1) {
+    const parts = zonedCivilParts(new Date(utcMs), timeZone);
+    const asUtcLike = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+      parts.second,
+    );
+    const desired = Date.UTC(year, month - 1, day, hour, minute, second);
+    const delta = desired - asUtcLike;
+    if (delta === 0) break;
+    utcMs += delta;
+  }
+  return new Date(utcMs);
+}
+
+function addCivilDays(
+  year: number,
+  month: number,
+  day: number,
+  deltaDays: number,
+): { year: number; month: number; day: number } {
+  const probe = new Date(Date.UTC(year, month - 1, day + deltaDays));
+  return {
+    year: probe.getUTCFullYear(),
+    month: probe.getUTCMonth() + 1,
+    day: probe.getUTCDate(),
+  };
+}
+
+/** Start of the America/Sao_Paulo calendar day containing `date`, as UTC Date. */
+export function startOfOperationalDay(date = new Date()): Date {
+  const parts = zonedCivilParts(date, ADMIN_OPERATIONAL_TIMEZONE);
+  return zonedCivilTimeToUtc(
+    ADMIN_OPERATIONAL_TIMEZONE,
+    parts.year,
+    parts.month,
+    parts.day,
+    0,
+    0,
+    0,
+  );
+}
+
+export function startOfOperationalDayIso(date = new Date()): string {
+  return startOfOperationalDay(date).toISOString();
+}
+
+/** Exclusive end (next SP midnight) of the operational day containing `date`. */
+export function endOfOperationalDayExclusive(date = new Date()): Date {
+  const parts = zonedCivilParts(date, ADMIN_OPERATIONAL_TIMEZONE);
+  const next = addCivilDays(parts.year, parts.month, parts.day, 1);
+  return zonedCivilTimeToUtc(
+    ADMIN_OPERATIONAL_TIMEZONE,
+    next.year,
+    next.month,
+    next.day,
+    0,
+    0,
+    0,
+  );
+}
+
+/** Whether `timestampIso` falls in the SP operational day of `now`. */
+export function isTimestampInOperationalDay(
+  timestampIso: string,
+  now = new Date(),
+): boolean {
+  const t = Date.parse(timestampIso);
+  if (Number.isNaN(t)) return false;
+  const start = startOfOperationalDay(now).getTime();
+  const end = endOfOperationalDayExclusive(now).getTime();
+  return t >= start && t < end;
+}
+
+export function formatOperationalDayLabel(date = new Date()): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: ADMIN_OPERATIONAL_TIMEZONE,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 function mapSubRow(row: Record<string, unknown>): SubscriptionCandidate {
   return {
     id: row.id as string,
@@ -162,11 +300,23 @@ export async function aggregateUsageEventsPaginated(
 
 export interface AdminOverviewMetrics {
   generatedAt: string;
+  /** America/Sao_Paulo — canonical for “hoje” / Resumo do dia. */
+  operationalTimezone: typeof ADMIN_OPERATIONAL_TIMEZONE;
+  /** Inclusive start of the current SP operational day, as UTC ISO. */
+  operationalDayStartIso: string;
+  /** Human label for the current SP calendar day. */
+  operationalDayLabel: string;
   totalUsers: number;
+  /** New profiles since start of current America/Sao_Paulo day. */
   newUsersToday: number;
   newUsers7d: number;
   newUsers30d: number;
   activeSubscriberUsers: number;
+  /**
+   * True when live subscription fetch hit the pagination cap —
+   * activeSubscriberUsers / MRR / plan breakdown may undercount.
+   */
+  liveSubscriptionsPartial: boolean;
   /** Effective live subscribers currently in trialing status. */
   trialingSubscriberUsers: number;
   /** activeSubscriberUsers / totalUsers (0..1), null when no users. */
@@ -183,6 +333,7 @@ export interface AdminOverviewMetrics {
   mrrIsCatalogEstimate: true;
   /** Real Stripe revenue — not integrated yet. */
   realRevenueBrlCents: null;
+  /** All-time signup_intent checkout counters (not “hoje”). */
   checkoutsStarted: number;
   checkoutsCompleted: number;
   checkoutsPending: number;
@@ -190,11 +341,13 @@ export interface AdminOverviewMetrics {
   checkoutsStuckOver30m: number;
   pastDueSubscriptions: number;
   usersWithDuplicateSubscriptions: number;
+  /** All-time payment_events status counters (not “hoje”). */
   paymentEventsReceived: number;
   /** received older than webhook lease (3 minutes) — likely stuck. */
   paymentEventsReceivedStuck: number;
   paymentEventsFailed: number;
   paymentEventsProcessed: number;
+  /** AI requests since start of current America/Sao_Paulo day. */
   aiRequestsToday: number;
   aiRequests30d: number;
   aiInputTokens30d: number;
@@ -204,7 +357,12 @@ export interface AdminOverviewMetrics {
   aiEstimatedCostUsdMicros30d: number;
   aiAvgLatencyMs30d: number | null;
   aiErrors30d: number;
+  /** True if today and/or 30d usage aggregates hit the page cap. */
   aiMetricsPartial: boolean;
+  /** Today (SP) usage aggregate hit the page cap. */
+  aiMetricsPartialToday: boolean;
+  /** Rolling 30d usage aggregate hit the page cap. */
+  aiMetricsPartial30d: boolean;
   referralsAttributed: number;
   referralsFirstPayment: number;
   referralsSecondPayment: number;
@@ -212,7 +370,7 @@ export interface AdminOverviewMetrics {
   /** Whether daily_reports has a row for yesterday UTC. */
   yesterdayReportPresent: boolean;
   yesterdayReportDate: string;
-  /** Estimated AI cost for current UTC day (planning cents). */
+  /** Estimated AI cost for current America/Sao_Paulo day (planning cents). */
   aiEstimatedCostBrlCentsToday: number;
 }
 
@@ -290,7 +448,8 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
   const client = admin();
   const now = new Date();
   const generatedAt = now.toISOString();
-  const today = startOfUtcDayIso(now);
+  const operationalDayStartIso = startOfOperationalDayIso(now);
+  const operationalDayLabel = formatOperationalDayLabel(now);
   const d7 = new Date(now.getTime() - 7 * 86400000).toISOString();
   const d30 = new Date(now.getTime() - 30 * 86400000).toISOString();
   const stuckCheckoutCutoff = new Date(
@@ -329,7 +488,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     client
       .from("profiles")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", today),
+      .gte("created_at", operationalDayStartIso),
     client
       .from("profiles")
       .select("id", { count: "exact", head: true })
@@ -389,7 +548,9 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     countReferralStatus(client, "first_payment_confirmed"),
     countReferralStatus(client, "second_payment_confirmed"),
     countReferralStatus(client, "reward_pending"),
-    aggregateUsageEventsPaginated(client, { sinceIso: today }),
+    aggregateUsageEventsPaginated(client, {
+      sinceIso: operationalDayStartIso,
+    }),
     aggregateUsageEventsPaginated(client, { sinceIso: d30 }),
     countCancelingWithAccess(),
   ]);
@@ -465,11 +626,15 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
 
   return {
     generatedAt,
+    operationalTimezone: ADMIN_OPERATIONAL_TIMEZONE,
+    operationalDayStartIso,
+    operationalDayLabel,
     totalUsers,
     newUsersToday: profilesToday.count ?? 0,
     newUsers7d: profiles7.count ?? 0,
     newUsers30d: profiles30.count ?? 0,
     activeSubscriberUsers: effective.length,
+    liveSubscriptionsPartial: liveSubscriptions.partial,
     trialingSubscriberUsers,
     signupToSubscriberRate,
     subscribersByUtmSource,
@@ -500,6 +665,8 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     aiAvgLatencyMs30d: avgLatency,
     aiErrors30d: usage30.errors,
     aiMetricsPartial: usageToday.partial || usage30.partial,
+    aiMetricsPartialToday: usageToday.partial,
+    aiMetricsPartial30d: usage30.partial,
     referralsAttributed,
     referralsFirstPayment,
     referralsSecondPayment,

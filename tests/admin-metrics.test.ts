@@ -3,6 +3,11 @@ import {
   formatRevenueBrl,
   maskUserId,
   aggregateUsageEventsPaginated,
+  ADMIN_OPERATIONAL_TIMEZONE,
+  startOfOperationalDayIso,
+  endOfOperationalDayExclusive,
+  isTimestampInOperationalDay,
+  startOfUtcDayIso,
 } from "@/lib/admin/metrics";
 import { selectEffectiveSubscriptionsByUser } from "@/lib/billing/effective-subscription";
 import { PLAN_DEFINITIONS } from "@/lib/entitlements";
@@ -24,6 +29,46 @@ describe("formatRevenueBrl", () => {
 
   it("formats real zero as currency", () => {
     expect(formatRevenueBrl(0)).toContain("R$");
+  });
+});
+
+describe("America/Sao_Paulo operational day", () => {
+  it("uses America/Sao_Paulo as canonical timezone constant", () => {
+    expect(ADMIN_OPERATIONAL_TIMEZONE).toBe("America/Sao_Paulo");
+  });
+
+  it("classifies a near-midnight usage_event by Brasília day, not UTC day", () => {
+    // 2026-07-28 02:30 UTC = 2026-07-27 23:30 in São Paulo (UTC-3).
+    const nearMidnightUtc = "2026-07-28T02:30:00.000Z";
+    // "Now" later on 28 Jul Brasília afternoon.
+    const nowSpAfternoon = new Date("2026-07-28T18:00:00.000Z");
+
+    expect(startOfUtcDayIso(nowSpAfternoon)).toBe("2026-07-28T00:00:00.000Z");
+    expect(startOfOperationalDayIso(nowSpAfternoon)).toBe(
+      "2026-07-28T03:00:00.000Z",
+    );
+
+    // UTC "today" would include 02:30Z; SP operational day does not.
+    expect(nearMidnightUtc >= startOfUtcDayIso(nowSpAfternoon)).toBe(true);
+    expect(isTimestampInOperationalDay(nearMidnightUtc, nowSpAfternoon)).toBe(
+      false,
+    );
+
+    // Same instant belongs to the previous SP day.
+    const prevSpDay = new Date("2026-07-27T20:00:00.000Z");
+    expect(isTimestampInOperationalDay(nearMidnightUtc, prevSpDay)).toBe(true);
+    expect(startOfOperationalDayIso(prevSpDay)).toBe(
+      "2026-07-27T03:00:00.000Z",
+    );
+    expect(endOfOperationalDayExclusive(prevSpDay).toISOString()).toBe(
+      "2026-07-28T03:00:00.000Z",
+    );
+  });
+
+  it("includes events at exactly SP midnight in the new operational day", () => {
+    const spMidnight = "2026-07-28T03:00:00.000Z";
+    const now = new Date("2026-07-28T15:00:00.000Z");
+    expect(isTimestampInOperationalDay(spMidnight, now)).toBe(true);
   });
 });
 
@@ -183,6 +228,32 @@ describe("admin pages source contracts", () => {
     expect(source).not.toContain("Falhas de pagamento");
   });
 
+  it("overview separates operational day metrics from accumulated counters", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+      fs.readFile("src/app/admin/page.tsx", "utf8"),
+    );
+    expect(source).toContain("Resumo do dia");
+    expect(source).toContain("America/Sao_Paulo");
+    expect(source).toContain("operationalDayLabel");
+    expect(source).toContain("Checkout e pagamento (acumulado)");
+    expect(source).toContain("Assinaturas (estado atual)");
+    expect(source).toContain("Indicações (acumulado)");
+    expect(source).toMatch(/n[aã]o\s+s[aã]o totais/);
+    expect(source).toContain("de hoje");
+  });
+
+  it("overview surfaces PARCIAL for AI and live subscription truncation", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+      fs.readFile("src/app/admin/page.tsx", "utf8"),
+    );
+    expect(source).toContain("aiMetricsPartialToday");
+    expect(source).toContain("liveSubscriptionsPartial");
+    expect(source).toContain("PARCIAL");
+    expect(source).toContain("não é o total completo");
+    expect(source).toContain("partial={aiTodayPartial}");
+    expect(source).toContain("partial={livePartial}");
+  });
+
   it("usuarios page has search filters and pagination links", async () => {
     const source = await import("node:fs/promises").then((fs) =>
       fs.readFile("src/app/admin/usuarios/page.tsx", "utf8"),
@@ -234,5 +305,9 @@ describe("payment event states are distinct concepts", () => {
     expect(source).toContain("checkoutsStuckOver30m");
     expect(source).toContain("realRevenueBrlCents: null");
     expect(source).toContain("newUsersToday");
+    expect(source).toContain("liveSubscriptionsPartial");
+    expect(source).toContain("aiMetricsPartialToday");
+    expect(source).toContain("startOfOperationalDayIso");
+    expect(source).toContain("liveSubscriptions.partial");
   });
 });

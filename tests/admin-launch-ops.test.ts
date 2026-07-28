@@ -152,6 +152,9 @@ describe("admin UX contracts", () => {
     expect(page).toContain("alertLevelToLegacy");
     expect(page).toContain("critical");
     expect(page).toContain("attention");
+    expect(page).toContain("Resumo do dia");
+    expect(page).toContain("America/Sao_Paulo");
+    expect(page).toContain("PARCIAL");
     expect(page).not.toContain("messages");
     expect(page).not.toContain("OPENAI_API_KEY");
     expect(page).not.toContain("STRIPE_SECRET");
