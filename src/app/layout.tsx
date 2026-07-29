@@ -37,6 +37,21 @@ export const metadata: Metadata = {
   },
   description: brand.seoDescription,
   category: "religion",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/pwa-icon?size=192", sizes: "192x192", type: "image/png" },
+      { url: "/pwa-icon?size=512", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/pwa-icon?size=180", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: brand.name,
+    statusBarStyle: "default",
+  },
   openGraph: {
     type: "website",
     locale: "pt_BR",
@@ -58,6 +73,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#6b2e3a",
 };
 
 export default function RootLayout({

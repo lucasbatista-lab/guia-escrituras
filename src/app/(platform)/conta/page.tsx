@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DataExportPanel } from "@/components/account/data-export-panel";
+import { InstallAppPanel } from "@/components/account/install-app-panel";
 import { SubscriptionManagementPanel } from "@/components/account/subscription-management-panel";
 import { InlineNotice } from "@/components/platform/inline-notice";
 import { PlatformPageHeader } from "@/components/platform/page-header";
@@ -192,6 +193,13 @@ export default async function ContaPage() {
             Transparência sobre IA
           </Link>
         </div>
+      </PlatformSection>
+
+      <PlatformSection
+        title="Amém Chat no seu dispositivo"
+        description="Abra seu espaço pela tela inicial, quando o navegador permitir."
+      >
+        <InstallAppPanel />
       </PlatformSection>
 
       <PlatformSection
