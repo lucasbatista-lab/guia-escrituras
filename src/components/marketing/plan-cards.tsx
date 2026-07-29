@@ -216,7 +216,13 @@ function PlanCard({
         </Button>
       ) : (
         <Button asChild className={buttonClass} variant={buttonVariant}>
-          <TrackingLink href={checkoutHref}>{plan.ctaLabel}</TrackingLink>
+          <TrackingLink
+            href={checkoutHref}
+            conversionEvent="plan_selected"
+            conversionPlan={plan.key}
+          >
+            {plan.ctaLabel}
+          </TrackingLink>
         </Button>
       )}
     </article>

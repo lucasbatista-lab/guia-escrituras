@@ -9,6 +9,7 @@ import { EcosystemShowcase } from "@/components/marketing/ecosystem-showcase";
 import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-static";
 import { PlanCards, ParticularAccessNote } from "@/components/marketing/plan-cards";
 import { ProductHeroPreview } from "@/components/marketing/product-hero-preview";
+import { PublicConversionBeacon } from "@/components/marketing/public-conversion-beacon";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { TrustPrinciples } from "@/components/marketing/trust-principles";
 import { CROSS_SURFACE_COMMERCIAL_FAQ } from "@/lib/marketing/plan-faq";
@@ -99,6 +100,7 @@ export default function HomePage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main id="conteudo-principal" tabIndex={-1} className="outline-none">
+        <PublicConversionBeacon event="landing_viewed" />
         {/* 1. Hero — product visible in the first mobile viewport */}
         <section className="relative overflow-hidden border-b border-border/50">
           <div
@@ -122,7 +124,9 @@ export default function HomePage() {
                   <a href="#demonstracao">Conhecer o Amém Chat</a>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="min-h-12 border-ink/20 px-5">
-                  <TrackingLink href="/planos">Ver planos</TrackingLink>
+                  <TrackingLink href="/planos" conversionEvent="plans_cta_clicked">
+                    Ver planos
+                  </TrackingLink>
                 </Button>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-soft sm:mt-4 sm:text-sm">
@@ -209,6 +213,7 @@ export default function HomePage() {
             <p className="mt-6">
               <TrackingLink
                 href="/planos"
+                conversionEvent="plans_cta_clicked"
                 className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
               >
                 Comparar todos os planos
@@ -264,7 +269,9 @@ export default function HomePage() {
                 size="lg"
                 className="min-h-11 w-full bg-wine hover:bg-wine-soft sm:w-auto"
               >
-                <TrackingLink href="/planos">Ver planos</TrackingLink>
+                <TrackingLink href="/planos" conversionEvent="plans_cta_clicked">
+                  Ver planos
+                </TrackingLink>
               </Button>
               <Button
                 asChild

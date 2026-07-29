@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Check, LockKeyhole } from "lucide-react";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { PublicConversionBeacon } from "@/components/marketing/public-conversion-beacon";
 import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
 import { brand } from "@/config/brand";
 import { redirectAuthenticatedPlanSelection } from "@/lib/auth/plan-continuation-action";
@@ -66,6 +67,10 @@ export default async function CadastroPage({
         tabIndex={-1}
         className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-7 outline-none sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-10 lg:py-12"
       >
+        <PublicConversionBeacon
+          event="signup_started"
+          plan={validated?.ok ? validated.planKey : null}
+        />
         <section className="rounded-3xl border border-border/70 bg-card/85 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-8">
           <PurchaseJourneySteps current="conta" className="mb-6" />
           {plan ? (

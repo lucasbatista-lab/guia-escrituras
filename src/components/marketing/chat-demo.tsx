@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { PublicConversionBeacon } from "@/components/marketing/public-conversion-beacon";
 import { Button } from "@/components/ui/button";
+import { trackPublicConversion } from "@/lib/acquisition/public-events-client";
 import { cn } from "@/lib/utils";
 
 type DemoScenario = {
@@ -130,6 +132,7 @@ export function ChatDemo() {
       className="animate-fade-up-delayed overflow-hidden rounded-[1.75rem] border border-ink/15 bg-card/95 shadow-[0_24px_70px_-38px_rgba(44,36,28,0.6)] backdrop-blur-sm"
       aria-label="Demonstração interativa do chat"
     >
+      <PublicConversionBeacon event="product_demo_viewed" observe />
       <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-ink px-4 py-3 text-sand-50">
         <div>
           <p className="font-display text-sm">Amém Chat</p>
@@ -145,7 +148,10 @@ export function ChatDemo() {
           <button
             key={scenario.id}
             type="button"
-            onClick={() => setActiveId(scenario.id)}
+            onClick={() => {
+              setActiveId(scenario.id);
+              trackPublicConversion("product_demo_topic_selected");
+            }}
             className={cn(
               "min-h-10 shrink-0 snap-start rounded-full px-3 py-2 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               activeId === scenario.id
@@ -208,7 +214,9 @@ export function ChatDemo() {
           asChild
           className="mt-3 min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
         >
-          <TrackingLink href="/planos">Ver os planos</TrackingLink>
+          <TrackingLink href="/planos" conversionEvent="plans_cta_clicked">
+            Ver os planos
+          </TrackingLink>
         </Button>
       </div>
     </div>

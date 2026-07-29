@@ -139,6 +139,10 @@ export function PlanCompareStatic({
                       ? "/conta"
                       : `/cadastro?plan=${key as PlanKey}`
                   }
+                  conversionEvent={
+                    hasActiveSubscription ? undefined : "plan_selected"
+                  }
+                  conversionPlan={hasActiveSubscription ? null : key}
                   className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
                 >
                   {hasActiveSubscription

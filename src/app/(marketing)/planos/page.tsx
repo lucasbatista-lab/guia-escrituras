@@ -282,7 +282,11 @@ export default async function PlanosPage() {
                     size="lg"
                     className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
                   >
-                    <TrackingLink href="/cadastro?plan=caminho">
+                    <TrackingLink
+                      href="/cadastro?plan=caminho"
+                      conversionEvent="plan_selected"
+                      conversionPlan="caminho"
+                    >
                       Escolher o Caminho
                     </TrackingLink>
                   </Button>
@@ -292,7 +296,11 @@ export default async function PlanosPage() {
                     variant="outline"
                     className="min-h-11 w-full sm:w-auto"
                   >
-                    <TrackingLink href="/cadastro?plan=essencial">
+                    <TrackingLink
+                      href="/cadastro?plan=essencial"
+                      conversionEvent="plan_selected"
+                      conversionPlan="essencial"
+                    >
                       Começar com o Essencial
                     </TrackingLink>
                   </Button>
@@ -302,7 +310,11 @@ export default async function PlanosPage() {
                     variant="outline"
                     className="min-h-11 w-full sm:w-auto"
                   >
-                    <TrackingLink href="/cadastro?plan=profundo">
+                    <TrackingLink
+                      href="/cadastro?plan=profundo"
+                      conversionEvent="plan_selected"
+                      conversionPlan="profundo"
+                    >
                       Quero o Profundo
                     </TrackingLink>
                   </Button>
