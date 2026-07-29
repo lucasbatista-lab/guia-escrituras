@@ -9,6 +9,7 @@ import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-sta
 import { PlanCompareStatic } from "@/components/marketing/plan-compare-static";
 import { PlanComparisonViewBeacon } from "@/components/marketing/plan-comparison-view-beacon";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { TrustPrinciples } from "@/components/marketing/trust-principles";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth/session";
 import { isActiveSubscription } from "@/lib/billing";
@@ -25,30 +26,6 @@ export const metadata: Metadata = buildPublicPageMetadata({
     "Compare Essencial, Caminho e Profundo: uso pontual, constância com Jornadas ou análises adicionais com Aprofundar. A partir de R$ 38/mês.",
   path: "/planos",
 });
-
-const CHOOSE_IN_30S = [
-  {
-    prompt: "Quero conversar quando surgir uma situação",
-    plan: "Essencial",
-    planKey: "essencial" as const,
-    note: "Chat completo para momentos pontuais, com histórico e personalização.",
-    highlighted: false,
-  },
-  {
-    prompt: "Quero criar constância e seguir Jornadas",
-    plan: "Caminho",
-    planKey: "caminho" as const,
-    note: "Melhor equilíbrio entre uso e acompanhamento — trilhas de 7 etapas + chat.",
-    highlighted: true,
-  },
-  {
-    prompt: "Quero um segundo nível de análise para temas complexos",
-    plan: "Profundo",
-    planKey: "profundo" as const,
-    note: "Tudo do Caminho, com Aprofundar sob demanda quando a situação pedir mais detalhe.",
-    highlighted: false,
-  },
-] as const;
 
 export default async function PlanosPage() {
   const auth = await getAuthUserContext();
@@ -71,20 +48,30 @@ export default async function PlanosPage() {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.14),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.08),_transparent_50%)]"
           />
-          <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
+          <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-16">
             <header className="max-w-2xl">
-              <h1 className="font-display text-4xl text-ink sm:text-5xl">
-                Escolha o ritmo da sua reflexão
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+                Assinatura mensal · acesso na mesma conta
+              </p>
+              <h1 className="mt-2 text-balance font-display text-4xl leading-tight text-ink sm:text-5xl">
+                Escolha quanto espaço você quer para voltar
               </h1>
               <p className="mt-4 text-base leading-relaxed text-ink-soft sm:text-lg">
-                Todos os planos incluem o chat. O que muda é a constância, o
-                acesso às Jornadas e a possibilidade de Aprofundar temas
-                complexos.
+                Todos incluem conversa personalizada e histórico. O que muda é a
+                frequência, o acesso às Jornadas e a possibilidade de Aprofundar.
               </p>
-              <p className="mt-3 text-sm text-ink-soft">
-                Assinatura mensal com renovação automática · a partir de R$
-                38/mês · cancele a renovação quando quiser.
-              </p>
+              <div className="mt-5 flex flex-wrap gap-2 text-xs text-ink-soft">
+                {["A partir de R$ 38/mês", "Celular e computador", "Sem teste gratuito", "Renovação cancelável"].map(
+                  (item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-border/70 bg-card/70 px-3 py-1.5"
+                    >
+                      {item}
+                    </span>
+                  ),
+                )}
+              </div>
             </header>
 
             {hasActiveSubscription ? (
@@ -106,7 +93,7 @@ export default async function PlanosPage() {
         </section>
 
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
-          {/* 3–4. Três cards + Caminho destacado */}
+          {/* 3–4. Decision-oriented cards */}
           <section aria-labelledby="planos-cards-heading">
             <h2 id="planos-cards-heading" className="sr-only">
               Essencial, Caminho e Profundo
@@ -117,29 +104,13 @@ export default async function PlanosPage() {
               }
               hasActiveSubscription={hasActiveSubscription}
             />
-            <p className="mt-6 max-w-2xl rounded-xl border border-gold/30 bg-sand-100/50 px-4 py-3 text-sm leading-relaxed text-ink-soft">
+            <p className="mt-5 max-w-2xl text-sm leading-relaxed text-ink-soft">
               <span className="font-medium text-ink">
-                Caminho — melhor equilíbrio entre uso e acompanhamento.
+                Por que o Caminho está em destaque?
               </span>{" "}
-              Para quem quer voltar na semana e seguir uma trilha, sem precisar
-              do Aprofundar em toda conversa.
-            </p>
-          </section>
-
-          {/* 5. Como escolher em 30 segundos */}
-          <section
-            id="comparar-uso"
-            className="mt-16 scroll-mt-24"
-            aria-labelledby="comparar-uso-heading"
-          >
-            <h2
-              id="comparar-uso-heading"
-              className="font-display text-3xl text-ink sm:text-4xl"
-            >
-              Como escolher em 30 segundos
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              Sem quiz. Leia a frase que mais parece com você — dentro da{" "}
+              É o equilíbrio oficial para quem quer voltar durante a semana e
+              seguir Jornadas, sem precisar do Aprofundar. Todos os planos seguem
+              a{" "}
               <TrackingLink
                 href="/uso-justo"
                 className="text-ink underline underline-offset-4"
@@ -148,41 +119,11 @@ export default async function PlanosPage() {
               </TrackingLink>
               .
             </p>
-            <ul className="mt-8 grid gap-4">
-              {CHOOSE_IN_30S.map((item) => (
-                <li
-                  key={item.planKey}
-                  className={
-                    item.highlighted
-                      ? "rounded-2xl border border-gold/40 bg-card/80 p-5 ring-1 ring-gold/25"
-                      : "rounded-2xl border border-border/70 bg-card/60 p-5"
-                  }
-                >
-                  <p className="font-display text-lg leading-snug text-ink">
-                    “{item.prompt}”
-                  </p>
-                  <p className="mt-3 text-sm font-medium text-ink">
-                    → {item.plan}
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-ink-soft">
-                    {item.note}
-                  </p>
-                  {!hasActiveSubscription ? (
-                    <p className="mt-4">
-                      <TrackingLink
-                        href={`/cadastro?plan=${item.planKey}`}
-                        className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
-                      >
-                        Ir para o {item.plan}
-                      </TrackingLink>
-                    </p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
           </section>
 
-          {/* 6. Preview da Jornada */}
+          <TrustPrinciples className="mt-10" />
+
+          {/* 5. Preview da Jornada */}
           <div className="mt-16">
             <JourneyPreviewStatic />
           </div>
@@ -193,7 +134,7 @@ export default async function PlanosPage() {
           </div>
 
           {/* 8. Comparação detalhada mobile-first */}
-          <div className="mt-16">
+          <div id="comparar-uso" className="mt-16 scroll-mt-24">
             <PlanCompareStatic hasActiveSubscription={hasActiveSubscription} />
           </div>
 

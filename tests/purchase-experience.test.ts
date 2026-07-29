@@ -18,6 +18,12 @@ function read(...parts: string[]) {
 
 describe("purchase experience — home copy & flow order", () => {
   const home = read("src", "app", "(marketing)", "page.tsx");
+  const ecosystem = read(
+    "src",
+    "components",
+    "marketing",
+    "ecosystem-showcase.tsx",
+  );
   const howItWorks = read(
     "src",
     "app",
@@ -36,7 +42,7 @@ describe("purchase experience — home copy & flow order", () => {
       "<DeepenComparisonStatic",
       "{/* 6. Plans after product value */}",
       "Comparar todos os planos",
-      "Segurança, privacidade e limites",
+      "<TrustPrinciples",
       "Perguntas frequentes",
       "Pronto para escolher um plano?",
     ];
@@ -55,7 +61,7 @@ describe("purchase experience — home copy & flow order", () => {
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Renovação cancelável");
-    expect(home).toContain("Tradição ecumênica, evangélica ou católica");
+    expect(ecosystem).toContain("tradição ecumênica, evangélica ou católica");
     const heroStart = home.indexOf("/* 1. Hero");
     const heroEnd = home.indexOf("/* 2. Demonstração");
     const hero = home.slice(heroStart, heroEnd);
@@ -123,13 +129,14 @@ describe("purchase experience — honest plan cards", () => {
 
   it("planos page explains renewal, cancellation and flexible use", () => {
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
-    expect(planos).toContain("Assinatura mensal com renovação automática");
+    expect(planos).toContain("Assinatura mensal");
+    expect(planos).toContain("Renovação cancelável");
     expect(planos).toContain("cancelamento da renovação");
     expect(planos).toContain("uso justo");
     expect(planos).toContain("Checkout seguro");
     expect(planos).toContain("comparar-uso");
-    expect(planos).toContain("Escolha o ritmo da sua reflexão");
-    expect(planos).toContain("Como escolher em 30 segundos");
+    expect(planos).toContain("Escolha quanto espaço você quer para voltar");
+    expect(planos).toContain("Por que o Caminho está em destaque?");
     expect(planos).toContain("<JourneyPreviewStatic");
     expect(planos).toContain("<DeepenComparisonStatic");
     expect(planos).toContain("<PlanCompareStatic");

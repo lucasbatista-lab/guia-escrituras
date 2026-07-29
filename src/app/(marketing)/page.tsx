@@ -10,6 +10,7 @@ import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-sta
 import { PlanCards, ParticularAccessNote } from "@/components/marketing/plan-cards";
 import { ProductHeroPreview } from "@/components/marketing/product-hero-preview";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { TrustPrinciples } from "@/components/marketing/trust-principles";
 import { CROSS_SURFACE_COMMERCIAL_FAQ } from "@/lib/marketing/plan-faq";
 import {
   socialOpenGraphImages,
@@ -194,12 +195,16 @@ export default function HomePage() {
               Um plano para a forma como você quer voltar
             </h2>
             <p className="mt-3 max-w-2xl text-ink-soft">
-              Essencial para conversas e histórico. Caminho acrescenta Jornadas e
-              mais frequência. Profundo inclui Aprofundar sob demanda.
+              Essencial para conversas e histórico. Caminho acrescenta Jornadas guiadas
+              e mais frequência. Profundo inclui Aprofundar sob demanda.
             </p>
             <div className="mt-8">
               <PlanCards compact />
             </div>
+            <p className="mt-5 text-sm text-ink-soft">
+              Pagamento seguro processado pela Stripe · Renovação cancelável pela
+              sua conta.
+            </p>
             <ParticularAccessNote className="mt-8" />
             <p className="mt-6">
               <TrackingLink
@@ -215,53 +220,7 @@ export default function HomePage() {
         {/* 7. Trust and boundaries */}
         <SectionShell tone="card">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Segurança, privacidade e limites
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              O Amém Chat é inteligência artificial baseada nas Escrituras. Não
-              afirma ser Jesus, Deus ou revelação. Não substitui liderança
-              pastoral, terapia ou atendimento de emergência. Detalhes em{" "}
-              <TrackingLink
-                href="/transparencia-ia"
-                className="text-ink underline underline-offset-4"
-              >
-                Transparência sobre IA
-              </TrackingLink>
-              .
-            </p>
-            <ul className="mt-8 grid gap-3 text-sm text-ink-soft sm:grid-cols-2">
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Baseado nas Escrituras
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Tradição ecumênica, evangélica ou católica
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Pagamento seguro · processado pela Stripe
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Renovação cancelável na sua conta — veja{" "}
-                <TrackingLink
-                  href="/cancelamento"
-                  className="text-ink underline underline-offset-4"
-                >
-                  cancelamento
-                </TrackingLink>
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Conversas privadas conforme a Política de Privacidade
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Referências bíblicas apresentadas por síntese
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Escolha de tradição cristã no perfil
-              </li>
-              <li className="rounded-xl border border-border/60 bg-background/70 px-4 py-3">
-                Sem pressão de doação ou culpa na conversa
-              </li>
-            </ul>
+            <TrustPrinciples />
           </div>
         </SectionShell>
 

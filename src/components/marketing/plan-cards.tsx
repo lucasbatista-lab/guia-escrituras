@@ -6,6 +6,7 @@ import {
   type PlanDefinition,
   type PlanKey,
 } from "@/lib/entitlements";
+import { Check } from "lucide-react";
 import { PlanConversionLink } from "@/components/marketing/plan-conversion-link";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,24 @@ import { cn } from "@/lib/utils";
 /** Honest Caminho highlight — never fake popularity / social proof. */
 export const CAMINHO_HIGHLIGHT_BADGE =
   "Melhor equilíbrio entre uso e acompanhamento";
+
+const PLAN_DECISION_COPY: Record<
+  "essencial" | "caminho" | "profundo",
+  { rhythm: string; gain: string }
+> = {
+  essencial: {
+    rhythm: "Para usar quando surgir uma situação",
+    gain: "Clareza pontual com histórico para retomar",
+  },
+  caminho: {
+    rhythm: "Para voltar várias vezes na semana",
+    gain: "Constância com Jornadas e mais espaço de uso",
+  },
+  profundo: {
+    rhythm: "Para temas complexos ou uso mais intenso",
+    gain: "Segunda análise sob demanda com Aprofundar",
+  },
+};
 
 export function PlanCards({
   className,
@@ -42,6 +61,7 @@ export function PlanCards({
           plan={plan}
           isCurrentPlan={hasActiveSubscription && currentPlanKey === plan.key}
           hasActiveSubscription={hasActiveSubscription}
+          compact={compact}
         />
       ))}
     </div>
@@ -87,13 +107,22 @@ function PlanCard({
   plan,
   isCurrentPlan,
   hasActiveSubscription,
+  compact,
 }: {
   plan: PlanDefinition;
   isCurrentPlan: boolean;
   hasActiveSubscription: boolean;
+  compact: boolean;
 }) {
   const checkoutHref = `/cadastro?plan=${plan.key}`;
-  const benefits = plan.displayBenefits.slice(0, MAX_PUBLIC_PLAN_BENEFITS);
+  const benefits = plan.displayBenefits.slice(
+    0,
+    compact ? 3 : Math.min(4, MAX_PUBLIC_PLAN_BENEFITS),
+  );
+  const decisionCopy =
+    plan.key === "essencial" || plan.key === "caminho" || plan.key === "profundo"
+      ? PLAN_DECISION_COPY[plan.key]
+      : null;
 
   const isCompareOnly =
     hasActiveSubscription && plan.ctaType === "checkout" && !isCurrentPlan;
@@ -117,8 +146,8 @@ function PlanCard({
   return (
     <article
       className={cn(
-        "flex flex-col rounded-2xl border border-border/80 bg-card/70 p-6 shadow-sm backdrop-blur-sm",
-        plan.highlighted && "border-gold/40 ring-1 ring-gold/30",
+        "relative flex flex-col overflow-hidden rounded-3xl border border-border/80 bg-card/80 p-5 shadow-[0_18px_45px_-34px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-6",
+        plan.highlighted && "border-gold/50 bg-gradient-to-b from-card to-sand-100/70 ring-1 ring-gold/30",
         plan.key === "profundo" && !plan.highlighted && "border-wine/20",
         isCurrentPlan && "border-wine/40 ring-1 ring-wine/20",
       )}
@@ -140,9 +169,13 @@ function PlanCard({
         <div className="mb-3 h-4" aria-hidden />
       )}
       <h3 className="font-display text-2xl text-ink">{plan.name}</h3>
-      <p className="mt-2 text-sm font-medium text-ink">{plan.idealFor}</p>
-      <p className="mt-2 text-sm leading-relaxed text-ink-soft">{plan.tagline}</p>
-      <p className="mt-5 font-display text-3xl text-ink">
+      <p className="mt-2 text-sm font-medium text-ink">
+        {decisionCopy?.rhythm ?? plan.idealFor}
+      </p>
+      <p className="mt-2 min-h-10 text-sm leading-relaxed text-ink-soft">
+        {decisionCopy?.gain ?? plan.tagline}
+      </p>
+      <p className="mt-5 font-display text-4xl text-ink">
         {formatPriceBRL(plan.priceMonthlyCents)}
         <span className="ml-1 text-sm font-sans font-normal text-ink-soft">
           /mês
@@ -151,14 +184,11 @@ function PlanCard({
       <p className="mt-2 text-xs text-ink-soft">
         Cobrança mensal · cancele a renovação na sua conta
       </p>
-      <div className="mt-5 flex-1">
+      <div className="mt-5 flex-1 border-t border-border/70 pt-5">
         <ul className="space-y-2.5 text-sm text-ink-soft">
           {benefits.map((benefit) => (
             <li key={benefit} className="flex gap-2">
-              <span
-                className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine/70"
-                aria-hidden
-              />
+              <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-wine" />
               <span>{benefit}</span>
             </li>
           ))}

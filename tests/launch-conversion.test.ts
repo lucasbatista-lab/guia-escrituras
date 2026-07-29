@@ -12,6 +12,12 @@ function read(...parts: string[]) {
 describe("launch conversion home", () => {
   const home = read("src", "app", "(marketing)", "page.tsx");
   const demo = read("src", "components", "marketing", "chat-demo.tsx");
+  const trust = read(
+    "src",
+    "components",
+    "marketing",
+    "trust-principles.tsx",
+  );
   const plans = read("src", "lib", "entitlements", "plans.ts");
   const stripeCheckout = read("src", "lib", "stripe", "checkout.ts");
   const chatService = read("src", "lib", "ai", "chat-service.ts");
@@ -63,11 +69,15 @@ describe("launch conversion home", () => {
     expect(demo).toContain("Tenho contas vencendo");
     expect(demo).toContain("Parece que Deus está em silêncio");
     expect(demo).toContain("Luto e saudade");
-    expect(home).toContain("Segurança, privacidade e limites");
+    expect(home).toContain("<TrustPrinciples");
     expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Stripe");
     expect(home).toContain("cancel");
     expect(home).toContain('id="demonstracao"');
+    expect(trust).toContain("Sem anúncios");
+    expect(trust).toContain("Conversas não são públicas");
+    expect(trust).toContain("Dados não são vendidos");
+    expect(trust).toContain("Prestadores essenciais");
   });
 
   it("does not invent social proof, scarcity or unavailable features", () => {

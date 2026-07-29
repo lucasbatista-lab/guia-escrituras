@@ -15,6 +15,12 @@ describe("launch premium conversion", () => {
   it("home hero keeps product-first CTA, starting price and trust microcopy", () => {
     const home = read("src", "app", "(marketing)", "page.tsx");
     const chrome = read("src", "components", "marketing", "site-chrome.tsx");
+    const ecosystem = read(
+      "src",
+      "components",
+      "marketing",
+      "ecosystem-showcase.tsx",
+    );
     expect(chrome).toContain("brand.description");
     expect(home).not.toContain("brand.tagline");
     expect(home).toContain("Ver planos");
@@ -25,7 +31,7 @@ describe("launch premium conversion", () => {
     expect(home).toContain("R$ 38");
     expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Renovação cancelável");
-    expect(home).toContain("Tradição ecumênica, evangélica ou católica");
+    expect(ecosystem).toContain("tradição ecumênica, evangélica ou católica");
     expect(home).toContain("inteligência artificial");
     const hero = home.slice(
       home.indexOf("/* 1. Hero"),
