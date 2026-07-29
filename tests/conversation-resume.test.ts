@@ -170,7 +170,7 @@ describe("resume UI contracts", () => {
     expect(page).toContain("loadLatestResumePreview");
     expect(page).toContain("force-dynamic");
     expect(page).toContain("`/conversar?c=${resume.conversationId}`");
-    expect(page).toContain("Começar uma nova reflexão");
+    expect(page).toContain("Nova reflexão");
     expect(page).toContain("Última atividade");
     expect(page).not.toContain("memória permanente");
     expect(page).not.toContain("a IA se lembra");
@@ -185,7 +185,7 @@ describe("resume UI contracts", () => {
       "conversations",
       "conversation-history-list.tsx",
     );
-    expect(list).toContain("Mais recente");
+    expect(list).toContain("Continuar conversa");
     expect(list).toContain("Retomar conversa");
     expect(list).toContain("formatConversationActivity");
     expect(page).toContain("listForUser");

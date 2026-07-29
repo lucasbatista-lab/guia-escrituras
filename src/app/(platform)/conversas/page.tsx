@@ -98,10 +98,11 @@ export default async function ConversasPage({
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PlatformPageHeader
-        title="Conversas"
-        description="Retome reflexões anteriores quando quiser — privadas e visíveis só para você."
+        eyebrow="Histórico"
+        title="Suas conversas"
+        description="Retome uma reflexão sem precisar recomeçar."
         actions={
           <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
             <Link href="/conversar">Nova reflexão</Link>

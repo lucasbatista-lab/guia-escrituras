@@ -41,36 +41,8 @@ export function ConversationHistoryList({
     [filtered],
   );
 
-  const latest = latestId
-    ? items.find((item) => item.id === latestId)
-    : items[0];
-
   return (
-    <div className="space-y-6">
-      {latest ? (
-        <div className="rounded-2xl border border-wine/25 bg-wine/[0.04] px-4 py-4 sm:px-5">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-wine">
-            Continuar
-          </p>
-          <p className="mt-1 font-medium text-ink">
-            {conversationTitleLabel(latest.title)}
-          </p>
-          {latest.preview ? (
-            <p className="mt-1 line-clamp-2 text-sm text-ink-soft">
-              {latest.preview}
-            </p>
-          ) : null}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
-              <Link href={`/conversar?c=${latest.id}`}>Retomar conversa</Link>
-            </Button>
-            <Button asChild variant="outline" className="min-h-11">
-              <Link href="/conversar">Nova reflexão</Link>
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
+    <div className="space-y-5">
       <div>
         <label htmlFor={searchId} className="sr-only">
           Buscar nas conversas carregadas
@@ -140,7 +112,7 @@ export function ConversationHistoryList({
           </div>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {groups.map((group) => (
             <section
               key={group.key}
@@ -156,7 +128,7 @@ export function ConversationHistoryList({
                   {`, ${group.items.length} conversa${group.items.length === 1 ? "" : "s"}`}
                 </span>
               </h2>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {group.items.map((row) => {
                   const isLatest = row.id === latestId;
                   return (
@@ -164,7 +136,7 @@ export function ConversationHistoryList({
                       <Link
                         href={`/conversar?c=${row.id}`}
                         className={cn(
-                          "block min-h-11 rounded-2xl border px-4 py-4 transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-5",
+                          "block min-h-11 rounded-xl border px-4 py-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-5 sm:py-3",
                           isLatest
                             ? "border-wine/30 bg-wine/[0.04] hover:border-wine/40"
                             : "border-border/70 bg-card/70 hover:border-wine/25 hover:bg-card",
@@ -172,11 +144,6 @@ export function ConversationHistoryList({
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            {isLatest ? (
-                              <p className="mb-1 text-xs font-medium uppercase tracking-[0.12em] text-wine">
-                                Mais recente
-                              </p>
-                            ) : null}
                             <h3 className="font-medium text-ink">
                               {conversationTitleLabel(row.title)}
                             </h3>
@@ -193,8 +160,8 @@ export function ConversationHistoryList({
                             {formatConversationActivity(row.updatedAt)}
                           </time>
                         </div>
-                        <p className="mt-1.5 text-sm text-ink-soft">
-                          {isLatest ? "Retomar conversa" : "Abrir conversa"}
+                        <p className={cn("mt-1.5 text-sm", isLatest ? "font-medium text-wine" : "text-ink-soft")}>
+                          {isLatest ? "Continuar conversa" : "Retomar conversa"}
                         </p>
                       </Link>
                     </li>
