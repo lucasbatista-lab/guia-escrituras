@@ -87,17 +87,32 @@ describe("launch premium conversion", () => {
       ["src", "app", "(auth)", "confira-seu-email", "page.tsx"],
       ["src", "app", "(auth)", "email-confirmado", "page.tsx"],
       ["src", "app", "(platform)", "assinar", "continuar", "page.tsx"],
-      ["src", "app", "(platform)", "personalizar", "page.tsx"],
       ["src", "app", "(platform)", "assinatura", "sucesso", "page.tsx"],
     ]) {
       expect(read(...parts)).toContain("PurchaseJourneySteps");
     }
+    const personalizationPage = read(
+      "src",
+      "app",
+      "(platform)",
+      "personalizar",
+      "page.tsx",
+    );
+    const personalizationForm = read(
+      "src",
+      "components",
+      "auth",
+      "onboarding-form.tsx",
+    );
+    expect(personalizationPage).toContain("PersonalizationForm");
+    expect(personalizationForm).toContain("ProgressSteps");
+    expect(personalizationForm).toContain("currentStep");
   });
 
   it("first paid entry and support address are clear", () => {
     const inicio = read("src", "app", "(platform)", "inicio", "page.tsx");
     expect(inicio).toContain("O que está pesando hoje?");
-    expect(inicio).toContain("Escrever minha situação");
+    expect(inicio).toContain("Começar uma reflexão");
     delete process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
     delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
     expect(getSupportEmail()).toBe("amemchatbr@gmail.com");

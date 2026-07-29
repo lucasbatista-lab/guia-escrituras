@@ -132,7 +132,7 @@ describe("plan differentiation — marketing surfaces", () => {
     expect(planos).toContain("comparar-uso");
     expect(planos).toContain("aprofundar");
     expect(planos).toContain("PLAN_COMMERCIAL_FAQ");
-    expect(planos).toContain("Em evolução");
+    expect(planos).toContain("está em evolução");
     expect(planos).toContain("ParticularAccessNote");
     expect(planos).toContain("troca automática");
     expect(planos).toContain("PlanComparisonViewBeacon");

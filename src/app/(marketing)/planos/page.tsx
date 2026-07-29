@@ -125,14 +125,33 @@ export default async function PlanosPage() {
           <TrustPrinciples className="mt-8" />
 
           {/* 5. Preview da Jornada */}
-          <div className="mt-12">
-            <JourneyPreviewStatic />
-          </div>
+          <details className="group mt-12 rounded-2xl border border-border/70 bg-card/60 px-4 sm:px-5">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 py-3 font-medium text-ink marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+              Ver como uma Jornada funciona
+              <span aria-hidden className="text-ink-soft transition group-open:rotate-180">
+                ▾
+              </span>
+            </summary>
+            <div className="border-t border-border/60 py-6">
+              <JourneyPreviewStatic />
+            </div>
+          </details>
 
           {/* 7. Normal versus Aprofundar */}
-          <div id="aprofundar" className="mt-12 scroll-mt-24">
-            <DeepenComparisonStatic />
-          </div>
+          <details
+            id="aprofundar"
+            className="group mt-4 scroll-mt-24 rounded-2xl border border-wine/20 bg-wine/[0.03] px-4 sm:px-5"
+          >
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 py-3 font-medium text-ink marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+              Ver o que o Aprofundar adiciona
+              <span aria-hidden className="text-wine transition group-open:rotate-180">
+                ▾
+              </span>
+            </summary>
+            <div className="border-t border-wine/15 py-6">
+              <DeepenComparisonStatic />
+            </div>
+          </details>
 
           {/* 8. Comparação detalhada mobile-first */}
           <div id="comparar-uso" className="mt-12 scroll-mt-24">
