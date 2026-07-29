@@ -104,11 +104,31 @@ export default async function ContaPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PlatformPageHeader
-        title="Conta"
-        description="Perfil, preferências e assinatura em um só lugar."
+        eyebrow="Seu espaço"
+        title="Conta e suporte"
+        description="Preferências, acesso, privacidade e ajuda em um só lugar."
       />
+
+      <nav
+        aria-label="Atalhos da conta"
+        className="grid grid-cols-3 gap-2"
+      >
+        {[
+          { href: "/personalizar", label: "Preferências" },
+          { href: "/ajuda", label: "Ajuda" },
+          { href: "/privacidade", label: "Privacidade" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border/70 bg-card/60 px-2 text-center text-sm text-ink transition hover:border-wine/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
 
       <PlatformSection title="Perfil">
         <dl className="grid gap-4 text-sm sm:grid-cols-2">
@@ -136,6 +156,42 @@ export default async function ContaPage() {
             </div>
           ) : null}
         </dl>
+      </PlatformSection>
+
+      <PlatformSection
+        title="Privacidade e confiança"
+        description="O essencial, sem promessas maiores do que o produto pode sustentar."
+      >
+        <ul className="grid gap-3 text-sm leading-relaxed text-ink-soft sm:grid-cols-2">
+          <li className="rounded-xl bg-sand-50/70 p-3">
+            Sem anúncios e sem venda de seus dados.
+          </li>
+          <li className="rounded-xl bg-sand-50/70 p-3">
+            Suas conversas não são públicas.
+          </li>
+          <li className="rounded-xl bg-sand-50/70 p-3">
+            Prestadores essenciais processam somente o necessário para operar o
+            serviço.
+          </li>
+          <li className="rounded-xl bg-sand-50/70 p-3">
+            A inteligência artificial tem limites e não se apresenta como voz
+            divina.
+          </li>
+        </ul>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+          <Link
+            href="/privacidade"
+            className="inline-flex min-h-11 items-center text-ink underline underline-offset-4"
+          >
+            Política de Privacidade
+          </Link>
+          <Link
+            href="/transparencia-ia"
+            className="inline-flex min-h-11 items-center text-ink underline underline-offset-4"
+          >
+            Transparência sobre IA
+          </Link>
+        </div>
       </PlatformSection>
 
       <PlatformSection
