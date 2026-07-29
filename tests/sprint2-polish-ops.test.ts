@@ -15,8 +15,7 @@ describe("conversion copy — concrete plan differentiation", () => {
     );
     expect(home).toContain("Jornadas guiadas");
     expect(home).toContain("Aprofundar sob");
-    expect(home).toContain("sem trocar o");
-    expect(home).toMatch(/Essencial/);
+    expect(home).toContain("Essencial para conversas e histórico");
     expect(home).not.toMatch(/plano inferior|só o básico inútil/i);
   });
 });

@@ -45,15 +45,18 @@ function TrackingLinkInner({
 }
 
 /** Link that preserves UTM/ref query params across marketing funnel. */
-export function TrackingLink(props: TrackingLinkProps) {
-  const {
-    conversionEvent: _conversionEvent,
-    conversionPlan: _conversionPlan,
-    ...linkProps
-  } = props;
+export function TrackingLink({
+  conversionEvent,
+  conversionPlan,
+  ...linkProps
+}: TrackingLinkProps) {
   return (
     <Suspense fallback={<Link {...linkProps} />}>
-      <TrackingLinkInner {...props} />
+      <TrackingLinkInner
+        {...linkProps}
+        conversionEvent={conversionEvent}
+        conversionPlan={conversionPlan}
+      />
     </Suspense>
   );
 }
