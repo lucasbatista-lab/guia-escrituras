@@ -1,15 +1,19 @@
 import { redirect } from "next/navigation";
 import { PersonalizationForm } from "@/components/auth/onboarding-form";
-import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { getAuthUserContext } from "@/lib/auth";
+import { safeNextPath } from "@/lib/navigation/safe-next-path";
 import {
   getRequiredDestinationForState,
   journeyHasEffectiveAccess,
   resolveUserJourneyState,
 } from "@/lib/journey";
 
-export default async function PersonalizarPage() {
+export default async function PersonalizarPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const auth = await getAuthUserContext();
   if (!auth) {
     redirect("/entrar?next=/personalizar");
@@ -20,15 +24,21 @@ export default async function PersonalizarPage() {
   if (!journeyHasEffectiveAccess(state)) {
     redirect(getRequiredDestinationForState(state));
   }
+  const params = await searchParams;
+  const rawNext = params.next;
+  const completionHref = safeNextPath(
+    Array.isArray(rawNext) ? rawNext[0] : rawNext,
+    "/conversar",
+  );
 
   return (
-    <div className="mx-auto max-w-xl space-y-8">
-      <PurchaseJourneySteps current="personalizacao" />
+    <div className="mx-auto max-w-xl space-y-6">
       <PlatformPageHeader
+        eyebrow="Seu espaço, do seu jeito"
         title="Personalize sua experiência"
-        description="Escolha tradição, estilo e profundidade — leva poucos instantes. Você pode ajustar depois em Personalizar; nada disso bloqueia a primeira conversa para sempre."
+        description="Escolha tradição, estilo e profundidade em três passos rápidos. Você poderá revisar tudo na Conta."
       />
-      <PersonalizationForm />
+      <PersonalizationForm completionHref={completionHref} />
     </div>
   );
 }

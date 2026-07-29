@@ -86,12 +86,11 @@ describe("first-use onboarding — /inicio contexts", () => {
 
   it("new account emphasizes writing freely before themes", () => {
     expect(page).toContain("O que está pesando hoje?");
-    expect(page).toContain("Escrever minha situação");
-    expect(page).toContain("trabalho, dinheiro, família, relacionamentos");
-    expect(page).toContain("culpa, ansiedade, decisões ou silêncio espiritual");
-    expect(page).toContain("Não é necessário formular uma pergunta perfeita");
+    expect(page).toContain("Começar uma reflexão");
+    expect(page).toContain("Conte com suas palavras");
+    expect(page).toContain("Não é preciso formular uma pergunta perfeita");
     const firstReady = page.slice(page.indexOf("O que está pesando hoje?"));
-    const writeIdx = firstReady.indexOf("Escrever minha situação");
+    const writeIdx = firstReady.indexOf("Começar uma reflexão");
     const themesIdx = firstReady.indexOf("ThemeShortcutsSection");
     expect(writeIdx).toBeGreaterThan(-1);
     expect(themesIdx).toBeGreaterThan(writeIdx);
@@ -99,15 +98,13 @@ describe("first-use onboarding — /inicio contexts", () => {
 
   it("returning account prioritizes resume then new reflection", () => {
     expect(page).toContain("resumeReturnCopy");
-    expect(page).toContain("Começar uma nova reflexão");
-    expect(page).toContain(
-      "você não precisa continuar só a anterior",
-    );
+    expect(page).toContain("Nova reflexão");
+    expect(page).toContain("Acesso rápido");
     const resumeIdx = page.indexOf('id="resume-heading"');
-    const newIdx = page.indexOf("Começar uma nova reflexão");
+    const newIdx = page.lastIndexOf("<QuickActions />");
     expect(resumeIdx).toBeGreaterThan(-1);
     expect(newIdx).toBeGreaterThan(resumeIdx);
-    expect(page).toContain("Ver conversas anteriores");
+    expect(page).toContain('href: "/conversas"');
   });
 });
 
@@ -173,9 +170,9 @@ describe("first-use onboarding — chat empty state and composer", () => {
 
   it("empty state explains how to write without a tutorial modal", () => {
     expect(panel).toContain("Escreva o que você está vivendo");
-    expect(panel).toContain("Diga o que aconteceu.");
-    expect(panel).toContain("Conte o que mais está pesando.");
-    expect(panel).toContain("Explique que tipo de clareza você procura.");
+    expect(panel).toContain("Comece por uma situação");
+    expect(panel).toContain("THEME_SHORTCUTS.slice(0, 4)");
+    expect(panel).toContain("setInput(theme.prompt)");
     expect(panel).toContain("Exemplo:");
     expect(panel).toContain("RESPONSE_FORMAT_HINT");
     expect(panel).toContain('from "@/lib/conversations/response-format-hint"');
