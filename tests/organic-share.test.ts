@@ -180,7 +180,7 @@ describe("share CTA placement contracts", () => {
     expect(home).toContain('href="/planos"');
     // Hero remains the first major brand block — share only in section 11
     const heroIdx = home.indexOf(
-      "Leve o que está pesando para uma reflexão à luz das Escrituras.",
+      "Quando algo estiver pesando, encontre clareza à luz das Escrituras.",
     );
     const shareIdx = home.indexOf("home_final_cta");
     const ctaFinalIdx = home.indexOf("CTA final");

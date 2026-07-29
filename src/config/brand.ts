@@ -26,11 +26,8 @@ export interface BrandConfig {
 
 const DEFAULT_BRAND = {
   name: "Amém Chat",
-  /**
-   * Campaign / ads hook only — never primary H1 or nav tagline.
-   * Public surfaces use `description` (mother line) instead.
-   */
-  tagline: "Como Jesus responderia à sua situação?",
+  /** Short campaign hook aligned with the product's honest positioning. */
+  tagline: "Clareza à luz das Escrituras para o que você está vivendo.",
   /** Mother line for chrome and public positioning (not the campaign tagline). */
   description:
     "Reflexões cristãs para situações reais, com inteligência artificial e limites honestos.",

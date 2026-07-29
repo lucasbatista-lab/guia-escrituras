@@ -12,25 +12,26 @@ function read(...parts: string[]) {
 }
 
 describe("launch premium conversion", () => {
-  it("home hero keeps example-first CTA, starting price and trust microcopy", () => {
+  it("home hero keeps product-first CTA, starting price and trust microcopy", () => {
     const home = read("src", "app", "(marketing)", "page.tsx");
     const chrome = read("src", "components", "marketing", "site-chrome.tsx");
     expect(chrome).toContain("brand.description");
     expect(home).not.toContain("brand.tagline");
     expect(home).toContain("Ver planos");
-    expect(home).toContain("Ver uma conversa de exemplo");
+    expect(home).toContain("Conhecer o Amém Chat");
+    expect(home).toContain("<ProductHeroPreview");
     expect(home).toContain("ESSENCIAL_PRICE_LABEL");
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("R$ 38");
     expect(home).toContain("Pagamento seguro");
-    expect(home).toContain("cancele a renovação quando quiser");
+    expect(home).toContain("Renovação cancelável");
     expect(home).toContain("Tradição ecumênica, evangélica ou católica");
     expect(home).toContain("inteligência artificial");
     const hero = home.slice(
       home.indexOf("/* 1. Hero"),
       home.indexOf("/* 2. Demonstração"),
     );
-    expect(hero).toContain("limites claros");
+    expect(hero).toContain("limites honestos");
     expect(hero).not.toMatch(/Stripe/i);
     expect(hero).not.toMatch(/Não afirma ser Jesus/);
     expect(home.toLowerCase()).not.toMatch(/depoimento|testemunho|milhares de/);

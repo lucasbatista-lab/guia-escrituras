@@ -22,7 +22,7 @@ describe("purchase experience — home copy & flow order", () => {
   it("follows the conversion section order", () => {
     const markers = [
       'href="#demonstracao"',
-      "Ver uma conversa de exemplo",
+      "Conhecer o Amém Chat",
       'id="demo-heading"',
       "Como o Amém Chat transforma situação em reflexão",
       "Situações reais que você pode trazer",
@@ -47,16 +47,16 @@ describe("purchase experience — home copy & flow order", () => {
 
   it("keeps CTAs and short hero transparency without defensive spam", () => {
     expect(home).toContain("Ver planos");
-    expect(home).toContain("Ver uma conversa de exemplo");
+    expect(home).toContain("Conhecer o Amém Chat");
     expect(home).toContain("#demonstracao");
     expect(home).toContain("Planos a partir de");
     expect(home).toContain("Pagamento seguro");
-    expect(home).toContain("cancele a renovação quando quiser");
+    expect(home).toContain("Renovação cancelável");
     expect(home).toContain("Tradição ecumênica, evangélica ou católica");
     const heroStart = home.indexOf("/* 1. Hero");
     const heroEnd = home.indexOf("/* 2. Demonstração");
     const hero = home.slice(heroStart, heroEnd);
-    expect(hero).toContain("limites claros");
+    expect(hero).toContain("limites honestos");
     expect(hero).not.toMatch(/Stripe/i);
     expect(hero).not.toMatch(/Não afirma ser Jesus/);
     expect(home).toContain("Transparência sobre IA");

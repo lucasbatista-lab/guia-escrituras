@@ -17,21 +17,22 @@ describe("launch conversion home", () => {
   const chatService = read("src", "lib", "ai", "chat-service.ts");
   const adminMetrics = read("src", "lib", "admin", "metrics.ts");
 
-  it("keeps mother line out of hero and uses situation-first conversion copy", () => {
+  it("keeps mother line out of hero and uses product-first conversion copy", () => {
     const chrome = read("src", "components", "marketing", "site-chrome.tsx");
     expect(chrome).toContain("brand.description");
     expect(chrome).toContain("md:block");
     expect(home).not.toContain("brand.tagline");
     expect(home).toContain(
-      "Leve o que está pesando para uma reflexão à luz das Escrituras.",
+      "Quando algo estiver pesando, encontre clareza à luz das Escrituras.",
     );
-    expect(home).toContain("inteligência artificial e limites claros");
+    expect(home).toContain("IA e limites honestos");
+    expect(home).toContain("<ProductHeroPreview");
     expect(home).toContain("voz divina");
   });
 
-  it("makes example the primary CTA and plans secondary", () => {
+  it("makes product discovery the primary CTA and plans secondary", () => {
     expect(home).toContain('href="#demonstracao"');
-    expect(home).toContain("Ver uma conversa de exemplo");
+    expect(home).toContain("Conhecer o Amém Chat");
     expect(home).toContain("Ver planos");
     expect(home).toContain("TrackingLink");
     expect(home).toContain('href="/planos"');
@@ -40,7 +41,7 @@ describe("launch conversion home", () => {
       home.indexOf("animate-fade-up"),
       home.indexOf("demo-heading"),
     );
-    const primaryIdx = heroSlice.indexOf("Ver uma conversa de exemplo");
+    const primaryIdx = heroSlice.indexOf("Conhecer o Amém Chat");
     const secondaryIdx = heroSlice.indexOf("Ver planos");
     expect(primaryIdx).toBeGreaterThan(-1);
     expect(secondaryIdx).toBeGreaterThan(primaryIdx);

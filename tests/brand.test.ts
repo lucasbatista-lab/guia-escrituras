@@ -17,7 +17,9 @@ describe("brand config", () => {
     delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
     const brand = getBrandConfig();
     expect(brand.name).toBe("Amém Chat");
-    expect(brand.tagline).toBe("Como Jesus responderia à sua situação?");
+    expect(brand.tagline).toBe(
+      "Clareza à luz das Escrituras para o que você está vivendo.",
+    );
     expect(brand.description).toMatch(/situações reais/i);
     expect(brand.description).toMatch(/inteligência artificial/i);
     expect(brand.description).toMatch(/limites honestos/i);

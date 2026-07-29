@@ -7,6 +7,7 @@ import { ChatDemo } from "@/components/marketing/chat-demo";
 import { DeepenComparisonStatic } from "@/components/marketing/deepen-comparison-static";
 import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-static";
 import { PlanCards, ParticularAccessNote } from "@/components/marketing/plan-cards";
+import { ProductHeroPreview } from "@/components/marketing/product-hero-preview";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { CROSS_SURFACE_COMMERCIAL_FAQ } from "@/lib/marketing/plan-faq";
 import {
@@ -166,40 +167,42 @@ export default function HomePage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main id="conteudo-principal" tabIndex={-1} className="outline-none">
-        {/* 1. Hero — mobile-first conversion */}
-        <section className="relative overflow-hidden">
+        {/* 1. Hero — product visible in the first mobile viewport */}
+        <section className="relative overflow-hidden border-b border-border/50">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.16),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.10),_transparent_50%)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_10%,rgba(198,160,90,0.2),transparent_42%),radial-gradient(ellipse_at_88%_75%,rgba(107,46,58,0.12),transparent_48%)]"
           />
-          <div className="relative mx-auto max-w-6xl px-4 pb-6 pt-3 sm:px-6 sm:pb-10 sm:pt-6 lg:pb-12 lg:pt-8">
-            <div className="animate-fade-up max-w-2xl">
-              <h1 className="text-balance font-display text-[1.65rem] leading-[1.18] text-ink sm:text-4xl lg:text-[2.65rem]">
-                Leve o que está pesando para uma reflexão à luz das Escrituras.
+          <div className="relative mx-auto grid max-w-6xl items-center gap-7 px-4 pb-10 pt-3 sm:px-6 sm:pb-14 sm:pt-7 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-16 lg:pt-10">
+            <div className="animate-fade-up">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-gold/25 bg-card/70 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-ink-soft">
+                Reflexões cristãs para situações reais
+              </div>
+              <h1 className="text-balance font-display text-[1.85rem] leading-[1.08] text-ink sm:text-4xl lg:text-[3.25rem]">
+                Quando algo estiver pesando, encontre clareza à luz das Escrituras.
               </h1>
-              <p className="mt-3 max-w-lg text-[0.95rem] leading-relaxed text-ink-soft sm:mt-4 sm:text-lg">
-                Conte sua situação e receba referências bíblicas, aplicação prática e próximos passos — com inteligência artificial e limites claros.
+              <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-ink-soft sm:mt-5 sm:text-lg">
+                Conte o que está vivendo e receba referências bíblicas, aplicação
+                prática e próximos passos — com IA e limites honestos.
               </p>
-              <div className="mt-5 flex flex-col gap-2.5 sm:mt-7 sm:flex-row sm:flex-wrap sm:gap-3">
-                <Button
-                  asChild
-                  size="lg"
-                  className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
-                >
-                  <a href="#demonstracao">Ver uma conversa de exemplo</a>
+              <div className="mt-4 flex gap-2 sm:mt-7 sm:flex-wrap sm:gap-3">
+                <Button asChild size="lg" className="min-h-12 flex-1 bg-wine px-5 hover:bg-wine-soft sm:flex-none">
+                  <a href="#demonstracao">Conhecer o Amém Chat</a>
                 </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="min-h-11 w-full border-ink/20 sm:w-auto"
-                >
+                <Button asChild size="lg" variant="outline" className="min-h-12 border-ink/20 px-5">
                   <TrackingLink href="/planos">Ver planos</TrackingLink>
                 </Button>
               </div>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft sm:mt-4">
-                {`Planos a partir de ${ESSENCIAL_PRICE_LABEL}/mês · cancele a renovação quando quiser.`}
-              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-soft sm:mt-4 sm:text-sm">
+                <span>Conversa privada</span>
+                <span aria-hidden>·</span>
+                <span>Celular e computador</span>
+                <span aria-hidden>·</span>
+                <span>Planos a partir de {ESSENCIAL_PRICE_LABEL}/mês</span>
+              </div>
+            </div>
+            <div className="animate-fade-up-delayed">
+              <ProductHeroPreview />
             </div>
           </div>
         </section>
