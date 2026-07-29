@@ -88,13 +88,20 @@
   }
 
   .chat-shell-min-h {
-    min-height: calc(100vh - 8.5rem);
-    min-height: calc(100dvh - 8.5rem);
+    min-height: calc(100vh - 4.5rem);
+    min-height: calc(100dvh - 4.5rem);
+    height: calc(100vh - 4.5rem);
+    height: calc(100dvh - 4.5rem);
+  }
+
+  .platform-main:has(.chat-shell-min-h) {
+    padding-bottom: 0.75rem;
   }
 
   @media (min-width: 640px) {
     .chat-shell-min-h {
       min-height: 70vh;
+      height: auto;
     }
   }
 

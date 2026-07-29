@@ -28,7 +28,7 @@ export default async function PlatformLayout({
       <main
         id={MAIN_CONTENT_ID}
         tabIndex={-1}
-        className="mx-auto w-full max-w-5xl px-4 py-8 outline-none sm:px-6 sm:py-10"
+        className="platform-main mx-auto w-full max-w-6xl px-4 pb-24 pt-4 outline-none sm:px-6 sm:pt-6 md:ml-60 md:w-[calc(100%-15rem)] md:px-8 md:pb-10 md:pt-8"
       >
         {children}
       </main>
