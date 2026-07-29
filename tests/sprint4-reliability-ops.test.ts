@@ -110,7 +110,8 @@ describe("sprint 4 admin alert severity order", () => {
 describe("sprint 4 onboarding activation", () => {
   it("sends first conversation after personalizar", () => {
     const form = readSrc("src", "components", "auth", "onboarding-form.tsx");
-    expect(form).toContain('router.push("/conversar")');
+    expect(form).toContain('completionHref = "/conversar"');
+    expect(form).toContain("router.push(completionHref)");
     expect(form).not.toContain('router.push("/inicio")');
   });
 });

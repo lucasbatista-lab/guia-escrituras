@@ -106,7 +106,7 @@ describe("plan promises — catalog honesty", () => {
     expect(cards).toContain("ParticularAccessNote");
     expect(cards).toContain("getPublicCheckoutPlans");
     expect(cards).not.toContain("Recomendado");
-    expect(planos).toContain("Em evolução");
+    expect(planos).toContain("está em evolução");
     expect(planos).toContain("ParticularAccessNote");
     expect(planos).not.toMatch(/Em desenvolvimento/);
   });
