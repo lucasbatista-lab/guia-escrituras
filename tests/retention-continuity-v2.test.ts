@@ -141,13 +141,15 @@ describe("retention V2 wiring", () => {
     expect(chat).toContain("userId");
   });
 
-  it("inicio resume uses age-based return copy", () => {
+  it("inicio resume uses age-based return copy without repeating the title", () => {
     const page = readFileSync(
       join(process.cwd(), "src/app/(platform)/inicio/page.tsx"),
       "utf8",
     );
     expect(page).toContain("resumeReturnTone");
     expect(page).toContain("resumeReturnCopy");
-    expect(page).toContain("returnCopy.title");
+    expect(page).toContain("{primary.title}");
+    expect(page).toContain("Última atividade");
+    expect(page).not.toContain("returnCopy.title");
   });
 });

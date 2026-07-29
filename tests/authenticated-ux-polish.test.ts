@@ -32,9 +32,11 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Escolher meu plano");
     expect(page).toContain("Personalizar minha experiência");
     expect(page).toContain("Seu plano está ativo");
-    expect(page).toContain("Começar uma nova reflexão");
+    expect(page).toContain("Nova reflexão");
     expect(page).toContain("O que está pesando hoje?");
-    expect(page).toContain("Escrever minha situação");
+    expect(page).toContain("Começar uma reflexão");
+    expect(page).toContain("Acesso rápido");
+    expect(page).toContain("Hoje");
     expect(page).toContain("ProgressSteps");
     expect(page).toContain("Plano");
     expect(page).toContain("Conta");

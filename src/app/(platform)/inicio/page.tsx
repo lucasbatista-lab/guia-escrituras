@@ -79,6 +79,51 @@ function ThemeShortcutsSection({ headingId }: { headingId: string }) {
   );
 }
 
+function QuickActions({ showPersonalize = false }: { showPersonalize?: boolean }) {
+  const actions = [
+    {
+      href: "/conversar",
+      label: "Nova reflexão",
+      description: "Traga outro tema",
+    },
+    {
+      href: "/conversas",
+      label: "Histórico",
+      description: "Retome conversas",
+    },
+    {
+      href: showPersonalize ? "/personalizar" : "/jornadas",
+      label: showPersonalize ? "Personalizar" : "Jornadas",
+      description: showPersonalize ? "Ajuste preferências" : "Siga uma trilha",
+    },
+  ];
+
+  return (
+    <section aria-labelledby="quick-actions-heading">
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="quick-actions-heading" className="font-display text-lg text-ink">
+          Acesso rápido
+        </h2>
+      </div>
+      <ul className="mt-3 grid grid-cols-3 gap-2">
+        {actions.map((action) => (
+          <li key={action.href}>
+            <Link
+              href={action.href}
+              className="flex min-h-[5.5rem] flex-col justify-between rounded-2xl border border-border/70 bg-card/70 p-3 transition hover:border-wine/25 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="text-sm font-medium text-ink">{action.label}</span>
+              <span className="text-xs leading-tight text-ink-soft">
+                {action.description}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default async function InicioPage() {
   const auth = await getAuthUserContext();
   if (!auth) {
@@ -283,58 +328,43 @@ export default async function InicioPage() {
 
   if (!returnSelection) {
     return (
-      <div className="space-y-8">
-        <PlatformPageHeader
-          title={greeting}
-          description={
-            state === "canceling_at_period_end"
-              ? "Sua renovação está cancelada, mas o acesso continua até o fim do período."
-              : undefined
-          }
-          actions={
-            plan ? (
-              <PlanStatusBadge label={`Plano ${plan.name}`} tone="neutral" />
-            ) : null
-          }
-        />
+      <div className="space-y-6">
+        <header>
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+            Hoje
+          </p>
+          <h1 className="mt-1 font-display text-2xl text-ink sm:text-3xl">
+            {greeting}
+          </h1>
+          {state === "canceling_at_period_end" ? (
+            <p className="mt-1 text-sm text-ink-soft">
+              Seu acesso continua até o fim do período pago.
+            </p>
+          ) : null}
+        </header>
 
-        <section aria-labelledby="first-reflection-heading" className="space-y-4">
-          <h2
-            id="first-reflection-heading"
-            className="font-display text-2xl text-ink sm:text-3xl"
-          >
+        <section
+          aria-labelledby="first-reflection-heading"
+          className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.08] via-card to-sand-100/80 p-5 sm:p-7"
+        >
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-wine">
+            Sua primeira reflexão
+          </p>
+          <h2 id="first-reflection-heading" className="mt-2 font-display text-2xl text-ink">
             O que está pesando hoje?
           </h2>
-          <p className="max-w-xl text-base leading-relaxed text-ink-soft">
-            Você pode escrever com suas próprias palavras ou começar por um dos
-            temas abaixo. Não é necessário formular uma pergunta perfeita.
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+            Conte com suas palavras. Não é preciso formular uma pergunta perfeita.
           </p>
-          <p className="max-w-xl text-sm leading-relaxed text-ink-soft">
-            Você pode falar sobre trabalho, dinheiro, família, relacionamentos,
-            culpa, ansiedade, decisões ou silêncio espiritual.
-          </p>
-          <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
-            <Link href="/conversar">Escrever minha situação</Link>
+          <Button asChild className="mt-4 min-h-12 w-full bg-wine hover:bg-wine-soft sm:w-auto">
+            <Link href="/conversar">Começar uma reflexão</Link>
           </Button>
         </section>
 
+        <QuickActions showPersonalize={!auth.spiritualProfile.onboardingCompleted} />
         <ActivationSessionChecklist planKey={auth.planKey} />
-
         <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
-
         <JourneysInicioCard userId={auth.userId} planKey={auth.planKey} />
-
-        <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href="/conta">Ver assinatura</Link>
-          </Button>
-          <Link
-            href="/conversas"
-            className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            Ver conversas anteriores
-          </Link>
-        </div>
       </div>
     );
   }
@@ -347,65 +377,56 @@ export default async function InicioPage() {
   const returnCopy = resumeReturnCopy(primaryTone);
   const primaryEyebrow =
     primary.kind === "journey" ? "Retomar jornada" : returnCopy.eyebrow;
-  const primaryTitle =
-    primary.kind === "journey"
-      ? "Continue a jornada de onde parou"
-      : returnCopy.title;
   const primaryBody =
     primary.kind === "journey"
       ? "Sua trilha guiada continua disponível. Retome a etapa atual ou abra uma conversa livre quando quiser."
       : returnCopy.body;
 
   return (
-    <div className="space-y-8">
-      <PlatformPageHeader
-        title={greeting}
-        description={
-          state === "canceling_at_period_end"
-            ? "Sua renovação está cancelada, mas o acesso continua até o fim do período. Traga sua situação com calma."
-            : "Traga sua situação e receba uma reflexão baseada nas Escrituras."
-        }
-        actions={
-          plan ? (
-            <PlanStatusBadge label={`Plano ${plan.name}`} tone="neutral" />
-          ) : null
-        }
-      />
+    <div className="space-y-6">
+      <header>
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+          Hoje
+        </p>
+        <h1 className="mt-1 font-display text-2xl text-ink sm:text-3xl">
+          {greeting}
+        </h1>
+        {state === "canceling_at_period_end" ? (
+          <p className="mt-1 text-sm text-ink-soft">
+            Seu acesso continua até o fim do período pago.
+          </p>
+        ) : null}
+      </header>
 
       <section
         aria-labelledby="resume-heading"
-        className="rounded-2xl border border-wine/25 bg-gradient-to-br from-wine/[0.07] via-card/80 to-sand-100/80 p-6 sm:p-7"
+        className="rounded-3xl border border-wine/25 bg-gradient-to-br from-wine/[0.09] via-card to-sand-100/80 p-5 sm:p-7"
       >
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
           {primaryEyebrow}
         </p>
         <h2
           id="resume-heading"
-          className="mt-2 font-display text-xl text-ink sm:text-2xl"
+          className="mt-2 font-display text-2xl text-ink sm:text-3xl"
         >
-          {primaryTitle}
+          {primary.title}
         </h2>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-          {primaryBody}
-        </p>
-        <div className="mt-4 rounded-xl border border-border/60 bg-card/70 px-4 py-3">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
-            {primary.kind === "journey" ? "Jornada" : "Conversa"}
+        <time
+          dateTime={primary.updatedAt}
+          className="mt-1 block text-xs text-ink-soft"
+        >
+          Última atividade · {formatConversationActivity(primary.updatedAt)}
+        </time>
+        {primary.subtitle ? (
+          <p className="mt-3 line-clamp-1 max-w-xl text-sm leading-relaxed text-ink-soft">
+            {primary.subtitle}
           </p>
-          <p className="mt-1 font-medium text-ink">{primary.title}</p>
-          <time
-            dateTime={primary.updatedAt}
-            className="mt-1 block text-xs text-ink-soft"
-          >
-            Última atividade · {formatConversationActivity(primary.updatedAt)}
-          </time>
-          {primary.subtitle ? (
-            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">
-              {primary.subtitle}
-            </p>
-          ) : null}
-        </div>
-        <Button asChild className="mt-6 min-h-11 bg-ink hover:bg-ink/90">
+        ) : (
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
+            {primaryBody}
+          </p>
+        )}
+        <Button asChild className="mt-5 min-h-12 w-full bg-wine hover:bg-wine-soft sm:w-auto">
           <Link href={primary.href}>{primary.cta}</Link>
         </Button>
         {secondary ? (
@@ -423,27 +444,27 @@ export default async function InicioPage() {
         ) : null}
       </section>
 
-      <PrimaryActionCard
-        title="Começar uma nova reflexão"
-        body="Abra uma conversa nova quando quiser trazer outro tema — você não precisa continuar só a anterior."
-        href="/conversar"
-        cta="Começar uma nova reflexão"
-        tone="default"
-      />
+      <QuickActions />
 
-      <JourneysInicioCard userId={auth.userId} planKey={auth.planKey} />
-
-      <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
-        <Button asChild variant="outline" className="min-h-11">
-          <Link href="/conta">Ver assinatura</Link>
-        </Button>
-        <Link
-          href="/conversas"
-          className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      {journeyCandidate && primary.kind !== "journey" ? (
+        <section
+          aria-labelledby="today-journey-heading"
+          className="flex flex-col gap-3 border-t border-border/70 pt-5 sm:flex-row sm:items-center sm:justify-between"
         >
-          Ver conversas anteriores
-        </Link>
-      </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-gold">
+              Jornada em andamento
+            </p>
+            <h2 id="today-journey-heading" className="mt-1 font-display text-lg text-ink">
+              {journeyCandidate.title}
+            </h2>
+            <p className="mt-1 text-sm text-ink-soft">{journeyCandidate.subtitle}</p>
+          </div>
+          <Button asChild variant="outline" className="min-h-11 shrink-0">
+            <Link href={journeyCandidate.href}>Continuar Jornada</Link>
+          </Button>
+        </section>
+      ) : null}
     </div>
   );
 }
