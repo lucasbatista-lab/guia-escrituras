@@ -43,14 +43,46 @@ export default async function JornadasPage() {
       ? await loadJourneyProgressMap(auth.userId)
       : new Map();
   const items = buildCatalogItems(progressMap);
+  const orderedItems = [...items].sort((a, b) => {
+    const rank = (item: (typeof items)[number]) =>
+      item.progress?.isStarted && !item.progress.isCompleted
+        ? 0
+        : item.progress?.isCompleted
+          ? 2
+          : 1;
+    return rank(a) - rank(b);
+  });
+  const inProgressCount = items.filter(
+    (item) => item.progress?.isStarted && !item.progress.isCompleted,
+  ).length;
+  const completedCount = items.filter(
+    (item) => item.progress?.isCompleted,
+  ).length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <JourneyCatalogBeacon />
       <PlatformPageHeader
         title="Jornadas de leitura"
         description="Trilhas editoriais sobre temas reais da vida — sete etapas por jornada, no seu ritmo. Não substituem terapia, aconselhamento profissional ou emergência."
       />
+
+      {entitled && !journeysDisabled ? (
+        <dl className="grid grid-cols-3 divide-x divide-border/70 rounded-2xl border border-border/70 bg-card/60 py-3 text-center">
+          <div className="px-2">
+            <dt className="text-xs text-ink-soft">Em andamento</dt>
+            <dd className="mt-1 font-display text-xl text-ink">{inProgressCount}</dd>
+          </div>
+          <div className="px-2">
+            <dt className="text-xs text-ink-soft">Concluídas</dt>
+            <dd className="mt-1 font-display text-xl text-ink">{completedCount}</dd>
+          </div>
+          <div className="px-2">
+            <dt className="text-xs text-ink-soft">Disponíveis</dt>
+            <dd className="mt-1 font-display text-xl text-ink">{items.length}</dd>
+          </div>
+        </dl>
+      ) : null}
 
       {journeysDisabled ? (
         <InlineNotice tone="info">
@@ -78,7 +110,7 @@ export default async function JornadasPage() {
       ) : null}
 
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map(({ journey: j, progress, estimatedMinutes }) => {
+        {orderedItems.map(({ journey: j, progress, estimatedMinutes }) => {
           const visual = getJourneyVisual(j.slug);
           const status = journeyStatusLabel(progress);
           const stepNumber = journeyCurrentStepNumber(progress, j.steps);
@@ -105,10 +137,21 @@ export default async function JornadasPage() {
             <li
               key={j.slug}
               className={cn(
-                "flex min-w-0 flex-col rounded-2xl border bg-card/60 p-5",
+                "relative flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card/70 p-5 shadow-[0_14px_40px_-34px_rgba(44,36,28,0.7)]",
                 visual.borderClass,
               )}
             >
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute inset-x-0 top-0 h-1",
+                  progress?.isStarted && !progress.isCompleted
+                    ? "bg-wine"
+                    : progress?.isCompleted
+                      ? "bg-gold"
+                      : "bg-sand-200",
+                )}
+              />
               <div className="flex min-w-0 items-start gap-3">
                 <span
                   className={cn(
@@ -149,7 +192,15 @@ export default async function JornadasPage() {
                 </p>
               ) : entitled ? (
                 <div className="mt-5">
-                  <Button asChild className="min-h-11 w-full">
+                  <Button
+                    asChild
+                    className={cn(
+                      "min-h-11 w-full",
+                      progress?.isStarted &&
+                        !progress.isCompleted &&
+                        "bg-wine hover:bg-wine-soft",
+                    )}
+                  >
                     <Link href={continueHref}>{cta}</Link>
                   </Button>
                 </div>
