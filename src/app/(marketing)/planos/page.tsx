@@ -48,15 +48,15 @@ export default async function PlanosPage() {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.14),_transparent_55%),radial-gradient(ellipse_at_bottom_right,_rgba(74,28,42,0.08),_transparent_50%)]"
           />
-          <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-16">
+          <div className="relative mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:py-12">
             <header className="max-w-2xl">
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
                 Assinatura mensal · acesso na mesma conta
               </p>
-              <h1 className="mt-2 text-balance font-display text-4xl leading-tight text-ink sm:text-5xl">
+              <h1 className="mt-2 text-balance font-display text-3xl leading-tight text-ink sm:text-5xl">
                 Escolha quanto espaço você quer para voltar
               </h1>
-              <p className="mt-4 text-base leading-relaxed text-ink-soft sm:text-lg">
+              <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-lg">
                 Todos incluem conversa personalizada e histórico. O que muda é a
                 frequência, o acesso às Jornadas e a possibilidade de Aprofundar.
               </p>
@@ -92,13 +92,14 @@ export default async function PlanosPage() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
           {/* 3–4. Decision-oriented cards */}
           <section aria-labelledby="planos-cards-heading">
             <h2 id="planos-cards-heading" className="sr-only">
               Essencial, Caminho e Profundo
             </h2>
             <PlanCards
+              compact
               currentPlanKey={
                 hasActiveSubscription ? auth?.planKey ?? null : null
               }
@@ -121,26 +122,26 @@ export default async function PlanosPage() {
             </p>
           </section>
 
-          <TrustPrinciples className="mt-10" />
+          <TrustPrinciples className="mt-8" />
 
           {/* 5. Preview da Jornada */}
-          <div className="mt-16">
+          <div className="mt-12">
             <JourneyPreviewStatic />
           </div>
 
           {/* 7. Normal versus Aprofundar */}
-          <div id="aprofundar" className="mt-16 scroll-mt-24">
+          <div id="aprofundar" className="mt-12 scroll-mt-24">
             <DeepenComparisonStatic />
           </div>
 
           {/* 8. Comparação detalhada mobile-first */}
-          <div id="comparar-uso" className="mt-16 scroll-mt-24">
+          <div id="comparar-uso" className="mt-12 scroll-mt-24">
             <PlanCompareStatic hasActiveSubscription={hasActiveSubscription} />
           </div>
 
           {/* Shared includes */}
           <section
-            className="mt-16 max-w-2xl"
+            className="mt-12 max-w-2xl"
             aria-labelledby="todos-planos-heading"
           >
             <h2
@@ -164,7 +165,7 @@ export default async function PlanosPage() {
 
           {/* 9. Confiança */}
           <section
-            className="mt-16 max-w-2xl"
+            className="mt-12 max-w-2xl"
             aria-labelledby="confianca-heading"
           >
             <h2 id="confianca-heading" className="font-display text-2xl text-ink">
@@ -203,36 +204,44 @@ export default async function PlanosPage() {
           </section>
 
           {/* Particular — after main offer, not in grid */}
-          <ParticularAccessNote className="mt-14" />
+          <ParticularAccessNote className="mt-10" />
 
           {/* 10–11. FAQ comercial */}
           <section
-            className="mt-16 max-w-2xl"
+            className="mt-12 max-w-2xl"
             aria-labelledby="planos-faq-heading"
           >
             <h2 id="planos-faq-heading" className="font-display text-2xl text-ink">
               Perguntas frequentes
             </h2>
-            <div className="mt-6 space-y-5">
+            <div className="mt-5 space-y-2">
               {PLAN_COMMERCIAL_FAQ.map((item) => (
-                <div key={item.q}>
-                  <h3 className="font-medium text-ink">{item.q}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                <details
+                  key={item.q}
+                  className="rounded-xl border border-border/60 bg-card/60 px-4 py-3"
+                >
+                  <summary className="cursor-pointer font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    {item.q}
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                     {item.a}
                   </p>
-                </div>
+                </details>
               ))}
             </div>
           </section>
 
           {/* Roadmap — trust footer, not competing with price */}
-          <section
-            className="mt-14 max-w-2xl border-t border-border/50 pt-10"
+          <details
+            className="mt-10 max-w-2xl border-t border-border/50 pt-6"
             aria-labelledby="roadmap-heading"
           >
-            <h2 id="roadmap-heading" className="font-display text-xl text-ink">
-              Em evolução — não faz parte do que você está contratando hoje
-            </h2>
+            <summary
+              id="roadmap-heading"
+              className="cursor-pointer font-display text-xl text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              O que está em evolução e não está incluso hoje
+            </summary>
             <p className="mt-2 text-sm text-ink-soft">
               Itens abaixo são possíveis caminhos futuros. Não justificam o preço
               atual e não confundem com as Jornadas já disponíveis no Caminho e no
@@ -246,11 +255,11 @@ export default async function PlanosPage() {
                 </li>
               ))}
             </ul>
-          </section>
+          </details>
 
           {/* 12. CTA final — Caminho first */}
           <section
-            className="mt-16 rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-12 text-center sm:px-10"
+            className="mt-12 rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-10 text-center sm:px-10"
             aria-labelledby="planos-cta-heading"
           >
             <h2

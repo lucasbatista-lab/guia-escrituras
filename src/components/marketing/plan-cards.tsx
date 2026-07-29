@@ -117,7 +117,7 @@ function PlanCard({
   const checkoutHref = `/cadastro?plan=${plan.key}`;
   const benefits = plan.displayBenefits.slice(
     0,
-    compact ? 3 : Math.min(4, MAX_PUBLIC_PLAN_BENEFITS),
+    compact ? 2 : Math.min(4, MAX_PUBLIC_PLAN_BENEFITS),
   );
   const decisionCopy =
     plan.key === "essencial" || plan.key === "caminho" || plan.key === "profundo"
@@ -128,7 +128,8 @@ function PlanCard({
     hasActiveSubscription && plan.ctaType === "checkout" && !isCurrentPlan;
 
   const buttonClass = cn(
-    "mt-6 w-full min-h-11",
+    "w-full min-h-11",
+    compact ? "mt-4" : "mt-6",
     plan.highlighted
       ? "bg-ink hover:bg-ink/90"
       : plan.key === "profundo"
@@ -147,6 +148,7 @@ function PlanCard({
     <article
       className={cn(
         "relative flex flex-col overflow-hidden rounded-3xl border border-border/80 bg-card/80 p-5 shadow-[0_18px_45px_-34px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-6",
+        compact && "rounded-2xl p-4 sm:p-5",
         plan.highlighted && "border-gold/50 bg-gradient-to-b from-card to-sand-100/70 ring-1 ring-gold/30",
         plan.key === "profundo" && !plan.highlighted && "border-wine/20",
         isCurrentPlan && "border-wine/40 ring-1 ring-wine/20",
@@ -172,10 +174,20 @@ function PlanCard({
       <p className="mt-2 text-sm font-medium text-ink">
         {decisionCopy?.rhythm ?? plan.idealFor}
       </p>
-      <p className="mt-2 min-h-10 text-sm leading-relaxed text-ink-soft">
+      <p
+        className={cn(
+          "mt-2 text-sm leading-relaxed text-ink-soft",
+          !compact && "min-h-10",
+        )}
+      >
         {decisionCopy?.gain ?? plan.tagline}
       </p>
-      <p className="mt-5 font-display text-4xl text-ink">
+      <p
+        className={cn(
+          "font-display text-4xl text-ink",
+          compact ? "mt-3" : "mt-5",
+        )}
+      >
         {formatPriceBRL(plan.priceMonthlyCents)}
         <span className="ml-1 text-sm font-sans font-normal text-ink-soft">
           /mês
@@ -184,7 +196,12 @@ function PlanCard({
       <p className="mt-2 text-xs text-ink-soft">
         Cobrança mensal · cancele a renovação na sua conta
       </p>
-      <div className="mt-5 flex-1 border-t border-border/70 pt-5">
+      <div
+        className={cn(
+          "flex-1 border-t border-border/70",
+          compact ? "mt-3 pt-3" : "mt-5 pt-5",
+        )}
+      >
         <ul className="space-y-2.5 text-sm text-ink-soft">
           {benefits.map((benefit) => (
             <li key={benefit} className="flex gap-2">

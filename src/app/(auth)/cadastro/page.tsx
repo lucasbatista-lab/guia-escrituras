@@ -65,14 +65,17 @@ export default async function CadastroPage({
       <main
         id="conteudo-principal"
         tabIndex={-1}
-        className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-7 outline-none sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-10 lg:py-12"
+        className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-4 outline-none sm:px-6 sm:py-7 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-10 lg:py-12"
       >
         <PublicConversionBeacon
           event="signup_started"
           plan={validated?.ok ? validated.planKey : null}
         />
         <section className="rounded-3xl border border-border/70 bg-card/85 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-8">
-          <PurchaseJourneySteps current="conta" className="mb-6" />
+          <p className="mb-4 text-xs font-medium text-ink-soft sm:hidden">
+            Conta <span aria-hidden>·</span> depois: confirmar e-mail e pagar
+          </p>
+          <PurchaseJourneySteps current="conta" className="mb-6 hidden sm:block" />
           {plan ? (
             <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-gold/25 bg-sand-100/60 px-4 py-3 lg:hidden">
               <div>
@@ -87,17 +90,17 @@ export default async function CadastroPage({
             </div>
           ) : null}
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-            Etapa 1 de 3 · sua conta
+            Sua conta
           </p>
           <h1 className="mt-2 font-display text-3xl text-ink sm:text-4xl">
             Criar conta
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
             {plan
               ? `Você escolheu o plano ${plan.name}. Crie a conta, confirme o e-mail e continue para o pagamento seguro.`
               : "Crie sua conta para começar. Depois você escolhe o plano e confirma o pagamento com segurança."}
           </p>
-          <div className="mt-8">
+          <div className="mt-5 sm:mt-7">
             <SignUpForm
               planKey={validated?.ok ? validated.planKey : null}
               tracking={tracking}

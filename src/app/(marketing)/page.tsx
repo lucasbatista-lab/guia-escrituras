@@ -7,7 +7,7 @@ import { ChatDemo } from "@/components/marketing/chat-demo";
 import { DeepenComparisonStatic } from "@/components/marketing/deepen-comparison-static";
 import { EcosystemShowcase } from "@/components/marketing/ecosystem-showcase";
 import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-static";
-import { PlanCards, ParticularAccessNote } from "@/components/marketing/plan-cards";
+import { PlanCards } from "@/components/marketing/plan-cards";
 import { ProductHeroPreview } from "@/components/marketing/product-hero-preview";
 import { PublicConversionBeacon } from "@/components/marketing/public-conversion-beacon";
 import { TrackingLink } from "@/components/marketing/tracking-link";
@@ -170,28 +170,28 @@ export default function HomePage() {
 
         {/* 3. Integrated product ecosystem */}
         <SectionShell tone="card">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
             <EcosystemShowcase />
           </div>
         </SectionShell>
 
         {/* 4. Continuity through a real Journey */}
         <SectionShell tone="sand">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
             <JourneyPreviewStatic />
           </div>
         </SectionShell>
 
         {/* 5. Deeper analysis, when included */}
         <SectionShell>
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
             <DeepenComparisonStatic />
           </div>
         </SectionShell>
 
         {/* 6. Plans after product value */}
         <SectionShell tone="sand">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
               Escolha seu ritmo
             </p>
@@ -209,7 +209,6 @@ export default function HomePage() {
               Pagamento seguro processado pela Stripe · Renovação cancelável pela
               sua conta.
             </p>
-            <ParticularAccessNote className="mt-8" />
             <p className="mt-6">
               <TrackingLink
                 href="/planos"
@@ -224,36 +223,38 @@ export default function HomePage() {
 
         {/* 7. Trust and boundaries */}
         <SectionShell tone="card">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
             <TrustPrinciples />
           </div>
         </SectionShell>
 
         {/* 11. FAQ */}
         <SectionShell tone="sand">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
               Perguntas frequentes
             </h2>
-            <div className="mt-8 space-y-6">
+            <div className="mt-6 space-y-2">
               {faq.map((item) => (
-                <div
+                <details
                   key={item.q}
-                  className="rounded-2xl border border-border/60 bg-card/70 px-5 py-5 shadow-sm"
+                  className="rounded-xl border border-border/60 bg-card/70 px-4 py-3"
                 >
-                  <h3 className="font-medium text-ink">{item.q}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                  <summary className="cursor-pointer font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    {item.q}
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                     {item.a}
                   </p>
-                </div>
+                </details>
               ))}
             </div>
           </div>
         </SectionShell>
 
         {/* 12. CTA final */}
-        <section className="mx-auto max-w-6xl px-4 pb-20 pt-4 sm:px-6">
-          <div className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-12 text-center sm:px-10">
+        <section className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6">
+          <div className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-10 text-center sm:px-10">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
               Pronto para escolher um plano?
             </h2>
