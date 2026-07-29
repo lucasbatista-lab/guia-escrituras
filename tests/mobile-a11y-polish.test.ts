@@ -122,7 +122,7 @@ describe("mobile accessibility & resilience polish", () => {
     expect(signup).toContain("aria-busy");
     expect(login).toContain('autoComplete="email"');
     expect(login).toContain('autoComplete="current-password"');
-    expect(login).toContain("min-h-11");
+    expect(login).toContain("min-h-12");
     expect(login).toContain("aria-busy");
   });
 

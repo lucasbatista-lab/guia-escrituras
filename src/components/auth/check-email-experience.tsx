@@ -73,7 +73,7 @@ export function CheckEmailExperience({
       : "/cadastro";
 
   return (
-    <div className="space-y-8 rounded-2xl border border-border/70 bg-card/80 p-6 shadow-sm sm:p-8">
+    <div className="space-y-7 rounded-3xl border border-border/70 bg-card/90 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] sm:p-8">
       <div className="flex flex-col items-center text-center">
         <div
           className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-wine/10 text-wine"
@@ -124,27 +124,27 @@ export function CheckEmailExperience({
           </p>
         )}
         {!isRecovery && planName ? (
-          <p className="mt-2 rounded-md bg-sand-100 px-3 py-1.5 text-sm text-ink">
+          <p className="mt-3 rounded-full border border-gold/25 bg-sand-100 px-3 py-1.5 text-sm text-ink">
             Plano reservado: <strong>{planName}</strong>
           </p>
         ) : null}
       </div>
 
-      <ol className="space-y-3 text-sm text-ink-soft">
-        <li className="flex gap-3">
-          <span className="font-display text-lg text-ink">1</span>
+      <ol className="grid gap-2 text-sm text-ink-soft sm:grid-cols-3">
+        <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
+          <span className="font-display text-lg text-wine">1</span>
           <span>Abra o e-mail que acabamos de enviar.</span>
         </li>
-        <li className="flex gap-3">
-          <span className="font-display text-lg text-ink">2</span>
+        <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
+          <span className="font-display text-lg text-wine">2</span>
           <span>
             {isRecovery
               ? "Abra o link seguro para criar uma nova senha."
               : "Confirme sua conta pelo link seguro."}
           </span>
         </li>
-        <li className="flex gap-3">
-          <span className="font-display text-lg text-ink">3</span>
+        <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
+          <span className="font-display text-lg text-wine">3</span>
           <span>
             {isRecovery
               ? "Depois, entre no Amém Chat com a nova senha."
@@ -178,12 +178,14 @@ export function CheckEmailExperience({
             value={resendEmail}
             onChange={(e) => setResendEmail(e.target.value)}
             placeholder="seu@email.com"
+          inputMode="email"
+          className="min-h-12 rounded-xl bg-background/80"
           />
         </div>
         <Button
           type="button"
           variant="outline"
-          className="w-full"
+          className="min-h-12 w-full rounded-xl"
           onClick={() => void onResend()}
           disabled={resendLoading || resendCooldown > 0 || !resendEmail.trim()}
         >

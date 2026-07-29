@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TrackingLink } from "@/components/marketing/tracking-link";
 import { loginAction } from "@/lib/auth/login-action";
 import { hasSupabaseEnv } from "@/lib/utils";
 
@@ -30,10 +31,13 @@ export function LoginForm() {
       : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(linkError);
   const [loading, setLoading] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
+  const signupHref =
+    nextParam?.startsWith("/cadastro") ? nextParam : "/cadastro";
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -88,28 +92,43 @@ export function LoginForm() {
           type="email"
           inputMode="email"
           autoComplete="email"
+          placeholder="voce@email.com"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? "login-error" : undefined}
+          className="min-h-12 rounded-xl bg-background/80"
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Senha</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={loading}
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? "login-error" : undefined}
-        />
+        <div className="flex gap-2">
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "login-error" : undefined}
+            className="min-h-12 flex-1 rounded-xl bg-background/80"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-12 rounded-xl"
+            onClick={() => setShowPassword((value) => !value)}
+            aria-pressed={showPassword}
+            disabled={loading}
+          >
+            {showPassword ? "Ocultar" : "Mostrar"}
+          </Button>
+        </div>
       </div>
       {error && (
         <p
@@ -124,7 +143,7 @@ export function LoginForm() {
       )}
       <Button
         type="submit"
-        className="min-h-11 w-full bg-ink hover:bg-ink/90"
+        className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft"
         disabled={loading || !hasSupabaseEnv()}
         aria-busy={loading}
       >
@@ -132,12 +151,12 @@ export function LoginForm() {
       </Button>
       <p className="text-center text-sm text-ink-soft">
         Não tem conta?{" "}
-        <Link
-          href="/cadastro"
+        <TrackingLink
+          href={signupHref}
           className="text-ink underline-offset-4 hover:underline"
         >
           Cadastre-se
-        </Link>
+        </TrackingLink>
       </p>
       <p className="text-center text-sm text-ink-soft">
         <Link

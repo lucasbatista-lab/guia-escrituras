@@ -24,9 +24,11 @@ function passwordChecks(password: string) {
 export function SignUpForm({
   planKey = null,
   tracking,
+  loginHref = "/entrar",
 }: {
   planKey?: PlanKey | null;
   tracking?: SignupTrackingParams;
+  loginHref?: string;
 }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
@@ -169,10 +171,13 @@ export function SignUpForm({
           id="name"
           name="name"
           autoComplete="name"
+          autoCapitalize="words"
+          placeholder="Como podemos chamar você?"
           required
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           disabled={loading}
+          className="min-h-12 rounded-xl bg-background/80"
         />
       </div>
       <div className="space-y-2">
@@ -184,12 +189,14 @@ export function SignUpForm({
           type="email"
           inputMode="email"
           autoComplete="email"
+          placeholder="voce@email.com"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
           aria-invalid={Boolean(fieldError.email)}
           aria-describedby={fieldError.email ? "email-error" : undefined}
+          className="min-h-12 rounded-xl bg-background/80"
         />
         {fieldError.email ? (
           <p id="email-error" className="text-sm text-destructive" role="alert">
@@ -219,12 +226,12 @@ export function SignUpForm({
                 ? "password-error password-rules"
                 : "password-rules"
             }
-            className="flex-1"
+            className="min-h-12 flex-1 rounded-xl bg-background/80"
           />
           <Button
             type="button"
             variant="outline"
-            className="min-h-11"
+            className="min-h-12 rounded-xl"
             onClick={() => setShowPassword((v) => !v)}
             aria-pressed={showPassword}
             disabled={loading}
@@ -263,7 +270,7 @@ export function SignUpForm({
         ) : null}
       </div>
 
-      <div className="flex min-h-11 items-start gap-3 rounded-md border border-border/70 px-3 py-3">
+      <div className="flex min-h-11 items-start gap-3 rounded-xl border border-border/70 bg-background/60 px-3 py-3">
         <Checkbox
           ref={termsRef}
           id="terms"
@@ -324,7 +331,7 @@ export function SignUpForm({
 
       <Button
         type="submit"
-        className="min-h-11 w-full bg-ink hover:bg-ink/90"
+        className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft"
         disabled={loading || !hasSupabaseEnv()}
         aria-busy={loading}
       >
@@ -332,7 +339,7 @@ export function SignUpForm({
       </Button>
       <p className="text-center text-sm text-ink-soft">
         Já tem conta?{" "}
-        <Link href="/entrar" className="text-ink underline-offset-4 hover:underline">
+        <Link href={loginHref} className="text-ink underline-offset-4 hover:underline">
           Entrar
         </Link>
       </p>

@@ -39,7 +39,7 @@ export default async function ConfiraSeuEmailPage({
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.10),_transparent_50%)]">
-      <header className="mx-auto flex w-full max-w-lg items-center justify-between px-4 pt-8">
+      <header className="safe-header-pad mx-auto flex w-full max-w-lg items-center justify-between px-4 pt-6 sm:pt-8">
         <Link href="/" className="font-display text-xl text-ink">
           {brand.name}
         </Link>
@@ -50,7 +50,11 @@ export default async function ConfiraSeuEmailPage({
           Corrigir e-mail
         </Link>
       </header>
-      <main className="mx-auto max-w-lg px-4 py-12">
+      <main
+        id="conteudo-principal"
+        tabIndex={-1}
+        className="mx-auto max-w-lg px-4 py-8 outline-none sm:py-12"
+      >
         {mode === "signup" ? (
           <PurchaseJourneySteps current="conta" className="mb-8" />
         ) : null}

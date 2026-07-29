@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Check, LockKeyhole } from "lucide-react";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { PurchaseJourneySteps } from "@/components/marketing/purchase-journey-steps";
@@ -42,29 +43,48 @@ export default async function CadastroPage({
 
   const plan =
     validated?.ok === true ? getPlanByKey(validated.planKey) : undefined;
+  const loginHref = validated?.ok
+    ? `/entrar?next=${encodeURIComponent(`/cadastro?plan=${validated.planKey}`)}`
+    : "/entrar";
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.10),_transparent_50%)]">
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 pt-8 sm:px-6">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_12%_5%,rgba(198,160,90,0.18),transparent_30%),radial-gradient(circle_at_95%_85%,rgba(107,46,58,0.09),transparent_32%)]">
+      <header className="safe-header-pad mx-auto flex w-full max-w-5xl items-center justify-between px-4 pt-6 sm:px-6 sm:pt-8">
         <Link href="/" className="font-display text-xl text-ink">
           {brand.name}
         </Link>
         <TrackingLink
-          href="/entrar"
-          className="text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+          href={loginHref}
+          className="inline-flex min-h-11 items-center text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
         >
-          Entrar
+          Já tenho conta
         </TrackingLink>
       </header>
 
       <main
         id="conteudo-principal"
         tabIndex={-1}
-        className="mx-auto grid w-full max-w-5xl gap-10 px-4 py-10 outline-none sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-12 lg:py-14"
+        className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-7 outline-none sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-10 lg:py-12"
       >
-        <section className="rounded-2xl border border-border/70 bg-card/70 p-6 shadow-sm backdrop-blur-sm sm:p-8">
-          <PurchaseJourneySteps current="conta" className="mb-8" />
-          <h1 className="font-display text-3xl text-ink sm:text-4xl">
+        <section className="rounded-3xl border border-border/70 bg-card/85 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-8">
+          <PurchaseJourneySteps current="conta" className="mb-6" />
+          {plan ? (
+            <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-gold/25 bg-sand-100/60 px-4 py-3 lg:hidden">
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-ink-soft">
+                  Plano escolhido
+                </p>
+                <p className="mt-0.5 font-display text-lg text-ink">{plan.name}</p>
+              </div>
+              <p className="text-sm font-medium text-ink">
+                {formatPriceBRL(plan.priceMonthlyCents)}/mês
+              </p>
+            </div>
+          ) : null}
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+            Etapa 1 de 3 · sua conta
+          </p>
+          <h1 className="mt-2 font-display text-3xl text-ink sm:text-4xl">
             Criar conta
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
@@ -76,6 +96,7 @@ export default async function CadastroPage({
             <SignUpForm
               planKey={validated?.ok ? validated.planKey : null}
               tracking={tracking}
+              loginHref={loginHref}
             />
           </div>
         </section>
@@ -90,37 +111,38 @@ export default async function CadastroPage({
 
 function PlanSupportCard({ plan }: { plan: PlanDefinition }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-card/60 p-6">
-      <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">
+    <div className="rounded-3xl border border-border/70 bg-ink p-6 text-sand-50 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.7)]">
+      <p className="text-xs font-medium uppercase tracking-[0.14em] text-gold-soft">
         Seu plano
       </p>
-      <h2 className="mt-2 font-display text-2xl text-ink">{plan.name}</h2>
-      <p className="mt-1 text-sm text-ink-soft">{plan.tagline}</p>
-      <p className="mt-4 font-display text-3xl text-ink">
+      <h2 className="mt-2 font-display text-2xl text-sand-50">{plan.name}</h2>
+      <p className="mt-1 text-sm text-sand-200">{plan.idealFor}</p>
+      <p className="mt-4 font-display text-3xl text-sand-50">
         {formatPriceBRL(plan.priceMonthlyCents)}
-        <span className="ml-1 text-sm font-sans font-normal text-ink-soft">
+        <span className="ml-1 text-sm font-sans font-normal text-sand-200">
           /mês
         </span>
       </p>
-      <ul className="mt-5 space-y-2 text-sm text-ink-soft">
-        {plan.displayBenefits.map((benefit) => (
+      <ul className="mt-5 space-y-2.5 text-sm text-sand-200">
+        {plan.displayBenefits.slice(0, 3).map((benefit) => (
           <li key={benefit} className="flex gap-2">
-            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine/70" />
+            <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-gold-soft" />
             <span>{benefit}</span>
           </li>
         ))}
       </ul>
-      <div className="mt-6 space-y-2 border-t border-border/60 pt-4 text-xs leading-relaxed text-ink-soft">
+      <div className="mt-6 space-y-2 border-t border-sand-50/15 pt-4 text-xs leading-relaxed text-sand-200">
         <p>Renovação automática mensal.</p>
         <p>Cancelamento da renovação pela sua conta no Amém Chat.</p>
         <p>Pagamento seguro processado pela Stripe.</p>
-        <p className="font-medium text-ink">
+        <p className="flex items-center gap-1.5 font-medium text-sand-50">
+          <LockKeyhole aria-hidden className="size-3.5" />
           Você só pagará depois de confirmar seu e-mail.
         </p>
       </div>
       <TrackingLink
         href="/planos"
-        className="mt-4 inline-block text-xs text-ink underline underline-offset-4"
+        className="mt-4 inline-flex min-h-11 items-center text-xs text-sand-50 underline underline-offset-4"
       >
         Trocar plano
       </TrackingLink>

@@ -61,7 +61,7 @@ export function EmailConfirmedExperience({
   }, [continueHref, hasPlan, reduceMotion, router]);
 
   return (
-    <div className="space-y-8 rounded-2xl border border-border/70 bg-card/80 p-6 shadow-sm sm:p-8">
+    <div className="space-y-7 rounded-3xl border border-border/70 bg-card/90 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] sm:p-8">
       <div className="flex flex-col items-center text-center">
         <div
           className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-wine/10 text-wine"
@@ -94,13 +94,13 @@ export function EmailConfirmedExperience({
             : "Sua conta está pronta. Escolha um plano para continuar."}
         </p>
         {planName ? (
-          <p className="mt-2 rounded-md bg-sand-100 px-3 py-1.5 text-sm text-ink">
+          <p className="mt-3 rounded-full border border-gold/25 bg-sand-100 px-3 py-1.5 text-sm text-ink">
             Plano reservado: <strong>{planName}</strong>
           </p>
         ) : null}
       </div>
 
-      <Button asChild className="w-full bg-ink hover:bg-ink/90">
+      <Button asChild className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft">
         <Link href={continueHref}>
           {hasPlan ? "Continuar para pagamento" : "Escolher meu plano"}
         </Link>

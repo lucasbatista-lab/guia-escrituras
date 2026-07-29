@@ -62,13 +62,17 @@ export default async function EmailConfirmadoPage({
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(198,160,90,0.10),_transparent_50%)]">
-      <header className="mx-auto flex w-full max-w-lg items-center px-4 pt-8">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_12%_5%,rgba(198,160,90,0.18),transparent_32%),radial-gradient(circle_at_95%_85%,rgba(107,46,58,0.08),transparent_34%)]">
+      <header className="safe-header-pad mx-auto flex w-full max-w-lg items-center px-4 pt-6 sm:pt-8">
         <Link href="/" className="font-display text-xl text-ink">
           {brand.name}
         </Link>
       </header>
-      <main className="mx-auto max-w-lg px-4 py-12">
+      <main
+        id="conteudo-principal"
+        tabIndex={-1}
+        className="mx-auto max-w-lg px-4 py-8 outline-none sm:py-12"
+      >
         <PurchaseJourneySteps
           current={hasPlan ? "pagamento" : "conta"}
           className="mb-8"
