@@ -5,6 +5,7 @@ import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { ChatDemo } from "@/components/marketing/chat-demo";
 import { DeepenComparisonStatic } from "@/components/marketing/deepen-comparison-static";
+import { EcosystemShowcase } from "@/components/marketing/ecosystem-showcase";
 import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-static";
 import { PlanCards, ParticularAccessNote } from "@/components/marketing/plan-cards";
 import { ProductHeroPreview } from "@/components/marketing/product-hero-preview";
@@ -15,7 +16,6 @@ import {
   socialTwitterImages,
 } from "@/lib/seo";
 import { buildVisitorShareUrl } from "@/lib/share/resolve-server";
-import { TRADITION_POLICIES } from "@/lib/theology";
 import { Button } from "@/components/ui/button";
 
 const ShareInvite = dynamic(
@@ -44,75 +44,6 @@ export const metadata: Metadata = {
 
 /** Starting price for Essencial — kept in sync with plan catalog (R$ 38/mês). */
 const ESSENCIAL_PRICE_LABEL = "R$ 38";
-
-const situations = [
-  {
-    quote: "Tenho contas vencendo e preciso de forças para continuar.",
-    note: "Pressão financeira sem culpa mágica — clareza e um passo possível.",
-  },
-  {
-    quote: "Não sei se devo aceitar essa oportunidade.",
-    note: "Decisão com luz das Escrituras, sem atalho sobrenatural.",
-  },
-  {
-    quote: "Quero perdoar sem voltar a permitir que me machuquem.",
-    note: "Perdão com limites — verdade e cuidado juntos.",
-  },
-  {
-    quote: "Sinto vergonha de repetir o mesmo erro.",
-    note: "Recomeço honesto, sem negar consequências.",
-  },
-  {
-    quote: "Meus projetos avançam, mas tenho medo de não prosperar.",
-    note: "Trabalho e propósito com serenidade prática.",
-  },
-  {
-    quote: "Parece que Deus está em silêncio.",
-    note: "Lamento e presença — sem fingir que está tudo bem.",
-  },
-  {
-    quote: "Estou cansado e não consigo organizar meus pensamentos.",
-    note: "Ansiedade acolhida com próximos passos concretos.",
-  },
-  {
-    quote: "Preciso tomar uma decisão no relacionamento.",
-    note: "Relação e discernimento com tom cuidadoso.",
-  },
-];
-
-const pillars = [
-  {
-    title: "1. Sua situação",
-    body: "Você escreve com suas próprias palavras o que está vivendo.",
-  },
-  {
-    title: "2. Escrituras e contexto",
-    body: "O Amém Chat busca referências relacionadas ao tema e considera a tradição cristã escolhida.",
-  },
-  {
-    title: "3. Reflexão e próximos passos",
-    body: "Você recebe acolhimento, interpretação claramente identificada e sugestões práticas para organizar o próximo passo.",
-  },
-];
-
-const steps = [
-  {
-    title: "1. Escolha seu plano",
-    body: "Essencial, Caminho ou Profundo — com o que já está disponível hoje.",
-  },
-  {
-    title: "2. Crie sua conta e confirme o e-mail",
-    body: "Cadastro com confirmação de e-mail antes do pagamento.",
-  },
-  {
-    title: "3. Conclua o pagamento com segurança",
-    body: "Checkout pela Stripe. Renovação mensal, cancelável na sua conta no Amém Chat.",
-  },
-  {
-    title: "4. Personalize a experiência e traga sua situação",
-    body: "Escolha tradição e profundidade — depois converse sobre o que pesa agora.",
-  },
-];
 
 const faq = [
   {
@@ -232,135 +163,41 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 3. Benefícios concretos */}
-        <SectionShell>
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Como o Amém Chat transforma situação em reflexão
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              Do que você vive às Escrituras — com interpretação identificada e
-              passos para a vida real.
-            </p>
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
-              {pillars.map((pillar) => (
-                <div
-                  key={pillar.title}
-                  className="rounded-2xl border border-border/70 bg-background/80 p-5 shadow-sm"
-                >
-                  <h3 className="font-display text-xl text-ink">
-                    {pillar.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                    {pillar.body}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </SectionShell>
-
-        {/* 4. Exemplos de situações */}
-        <SectionShell tone="sand">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Situações reais que você pode trazer
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              Não promete soluções mágicas nem substitui terapia, pastor ou
-              ajuda profissional. Oferece clareza, companhia espiritual e um
-              próximo passo possível.
-            </p>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              {situations.map((item) => (
-                <figure
-                  key={item.quote}
-                  className="rounded-2xl border border-border/70 bg-card/70 p-5 shadow-sm"
-                >
-                  <blockquote className="font-display text-lg leading-snug text-ink">
-                    “{item.quote}”
-                  </blockquote>
-                  <figcaption className="mt-3 text-sm leading-relaxed text-ink-soft">
-                    {item.note}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </SectionShell>
-
-        {/* 5. Como funciona em quatro passos */}
-        <SectionShell>
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Como começar
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              Do plano à primeira conversa, em passos claros.
-            </p>
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {steps.map((step) => (
-                <div
-                  key={step.title}
-                  className="rounded-2xl border border-border/60 bg-card/50 p-5"
-                >
-                  <h3 className="font-display text-xl text-ink">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                    {step.body}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-10">
-              <Button asChild size="lg" variant="outline" className="min-h-11">
-                <TrackingLink href="/planos">Conhecer os planos</TrackingLink>
-              </Button>
-            </div>
-          </div>
-        </SectionShell>
-
-        {/* 6. Tradições */}
+        {/* 3. Integrated product ecosystem */}
         <SectionShell tone="card">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Tradições cristãs no perfil
-            </h2>
-            <p className="mt-3 max-w-2xl text-ink-soft">
-              Você escolhe a tradição que molda como a reflexão é apresentada —
-              não apenas o tom.
-            </p>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
-              {TRADITION_POLICIES.map((tradition) => (
-                <div
-                  key={tradition.key}
-                  className="rounded-2xl border border-border/70 bg-card/60 p-5"
-                >
-                  <h3 className="font-display text-xl text-ink">
-                    {tradition.label}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                    {tradition.description}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <EcosystemShowcase />
           </div>
         </SectionShell>
 
-        {/* 7. Três planos */}
+        {/* 4. Continuity through a real Journey */}
+        <SectionShell tone="sand">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <JourneyPreviewStatic />
+          </div>
+        </SectionShell>
+
+        {/* 5. Deeper analysis, when included */}
         <SectionShell>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Planos
+            <DeepenComparisonStatic />
+          </div>
+        </SectionShell>
+
+        {/* 6. Plans after product value */}
+        <SectionShell tone="sand">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+              Escolha seu ritmo
+            </p>
+            <h2 className="mt-2 font-display text-3xl text-ink sm:text-4xl">
+              Um plano para a forma como você quer voltar
             </h2>
             <p className="mt-3 max-w-2xl text-ink-soft">
-              Assinatura mensal a partir de {ESSENCIAL_PRICE_LABEL}/mês.
-              Essencial para começar com reflexões e histórico. Caminho acrescenta
-              Jornadas guiadas e continuidade. Profundo inclui Aprofundar sob
-              demanda para situações que pedem mais detalhe — sem trocar o
-              Essencial por culpa ou pressão.
+              Essencial para conversas e histórico. Caminho acrescenta Jornadas e
+              mais frequência. Profundo inclui Aprofundar sob demanda.
             </p>
-            <div className="mt-10">
+            <div className="mt-8">
               <PlanCards compact />
             </div>
             <ParticularAccessNote className="mt-8" />
@@ -375,21 +212,7 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 8. Preview real de Jornada */}
-        <SectionShell tone="sand">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <JourneyPreviewStatic />
-          </div>
-        </SectionShell>
-
-        {/* 9. Normal versus Aprofundar */}
-        <SectionShell>
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-            <DeepenComparisonStatic />
-          </div>
-        </SectionShell>
-
-        {/* 10. Confiança e limites */}
+        {/* 7. Trust and boundaries */}
         <SectionShell tone="card">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">

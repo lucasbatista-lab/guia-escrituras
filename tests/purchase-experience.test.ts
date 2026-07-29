@@ -18,21 +18,24 @@ function read(...parts: string[]) {
 
 describe("purchase experience — home copy & flow order", () => {
   const home = read("src", "app", "(marketing)", "page.tsx");
+  const howItWorks = read(
+    "src",
+    "app",
+    "(marketing)",
+    "como-funciona",
+    "page.tsx",
+  );
 
   it("follows the conversion section order", () => {
     const markers = [
       'href="#demonstracao"',
       "Conhecer o Amém Chat",
       'id="demo-heading"',
-      "Como o Amém Chat transforma situação em reflexão",
-      "Situações reais que você pode trazer",
-      "Como começar",
-      "Tradições cristãs no perfil",
-      "{/* 7. Três planos */}",
-      "Assinatura mensal a partir de",
-      "Comparar todos os planos",
+      "<EcosystemShowcase",
       "<JourneyPreviewStatic",
       "<DeepenComparisonStatic",
+      "{/* 6. Plans after product value */}",
+      "Comparar todos os planos",
       "Segurança, privacidade e limites",
       "Perguntas frequentes",
       "Pronto para escolher um plano?",
@@ -64,11 +67,11 @@ describe("purchase experience — home copy & flow order", () => {
     expect(home).toContain("voz divina");
   });
 
-  it("how-to-start describes plan → email → pay → personalize → converse", () => {
-    expect(home).toContain("Escolha seu plano");
-    expect(home).toContain("Crie sua conta e confirme o e-mail");
-    expect(home).toContain("Conclua o pagamento com segurança");
-    expect(home).toContain("Personalize a experiência e traga sua situação");
+  it("how-to page describes plan → email → pay → personalize → converse", () => {
+    expect(howItWorks).toContain("Escolha seu plano");
+    expect(howItWorks).toContain("Crie sua conta e confirme o e-mail");
+    expect(howItWorks).toContain("Conclua o pagamento com segurança");
+    expect(howItWorks).toContain("Personalize a experiência e traga sua situação");
   });
 
   it("does not show fake social proof or urgency", () => {

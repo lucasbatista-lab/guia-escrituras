@@ -49,21 +49,20 @@ describe("launch conversion home", () => {
     expect(heroSlice).not.toContain("brand.description");
   });
 
-  it("places ChatDemo before plans and keeps trust anchors", () => {
+  it("presents the ecosystem and continuity before plans", () => {
     const demoIdx = home.indexOf("<ChatDemo");
     const plansIdx = home.indexOf("<PlanCards");
+    const ecosystemIdx = home.indexOf("<EcosystemShowcase");
     const journeyIdx = home.indexOf("<JourneyPreviewStatic");
     const deepenIdx = home.indexOf("<DeepenComparisonStatic");
     expect(demoIdx).toBeGreaterThan(-1);
-    expect(plansIdx).toBeGreaterThan(demoIdx);
-    expect(journeyIdx).toBeGreaterThan(plansIdx);
+    expect(ecosystemIdx).toBeGreaterThan(demoIdx);
+    expect(journeyIdx).toBeGreaterThan(ecosystemIdx);
     expect(deepenIdx).toBeGreaterThan(journeyIdx);
-    expect(home).toContain("Situações reais que você pode trazer");
-    expect(home).toContain("Tenho contas vencendo");
-    expect(home).toContain("Parece que Deus está em silêncio");
-    expect(home).toContain("Como o Amém Chat transforma situação em reflexão");
-    expect(home).toContain("Como começar");
-    expect(home).toContain("Tradições cristãs no perfil");
+    expect(plansIdx).toBeGreaterThan(deepenIdx);
+    expect(demo).toContain("Tenho contas vencendo");
+    expect(demo).toContain("Parece que Deus está em silêncio");
+    expect(demo).toContain("Luto e saudade");
     expect(home).toContain("Segurança, privacidade e limites");
     expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Stripe");

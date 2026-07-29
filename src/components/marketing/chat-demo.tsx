@@ -102,6 +102,23 @@ const SCENARIOS: DemoScenario[] = [
     ],
     followUp: "O que mais precisa agora: ser ouvido, descansar ou retomar um ritmo leve de oração?",
   },
+  {
+    id: "luto",
+    label: "Luto e saudade",
+    prompt:
+      "A saudade ficou mais forte hoje. Como atravessar este dia sem apressar o meu luto?",
+    welcome:
+      "A saudade não precisa caber em uma explicação rápida. Há espaço para lamentar, lembrar e atravessar apenas o dia de hoje.",
+    references: ["Salmo 34:18", "João 11:33-36"],
+    interpretation:
+      "As Escrituras não tratam lágrimas como falha espiritual. A presença de Deus junto aos quebrantados e o choro de Jesus abrem espaço para um luto honesto, sem calendário imposto.",
+    actions: [
+      "Nomeie uma lembrança pela qual você é grato.",
+      "Avise alguém de confiança que hoje está mais difícil.",
+      "Escolha um cuidado simples para o corpo nas próximas horas.",
+    ],
+    followUp: "Você gostaria de falar sobre a saudade, sobre uma lembrança ou sobre como passar por hoje?",
+  },
 ];
 
 export function ChatDemo() {
@@ -110,32 +127,30 @@ export function ChatDemo() {
 
   return (
     <div
-      className="animate-fade-up-delayed overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-md backdrop-blur-sm"
+      className="animate-fade-up-delayed overflow-hidden rounded-[1.75rem] border border-ink/15 bg-card/95 shadow-[0_24px_70px_-38px_rgba(44,36,28,0.6)] backdrop-blur-sm"
       aria-label="Demonstração interativa do chat"
     >
-      <div className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-ink px-4 py-3 text-sand-50">
         <div>
-          <p className="text-sm font-medium text-ink">Exemplo interativo</p>
-          <p className="text-xs text-ink-soft">
-            Sem chamada à API · respostas ilustrativas
-          </p>
+          <p className="font-display text-sm">Amém Chat</p>
+          <p className="text-[11px] text-sand-200">Escolha uma situação para explorar</p>
         </div>
-        <span className="shrink-0 rounded-md bg-sand-200/80 px-2 py-1 text-[11px] uppercase tracking-wide text-ink-soft">
-          exemplo
+        <span className="shrink-0 rounded-full border border-sand-50/15 bg-sand-50/10 px-2.5 py-1 text-[10px] uppercase tracking-wide text-sand-100">
+          exemplo ilustrativo
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-border/60 px-4 py-3">
+      <div className="flex snap-x gap-2 overflow-x-auto border-b border-border/60 px-4 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {SCENARIOS.map((scenario) => (
           <button
             key={scenario.id}
             type="button"
             onClick={() => setActiveId(scenario.id)}
             className={cn(
-              "min-h-9 rounded-md px-2.5 py-1.5 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "min-h-10 shrink-0 snap-start rounded-full px-3 py-2 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               activeId === scenario.id
-                ? "bg-ink text-sand-50"
-                : "bg-sand-100 text-ink-soft hover:text-ink",
+                ? "bg-wine text-sand-50 shadow-sm"
+                : "border border-border/70 bg-sand-50 text-ink-soft hover:text-ink",
             )}
             aria-pressed={activeId === scenario.id}
           >
@@ -146,19 +161,24 @@ export function ChatDemo() {
 
       <div
         key={active.id}
-        className="space-y-4 p-4 font-chat text-[15px] leading-relaxed motion-safe:animate-fade-up sm:p-5"
+        className="space-y-4 bg-[radial-gradient(circle_at_100%_0%,rgba(198,160,90,0.1),transparent_38%)] p-4 font-chat text-[15px] leading-relaxed motion-safe:animate-fade-up sm:p-5"
       >
-        <p className="text-xs text-ink-soft">
-          Isto é um exemplo local — não uma conversa real nem voz divina.
-        </p>
         <div className="ml-auto max-w-[92%] rounded-2xl rounded-br-md bg-ink px-4 py-3 text-sand-50 sm:max-w-[85%]">
           {active.prompt}
         </div>
         <div className="max-w-[96%] space-y-3 rounded-2xl rounded-bl-md border border-border/80 bg-sand-50/95 px-4 py-3 text-ink sm:max-w-[92%]">
           <p>{active.welcome}</p>
-          <p className="rounded-md bg-card/90 px-2.5 py-1.5 text-xs font-medium text-ink-soft">
-            Referências · {active.references.join(" · ")}
-          </p>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="sr-only">Referências ·</span>
+            {active.references.map((reference) => (
+              <span
+                key={reference}
+                className="rounded-full bg-sand-100 px-2.5 py-1 font-sans text-[11px] font-medium text-ink-soft"
+              >
+                {reference}
+              </span>
+            ))}
+          </div>
           <p>
             <span className="font-medium text-ink">Interpretação: </span>
             {active.interpretation}
@@ -173,12 +193,16 @@ export function ChatDemo() {
           </div>
           <p className="text-sm italic text-ink-soft">{active.followUp}</p>
         </div>
+        <p className="text-center font-sans text-[11px] text-ink-soft">
+          Este é um exemplo local, sem dados reais. Sem chamada à API. Não é voz
+          divina.
+        </p>
       </div>
 
       <div className="border-t border-border/70 px-4 py-4 sm:px-5">
         <p className="text-sm text-ink-soft">
-          Gostou do tom? Compare os planos e comece com a tradição cristã que
-          você escolher.
+          No produto, você pode responder, continuar a conversa e encontrá-la
+          depois no histórico.
         </p>
         <Button
           asChild
