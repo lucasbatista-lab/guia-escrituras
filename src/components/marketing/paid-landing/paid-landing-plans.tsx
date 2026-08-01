@@ -14,43 +14,66 @@ import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useId, useState } from "react";
 
+const SHORT_IDEAL: Record<string, string> = {
+  essencial: "Clareza pontual",
+  caminho: "Constância com Jornadas",
+  profundo: "Mais análise com Aprofundar",
+};
+
 function PlanCard({
   plan,
   href,
   compact = false,
+  recommendedBadge = false,
 }: {
   plan: PlanDefinition;
   href: string;
   compact?: boolean;
+  recommendedBadge?: boolean;
 }) {
   const detailsId = useId();
-  const [open, setOpen] = useState(!compact || plan.highlighted);
-  const benefits = plan.displayBenefits.slice(
-    0,
-    Math.min(compact && !open ? 2 : 4, MAX_PUBLIC_PLAN_BENEFITS),
-  );
-  const badge = plan.highlightBadge ?? null;
-  const showToggle = compact && !plan.highlighted;
+  const [open, setOpen] = useState(false);
+  const visibleCount = plan.highlighted
+    ? Math.min(3, MAX_PUBLIC_PLAN_BENEFITS)
+    : compact && !open
+      ? 2
+      : Math.min(3, MAX_PUBLIC_PLAN_BENEFITS);
+  const benefits = plan.displayBenefits.slice(0, visibleCount);
+  const badge = recommendedBadge
+    ? "Recomendado"
+    : plan.highlighted
+      ? (plan.highlightBadge ?? "Recomendado")
+      : null;
+  const shortIdeal = SHORT_IDEAL[plan.key] ?? plan.idealFor;
+  const showToggle = compact || (!plan.highlighted && plan.displayBenefits.length > 2);
 
   return (
     <article
       className={cn(
-        "flex flex-col rounded-2xl border border-border/80 bg-card/70 p-4 sm:p-5",
+        "flex flex-col rounded-2xl border border-border/80 bg-card/70 p-3.5 sm:p-5",
         plan.highlighted &&
           "border-gold/50 bg-gradient-to-b from-card to-sand-100/70 ring-1 ring-gold/25",
+        compact && !plan.highlighted && "p-3",
       )}
     >
       {badge ? (
-        <p className="mb-2 text-[11px] font-medium leading-snug tracking-[0.08em] text-gold">
+        <p className="mb-1.5 text-[11px] font-medium leading-snug tracking-[0.08em] text-gold">
           {badge}
         </p>
       ) : (
-        <div className="mb-2 h-4" aria-hidden />
+        <div className="mb-1.5 h-4" aria-hidden />
       )}
-      <h3 className="font-display text-2xl text-ink">{plan.name}</h3>
-      <p className="mt-1 text-sm font-medium text-ink">{plan.idealFor}</p>
-      <p className="mt-2 text-sm leading-relaxed text-ink-soft">{plan.tagline}</p>
-      <p className="mt-4 font-display text-3xl text-ink">
+      <h3 className="font-display text-xl text-ink sm:text-2xl">{plan.name}</h3>
+      <p className="mt-0.5 text-sm font-medium text-ink">{shortIdeal}</p>
+      <p
+        className={cn(
+          "mt-1.5 text-sm leading-snug text-ink-soft line-clamp-2",
+          !open && "max-md:hidden",
+        )}
+      >
+        {plan.tagline}
+      </p>
+      <p className="mt-3 font-display text-2xl text-ink sm:text-3xl">
         {formatPriceBRL(plan.priceMonthlyCents)}
         <span className="ml-1 text-sm font-sans font-normal text-ink-soft">
           /mês
@@ -59,7 +82,7 @@ function PlanCard({
 
       <ul
         id={detailsId}
-        className="mt-4 flex-1 space-y-2 border-t border-border/70 pt-4 text-sm text-ink-soft"
+        className="mt-3 flex-1 space-y-1.5 border-t border-border/70 pt-3 text-sm text-ink-soft"
       >
         {benefits.map((benefit) => (
           <li key={benefit} className="flex gap-2">
@@ -75,7 +98,7 @@ function PlanCard({
       {showToggle ? (
         <button
           type="button"
-          className="mt-3 min-h-11 self-start text-sm font-medium text-ink underline-offset-4 hover:underline"
+          className="mt-2 min-h-11 self-start text-sm font-medium text-ink underline-offset-4 hover:underline"
           aria-expanded={open}
           aria-controls={detailsId}
           onClick={() => setOpen((value) => !value)}
@@ -87,7 +110,7 @@ function PlanCard({
       <Button
         asChild
         className={cn(
-          "mt-5 min-h-11 w-full",
+          "mt-3 min-h-11 w-full",
           plan.highlighted ? "bg-ink hover:bg-ink/90" : "",
         )}
         variant={plan.highlighted ? "default" : "outline"}
@@ -97,7 +120,7 @@ function PlanCard({
           conversionEvent="paid_landing_plan_selected"
           conversionPlan={plan.key}
         >
-          {plan.ctaLabel}
+          {plan.key === "caminho" ? "Escolher Caminho" : plan.ctaLabel}
         </TrackingLink>
       </Button>
     </article>
@@ -140,10 +163,11 @@ function PaidLandingPlansInner() {
   return (
     <>
       {/* Mobile: Caminho first, then compact alternatives */}
-      <div className="grid gap-4 md:hidden">
+      <div className="grid gap-3 md:hidden">
         <PlanCard
           plan={caminho}
           href={buildCadastroHref(caminho.key, tracking)}
+          recommendedBadge
         />
         <PlanCard
           plan={essencial}
@@ -158,7 +182,7 @@ function PaidLandingPlansInner() {
       </div>
 
       {/* Desktop: Essencial · Caminho · Profundo */}
-      <div className="hidden gap-4 md:grid md:grid-cols-3">
+      <div className="hidden gap-4 md:grid md:grid-cols-3 md:items-stretch">
         <PlanCard
           plan={essencial}
           href={buildCadastroHref(essencial.key, tracking)}
@@ -166,6 +190,7 @@ function PaidLandingPlansInner() {
         <PlanCard
           plan={caminho}
           href={buildCadastroHref(caminho.key, tracking)}
+          recommendedBadge
         />
         <PlanCard
           plan={profundo}
@@ -184,7 +209,7 @@ export function PaidLandingPlans() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="h-72 rounded-2xl border border-border/60 bg-card/40"
+              className="h-64 rounded-2xl border border-border/60 bg-card/40"
             />
           ))}
         </div>
