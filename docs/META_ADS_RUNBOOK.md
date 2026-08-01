@@ -33,20 +33,33 @@ Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A la
 - Preferências: `/cookies` (“Alterar preferências de cookies”).
 - Revogar remove `_fbp`/`_fbc` quando o domínio conseguir; **não** remove `amem_acq_first` / `amem_acq_last`.
 
+## Eventos ativos nesta versão
+
+| Evento | Canal | Quando |
+|---|---|---|
+| `PageView` | Browser | Superfícies allowlist após consentimento |
+| `ViewContent` | Browser | `/comece` após consentimento |
+| `InitiateCheckout` | CAPI | Após criar Stripe Checkout Session |
+| `Purchase` | CAPI | Após `checkout.session.completed` processado |
+
+### Lead desabilitado
+
+**Lead browser está desabilitado.** Motivo: o cadastro pode retornar `ok: true` em soft-success (e-mail já existente / enumeração-safe). Disparar Lead após qualquer `ok` gerava Lead sem conta nova.
+
+Reintrodução futura exige evento **autoritativo e idempotente** que não permita confundir conta nova com duplicata e que não exponha enumeração ao client.
+
+**Não otimize a campanha inicial para Lead.** Prefira Landing Page Views / cliques ou Purchase quando houver volume.
+
+Eventos first-party (`signup_started`, `paid_landing_*`, etc.) continuam independentes da Meta.
+
 ## Validar browser (PageView / ViewContent)
 
 1. Aceite publicidade em `/comece`.
 2. Events Manager → Test Events (browser):
    - `PageView` em `/comece`, `/planos`, `/cadastro`
    - `ViewContent` em `/comece`
-3. **Lead está desabilitado nesta versão.** O cadastro pode retornar
-   `ok: true` em caminhos de soft-success (e-mail já existente /
-   enumeração-safe). Disparar Lead no browser após qualquer `ok`
-   produzia Lead sem conta nova. Não otimize campanhas para Lead até
-   existir um evento autoritativo e idempotente (sem expor enumeração).
+3. Confirme ausência de Lead após cadastro ou soft-success.
 4. Recuse publicidade: nenhum request Meta novo.
-5. Eventos first-party de signup (`signup_started`, etc.) continuam
-   independentes da Meta.
 
 ## Validar InitiateCheckout (CAPI)
 
@@ -61,13 +74,21 @@ Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A la
 3. **Não** dispare Purchase em `/assinatura/sucesso`, clique, signup ou redirect.
 4. Não teste Purchase real sem autorização explícita do operador.
 
+## Vídeo da landing
+
+- Opcional: `NEXT_PUBLIC_PAID_LANDING_VIDEO_URL`
+- Sem URL: poster/produto estático fiel
+- Com URL: play explícito, `preload=metadata`, sem autoplay com áudio
+- Poster: `/marketing/comece-poster.svg`
+- Preferir 9:16 no mobile; desktop aceita apresentação equilibrada
+
 ## Deduplicação / idempotência
 
 - Nesta versão não há espelho browser de Purchase.
 - Retries do webhook reutilizam o mesmo `event.id` → mesmo `event_id` CAPI.
 - `payment_events` continua sendo ledger financeiro, não ledger Meta.
 
-## Desligar Meta rapidamente
+## Desligar Meta rapidamente (rollback)
 
 1. `META_ADS_ENABLED=false` (ou remova) e redeploy/restart.
 2. Remova/esvazie `META_CAPI_ACCESS_TOKEN` e/ou `NEXT_PUBLIC_META_PIXEL_ID` se necessário.
@@ -81,10 +102,20 @@ Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A la
 
 ## Dados que nunca são enviados
 
-- e-mail / telefone (nem hash) / advanced matching / `external_id`
+- e-mail / telefone (nem hash) / advanced matching / `external_id` / IP / user agent
 - plano, tradição religiosa, conteúdo de conversa
 - situação pessoal, emoção, crise, mensagem, prompt
 - versão bíblica, perfil espiritual
+
+EMQ menor é aceito conscientemente em favor da privacidade nesta versão.
+
+## Checklist visual (antes de ativar)
+
+- [ ] Mobile 320/390: CTA “Ver planos” visível e não coberto pelo consentimento
+- [ ] Produto/mídia começa na primeira dobra
+- [ ] Caminho é o primeiro plano completo no mobile
+- [ ] Sticky some em `#planos` e com banner aberto
+- [ ] Sem “Começar agora” ambíguo que só rola a página
 
 ## Checklist antes de anúncios
 
@@ -99,3 +130,4 @@ Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A la
 - [ ] Admin, conversas e Jornadas sem Pixel
 - [ ] Vídeo da landing: opcional via `NEXT_PUBLIC_PAID_LANDING_VIDEO_URL`
 - [ ] Checkpoint visual mobile 320/390 antes de ativar anúncios
+- [ ] Meta continua desligada até configuração manual consciente
