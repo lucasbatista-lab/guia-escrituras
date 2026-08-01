@@ -43,19 +43,24 @@ export function ConsentBanner() {
   return (
     <div
       ref={panelRef}
-      className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.75rem,var(--safe-bottom))] pt-2 sm:px-4"
+      className="fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,var(--safe-bottom))] pt-1 sm:px-4 sm:pb-[max(0.75rem,var(--safe-bottom))] sm:pt-2"
       role="region"
       aria-labelledby={titleId}
     >
-      <div className="mx-auto max-w-3xl rounded-2xl border border-border/80 bg-sand-50/98 p-4 shadow-[0_-12px_40px_-24px_rgba(44,36,28,0.45)] backdrop-blur-md sm:p-5">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-border/80 bg-sand-50/98 p-3 shadow-[0_-10px_32px_-22px_rgba(44,36,28,0.4)] backdrop-blur-md sm:p-5">
         {preferencesOpen ? (
           <ConsentPreferencesPanel titleId={titleId} />
         ) : (
           <>
-            <h2 id={titleId} className="font-display text-lg text-ink">
-              Cookies e publicidade
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            <div className="flex items-start justify-between gap-3">
+              <h2
+                id={titleId}
+                className="font-display text-base leading-tight text-ink sm:text-lg"
+              >
+                Cookies e publicidade
+              </h2>
+            </div>
+            <p className="mt-1.5 text-[13px] leading-snug text-ink-soft sm:mt-2 sm:text-sm sm:leading-relaxed">
               {CONSENT_COPY.banner}{" "}
               <Link
                 href="/cookies"
@@ -65,24 +70,24 @@ export function ConsentBanner() {
               </Link>
               .
             </p>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:flex sm:flex-row sm:flex-wrap">
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-4 text-sm font-medium text-sand-50 transition hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="col-span-1 inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-3 text-sm font-medium text-sand-50 transition hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-4"
                 onClick={acceptAdvertising}
               >
                 {CONSENT_COPY.accept}
               </button>
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-medium text-ink transition hover:bg-sand-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="col-span-1 inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-ink transition hover:bg-sand-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-4"
                 onClick={refuseAdvertising}
               >
                 {CONSENT_COPY.refuse}
               </button>
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-md px-4 text-sm font-medium text-ink-soft underline-offset-4 transition hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="col-span-2 inline-flex min-h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-ink-soft underline-offset-4 transition hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:min-h-11 sm:justify-start sm:px-4"
                 onClick={openPreferences}
               >
                 {CONSENT_COPY.configure}

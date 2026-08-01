@@ -12,7 +12,7 @@ export const ADVERTISING_COOKIE_NAMES = ["_fbp", "_fbc"] as const;
 
 export const CONSENT_COPY = {
   banner:
-    "Usamos cookies necessários para o funcionamento do Amém Chat. Com sua autorização, também usamos tecnologias de publicidade para medir campanhas e melhorar a divulgação. Você pode aceitar, recusar ou alterar sua escolha depois.",
+    "Usamos cookies necessários para o Amém Chat funcionar. Com sua autorização, também medimos campanhas de divulgação. Você pode aceitar, recusar ou mudar sua escolha depois.",
   accept: "Aceitar publicidade",
   refuse: "Recusar",
   configure: "Configurar",
