@@ -95,6 +95,30 @@ const FAQ = [
 export default function ComecePaidLandingPage() {
   return (
     <div className="min-h-screen pb-24 md:pb-0">
+      <noscript>
+        <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-ink">
+          <p className="font-display text-2xl">
+            Sua situação não cabe em um vídeo de 30 segundos.
+          </p>
+          <p className="mt-2 text-ink-soft">
+            O Amém Chat oferece uma conversa guiada pelas Escrituras para
+            organizar próximos passos.
+          </p>
+          <p className="mt-4">
+            <a className="underline" href="#planos">
+              Ver planos
+            </a>
+            {" · "}
+            <a className="underline" href="#demonstracao">
+              Ver a demonstração
+            </a>
+            {" · "}
+            <a className="underline" href="/cadastro?plan=caminho">
+              Criar conta no Caminho
+            </a>
+          </p>
+        </div>
+      </noscript>
       <PublicConversionBeacon event="paid_landing_viewed" />
       <PaidLandingSectionView event="paid_landing_demo_viewed" targetId="demonstracao" />
       <PaidLandingSectionView event="paid_landing_plans_viewed" targetId="planos" />
@@ -122,23 +146,23 @@ export default function ComecePaidLandingPage() {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_12%,rgba(198,160,90,0.2),transparent_42%),radial-gradient(ellipse_at_8%_88%,rgba(107,46,58,0.1),transparent_46%)]"
           />
-          <div className="relative mx-auto grid max-w-5xl items-start gap-4 px-4 pb-6 pt-2 sm:gap-6 sm:px-6 sm:pb-10 sm:pt-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-10">
-            <div className="order-2 animate-fade-up lg:order-1">
-              <ConversationEyebrow className="mb-2 hidden sm:block">
+          <div className="relative mx-auto grid max-w-5xl items-start gap-3 px-4 pb-5 pt-2 sm:gap-6 sm:px-6 sm:pb-10 sm:pt-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-10">
+            <div className="animate-fade-up">
+              <ConversationEyebrow className="mb-1.5 hidden sm:block">
                 A conversa que continua
               </ConversationEyebrow>
-              <h1 className="text-balance font-display text-[1.55rem] leading-[1.08] text-ink sm:text-4xl lg:text-[2.65rem]">
+              <h1 className="text-balance font-display text-[1.45rem] leading-[1.08] text-ink sm:text-4xl lg:text-[2.65rem]">
                 Sua situação não cabe em um vídeo de 30 segundos.
               </h1>
-              <p className="mt-2.5 max-w-xl text-[0.92rem] leading-relaxed text-ink-soft sm:mt-3 sm:text-lg">
+              <p className="mt-2 max-w-xl text-[0.9rem] leading-snug text-ink-soft sm:mt-3 sm:text-lg sm:leading-relaxed">
                 Conte o que está vivendo e organize seus próximos passos por meio
                 de uma conversa guiada pelas Escrituras.
               </p>
-              <div className="mt-4 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3">
+              <div className="mt-3 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3">
                 <Button
                   asChild
                   size="lg"
-                  className="min-h-12 bg-wine px-5 hover:bg-wine-soft"
+                  className="min-h-11 bg-wine px-5 hover:bg-wine-soft sm:min-h-12"
                 >
                   <PaidLandingScrollCta
                     href="#planos"
@@ -151,7 +175,7 @@ export default function ComecePaidLandingPage() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="min-h-12 border-ink/20 px-5"
+                  className="min-h-11 border-ink/20 px-5 sm:min-h-12"
                 >
                   <PaidLandingScrollCta
                     href="#demonstracao"
@@ -161,12 +185,15 @@ export default function ComecePaidLandingPage() {
                   </PaidLandingScrollCta>
                 </Button>
               </div>
-              <p className="mt-3 text-xs text-ink-soft sm:text-sm">
+              <p className="mt-2 text-[11px] text-ink-soft sm:mt-3 sm:text-sm">
                 Privado · sem anúncios no produto · IA com limites claros
               </p>
             </div>
-            <div className="order-1 animate-fade-up-delayed lg:order-2">
-              <PaidLandingMedia priority className="mx-auto w-full max-w-[22rem] lg:max-w-none" />
+            <div className="animate-fade-up-delayed">
+              <PaidLandingMedia
+                priority
+                className="mx-auto w-full max-w-[24rem] lg:max-w-none"
+              />
             </div>
           </div>
         </section>

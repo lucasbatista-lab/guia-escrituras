@@ -21,14 +21,20 @@ function getConsentBannerServerSnapshot() {
   return false;
 }
 
+function sectionInView(id: string, topPad = 0, bottomPad = 0.2): boolean {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  const rect = el.getBoundingClientRect();
+  const vh = window.innerHeight || 1;
+  return rect.top < vh * (1 - bottomPad) && rect.bottom > topPad;
+}
+
 /**
  * Mobile sticky CTA after the hero.
  * Hides while consent is open, while #planos is visible, or near the final CTA.
  */
 export function PaidLandingMobileCta() {
-  const [pastHero, setPastHero] = useState(false);
-  const [plansVisible, setPlansVisible] = useState(false);
-  const [nearFinalCta, setNearFinalCta] = useState(false);
+  const [visible, setVisible] = useState(false);
   const consentOpen = useSyncExternalStore(
     subscribeConsentBanner,
     getConsentBannerOpen,
@@ -36,54 +42,24 @@ export function PaidLandingMobileCta() {
   );
 
   useEffect(() => {
-    const hero = document.getElementById("comece-hero");
-    const plans = document.getElementById("planos");
-    const finalCta = document.getElementById("comece-final-cta");
-    const observers: IntersectionObserver[] = [];
-
-    if (hero) {
-      const heroObserver = new IntersectionObserver(
-        ([entry]) => {
-          setPastHero(!entry?.isIntersecting);
-        },
-        { threshold: 0.12 },
-      );
-      heroObserver.observe(hero);
-      observers.push(heroObserver);
-    } else {
-      const frame = requestAnimationFrame(() => setPastHero(true));
-      return () => cancelAnimationFrame(frame);
+    function update() {
+      const hero = document.getElementById("comece-hero");
+      const pastHero = hero
+        ? hero.getBoundingClientRect().bottom < window.innerHeight * 0.2
+        : true;
+      const plansVisible = sectionInView("planos", 48, 0.15);
+      const nearFinalCta = sectionInView("comece-final-cta", 48, 0.1);
+      setVisible(pastHero && !plansVisible && !nearFinalCta);
     }
 
-    if (plans) {
-      const plansObserver = new IntersectionObserver(
-        ([entry]) => {
-          setPlansVisible(Boolean(entry?.isIntersecting));
-        },
-        { threshold: 0.18, rootMargin: "0px 0px -12% 0px" },
-      );
-      plansObserver.observe(plans);
-      observers.push(plansObserver);
-    }
-
-    if (finalCta) {
-      const finalObserver = new IntersectionObserver(
-        ([entry]) => {
-          setNearFinalCta(Boolean(entry?.isIntersecting));
-        },
-        { threshold: 0.2 },
-      );
-      finalObserver.observe(finalCta);
-      observers.push(finalObserver);
-    }
-
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
     return () => {
-      for (const observer of observers) observer.disconnect();
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
     };
   }, []);
 
-  const visible =
-    pastHero && !consentOpen && !plansVisible && !nearFinalCta;
-
-  return <PaidLandingFixedCta visible={visible} />;
+  return <PaidLandingFixedCta visible={visible && !consentOpen} />;
 }

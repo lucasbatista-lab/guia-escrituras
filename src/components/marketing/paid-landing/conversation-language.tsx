@@ -213,7 +213,7 @@ export function ProductFrame({
         <div
           className={cn(
             "overflow-hidden rounded-[1.5rem] bg-sand-50 sm:rounded-[1.65rem]",
-            compact ? "min-h-[18rem]" : "min-h-[20rem]",
+            compact ? "min-h-[16rem]" : "min-h-[17.5rem] sm:min-h-[20rem]",
           )}
         >
           {children}
