@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Prévia do Amém Chat">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5efe6"/>
+      <stop offset="55%" stop-color="#fbf8f3"/>
+      <stop offset="100%" stop-color="#efe4d4"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="30%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#c6a05a" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#c6a05a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#glow)"/>
+  <rect x="310" y="70" width="580" height="535" rx="36" fill="#2c241c"/>
+  <rect x="326" y="86" width="548" height="503" rx="28" fill="#fbf8f3"/>
+  <rect x="326" y="86" width="548" height="72" rx="28" fill="#fbf8f3"/>
+  <rect x="326" y="142" width="548" height="1" fill="#e4d8c8"/>
+  <circle cx="372" cy="122" r="18" fill="#6b2e3a"/>
+  <text x="402" y="118" font-family="Georgia, serif" font-size="22" fill="#2c241c">Amém Chat</text>
+  <text x="402" y="138" font-family="Arial, sans-serif" font-size="12" fill="#6b6258">Reflexão em andamento</text>
+  <rect x="620" y="180" width="220" height="70" rx="18" fill="#2c241c"/>
+  <rect x="360" y="270" width="300" height="120" rx="18" fill="#ffffff" stroke="#e4d8c8"/>
+  <text x="380" y="310" font-family="Georgia, serif" font-size="16" fill="#2c241c">Organize o próximo passo</text>
+  <text x="380" y="338" font-family="Arial, sans-serif" font-size="14" fill="#6b6258">com clareza e Escrituras</text>
+  <text x="500" y="620" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6b6258">Prévia do produto</text>
+</svg>

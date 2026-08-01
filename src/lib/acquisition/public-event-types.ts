@@ -7,6 +7,10 @@ export const PUBLIC_CONVERSION_EVENTS = [
   "plans_cta_clicked",
   "plan_selected",
   "signup_started",
+  "paid_landing_viewed",
+  "paid_landing_primary_cta_clicked",
+  "paid_landing_demo_clicked",
+  "paid_landing_plan_selected",
 ] as const;
 
 export type PublicConversionEventName =
