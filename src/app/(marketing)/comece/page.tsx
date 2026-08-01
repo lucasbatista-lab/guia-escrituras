@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { brand } from "@/config/brand";
+import { PaidLandingContinuity } from "@/components/marketing/paid-landing/paid-landing-continuity";
 import { PaidLandingDemo } from "@/components/marketing/paid-landing/paid-landing-demo";
 import { PaidLandingMedia } from "@/components/marketing/paid-landing/paid-landing-media";
 import { PaidLandingMobileCta } from "@/components/marketing/paid-landing/paid-landing-mobile-cta";
@@ -9,7 +10,6 @@ import {
 } from "@/components/marketing/paid-landing/paid-landing-scroll-cta";
 import { PaidLandingSectionView } from "@/components/marketing/paid-landing/paid-landing-section-view";
 import {
-  ContinuitySurface,
   ConversationEyebrow,
   PaidLandingSection,
 } from "@/components/marketing/paid-landing/conversation-language";
@@ -23,7 +23,7 @@ import {
 
 const PAGE_TITLE = "Comece uma conversa guiada pelas Escrituras";
 const PAGE_DESCRIPTION =
-  "Conte o que está vivendo e organize seus próximos passos por meio de uma conversa contextual — sem anúncios no produto e com limites claros de IA.";
+  "Conte o que está vivendo e organize o próximo passo com uma conversa guiada pelas Escrituras — com continuidade, privacidade e limites claros de IA.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -54,63 +54,62 @@ export const metadata: Metadata = {
   },
 };
 
-const SITUATIONS = [
-  "Decisões",
-  "Relacionamentos",
-  "Perdão e limites",
-  "Ansiedade e medo",
-  "Conflitos familiares",
-  "Culpa e arrependimento",
-  "Trabalho e dinheiro",
-  "Dúvidas espirituais",
-] as const;
-
 const FAQ = [
   {
     q: "O Amém Chat decide por mim?",
-    a: "Não. Ele ajuda a organizar a situação, iluminar com as Escrituras e sugerir próximos passos possíveis. A decisão continua sendo sua.",
+    a: "Não. Ele organiza a situação, ilumina com as Escrituras e sugere próximos passos possíveis. A decisão continua sendo sua.",
   },
   {
-    q: "Substitui pastor, padre, igreja ou terapia?",
-    a: "Não. É uma ferramenta de reflexão cristã com IA. Não substitui acompanhamento pastoral, comunidade de fé, terapia ou atendimento de emergência.",
+    q: "Substitui pastor, padre, terapia ou atendimento de emergência?",
+    a: "Não. É uma ferramenta de reflexão cristã com IA — não substitui pastor, padre, terapia ou emergência.",
   },
   {
-    q: "As respostas são iguais para todo mundo?",
-    a: "Não. A conversa parte do que você conta — pessoas envolvidas, tentativas anteriores e o que está em jogo — e segue o ritmo da troca.",
-  },
-  {
-    q: "Como funciona a privacidade?",
-    a: "Não vendemos seus dados. Conversas não são públicas na plataforma. Prestadores essenciais processam o necessário para operar o serviço. Detalhes em /privacidade e /cookies.",
+    q: "O Amém Chat é apenas um ChatGPT cristão?",
+    a: "Não. É uma experiência cristã estruturada, com regras e limites, referências bíblicas, personalização, Histórico, Jornadas e Aprofundar conforme o plano — e conversas privadas.",
   },
   {
     q: "Posso cancelar?",
-    a: "Sim. Você cancela a renovação automática na sua conta e mantém o acesso até o fim do período já pago. O pagamento é processado com segurança pela Stripe.",
+    a: "Sim. Cancele a renovação na sua Conta e mantenha o acesso até o fim do período já pago.",
+  },
+] as const;
+
+const TRUST_PILLARS = [
+  {
+    title: "Privacidade",
+    body: "Conversas não são públicas e seus dados não são vendidos.",
   },
   {
-    q: "Quando não utilizar?",
-    a: "Em emergência, risco à vida, crise grave de saúde mental, questões jurídicas ou clínicas que exijam profissional humano qualificado — busque ajuda adequada imediatamente.",
+    title: "Limites honestos",
+    body: "A IA ajuda a refletir; não substitui pastor, padre, terapia ou emergência.",
+  },
+  {
+    title: "Controle",
+    body: "Cancele a renovação pela sua Conta.",
   },
 ] as const;
 
 export default function ComecePaidLandingPage() {
   return (
-    <div className="min-h-screen pb-24 md:pb-0">
+    <div className="min-h-screen pb-[calc(3.25rem+var(--safe-bottom))] md:pb-0">
       <noscript>
         <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-ink">
           <p className="font-display text-2xl">
             Sua situação não cabe em um vídeo de 30 segundos.
           </p>
           <p className="mt-2 text-ink-soft">
-            O Amém Chat oferece uma conversa guiada pelas Escrituras para
-            organizar próximos passos.
+            Conte o que está vivendo. Organize o próximo passo com uma conversa
+            guiada pelas Escrituras.
+          </p>
+          <p className="mt-2 text-ink-soft">
+            Planos a partir de R$38/mês. Cancele a renovação pela sua Conta.
           </p>
           <p className="mt-4">
-            <a className="underline" href="#planos">
-              Ver planos
+            <a className="underline" href="#demonstracao">
+              Ver como funciona
             </a>
             {" · "}
-            <a className="underline" href="#demonstracao">
-              Ver a demonstração
+            <a className="underline" href="#planos">
+              Ver planos
             </a>
             {" · "}
             <a className="underline" href="/cadastro?plan=caminho">
@@ -123,9 +122,9 @@ export default function ComecePaidLandingPage() {
       <PaidLandingSectionView event="paid_landing_demo_viewed" targetId="demonstracao" />
       <PaidLandingSectionView event="paid_landing_plans_viewed" targetId="planos" />
 
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 pb-1 pt-safe sm:px-6">
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 pb-0.5 pt-safe sm:px-6">
         <TrackingLink href="/" className="min-h-11 py-1">
-          <span className="font-display text-xl tracking-tight text-ink sm:text-2xl">
+          <span className="font-display text-lg tracking-tight text-ink sm:text-2xl">
             {brand.name}
           </span>
         </TrackingLink>
@@ -146,53 +145,50 @@ export default function ComecePaidLandingPage() {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_12%,rgba(198,160,90,0.2),transparent_42%),radial-gradient(ellipse_at_8%_88%,rgba(107,46,58,0.1),transparent_46%)]"
           />
-          <div className="relative mx-auto grid max-w-5xl items-start gap-3 px-4 pb-5 pt-2 sm:gap-6 sm:px-6 sm:pb-10 sm:pt-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-10">
+          <div className="relative mx-auto grid max-w-5xl items-start gap-2.5 px-4 pb-4 pt-1.5 sm:gap-6 sm:px-6 sm:pb-10 sm:pt-4 lg:grid-cols-[0.4fr_0.6fr] lg:items-center lg:gap-8">
             <div className="animate-fade-up">
-              <ConversationEyebrow className="mb-1.5 hidden sm:block">
+              <ConversationEyebrow className="mb-1">
                 A conversa que continua
               </ConversationEyebrow>
-              <h1 className="text-balance font-display text-[1.45rem] leading-[1.08] text-ink sm:text-4xl lg:text-[2.65rem]">
+              <h1 className="text-balance font-display text-[1.35rem] leading-[1.08] text-ink sm:text-4xl lg:text-[2.55rem]">
                 Sua situação não cabe em um vídeo de 30 segundos.
               </h1>
-              <p className="mt-2 max-w-xl text-[0.9rem] leading-snug text-ink-soft sm:mt-3 sm:text-lg sm:leading-relaxed">
-                Conte o que está vivendo e organize seus próximos passos por meio
-                de uma conversa guiada pelas Escrituras.
+              <p className="mt-1.5 max-w-md text-[0.875rem] leading-snug text-ink-soft sm:mt-3 sm:max-w-xl sm:text-lg sm:leading-relaxed">
+                Conte o que está vivendo. Organize o próximo passo com uma
+                conversa guiada pelas Escrituras.
               </p>
-              <div className="mt-3 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3">
+              <div className="mt-2.5 flex flex-col gap-1.5 sm:mt-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                 <Button
                   asChild
                   size="lg"
                   className="min-h-11 bg-wine px-5 hover:bg-wine-soft sm:min-h-12"
                 >
                   <PaidLandingScrollCta
-                    href="#planos"
-                    event="paid_landing_primary_cta_clicked"
-                  >
-                    Ver planos
-                  </PaidLandingScrollCta>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="min-h-11 border-ink/20 px-5 sm:min-h-12"
-                >
-                  <PaidLandingScrollCta
                     href="#demonstracao"
                     event="paid_landing_demo_clicked"
                   >
-                    Ver a demonstração
+                    Ver como funciona
                   </PaidLandingScrollCta>
                 </Button>
+                <PaidLandingScrollCta
+                  href="#planos"
+                  event="paid_landing_primary_cta_clicked"
+                  className="inline-flex min-h-11 items-center justify-center px-1 text-sm text-ink-soft underline-offset-4 transition hover:text-ink hover:underline sm:min-h-12"
+                >
+                  Ver planos
+                </PaidLandingScrollCta>
               </div>
-              <p className="mt-2 text-[11px] text-ink-soft sm:mt-3 sm:text-sm">
-                Privado · sem anúncios no produto · IA com limites claros
+              <p className="mt-2 text-[12px] leading-snug text-ink-soft sm:mt-3 sm:text-sm">
+                Planos a partir de R$38/mês. Cancele a renovação pela sua Conta.
+              </p>
+              <p className="mt-1 text-[11px] text-ink-soft sm:text-sm">
+                Conversas privadas · dados não vendidos · IA com limites claros
               </p>
             </div>
-            <div className="animate-fade-up-delayed">
+            <div className="animate-fade-up-delayed min-w-0">
               <PaidLandingMedia
                 priority
-                className="mx-auto w-full max-w-[24rem] lg:max-w-none"
+                className="mx-auto w-full max-w-[22rem] lg:max-w-none"
               />
             </div>
           </div>
@@ -201,116 +197,30 @@ export default function ComecePaidLandingPage() {
         <section className="border-b border-border/40">
           <div
             id="demonstracao"
-            className="mx-auto max-w-5xl scroll-mt-6 px-4 py-8 sm:scroll-mt-8 sm:px-6 sm:py-10"
+            className="mx-auto max-w-5xl scroll-mt-6 px-4 py-6 sm:scroll-mt-8 sm:px-6 sm:py-9"
             aria-labelledby="demonstracao-heading"
           >
             <PaidLandingDemo />
           </div>
         </section>
 
-        <PaidLandingSection
-          eyebrow="Mecanismo"
-          title="Três movimentos da conversa"
-          description="Uma mensagem geral inspira muitas pessoas ao mesmo tempo. Uma conversa contextual parte da sua história."
-          tone="soft"
-        >
-          <ol className="relative space-y-0">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute bottom-3 left-[11px] top-3 w-px bg-gradient-to-b from-gold/50 via-wine/20 to-gold/40"
-            />
-            {[
-              {
-                n: "1",
-                t: "Conte o contexto",
-                d: "Descreva a situação com as palavras que você já tem — fatos, pessoas e o que pesa agora.",
-              },
-              {
-                n: "2",
-                t: "Aprofunde o que importa",
-                d: "A conversa faz perguntas para separar medo, responsabilidade e o que realmente está em jogo.",
-              },
-              {
-                n: "3",
-                t: "Organize próximos passos",
-                d: "Receba reflexão, referências bíblicas e caminhos possíveis — a decisão continua sendo sua.",
-              },
-            ].map((step) => (
-              <li key={step.n} className="relative pl-9 pb-5 last:pb-0 sm:pl-10">
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-1 flex size-[23px] items-center justify-center rounded-full border border-gold/45 bg-sand-50 text-[10px] font-medium text-wine sm:size-[27px] sm:text-[11px]"
-                >
-                  {step.n}
-                </span>
-                <p className="font-display text-xl text-ink">{step.t}</p>
-                <p className="mt-1 max-w-2xl text-sm text-ink-soft">{step.d}</p>
-              </li>
-            ))}
-          </ol>
-          <ul className="mt-6 flex flex-wrap gap-2">
-            {SITUATIONS.map((item) => (
-              <li
-                key={item}
-                className="rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-sm text-ink"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-xs text-ink-soft">
-            Temas que as pessoas podem explorar — sem promessa de solução, cura
-            ou decisão correta.
-          </p>
-        </PaidLandingSection>
-
-        <PaidLandingSection
-          eyebrow="Continuidade"
-          title="A conversa não termina no primeiro dia"
-          description="O plano muda a profundidade e a continuidade da experiência — não a seriedade da orientação."
-        >
-          <div className="grid gap-3 sm:grid-cols-3">
-            <ContinuitySurface
-              active
-              title="Hoje"
-              detail="Conte sua situação, receba perguntas e organize um próximo passo possível."
-            />
-            <ContinuitySurface
-              title="Quando voltar"
-              detail="Retome no Histórico, esclareça o que mudou e continue a mesma linha."
-            />
-            <ContinuitySurface
-              title="Ao longo do uso"
-              detail="Jornadas e Aprofundar conforme o plano — para quem precisa de mais constância ou análise."
-            />
-          </div>
-          <ul className="mt-5 space-y-2 text-sm leading-relaxed text-ink-soft">
-            <li>Personalização no perfil (tradição e preferências).</li>
-            <li>Histórico privado para retomar o fio.</li>
-            <li>Jornadas guiadas e Aprofundar nos planos em que estão disponíveis.</li>
-          </ul>
-        </PaidLandingSection>
+        <PaidLandingContinuity />
 
         <PaidLandingSection
           eyebrow="Confiança"
           title="Privacidade e limites claros"
-          description="Construído para reflexão séria — sem explorar vulnerabilidade e sem fingir o que a IA não é."
           tone="soft"
         >
-          <ul className="grid gap-3 text-sm text-ink-soft sm:grid-cols-2">
-            {[
-              "Sem anúncios dentro do produto",
-              "Seus dados não são vendidos",
-              "Conversas não são públicas na plataforma",
-              "IA com limites claros — não substitui pastor, padre, terapia ou emergência",
-              "Pagamento seguro com Stripe na assinatura",
-              "Cancele a renovação pela sua conta",
-            ].map((item) => (
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {TRUST_PILLARS.map((item) => (
               <li
-                key={item}
-                className="border-l-2 border-wine/30 pl-3 leading-relaxed"
+                key={item.title}
+                className="border-l-2 border-wine/30 pl-3"
               >
-                {item}
+                <p className="text-sm font-medium text-ink">{item.title}</p>
+                <p className="mt-0.5 text-sm leading-snug text-ink-soft">
+                  {item.body}
+                </p>
               </li>
             ))}
           </ul>
@@ -320,39 +230,33 @@ export default function ComecePaidLandingPage() {
           id="planos"
           className="scroll-mt-6 border-y border-border/40 bg-sand-100/45 sm:scroll-mt-8"
         >
-          <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+          <div className="mx-auto max-w-5xl px-4 py-7 sm:px-6 sm:py-9">
             <ConversationEyebrow>Planos</ConversationEyebrow>
             <h2 className="mt-2 font-display text-2xl text-ink sm:text-3xl">
-              Escolha a continuidade que faz sentido agora
+              Escolha quanto de continuidade você precisa.
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-ink-soft sm:text-base">
-              O plano muda a profundidade e a continuidade da experiência — não a
-              seriedade da orientação. Nenhum plano é selecionado automaticamente.
-              O Caminho é a opção recomendada para quem quer voltar com mais
-              constância.
+              O Caminho é recomendado para quem quer voltar com mais constância.
             </p>
-            <div className="mt-6">
+            <div className="mt-5">
               <PaidLandingPlans />
             </div>
             <p className="mt-4 text-xs text-ink-soft">
-              Cobrança mensal · pagamento seguro com Stripe · cancele a renovação
-              na sua conta.
+              Cobrança mensal segura com Stripe · cancele a renovação na sua
+              Conta.
             </p>
           </div>
         </section>
 
-        <PaidLandingSection
-          eyebrow="Dúvidas"
-          title="Perguntas frequentes"
-        >
-          <div className="space-y-2">
+        <PaidLandingSection eyebrow="Dúvidas" title="Perguntas frequentes">
+          <div className="space-y-1.5">
             {FAQ.map((item) => (
               <details
                 key={item.q}
-                className="group rounded-xl border border-border/60 bg-card/40 px-4 py-3"
+                className="group border-b border-border/50 px-0.5 py-1.5"
               >
                 <summary className="cursor-pointer list-none font-medium text-ink outline-none marker:content-none focus-visible:ring-1 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-                  <span className="flex min-h-11 items-center justify-between gap-3">
+                  <span className="flex min-h-11 items-center justify-between gap-3 text-[0.95rem]">
                     {item.q}
                     <span
                       aria-hidden
@@ -368,24 +272,25 @@ export default function ComecePaidLandingPage() {
               </details>
             ))}
           </div>
+          <p className="mt-3 text-sm text-ink-soft">
+            <TrackingLink
+              href="/ajuda"
+              className="underline underline-offset-4 hover:text-ink"
+            >
+              Ver todas as dúvidas
+            </TrackingLink>
+          </p>
         </PaidLandingSection>
 
         <section
           id="comece-final-cta"
-          className="border-t border-border/50 bg-ink px-4 py-10 text-sand-50 sm:px-6 sm:py-12"
+          className="border-t border-border/50 bg-ink px-4 py-8 text-sand-50 sm:px-6 sm:py-10"
         >
           <div className="mx-auto max-w-3xl text-center">
-            <ConversationEyebrow className="text-center text-gold-soft">
-              Próximo passo
-            </ConversationEyebrow>
-            <h2 className="mt-2 font-display text-2xl sm:text-3xl">
-              Você não precisa encontrar todas as respostas sozinho.
+            <h2 className="font-display text-2xl sm:text-3xl">
+              Sua situação tem detalhes. Sua reflexão também pode ter.
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-sand-50/80 sm:text-base">
-              Escolha um plano e continue a conversa com mais clareza — no seu
-              ritmo.
-            </p>
-            <div className="mt-6">
+            <div className="mt-5">
               <Button
                 asChild
                 size="lg"
@@ -395,7 +300,7 @@ export default function ComecePaidLandingPage() {
                   href="#planos"
                   event="paid_landing_primary_cta_clicked"
                 >
-                  Ver planos
+                  Escolher um plano
                 </PaidLandingScrollCta>
               </Button>
             </div>
@@ -403,7 +308,7 @@ export default function ComecePaidLandingPage() {
         </section>
       </main>
 
-      <footer className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-6 text-sm text-ink-soft sm:px-6">
+      <footer className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-5 text-sm text-ink-soft sm:px-6">
         <TrackingLink href="/privacidade" className="min-h-11 inline-flex items-center hover:text-ink">
           Privacidade
         </TrackingLink>
