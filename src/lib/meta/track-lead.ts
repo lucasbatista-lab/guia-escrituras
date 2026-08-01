@@ -1,22 +1,12 @@
-"use client";
-
-import { createMetaEventId } from "./browser-events";
-import { trackMetaBrowserEvent } from "./pixel-loader";
-import { hasAdvertisingConsent, readStoredConsent } from "@/lib/consent";
-
 /**
- * Fire Meta Lead only after a real successful signup action.
- * No PII. Silent when consent or pixel id is missing.
+ * Meta Lead is disabled in this version.
+ *
+ * Soft-success signup paths (duplicate email / enumeration-safe `ok: true`)
+ * previously could emit Lead without a new account. Reintroduce only with an
+ * authoritative, idempotent server-side signal that cannot be confused with
+ * duplicate soft-fail — and never via client heuristics that risk enumeration.
  */
+
 export function trackMetaLeadAfterSignupSuccess(): void {
-  if (typeof window === "undefined") return;
-  if (!hasAdvertisingConsent(readStoredConsent())) return;
-  trackMetaBrowserEvent(
-    "Lead",
-    {},
-    {
-      eventId: createMetaEventId(),
-      dedupeKey: `Lead:${window.location.pathname}:${Date.now()}`,
-    },
-  );
+  // Intentionally no-op. Do not fire browser Lead until an authoritative path exists.
 }

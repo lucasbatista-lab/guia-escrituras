@@ -11,7 +11,6 @@ import { getPrivacyVersion, getTermsVersion } from "@/config/legal";
 import { signUpAction } from "@/lib/auth/sign-up-action";
 import type { SignupTrackingParams } from "@/lib/signup-intents";
 import type { PlanKey } from "@/lib/entitlements";
-import { trackMetaLeadAfterSignupSuccess } from "@/lib/meta/track-lead";
 import { hasSupabaseEnv } from "@/lib/utils";
 
 function passwordChecks(password: string) {
@@ -139,8 +138,8 @@ export function SignUpForm({
         return;
       }
 
-      // Meta Lead only after the signup action reports success (no PII).
-      trackMetaLeadAfterSignupSuccess();
+      // Meta Lead is disabled in this version: soft-success paths
+      // (duplicate email / enumeration-safe ok) must not emit Lead.
 
       if (result.needsEmailConfirmation && result.redirectTo) {
         router.push(result.redirectTo);

@@ -33,14 +33,20 @@ Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A la
 - Preferências: `/cookies` (“Alterar preferências de cookies”).
 - Revogar remove `_fbp`/`_fbc` quando o domínio conseguir; **não** remove `amem_acq_first` / `amem_acq_last`.
 
-## Validar browser (PageView / ViewContent / Lead)
+## Validar browser (PageView / ViewContent)
 
 1. Aceite publicidade em `/comece`.
 2. Events Manager → Test Events (browser):
    - `PageView` em `/comece`, `/planos`, `/cadastro`
    - `ViewContent` em `/comece`
-3. Crie uma conta de teste: `Lead` só depois do cadastro bem-sucedido.
+3. **Lead está desabilitado nesta versão.** O cadastro pode retornar
+   `ok: true` em caminhos de soft-success (e-mail já existente /
+   enumeração-safe). Disparar Lead no browser após qualquer `ok`
+   produzia Lead sem conta nova. Não otimize campanhas para Lead até
+   existir um evento autoritativo e idempotente (sem expor enumeração).
 4. Recuse publicidade: nenhum request Meta novo.
+5. Eventos first-party de signup (`signup_started`, etc.) continuam
+   independentes da Meta.
 
 ## Validar InitiateCheckout (CAPI)
 
@@ -84,8 +90,12 @@ Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A la
 
 - [ ] Consentimento e `/cookies` revisados
 - [ ] Pixel ID + CAPI token + Graph version configurados
-- [ ] Test Events: PageView, ViewContent, Lead
+- [ ] Test Events: PageView, ViewContent (sem Lead)
+- [ ] Confirmar ausência de Lead no browser após cadastro / soft-success
+- [ ] Não otimizar campanha inicial para Lead
 - [ ] InitiateCheckout após sessão Stripe real
 - [ ] Purchase só via webhook confirmado (com autorização do operador)
 - [ ] Sem Meta env: landing/consentimento OK e zero requests Meta
 - [ ] Admin, conversas e Jornadas sem Pixel
+- [ ] Vídeo da landing: opcional via `NEXT_PUBLIC_PAID_LANDING_VIDEO_URL`
+- [ ] Checkpoint visual mobile 320/390 antes de ativar anúncios

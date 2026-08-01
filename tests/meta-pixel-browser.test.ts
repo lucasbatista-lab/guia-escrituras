@@ -17,10 +17,10 @@ function read(...parts: string[]) {
 }
 
 describe("meta pixel browser tracking", () => {
-  it("keeps a strict event allowlist and rejects arbitrary params", () => {
-    expect(META_BROWSER_EVENTS).toEqual(["PageView", "ViewContent", "Lead"]);
+  it("keeps a strict event allowlist without Lead and rejects arbitrary params", () => {
+    expect(META_BROWSER_EVENTS).toEqual(["PageView", "ViewContent"]);
     expect(isMetaBrowserEventName("Purchase")).toBe(false);
-    expect(isMetaBrowserEventName("Lead")).toBe(true);
+    expect(isMetaBrowserEventName("Lead")).toBe(false);
 
     const cleaned = sanitizeMetaBrowserParams("ViewContent", {
       content_name: "paid_landing",
@@ -52,11 +52,12 @@ describe("meta pixel browser tracking", () => {
     else process.env.NEXT_PUBLIC_META_PIXEL_ID = previous;
   });
 
-  it("gates pixel behind consent and fires Lead only after signup success", () => {
+  it("does not emit Meta Lead from signup soft-success paths", () => {
     const gate = read("src", "components", "meta", "meta-pixel-gate.tsx");
     const loader = read("src", "lib", "meta", "pixel-loader.ts");
     const signup = read("src", "components", "auth", "sign-up-form.tsx");
     const lead = read("src", "lib", "meta", "track-lead.ts");
+    const browserEvents = read("src", "lib", "meta", "browser-events.ts");
 
     expect(gate).toContain("advertisingGranted");
     expect(gate).toContain("trackMetaBrowserEvent");
@@ -66,8 +67,9 @@ describe("meta pixel browser tracking", () => {
     expect(loader).toContain('"init", pixelId');
     expect(loader).not.toContain("em=");
     expect(loader).not.toContain("external_id");
-    expect(signup).toContain("trackMetaLeadAfterSignupSuccess");
-    expect(lead).toContain('"Lead"');
-    expect(lead).toContain("hasAdvertisingConsent");
+    expect(signup).not.toContain("trackMetaLeadAfterSignupSuccess");
+    expect(browserEvents).not.toMatch(/"Lead"/);
+    expect(lead).toMatch(/Intentionally no-op|disabled/i);
+    expect(lead).not.toContain('trackMetaBrowserEvent');
   });
 });

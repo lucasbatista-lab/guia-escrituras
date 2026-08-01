@@ -6,7 +6,6 @@
 export const META_BROWSER_EVENTS = [
   "PageView",
   "ViewContent",
-  "Lead",
 ] as const;
 
 export type MetaBrowserEventName = (typeof META_BROWSER_EVENTS)[number];
@@ -17,7 +16,6 @@ export type MetaBrowserEventParams = {
     content_name?: "paid_landing";
     content_category?: "landing";
   };
-  Lead: Record<string, never>;
 };
 
 export type MetaTrackOptions = {
@@ -27,7 +25,6 @@ export type MetaTrackOptions = {
 const ALLOWED_PARAM_KEYS: Record<MetaBrowserEventName, readonly string[]> = {
   PageView: [],
   ViewContent: ["content_name", "content_category"],
-  Lead: [],
 };
 
 export function isMetaBrowserEventName(
