@@ -47,7 +47,7 @@ export function PaidLandingFixedCta({
         event="paid_landing_primary_cta_clicked"
         className="flex min-h-12 w-full items-center justify-center rounded-md bg-wine px-4 text-sm font-medium text-sand-50 transition hover:bg-wine-soft"
       >
-        Começar agora
+        Ver planos
       </PaidLandingScrollCta>
     </div>
   );

@@ -1,27 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Prévia do Amém Chat">
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="Prévia do Amém Chat — conversa guiada">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f5efe6"/>
       <stop offset="55%" stop-color="#fbf8f3"/>
       <stop offset="100%" stop-color="#efe4d4"/>
     </linearGradient>
-    <radialGradient id="glow" cx="30%" cy="20%" r="55%">
-      <stop offset="0%" stop-color="#c6a05a" stop-opacity="0.28"/>
+    <radialGradient id="glow" cx="50%" cy="18%" r="55%">
+      <stop offset="0%" stop-color="#c6a05a" stop-opacity="0.32"/>
       <stop offset="100%" stop-color="#c6a05a" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="1200" height="675" fill="url(#bg)"/>
-  <rect width="1200" height="675" fill="url(#glow)"/>
-  <rect x="310" y="70" width="580" height="535" rx="36" fill="#2c241c"/>
-  <rect x="326" y="86" width="548" height="503" rx="28" fill="#fbf8f3"/>
-  <rect x="326" y="86" width="548" height="72" rx="28" fill="#fbf8f3"/>
-  <rect x="326" y="142" width="548" height="1" fill="#e4d8c8"/>
-  <circle cx="372" cy="122" r="18" fill="#6b2e3a"/>
-  <text x="402" y="118" font-family="Georgia, serif" font-size="22" fill="#2c241c">Amém Chat</text>
-  <text x="402" y="138" font-family="Arial, sans-serif" font-size="12" fill="#6b6258">Reflexão em andamento</text>
-  <rect x="620" y="180" width="220" height="70" rx="18" fill="#2c241c"/>
-  <rect x="360" y="270" width="300" height="120" rx="18" fill="#ffffff" stroke="#e4d8c8"/>
-  <text x="380" y="310" font-family="Georgia, serif" font-size="16" fill="#2c241c">Organize o próximo passo</text>
-  <text x="380" y="338" font-family="Arial, sans-serif" font-size="14" fill="#6b6258">com clareza e Escrituras</text>
-  <text x="500" y="620" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6b6258">Prévia do produto</text>
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <rect width="1080" height="1920" fill="url(#glow)"/>
+  <rect x="90" y="180" width="900" height="1480" rx="64" fill="#2c241c"/>
+  <rect x="114" y="204" width="852" height="1432" rx="48" fill="#fbf8f3"/>
+  <circle cx="190" cy="280" r="34" fill="#6b2e3a"/>
+  <text x="246" y="272" font-family="Georgia, serif" font-size="36" fill="#2c241c">Amém Chat</text>
+  <text x="246" y="308" font-family="Arial, sans-serif" font-size="22" fill="#6b6258">Reflexão em andamento</text>
+  <text x="780" y="292" font-family="Arial, sans-serif" font-size="22" fill="#6b6258">privada</text>
+  <line x1="114" y1="350" x2="966" y2="350" stroke="#e4d8c8" stroke-width="2"/>
+  <rect x="360" y="420" width="540" height="180" rx="28" fill="#2c241c"/>
+  <text x="400" y="490" font-family="Georgia, serif" font-size="30" fill="#fbf8f3">Preciso decidir sobre um</text>
+  <text x="400" y="535" font-family="Georgia, serif" font-size="30" fill="#fbf8f3">trabalho que afasta a família.</text>
+  <rect x="180" y="660" width="620" height="320" rx="28" fill="#ffffff" stroke="#e4d8c8" stroke-width="2"/>
+  <text x="220" y="730" font-family="Georgia, serif" font-size="30" fill="#2c241c">O que mais pesa agora:</text>
+  <text x="220" y="780" font-family="Georgia, serif" font-size="30" fill="#2c241c">renda, tempo com quem ama,</text>
+  <text x="220" y="830" font-family="Georgia, serif" font-size="30" fill="#2c241c">ou o medo de se arrepender?</text>
+  <rect x="220" y="880" width="180" height="48" rx="24" fill="#f5efe6"/>
+  <text x="246" y="912" font-family="Arial, sans-serif" font-size="22" fill="#5c5046">Tiago 1:5</text>
+  <rect x="220" y="1040" width="540" height="140" rx="20" fill="#f5efe6"/>
+  <text x="250" y="1095" font-family="Arial, sans-serif" font-size="24" fill="#2c241c">Próximo passo</text>
+  <text x="250" y="1140" font-family="Arial, sans-serif" font-size="24" fill="#5c5046">Defina um critério mínimo.</text>
+  <text x="540" y="1760" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#6b6258">A conversa que continua</text>
 </svg>
