@@ -1,7 +1,7 @@
 # Meta Ads — runbook operacional (Amém Chat)
 
-Timezone operacional: `America/Sao_Paulo`.  
-Produção: `https://amemchat.com.br`.  
+Timezone operacional: `America/Sao_Paulo`.
+Produção: `https://amemchat.com.br`.
 Landing paga: `/comece` (pública, `noindex`, fora do sitemap).
 
 ## Variáveis
