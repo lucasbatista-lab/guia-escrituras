@@ -40,6 +40,7 @@ export const SUPPORT_CHANNEL_PENDING = "Canal de suporte em configuração";
 export const LEGAL_ROUTES = [
   { href: "/termos", label: "Termos de Uso" },
   { href: "/privacidade", label: "Privacidade" },
+  { href: "/cookies", label: "Cookies" },
   { href: "/transparencia-ia", label: "Transparência IA" },
   { href: "/cancelamento", label: "Cancelamento" },
   { href: "/uso-justo", label: "Uso justo" },

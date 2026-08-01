@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/transparencia-ia",
   "/termos",
   "/privacidade",
+  "/cookies",
   "/uso-justo",
   "/cancelamento",
   "/ajuda",

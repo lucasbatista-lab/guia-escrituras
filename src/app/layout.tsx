@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import { SkipToContent } from "@/components/a11y/skip-to-content";
+import { ConsentRoot } from "@/components/consent/consent-root";
 import { brand } from "@/config/brand";
 import {
   rootRobotsMetadata,
@@ -87,7 +88,7 @@ export default function RootLayout({
         className={`${display.variable} ${sans.variable} ${chat.variable} font-sans`}
       >
         <SkipToContent />
-        {children}
+        <ConsentRoot>{children}</ConsentRoot>
       </body>
     </html>
   );
