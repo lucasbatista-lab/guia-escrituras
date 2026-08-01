@@ -10,6 +10,8 @@ export const PUBLIC_CONVERSION_EVENTS = [
   "paid_landing_viewed",
   "paid_landing_primary_cta_clicked",
   "paid_landing_demo_clicked",
+  "paid_landing_demo_viewed",
+  "paid_landing_plans_viewed",
   "paid_landing_plan_selected",
 ] as const;
 
