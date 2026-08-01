@@ -1,6 +1,5 @@
 import {
   ContinuityMarker,
-  ContinuityMoment,
   ContinuityThread,
   ConversationEyebrow,
   GuideBubble,
@@ -10,86 +9,101 @@ import {
 } from "./conversation-language";
 
 /**
- * Simulated product walkthrough — no live AI calls.
- * Structure mirrors a real Amém Chat turn and ends in continuity.
+ * Compact product-thread demonstration — no live AI calls.
+ * Four movements, chat appearance, short close that states the mechanism.
  */
 export function PaidLandingDemo() {
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-xl">
       <ConversationEyebrow>Exemplo ilustrativo</ConversationEyebrow>
       <h2
         id="demonstracao-heading"
-        className="mt-2 font-display text-2xl text-ink sm:text-3xl"
+        className="mt-1.5 font-display text-xl text-ink sm:text-2xl"
       >
-        Como uma conversa contextual se desenrola
+        Como a conversa acontece
       </h2>
-      <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
-        Um exemplo revisado, fiel ao padrão do produto. Não é uma chamada real à
-        IA nem um atendimento pastoral.
-      </p>
 
-      <ContinuityThread className="mt-6">
-        <ContinuityMoment label="1. Situação">
-          <UserBubble>
-            Preciso decidir se aceito uma proposta de trabalho que melhora a
-            renda, mas afasta minha família durante a semana.
+      <ContinuityThread className="mt-4">
+        <div className="relative pl-8 sm:pl-9">
+          <span
+            aria-hidden
+            className="absolute left-0 top-1.5 flex size-[23px] items-center justify-center rounded-full border border-gold/45 bg-sand-50 sm:size-[27px]"
+          >
+            <span className="size-1.5 rounded-full bg-wine sm:size-2" />
+          </span>
+          <UserBubble className="max-w-[88%] px-3 py-2 text-[0.9rem] sm:text-[0.95rem]">
+            Preciso decidir se aceito uma proposta que melhora a renda, mas
+            afasta minha família durante a semana.
           </UserBubble>
-        </ContinuityMoment>
+        </div>
 
-        <ContinuityMoment label="2. Pergunta de aprofundamento">
-          <GuideBubble>
-            O que mais pesa agora: a pressão financeira, o tempo com as pessoas
-            que você ama, ou o medo de se arrepender depois?
+        <div className="relative pl-8 sm:pl-9">
+          <span
+            aria-hidden
+            className="absolute left-0 top-1.5 flex size-[23px] items-center justify-center rounded-full border border-gold/45 bg-sand-50 sm:size-[27px]"
+          >
+            <span className="size-1.5 rounded-full bg-wine sm:size-2" />
+          </span>
+          <GuideBubble className="max-w-[90%] px-3 py-2.5 text-[0.9rem] sm:text-[0.95rem]">
+            O que mais pesa agora: a pressão financeira, o tempo com quem você
+            ama, ou o medo de se arrepender depois?
           </GuideBubble>
-        </ContinuityMoment>
+        </div>
 
-        <ContinuityMoment label="3. Esclarecimento">
-          <UserBubble>
-            A renda ajuda bastante. Mas tenho medo de perder o ritmo da casa e
-            depois culpar a decisão.
+        <div className="relative pl-8 sm:pl-9">
+          <span
+            aria-hidden
+            className="absolute left-0 top-1.5 flex size-[23px] items-center justify-center rounded-full border border-gold/45 bg-sand-50 sm:size-[27px]"
+          >
+            <span className="size-1.5 rounded-full bg-wine sm:size-2" />
+          </span>
+          <UserBubble className="max-w-[88%] px-3 py-2 text-[0.9rem] sm:text-[0.95rem]">
+            A renda ajuda. Mas tenho medo de perder o ritmo da casa e depois
+            culpar a decisão.
           </UserBubble>
-        </ContinuityMoment>
+        </div>
 
-        <ContinuityMoment label="4. Organização e reflexão">
-          <GuideBubble>
+        <div className="relative pl-8 sm:pl-9">
+          <span
+            aria-hidden
+            className="absolute left-0 top-1.5 flex size-[23px] items-center justify-center rounded-full border border-gold/45 bg-sand-50 sm:size-[27px]"
+          >
+            <span className="size-1.5 rounded-full bg-wine sm:size-2" />
+          </span>
+          <GuideBubble className="max-w-[94%] px-3 py-2.5 text-[0.9rem] sm:text-[0.95rem]">
             <p>
-              Decidir com sabedoria não exige certeza absoluta. As Escrituras
-              convidam a pedir discernimento, a considerar responsabilidades e a
-              dar um passo concreto sem fingir que o medo não existe.
+              Há tensão entre provisão e presença. Pedir discernimento ajuda —
+              sem exigir certeza absoluta. A decisão continua sendo sua.
             </p>
-            <p className="mt-2 font-sans text-[12px] text-ink-soft">
-              O Amém Chat não decide por você e não substitui pastor, padre,
-              comunidade ou terapia — organiza o que está em jogo para você
-              escolher com mais clareza.
+            <p className="mt-2 text-[12px] leading-snug text-ink-soft">
+              Não substitui pastor, padre, terapia ou emergência.
             </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
               <ScriptureChip withIcon>Tiago 1:5</ScriptureChip>
               <ScriptureChip>Provérbios 3:5–6</ScriptureChip>
             </div>
-            <NextStepBlock>
-              <ul className="list-disc space-y-1 pl-4">
-                <li>Liste o que a nova rotina mudaria na prática em 7 dias.</li>
-                <li>
-                  Converse com alguém de confiança sobre o impacto familiar.
-                </li>
-                <li>Defina um critério mínimo que a decisão precisa respeitar.</li>
-              </ul>
+            <NextStepBlock title="Próximo passo possível" className="text-[11.5px]">
+              <p>
+                Nomeie um critério mínimo que a decisão precisa respeitar.
+              </p>
             </NextStepBlock>
           </GuideBubble>
-        </ContinuityMoment>
-
-        <ContinuityMoment label="5. Continuidade">
-          <div className="space-y-2">
-            <ContinuityMarker>
-              Você pode retomar esta conversa no Histórico quando voltar.
-            </ContinuityMarker>
-            <ContinuityMarker>
-              Em planos elegíveis, aprofunde o mesmo tema ou siga por uma
-              Jornada.
-            </ContinuityMarker>
-          </div>
-        </ContinuityMoment>
+        </div>
       </ContinuityThread>
+
+      <div className="mt-4 space-y-1.5 border-t border-border/50 pt-4">
+        <p className="text-sm font-medium text-ink">
+          Assim a conversa organiza o que está em jogo.
+        </p>
+        <p className="text-sm leading-relaxed text-ink-soft">
+          Não é mais um vídeo nem um chat genérico — é a sua situação, com
+          Escrituras e continuidade. Contexto → pergunta → próximos passos
+          possíveis.
+        </p>
+        <ContinuityMarker className="mt-1">
+          Retome no Histórico quando voltar.
+        </ContinuityMarker>
+      </div>
     </div>
   );
 }
