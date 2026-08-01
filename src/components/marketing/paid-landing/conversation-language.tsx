@@ -36,7 +36,7 @@ export function ContinuityThread({
         aria-hidden
         className="pointer-events-none absolute bottom-2 left-[11px] top-2 w-px bg-gradient-to-b from-gold/50 via-wine/25 to-gold/40 sm:left-[13px]"
       />
-      <div className="relative space-y-5 sm:space-y-6">{children}</div>
+      <div className="relative space-y-3.5 sm:space-y-4">{children}</div>
     </div>
   );
 }
@@ -58,10 +58,12 @@ export function ContinuityMoment({
       >
         <span className="size-1.5 rounded-full bg-wine sm:size-2" />
       </span>
-      <p className="font-sans text-[11px] font-medium uppercase tracking-[0.12em] text-ink-soft">
-        {label}
-      </p>
-      <div className="mt-2">{children}</div>
+      {label ? (
+        <p className="font-sans text-[11px] font-medium uppercase tracking-[0.12em] text-ink-soft">
+          {label}
+        </p>
+      ) : null}
+      <div className={cn(label && "mt-2")}>{children}</div>
     </div>
   );
 }
@@ -131,12 +133,12 @@ export function NextStepBlock({
   return (
     <div
       className={cn(
-        "mt-3 border-t border-border/60 pt-2.5 font-sans text-[12px] text-ink-soft",
+        "mt-3 rounded-xl border border-gold/25 bg-sand-100/70 px-2.5 py-2 font-sans text-[12px] text-ink-soft",
         className,
       )}
     >
       <p className="font-medium text-ink">{title}</p>
-      <div className="mt-1.5">{children}</div>
+      <div className="mt-1">{children}</div>
     </div>
   );
 }
@@ -207,20 +209,20 @@ export function ProductFrame({
     <div className={cn("relative mx-auto w-full", className)}>
       <div
         aria-hidden
-        className="absolute -inset-4 rounded-[2.75rem] bg-[radial-gradient(circle_at_50%_30%,rgba(198,160,90,0.28),transparent_62%)] blur-2xl motion-safe:opacity-100"
+        className="absolute -inset-3 rounded-[2.5rem] bg-[radial-gradient(circle_at_50%_30%,rgba(198,160,90,0.26),transparent_62%)] blur-2xl motion-safe:opacity-100"
       />
-      <div className="relative overflow-hidden rounded-[1.85rem] border border-ink/15 bg-ink p-1.5 shadow-[0_28px_70px_-30px_rgba(44,36,28,0.55)] sm:rounded-[2rem]">
+      <div className="relative overflow-hidden rounded-[1.75rem] border border-ink/15 bg-ink p-1.5 shadow-[0_28px_70px_-30px_rgba(44,36,28,0.55)] sm:rounded-[2rem]">
         <div
           className={cn(
-            "overflow-hidden rounded-[1.5rem] bg-sand-50 sm:rounded-[1.65rem]",
-            compact ? "min-h-[16rem]" : "min-h-[17.5rem] sm:min-h-[20rem]",
+            "overflow-hidden rounded-[1.4rem] bg-sand-50 sm:rounded-[1.65rem]",
+            compact ? "min-h-[15rem]" : "min-h-[16.5rem] sm:min-h-[19rem]",
           )}
         >
           {children}
         </div>
       </div>
       {caption ? (
-        <p className="mt-2 text-center text-[10px] tracking-wide text-ink-soft">
+        <p className="mt-1.5 text-center text-[10px] tracking-wide text-ink-soft">
           {caption}
         </p>
       ) : null}
@@ -234,7 +236,7 @@ export function ProductFrameHeader({
   status?: string;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-border/70 px-3.5 py-2.5 sm:px-4 sm:py-3">
+    <div className="flex items-center justify-between border-b border-border/70 px-3.5 py-2 sm:px-4 sm:py-2.5">
       <div className="flex items-center gap-2">
         <span className="flex size-7 items-center justify-center rounded-full bg-wine text-sand-50 sm:size-8">
           <Sparkles aria-hidden className="size-3.5 sm:size-4" />
@@ -259,14 +261,14 @@ export function ProductFrameNav({
 }) {
   const items = ["Conversar", "Jornadas", "Histórico"] as const;
   return (
-    <div className="grid grid-cols-3 border-t border-border/70 bg-card/80 px-2 py-2">
+    <div className="grid grid-cols-3 border-t border-border/70 bg-card/80 px-2 py-1.5">
       {items.map((item) => {
         const isActive = item === active;
         return (
           <span
             key={item}
             className={cn(
-              "flex items-center justify-center gap-1 rounded-lg px-1 py-2 text-[10px]",
+              "flex items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-[10px]",
               isActive
                 ? "bg-wine/[0.08] font-medium text-wine"
                 : "text-ink-soft",
@@ -292,27 +294,30 @@ export function PaidLandingProductPoster({
   return (
     <ProductFrame
       className={cn("max-w-md", className)}
-      caption="Exemplo ilustrativo fiel à experiência do produto"
+      caption="Prévia do produto · exemplo ilustrativo"
     >
       <ProductFrameHeader />
-      <div className="space-y-2.5 px-3 py-3 font-chat text-[12.5px] leading-relaxed sm:space-y-3 sm:px-3.5 sm:py-3.5 sm:text-[13px]">
-        <UserBubble className="max-w-[90%] px-3 py-2 text-[12.5px] sm:text-[13px]">
+      <div className="space-y-2 px-3 py-2.5 font-chat text-[12px] leading-snug sm:space-y-2.5 sm:px-3.5 sm:py-3 sm:text-[12.5px]">
+        <UserBubble className="max-w-[88%] px-2.5 py-1.5 text-[12px] sm:text-[12.5px]">
           Preciso decidir se aceito um trabalho que melhora a renda, mas afasta
-          a família durante a semana.
+          a família na semana.
         </UserBubble>
-        <GuideBubble className="max-w-[94%] px-3 py-2.5 text-[12.5px] sm:text-[13px]">
+        <GuideBubble className="max-w-[92%] px-2.5 py-2 text-[12px] sm:text-[12.5px]">
           <p>
-            O que mais pesa agora: a pressão financeira, o tempo com quem você
-            ama, ou o medo de se arrepender depois?
+            O que mais pesa: a renda, o tempo em casa, ou o medo de se
+            arrepender?
           </p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="mt-1.5 flex flex-wrap gap-1">
             <ScriptureChip withIcon>Tiago 1:5</ScriptureChip>
             <ScriptureChip>Provérbios 3:5–6</ScriptureChip>
           </div>
-          <NextStepBlock title="Próximo passo" className="text-[11px]">
+          <NextStepBlock title="Próximo passo" className="mt-2 text-[10.5px]">
             <p>Nomeie o critério mínimo que a decisão precisa respeitar.</p>
           </NextStepBlock>
         </GuideBubble>
+        <ContinuityMarker className="px-2.5 py-1 text-[10px]">
+          Continua no Histórico quando voltar
+        </ContinuityMarker>
       </div>
       <ProductFrameNav />
     </ProductFrame>
@@ -347,7 +352,7 @@ export function PaidLandingSection({
     >
       <div
         className={cn(
-          "mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10",
+          "mx-auto max-w-5xl px-4 py-7 sm:px-6 sm:py-9",
           id && "scroll-mt-6 sm:scroll-mt-8",
         )}
       >
@@ -371,7 +376,7 @@ export function PaidLandingSection({
             {description}
           </p>
         ) : null}
-        {children ? <div className="mt-5 sm:mt-6">{children}</div> : null}
+        {children ? <div className="mt-4 sm:mt-5">{children}</div> : null}
       </div>
     </section>
   );
