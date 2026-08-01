@@ -425,7 +425,7 @@ describe("post-signup and confirmed pages", () => {
       "utf8",
     );
     expect(src).toContain("getContinuationViewStateForUser");
-    expect(src).toContain("startCheckoutAction");
+    expect(src).toContain("StartCheckoutButton");
     expect(src).not.toMatch(/createSubscriptionCheckout\(/);
   });
 });

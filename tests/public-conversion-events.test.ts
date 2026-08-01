@@ -117,6 +117,13 @@ describe("public conversion events", () => {
     expect(plans).toContain('conversionEvent="plan_selected"');
     expect(signup).toContain('event="signup_started"');
 
+    const paidLanding = readFileSync(
+      join(root, "src", "app", "(marketing)", "comece", "page.tsx"),
+      "utf8",
+    );
+    expect(paidLanding).toContain('event="paid_landing_viewed"');
+    expect(paidLanding).toContain("paid_landing_primary_cta_clicked");
+
     const client = readFileSync(
       join(root, "src", "lib", "acquisition", "public-events-client.ts"),
       "utf8",
