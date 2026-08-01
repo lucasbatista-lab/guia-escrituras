@@ -37,15 +37,19 @@ export function ensureMetaPixelLoaded(pixelId: string): boolean {
   }
 
   if (!window.fbq) {
-    const stub = function (...args: unknown[]) {
-      const fbq = stub as typeof window.fbq;
-      if (fbq?.callMethod) {
-        fbq.callMethod(...args);
+    type FbqStub = FbqCommand & {
+      loaded?: boolean;
+      callMethod?: FbqCommand;
+      queue?: unknown[];
+    };
+    const stub: FbqStub = function (...args: unknown[]) {
+      if (stub.callMethod) {
+        stub.callMethod(...args);
       } else {
-        fbq!.queue = fbq!.queue || [];
-        fbq!.queue.push(args);
+        stub.queue = stub.queue || [];
+        stub.queue.push(args);
       }
-    } as NonNullable<Window["fbq"]>;
+    };
     stub.queue = [];
     stub.loaded = true;
     window.fbq = stub;

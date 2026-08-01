@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import {
@@ -32,6 +33,44 @@ type ConsentContextValue = {
 
 const ConsentContext = createContext<ConsentContextValue | null>(null);
 
+const consentListeners = new Set<() => void>();
+let cachedRecord: ConsentRecord | null | undefined;
+let cachedSerialized = "";
+
+function emitConsentStore() {
+  cachedRecord = undefined;
+  cachedSerialized = "";
+  for (const listener of consentListeners) listener();
+}
+
+function subscribeConsent(listener: () => void) {
+  consentListeners.add(listener);
+  return () => {
+    consentListeners.delete(listener);
+  };
+}
+
+function getConsentSnapshot(): ConsentRecord | null {
+  const next = readStoredConsent();
+  const serialized = next ? JSON.stringify(next) : "";
+  if (cachedRecord !== undefined && serialized === cachedSerialized) {
+    return cachedRecord;
+  }
+  cachedRecord = next;
+  cachedSerialized = serialized;
+  return cachedRecord;
+}
+
+function getConsentServerSnapshot(): ConsentRecord | null {
+  return null;
+}
+
+function subscribeReady(listener: () => void) {
+  // Client is immediately ready; keep a no-op subscription shape.
+  void listener;
+  return () => {};
+}
+
 function setBannerOpenAttr(open: boolean) {
   if (typeof document === "undefined") return;
   if (open) {
@@ -42,17 +81,16 @@ function setBannerOpenAttr(open: boolean) {
 }
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(false);
-  const [record, setRecord] = useState<ConsentRecord | null>(null);
-  const [bannerVisible, setBannerVisible] = useState(false);
+  const record = useSyncExternalStore(
+    subscribeConsent,
+    getConsentSnapshot,
+    getConsentServerSnapshot,
+  );
+  const ready = useSyncExternalStore(subscribeReady, () => true, () => false);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
-  useEffect(() => {
-    const stored = readStoredConsent();
-    setRecord(stored);
-    setBannerVisible(!stored);
-    setReady(true);
-  }, []);
+  const bannerVisible = ready && !record && !bannerDismissed && !preferencesOpen;
 
   useEffect(() => {
     setBannerOpenAttr(bannerVisible || preferencesOpen);
@@ -60,16 +98,16 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
   }, [bannerVisible, preferencesOpen]);
 
   const persist = useCallback((granted: boolean) => {
-    const next = writeStoredConsent(granted ? "granted" : "denied");
-    setRecord(next);
-    setBannerVisible(false);
+    writeStoredConsent(granted ? "granted" : "denied");
+    setBannerDismissed(true);
     setPreferencesOpen(false);
     if (!granted) {
       clearAdvertisingCookies();
     }
+    emitConsentStore();
     window.dispatchEvent(
       new CustomEvent("amem:consent-changed", {
-        detail: { advertising: next.advertising },
+        detail: { advertising: granted ? "granted" : "denied" },
       }),
     );
   }, []);
@@ -85,7 +123,7 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
       refuseAdvertising: () => persist(false),
       openPreferences: () => {
         setPreferencesOpen(true);
-        setBannerVisible(false);
+        setBannerDismissed(true);
       },
       closePreferences: () => setPreferencesOpen(false),
       saveAdvertisingPreference: (granted: boolean) => persist(granted),

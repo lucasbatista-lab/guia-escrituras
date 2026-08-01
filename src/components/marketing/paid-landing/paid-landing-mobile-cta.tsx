@@ -1,21 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { PaidLandingFixedCta } from "./paid-landing-scroll-cta";
 
+function subscribeConsentBanner(listener: () => void) {
+  const root = document.documentElement;
+  const observer = new MutationObserver(listener);
+  observer.observe(root, {
+    attributes: true,
+    attributeFilter: ["data-consent-banner-open"],
+  });
+  return () => observer.disconnect();
+}
+
+function getConsentBannerOpen() {
+  return document.documentElement.getAttribute("data-consent-banner-open") === "true";
+}
+
+function getConsentBannerServerSnapshot() {
+  return false;
+}
+
 /**
- * Mobile sticky CTA after the hero. Consent banner visibility is wired in
- * Block B via data-consent-banner-open on <html>.
+ * Mobile sticky CTA after the hero. Hides while the consent banner is open.
  */
 export function PaidLandingMobileCta() {
   const [pastHero, setPastHero] = useState(false);
-  const [consentOpen, setConsentOpen] = useState(false);
+  const consentOpen = useSyncExternalStore(
+    subscribeConsentBanner,
+    getConsentBannerOpen,
+    getConsentBannerServerSnapshot,
+  );
 
   useEffect(() => {
     const hero = document.getElementById("comece-hero");
     if (!hero) {
-      setPastHero(true);
-      return;
+      const frame = requestAnimationFrame(() => setPastHero(true));
+      return () => cancelAnimationFrame(frame);
     }
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -24,20 +45,6 @@ export function PaidLandingMobileCta() {
       { threshold: 0.15 },
     );
     observer.observe(hero);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const sync = () => {
-      setConsentOpen(root.getAttribute("data-consent-banner-open") === "true");
-    };
-    sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(root, {
-      attributes: true,
-      attributeFilter: ["data-consent-banner-open"],
-    });
     return () => observer.disconnect();
   }, []);
 

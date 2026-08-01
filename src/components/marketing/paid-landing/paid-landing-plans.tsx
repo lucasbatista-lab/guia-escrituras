@@ -8,7 +8,7 @@ import {
   getPublicCheckoutPlans,
   MAX_PUBLIC_PLAN_BENEFITS,
 } from "@/lib/entitlements";
-import { buildCadastroHref } from "@/lib/signup-intents";
+import { buildCadastroHref } from "@/lib/signup-intents/params";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
