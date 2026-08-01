@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import type { AdsCheckoutContext } from "@/lib/meta/ads-checkout-context";
 import { createSubscriptionCheckout } from "@/lib/stripe/checkout";
 import {
   checkoutFailureMessage,
@@ -34,10 +35,14 @@ function redirectCheckoutError(
 
 /**
  * Start Stripe Checkout. Never allows Stripe exceptions to surface as RSC 500.
+ * Optional adsContext carries non-financial Meta consent/click ids only.
  */
-export async function startCheckoutAction(intentToken: string | null = null) {
+export async function startCheckoutAction(
+  intentToken: string | null = null,
+  adsContext: AdsCheckoutContext | null = null,
+) {
   try {
-    const result = await createSubscriptionCheckout(intentToken);
+    const result = await createSubscriptionCheckout(intentToken, adsContext);
     if (!result.ok) {
       redirectCheckoutError(result.code, intentToken, result.ref);
     }

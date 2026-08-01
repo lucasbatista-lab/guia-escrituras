@@ -8,7 +8,7 @@ import {
   formatPriceBRL,
   getPlanByKey,
 } from "@/lib/entitlements";
-import { startCheckoutAction } from "@/lib/billing/checkout-action";
+import { StartCheckoutButton } from "@/components/billing/start-checkout-button";
 import {
   getContinuationViewState,
   getContinuationViewStateForUser,
@@ -148,17 +148,12 @@ export default async function AssinarContinuarPage({
             </ol>
           </div>
 
-          <form action={startCheckoutAction.bind(null, checkoutToken)}>
-            <Button
-              type="submit"
-              size="lg"
-              className="min-h-12 w-full bg-ink text-base hover:bg-ink/90"
-            >
-              {checkoutError
-                ? "Tentar pagamento novamente"
-                : "Ir para pagamento seguro"}
-            </Button>
-          </form>
+          <StartCheckoutButton
+            intentToken={checkoutToken}
+            label="Ir para pagamento seguro"
+            retryLabel="Tentar pagamento novamente"
+            isRetry={Boolean(checkoutError)}
+          />
           <p className="text-center text-sm text-ink-soft">
             <Link
               href="/planos"

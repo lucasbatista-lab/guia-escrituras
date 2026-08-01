@@ -24,6 +24,7 @@ import {
   updateReferralOnInvoicePaid,
   upsertSubscriptionFromStripe,
 } from "./persistence";
+import { emitPurchaseConversionSafe } from "@/lib/meta/emit-checkout-conversions";
 
 export type StripeWebhookHandleResult =
   | "ok"
@@ -71,12 +72,15 @@ export async function handleStripeWebhookEvent(
 
   try {
     switch (event.type) {
-      case "checkout.session.completed":
-        await handleCheckoutCompleted(
-          event.data.object as Stripe.Checkout.Session,
-          requestId,
-        );
+      case "checkout.session.completed": {
+        const checkoutSession = event.data.object as Stripe.Checkout.Session;
+        await handleCheckoutCompleted(checkoutSession, requestId);
+        // Purchase is server-side only after financial processing succeeds.
+        // Uses Stripe event.id for idempotency across webhook retries.
+        // Meta failures must never undo payment or change this handler's result.
+        await emitPurchaseConversionSafe(checkoutSession, event.id);
         break;
+      }
       case "customer.subscription.created":
       case "customer.subscription.updated":
         await handleSubscriptionUpsert(

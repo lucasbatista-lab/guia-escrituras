@@ -33,6 +33,11 @@ import {
   type CheckoutFailureCode,
   type CheckoutStage,
 } from "./checkout-errors";
+import type { AdsCheckoutContext } from "@/lib/meta/ads-checkout-context";
+import {
+  buildAdsSessionMetadata,
+  emitInitiateCheckoutSafe,
+} from "@/lib/meta/emit-checkout-conversions";
 
 export type CreateCheckoutResult =
   | { ok: true; url: string; requestId: string }
@@ -79,6 +84,7 @@ function fail(
 
 export async function createSubscriptionCheckout(
   intentToken: string | null = null,
+  adsContext: AdsCheckoutContext | null = null,
 ): Promise<CreateCheckoutResult> {
   const requestId = createRequestId();
   let stage: CheckoutStage = "auth";
@@ -218,6 +224,10 @@ export async function createSubscriptionCheckout(
       signup_intent_id: intent.id,
       stripe_mode: mode,
     };
+    // Advertising metadata is session-only (non-financial). Never mutate
+    // price/line_items/customer/subscription commercial fields for Meta.
+    const adsMetadata = buildAdsSessionMetadata(adsContext);
+    const sessionMetadata = { ...sharedMetadata, ...adsMetadata };
 
     let session;
     try {
@@ -230,7 +240,7 @@ export async function createSubscriptionCheckout(
         allow_promotion_codes: true,
         success_url: successUrl,
         cancel_url: cancelUrl,
-        metadata: sharedMetadata,
+        metadata: sessionMetadata,
         subscription_data: {
           metadata: sharedMetadata,
         },
@@ -297,6 +307,9 @@ export async function createSubscriptionCheckout(
       planKey,
       code: "ok",
     });
+
+    // Meta InitiateCheckout is additive and must never fail checkout.
+    await emitInitiateCheckoutSafe(session, adsContext);
 
     return { ok: true, url: session.url, requestId };
   } catch (error) {
