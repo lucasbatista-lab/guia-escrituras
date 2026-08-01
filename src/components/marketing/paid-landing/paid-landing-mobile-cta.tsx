@@ -30,8 +30,8 @@ function sectionInView(id: string, topPad = 0, bottomPad = 0.2): boolean {
 }
 
 /**
- * Mobile sticky CTA after the hero.
- * Hides while consent is open, while #planos is visible, or near the final CTA.
+ * Mobile sticky CTA — only after the demonstration has been sufficiently seen.
+ * Hides on plans, final CTA, consent open, or forms.
  */
 export function PaidLandingMobileCta() {
   const [visible, setVisible] = useState(false);
@@ -43,21 +43,38 @@ export function PaidLandingMobileCta() {
 
   useEffect(() => {
     function update() {
-      const hero = document.getElementById("comece-hero");
-      const pastHero = hero
-        ? hero.getBoundingClientRect().bottom < window.innerHeight * 0.2
-        : true;
+      const demo = document.getElementById("demonstracao");
+      if (!demo) {
+        setVisible(false);
+        return;
+      }
+      const demoRect = demo.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      // Appear only after the demo has been scrolled through enough
+      const demoSufficientlySeen = demoRect.bottom < vh * 0.55;
       const plansVisible = sectionInView("planos", 48, 0.15);
       const nearFinalCta = sectionInView("comece-final-cta", 48, 0.1);
-      setVisible(pastHero && !plansVisible && !nearFinalCta);
+      const onForm = Boolean(
+        document.activeElement &&
+          (document.activeElement.tagName === "INPUT" ||
+            document.activeElement.tagName === "TEXTAREA" ||
+            document.activeElement.tagName === "SELECT"),
+      );
+      setVisible(
+        demoSufficientlySeen && !plansVisible && !nearFinalCta && !onForm,
+      );
     }
 
     update();
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
+    window.addEventListener("focusin", update);
+    window.addEventListener("focusout", update);
     return () => {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
+      window.removeEventListener("focusin", update);
+      window.removeEventListener("focusout", update);
     };
   }, []);
 

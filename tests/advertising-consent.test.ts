@@ -125,9 +125,10 @@ describe("advertising consent controls", () => {
 
     const constants = read("src", "lib", "consent", "constants.ts");
     expect(layout).toContain("ConsentRoot");
-    expect(constants).toContain("Aceitar publicidade");
+    expect(constants).toContain('accept: "Aceitar"');
     expect(constants).toContain("Recusar");
     expect(constants).toContain("Configurar");
+    expect(constants).toContain("campanhas de publicidade");
     expect(banner).toContain("CONSENT_COPY.accept");
     expect(banner).toContain("CONSENT_COPY.refuse");
     expect(banner).toContain("fixed");
