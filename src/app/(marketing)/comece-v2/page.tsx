@@ -6,6 +6,7 @@ import { PaidLandingV2Continuity } from "@/components/marketing/paid-landing-v2/
 import { PaidLandingV2Media } from "@/components/marketing/paid-landing-v2/paid-landing-v2-media";
 import { PaidLandingV2Offer } from "@/components/marketing/paid-landing-v2/paid-landing-v2-offer";
 import { PaidLandingV2Recognition } from "@/components/marketing/paid-landing-v2/paid-landing-v2-recognition";
+import { PaidLandingV2Sticky } from "@/components/marketing/paid-landing-v2/paid-landing-v2-sticky";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
 import {
@@ -187,6 +188,8 @@ export default function ComecePaidLandingV2Page() {
         <PaidLandingV2Offer />
         <PaidLandingV2Close />
       </main>
+
+      <PaidLandingV2Sticky />
     </div>
   );
 }
