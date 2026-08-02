@@ -83,7 +83,7 @@ export function PaidLandingV2Close() {
         className="border-t border-border/40 bg-sand-100/60"
         aria-label="Sobre o Amém Chat"
       >
-        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-7">
+        <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
           <p className="font-display text-xl text-ink">{brand.name}</p>
           <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-soft">
             {brand.description}
@@ -91,34 +91,24 @@ export function PaidLandingV2Close() {
           {legalEntity ? (
             <p className="mt-2 text-xs text-ink-soft">{legalEntity}</p>
           ) : null}
-          {supportEmail ? (
-            <p className="mt-2 text-sm text-ink-soft">
-              Suporte:{" "}
-              <a
-                href={`mailto:${supportEmail}`}
-                className="underline underline-offset-4 hover:text-ink"
-              >
-                {supportEmail}
-              </a>
-            </p>
-          ) : null}
         </div>
       </section>
 
       <section
         id="comece-v2-final-cta"
-        className="relative overflow-hidden bg-ink px-4 py-8 text-sand-50 sm:px-6 sm:py-11"
+        className="relative overflow-hidden bg-ink px-4 py-7 text-sand-50 sm:px-6 sm:py-10"
       >
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_30%_0%,rgba(198,160,90,0.22),transparent_48%),radial-gradient(ellipse_at_90%_100%,rgba(107,46,58,0.42),transparent_50%)]"
         />
         <div className="relative mx-auto max-w-3xl text-left sm:text-center">
-          <h2 className="font-display text-[1.5rem] leading-[1.12] tracking-tight text-sand-50 sm:text-[2.05rem] sm:leading-[1.1]">
-            Uma situação difícil pode começar a ficar mais clara quando você
-            consegue separar o que está em jogo.
+          <h2 className="font-display text-[1.55rem] leading-[1.1] tracking-tight text-sand-50 sm:text-[2.05rem] sm:leading-[1.08]">
+            Separe o que está em jogo.
+            <br />
+            Enxergue um próximo passo possível.
           </h2>
-          <div className="mt-5 sm:flex sm:justify-center">
+          <div className="mt-4 sm:flex sm:justify-center">
             <Button
               asChild
               size="lg"
@@ -127,8 +117,8 @@ export function PaidLandingV2Close() {
               <a href="#planos-v2">Escolher meu plano</a>
             </Button>
           </div>
-          <p className="mt-3 text-xs text-sand-50/65">
-            A partir de R$38/mês. Cancele a renovação pela Conta.
+          <p className="mt-2.5 text-xs text-sand-50/65">
+            A partir de R$38/mês · cancele a renovação pela Conta
           </p>
         </div>
       </section>
@@ -164,6 +154,14 @@ export function PaidLandingV2Close() {
         >
           Entrar
         </TrackingLink>
+        {supportEmail ? (
+          <a
+            href={`mailto:${supportEmail}`}
+            className="inline-flex min-h-11 items-center text-xs text-ink-soft/80 hover:text-ink"
+          >
+            {supportEmail}
+          </a>
+        ) : null}
       </footer>
     </>
   );
