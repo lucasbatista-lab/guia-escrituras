@@ -79,7 +79,8 @@ export function PaidLandingV2Media({
   return (
     <div className={className}>
       <div className="relative mx-auto w-full overflow-hidden rounded-[1.85rem] border border-ink/15 bg-ink/90 shadow-[0_28px_70px_-36px_rgba(44,36,28,0.6)] sm:rounded-[2.1rem]">
-        <div className="relative aspect-[9/16] w-full max-h-[min(72vh,38rem)] bg-ink/90 sm:aspect-video sm:max-h-none">
+        {/* Fixed slot: vertical/4:5 mobile, wider desktop — same height budget as poster */}
+        <div className="relative aspect-[4/5] w-full max-h-[min(54vh,24rem)] bg-ink/90 sm:aspect-[4/5] sm:max-h-[min(72vh,38rem)] lg:max-h-none">
           <video
             className="absolute inset-0 h-full w-full object-cover"
             controls
@@ -97,9 +98,6 @@ export function PaidLandingV2Media({
           Demonstração do produto — toque para reproduzir · sem áudio automático
         </p>
       </div>
-      <p className="mt-2 text-center text-[10px] tracking-wide text-ink-soft">
-        Exemplo ilustrativo fiel à experiência do produto
-      </p>
     </div>
   );
 }

@@ -16,7 +16,7 @@ import {
 
 const PAGE_TITLE = "Organize o que está pesando";
 const PAGE_DESCRIPTION =
-  "Conte sua situação. O Amém Chat faz perguntas, separa o que está em jogo e traz referências bíblicas para você refletir com responsabilidade.";
+  "Conte sua situação. Receba perguntas e referências bíblicas que ajudam a separar o que está em jogo — com responsabilidade.";
 
 /**
  * Experimental paid landing V2 — campaign composition preview.
@@ -62,17 +62,14 @@ export default function ComecePaidLandingV2Page() {
             Reflexões cristãs para situações reais
           </p>
           <p className="mt-2 font-display text-[1.65rem] leading-[1.05]">
-            Organize o que está pesando. Enxergue um próximo passo à luz das
-            Escrituras.
+            Organize o que está pesando. Enxergue um próximo passo.
           </p>
           <p className="mt-2 text-ink-soft">
-            Conte sua situação. O Amém Chat faz perguntas, separa o que está em
-            jogo e traz referências bíblicas para você refletir com
-            responsabilidade.
+            Conte sua situação. Receba perguntas e referências bíblicas que
+            ajudam a separar o que está em jogo — com responsabilidade.
           </p>
           <p className="mt-2 text-ink-soft">
-            A partir de R$38/mês. Cobrança mensal. Cancele pela Conta.
-            Conversas privadas.
+            A partir de R$38/mês · cancele a renovação pela Conta
           </p>
           <p className="mt-4">
             <a className="underline" href="#planos-v2">
@@ -120,48 +117,44 @@ export default function ComecePaidLandingV2Page() {
             className="pointer-events-none absolute -right-16 top-24 hidden h-[28rem] w-[28rem] rounded-full bg-ink/[0.04] blur-3xl lg:block"
           />
 
-          <div className="relative mx-auto grid max-w-6xl gap-4 px-4 pb-5 pt-1 sm:gap-7 sm:px-6 sm:pb-10 sm:pt-3 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] lg:items-center lg:gap-10 lg:pb-14 lg:pt-5">
-            <div className="min-w-0 animate-fade-up text-left">
+          <div className="relative mx-auto grid max-w-6xl gap-3 px-4 pb-4 pt-0.5 sm:gap-6 sm:px-6 sm:pb-10 sm:pt-3 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] lg:items-center lg:gap-8 lg:pb-14 lg:pt-5">
+            <div className="min-w-0 max-w-xl animate-fade-up text-left lg:max-w-[26rem]">
               <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-wine">
                 Reflexões cristãs para situações reais
               </p>
               <h1
                 id="comece-v2-hero-heading"
-                className="mt-2 max-w-[17ch] text-balance font-display text-[clamp(2.15rem,9vw,2.75rem)] leading-[1.02] tracking-tight text-ink sm:max-w-none sm:text-[3.25rem] sm:leading-[1.04] lg:text-[4.35rem] lg:leading-[1.02]"
+                className="mt-1.5 font-display text-[clamp(2.05rem,8.4vw,2.65rem)] leading-[1.04] tracking-tight text-ink sm:mt-2 sm:text-[3.15rem] sm:leading-[1.05] lg:text-[4.1rem] lg:leading-[1.03]"
               >
-                Organize o que está pesando. Enxergue um próximo passo à luz
-                das Escrituras.
+                Organize o que está pesando.
+                <br />
+                Enxergue um próximo passo.
               </h1>
-              <p className="mt-2.5 hidden max-w-md text-[1.02rem] leading-snug text-ink-soft sm:mt-3.5 sm:block sm:max-w-lg sm:text-[1.08rem] sm:leading-relaxed">
-                Conte sua situação. O Amém Chat faz perguntas, separa o que
-                está em jogo e traz referências bíblicas para você refletir com
-                responsabilidade.
-              </p>
-              <p className="mt-2.5 max-w-md text-[0.98rem] leading-snug text-ink-soft sm:hidden">
-                Conte sua situação. Perguntas, referências bíblicas e um próximo
-                passo possível — com responsabilidade.
+              <p className="mt-2 max-w-md text-[0.95rem] leading-snug text-ink-soft sm:mt-3 sm:max-w-lg sm:text-[1.05rem] sm:leading-relaxed">
+                Conte sua situação. Receba perguntas e referências bíblicas que
+                ajudam a separar o que está em jogo — com responsabilidade.
               </p>
 
-              <div className="mt-3.5 flex flex-col items-stretch gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-                <Button
-                  asChild
-                  size="lg"
-                  className="min-h-11 bg-wine px-5 text-[0.95rem] shadow-[0_16px_36px_-18px_rgba(107,46,58,0.8)] hover:bg-wine-soft sm:min-h-12 sm:px-6 sm:text-base"
-                >
-                  <a href="#planos-v2">Escolher meu plano</a>
-                </Button>
-                <a
-                  href="#clareza-v2"
-                  className="inline-flex min-h-10 items-center justify-center px-1 text-sm text-ink-soft underline-offset-4 transition hover:text-ink hover:underline sm:min-h-11 sm:justify-start"
-                >
-                  Ver um exemplo
-                </a>
+              <div className="mt-3 sm:mt-5">
+                <div className="flex flex-col items-stretch gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1.5">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="min-h-11 bg-wine px-5 text-[0.95rem] shadow-[0_16px_36px_-18px_rgba(107,46,58,0.8)] hover:bg-wine-soft sm:min-h-12 sm:px-6 sm:text-base"
+                  >
+                    <a href="#planos-v2">Escolher meu plano</a>
+                  </Button>
+                  <a
+                    href="#clareza-v2"
+                    className="inline-flex min-h-10 items-center justify-center px-1 text-sm text-ink-soft underline-offset-4 transition hover:text-ink hover:underline sm:min-h-11 sm:justify-start"
+                  >
+                    Ver um exemplo
+                  </a>
+                </div>
+                <p className="mt-1.5 text-[0.8rem] leading-snug text-ink-soft sm:mt-2 sm:text-sm">
+                  A partir de R$38/mês · cancele a renovação pela Conta
+                </p>
               </div>
-
-              <p className="mt-2 text-[0.8rem] leading-snug text-ink-soft sm:mt-3 sm:text-sm">
-                A partir de R$38/mês. Cobrança mensal. Cancele pela Conta.
-                <span className="text-ink-soft/90"> · Conversas privadas.</span>
-              </p>
             </div>
 
             <div className="relative min-w-0 animate-fade-up-delayed">
@@ -173,14 +166,14 @@ export default function ComecePaidLandingV2Page() {
                 aria-hidden
                 className="pointer-events-none absolute -bottom-3 -right-2 h-24 w-24 rounded-full bg-gold/25 blur-2xl sm:h-32 sm:w-32"
               />
-              <div className="relative max-h-[min(48vh,22rem)] overflow-hidden sm:max-h-none lg:translate-x-2 lg:scale-[1.04]">
+              <div className="relative max-h-[min(54vh,24rem)] overflow-hidden sm:max-h-none lg:translate-x-2 lg:scale-[1.04]">
                 <PaidLandingV2Media
                   priority
                   className="mx-auto w-full max-w-[20rem] sm:max-w-[26rem] lg:max-w-none"
                 />
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-sand-50 to-transparent sm:hidden"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-sand-50 to-transparent sm:hidden"
                 />
               </div>
             </div>
