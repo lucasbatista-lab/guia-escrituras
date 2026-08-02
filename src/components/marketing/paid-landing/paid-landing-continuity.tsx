@@ -1,5 +1,10 @@
+"use client";
+
 import { BookOpen, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ConversationEyebrow } from "./conversation-language";
+import { PaidLandingScrollCta } from "./paid-landing-scroll-cta";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
@@ -43,9 +48,9 @@ function PreviewHoje() {
     <PreviewChrome title="Hoje">
       <p className="text-[11px] font-medium text-ink-soft">Conversa recente</p>
       <div className="mt-2 rounded-xl border border-wine/20 bg-wine/[0.04] px-3 py-2.5">
-        <p className="text-sm font-medium text-ink">Decisão e rotina familiar</p>
+        <p className="text-sm font-medium text-ink">Perdão e convivência</p>
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-soft">
-          Renda, tempo em casa — continue de onde parou.
+          Limites, confiança — continue de onde parou.
         </p>
         <p className="mt-2 text-sm font-medium text-wine">Continuar conversa</p>
       </div>
@@ -59,7 +64,7 @@ function PreviewHistorico() {
     <PreviewChrome title="Histórico">
       <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-ink">Decisão e rotina familiar</p>
+          <p className="text-sm font-medium text-ink">Perdão e convivência</p>
           <time className="shrink-0 text-[10px] text-ink-soft">há 2 dias</time>
         </div>
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-soft">
@@ -136,42 +141,101 @@ const PREVIEWS = [
 ] as const;
 
 export function PaidLandingContinuity() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const root = scrollerRef.current;
+    if (!root) return;
+
+    const items = Array.from(root.querySelectorAll<HTMLElement>("[data-preview-card]"));
+    if (!items.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible?.target) return;
+        const index = items.indexOf(visible.target as HTMLElement);
+        if (index >= 0) setActiveIndex(index);
+      },
+      {
+        root,
+        threshold: [0.45, 0.7],
+        rootMargin: "0px -20% 0px -10%",
+      },
+    );
+
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section
       id="continuidade"
-      className="border-b border-border/40"
+      className="relative overflow-hidden border-b border-border/40 bg-ink text-sand-50"
       aria-labelledby="continuidade-heading"
     >
-      <div className="mx-auto max-w-5xl px-4 py-7 sm:px-6 sm:py-9">
-        <ConversationEyebrow>Continuidade</ConversationEyebrow>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(198,160,90,0.18),transparent_42%),radial-gradient(ellipse_at_90%_80%,rgba(107,46,58,0.35),transparent_50%)]"
+      />
+      <div className="relative mx-auto max-w-5xl px-4 py-7 sm:px-6 sm:py-9">
+        <ConversationEyebrow className="text-gold">Continuidade</ConversationEyebrow>
         <h2
           id="continuidade-heading"
-          className="mt-2 font-display text-2xl text-ink sm:text-3xl"
+          className="mt-2 font-display text-2xl text-sand-50 sm:text-3xl"
         >
           Volte ao mesmo fio quando precisar.
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft sm:text-base">
-          Histórico, Jornadas e Aprofundar mantêm sua reflexão organizada
-          conforme o plano.
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-sand-50/75 sm:text-base">
+          Histórico, Jornadas e Aprofundar — conforme o plano.
         </p>
 
         {/* Mobile: horizontal snap strip with next frame peek */}
         <div
+          ref={scrollerRef}
           className="mt-5 -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:hidden"
           role="region"
           aria-label="Prévia das superfícies do produto"
           tabIndex={0}
         >
-          {PREVIEWS.map((item) => (
+          {PREVIEWS.map((item, index) => (
             <div
               key={item.key}
+              data-preview-card
               className="w-[78%] max-w-[18.5rem] shrink-0 snap-start"
+              aria-label={`${item.label} (${index + 1} de ${PREVIEWS.length})`}
             >
               {item.node}
             </div>
           ))}
           <div className="w-2 shrink-0" aria-hidden />
         </div>
+
+        <div
+          className="mt-3 flex items-center justify-between gap-3 md:hidden"
+          aria-hidden
+        >
+          <div className="flex items-center gap-1.5">
+            {PREVIEWS.map((item, index) => (
+              <span
+                key={item.key}
+                className={cn(
+                  "h-1.5 rounded-full transition-all",
+                  index === activeIndex
+                    ? "w-5 bg-gold"
+                    : "w-1.5 bg-sand-50/35",
+                )}
+              />
+            ))}
+          </div>
+          <p className="text-[11px] tracking-wide text-sand-50/65">
+            {PREVIEWS[activeIndex]?.label} · deslize para ver mais
+          </p>
+        </div>
+
         {/* Desktop: uneven product grid */}
         <div className="mt-6 hidden gap-4 md:grid md:grid-cols-2">
           <div className="md:row-span-1">{PREVIEWS[0].node}</div>
@@ -180,11 +244,23 @@ export function PaidLandingContinuity() {
           <div>{PREVIEWS[3].node}</div>
         </div>
 
-        <ul className="mt-5 flex flex-col gap-1.5 text-sm text-ink-soft sm:flex-row sm:flex-wrap sm:gap-x-5">
-          <li>Parte da sua situação.</li>
-          <li>Faz perguntas para aprofundar.</li>
-          <li>Mantém contexto e continuidade.</li>
-        </ul>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <Button
+            asChild
+            size="lg"
+            className="min-h-11 bg-sand-50 px-5 text-ink hover:bg-sand-100 sm:min-h-12"
+          >
+            <PaidLandingScrollCta
+              href="#planos"
+              event="paid_landing_primary_cta_clicked"
+            >
+              Escolher meu plano
+            </PaidLandingScrollCta>
+          </Button>
+          <p className="text-xs leading-snug text-sand-50/65 sm:text-sm">
+            Caminho inclui Jornadas · Aprofundar está no Profundo.
+          </p>
+        </div>
       </div>
     </section>
   );
