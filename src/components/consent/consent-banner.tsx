@@ -12,8 +12,9 @@ const CAMPAIGN_BANNER_COPY =
   "Usamos cookies necessários. Com sua autorização, também medimos campanhas de publicidade.";
 
 /**
- * Global consent banner. On /comece-v2, uses a compact campaign presentation
- * so the first fold remains usable — same opt-in semantics, no dark patterns.
+ * Global consent banner. On paid campaign surfaces (/comece, /comece-v2),
+ * uses a compact presentation so the first fold remains usable —
+ * same opt-in semantics, no dark patterns.
  */
 export function ConsentBanner() {
   const {
@@ -28,7 +29,8 @@ export function ConsentBanner() {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const campaignCompact = pathname === "/comece-v2";
+  const campaignCompact =
+    pathname === "/comece" || pathname === "/comece-v2";
 
   useEffect(() => {
     if (!bannerVisible && !preferencesOpen) return;
