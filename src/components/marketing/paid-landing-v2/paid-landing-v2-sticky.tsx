@@ -23,18 +23,26 @@ function getConsentBannerServerSnapshot() {
   return false;
 }
 
-function sectionInView(id: string, topPad = 0, bottomPad = 0.2): boolean {
+/** True when any part of the element intersects the usable viewport band. */
+function sectionOverlapsViewport(
+  id: string,
+  topPad = 56,
+  bottomPad = 72,
+): boolean {
   const el = document.getElementById(id);
   if (!el) return false;
   const rect = el.getBoundingClientRect();
   const vh = window.innerHeight || 1;
-  return rect.top < vh * (1 - bottomPad) && rect.bottom > topPad;
+  return rect.top < vh - bottomPad && rect.bottom > topPad;
 }
 
 /**
  * Compact floating purchase action for V2 mobile.
  * Plan-neutral: scrolls to #planos-v2 without selecting a plan or firing
  * paid_landing_* events (preview isolation).
+ *
+ * Hidden over product moments (clarity, continuity, offer interfaces)
+ * and over competing CTAs. Allowed only in short textual zones such as FAQ.
  */
 export function PaidLandingV2Sticky() {
   const [visible, setVisible] = useState(false);
@@ -55,8 +63,18 @@ export function PaidLandingV2Sticky() {
       }
       const heroRect = heroCta.getBoundingClientRect();
       const heroCtaLeft = heroRect.bottom < 8;
-      const plansVisible = sectionInView("planos-v2", 48, 0.15);
-      const nearFinalCta = sectionInView("comece-v2-final-cta", 48, 0.1);
+
+      const onProductMoment =
+        sectionOverlapsViewport("reconhecimento-v2") ||
+        sectionOverlapsViewport("clareza-v2") ||
+        sectionOverlapsViewport("continuidade-v2") ||
+        sectionOverlapsViewport("planos-v2") ||
+        sectionOverlapsViewport("comece-v2-final-cta");
+
+      const inTextualZone =
+        sectionOverlapsViewport("faq-v2", 48, 96) ||
+        sectionOverlapsViewport("marca-v2", 48, 96);
+
       const onForm = Boolean(
         document.activeElement &&
           (document.activeElement.tagName === "INPUT" ||
@@ -70,10 +88,11 @@ export function PaidLandingV2Sticky() {
         document.activeElement &&
           document.activeElement.closest("video, [controls]"),
       );
+
       setVisible(
         heroCtaLeft &&
-          !plansVisible &&
-          !nearFinalCta &&
+          inTextualZone &&
+          !onProductMoment &&
           !onForm &&
           !dialogOpen &&
           !videoControls,
@@ -107,15 +126,15 @@ export function PaidLandingV2Sticky() {
       <a
         href="#planos-v2"
         tabIndex={show ? 0 : -1}
-        aria-label="Escolher meu plano — opções a partir de R$38 por mês"
+        aria-label="Ver planos do Amém Chat, a partir de R$38 por mês"
         className={cn(
-          "pointer-events-auto inline-flex h-12 min-h-11 items-center justify-center rounded-full bg-wine px-6 text-sm font-medium text-sand-50",
-          "shadow-[0_14px_36px_-14px_rgba(107,46,58,0.85)] transition hover:bg-wine-soft",
+          "pointer-events-auto inline-flex h-12 w-[9.25rem] min-h-11 items-center justify-center rounded-full bg-wine px-5 text-sm font-medium text-sand-50",
+          "shadow-[0_12px_28px_-14px_rgba(107,46,58,0.8)] transition hover:bg-wine-soft",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-sand-50",
           !show && "pointer-events-none",
         )}
       >
-        Escolher meu plano
+        Ver planos
       </a>
     </div>
   );
