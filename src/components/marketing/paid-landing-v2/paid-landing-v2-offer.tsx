@@ -44,7 +44,7 @@ function CaminhoOffer({
   return (
     <article
       id="oferta-caminho-v2"
-      className="relative overflow-hidden px-4 py-10 text-sand-50 sm:px-6 sm:py-14 lg:py-16"
+      className="relative overflow-hidden px-4 py-8 text-sand-50 sm:px-6 sm:py-12 lg:py-14"
     >
       <div
         aria-hidden
@@ -64,28 +64,28 @@ function CaminhoOffer({
           </h2>
         </div>
 
-        <div className="mt-7 grid items-end gap-6 lg:mt-9 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)] lg:gap-12">
+        <div className="mt-5 grid items-end gap-5 lg:mt-8 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)] lg:gap-12">
           <div>
             <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
-              <p className="font-sans text-2xl font-semibold text-sand-50">
+              <p className="font-sans text-xl font-semibold text-sand-50 sm:text-2xl">
                 {plan.name}
               </p>
-              <p className="font-sans text-[2.5rem] font-semibold leading-none tracking-tight text-sand-50 sm:text-[3rem]">
+              <p className="font-sans text-[2.35rem] font-semibold leading-none tracking-tight text-sand-50 sm:text-[3rem]">
                 {formatPriceBRL(plan.priceMonthlyCents)}
                 <span className="ml-1.5 text-base font-normal text-sand-50/65">
                   /mês
                 </span>
               </p>
             </div>
-            <p className="mt-4 max-w-xl text-[1.02rem] leading-snug text-sand-50/80">
+            <p className="mt-3 max-w-xl text-[0.98rem] leading-snug text-sand-50/80">
               Converse com mais espaço, retome pelo Histórico e siga Jornadas
               guiadas quando quiser continuar refletindo.
             </p>
-            <ul className="mt-5 space-y-2.5">
+            <ul className="mt-4 space-y-2">
               {CAMINHO_OUTCOMES.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-2.5 text-[0.95rem] text-sand-50/85"
+                  className="flex gap-2.5 text-[0.92rem] text-sand-50/85"
                 >
                   <Check
                     aria-hidden
@@ -214,14 +214,14 @@ function PaidLandingV2OfferInner() {
         className="border-t border-border/50 bg-sand-50"
         aria-labelledby="outras-formas-v2-heading"
       >
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-9">
           <h2
             id="outras-formas-v2-heading"
             className="font-sans text-lg font-semibold text-ink sm:text-xl"
           >
             Outras formas de usar o Amém Chat
           </h2>
-          <div className="mt-5 grid gap-6 sm:grid-cols-2 sm:gap-0">
+          <div className="mt-4 grid gap-5 sm:grid-cols-2 sm:gap-0">
             <AltPlan
               plan={essencial}
               href={buildCadastroHref(essencial.key, tracking)}

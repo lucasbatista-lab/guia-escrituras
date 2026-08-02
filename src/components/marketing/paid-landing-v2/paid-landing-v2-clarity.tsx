@@ -38,7 +38,7 @@ function BeforePanel({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[1.4rem] border border-ink/15 bg-ink px-4 py-5 text-sand-50 sm:px-5 sm:py-6",
+        "relative overflow-hidden rounded-[1.4rem] border border-ink/15 bg-ink px-3.5 py-4 text-sand-50 sm:px-5 sm:py-6",
         className,
       )}
     >
@@ -48,7 +48,7 @@ function BeforePanel({ className }: { className?: string }) {
       <p className="mt-2 font-sans text-sm font-medium text-sand-50/85">
         Tudo misturado
       </p>
-      <ul className="mt-5 flex flex-wrap gap-2">
+      <ul className="mt-4 flex flex-wrap gap-1.5">
         {BEFORE_FRAGMENTS.map((fragment, index) => (
           <li
             key={fragment}
@@ -62,8 +62,8 @@ function BeforePanel({ className }: { className?: string }) {
           </li>
         ))}
       </ul>
-      <p className="mt-6 max-w-[16rem] text-[0.8rem] leading-snug text-sand-50/55">
-        Sentimentos, fatos, medo, culpa e limites no mesmo emaranhado.
+      <p className="mt-4 max-w-[16rem] text-[0.78rem] leading-snug text-sand-50/55">
+        Sentimentos, fatos, medo e limites misturados.
       </p>
     </div>
   );
@@ -73,7 +73,7 @@ function AfterPanel({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[1.4rem] border border-gold/35 bg-sand-50 px-4 py-5 shadow-[0_22px_50px_-34px_rgba(44,36,28,0.55)] sm:px-5 sm:py-6",
+        "relative overflow-hidden rounded-[1.4rem] border border-gold/35 bg-sand-50 px-3.5 py-4 shadow-[0_22px_50px_-34px_rgba(44,36,28,0.55)] sm:px-5 sm:py-6",
         className,
       )}
     >
@@ -86,7 +86,7 @@ function AfterPanel({ className }: { className?: string }) {
         </span>
       </div>
 
-      <dl className="mt-4 space-y-3.5 text-sm leading-snug">
+      <dl className="mt-3 space-y-3 text-sm leading-snug">
         <div>
           <dt className="text-[11px] font-medium uppercase tracking-[0.1em] text-ink-soft">
             Desejo
@@ -180,31 +180,31 @@ export function PaidLandingV2Clarity() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-sand-100/80 to-transparent"
       />
-      <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
+      <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:py-14">
         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-wine">
           Como a conversa ajuda a organizar
         </p>
         <h2
           id="clareza-v2-heading"
-          className="mt-2 max-w-2xl font-sans text-[1.55rem] font-semibold leading-snug tracking-tight text-ink sm:text-[1.85rem] lg:text-[2.15rem]"
+          className="mt-1.5 max-w-2xl font-sans text-[1.45rem] font-semibold leading-snug tracking-tight text-ink sm:text-[1.8rem] lg:text-[2.1rem]"
         >
           Do emaranhado à clareza possível.
         </h2>
-        <p className="mt-2 text-sm text-ink-soft">Exemplo ilustrativo</p>
+        <p className="mt-1.5 text-xs text-ink-soft sm:text-sm">Exemplo ilustrativo</p>
 
         {/* Desktop: side by side */}
-        <div className="mt-7 hidden gap-5 md:grid md:grid-cols-2 lg:mt-9 lg:gap-6">
+        <div className="mt-5 hidden gap-5 md:grid md:grid-cols-2 lg:mt-8 lg:gap-6">
           <BeforePanel />
           <AfterPanel />
         </div>
 
         {/* Mobile: accessible Antes/Depois toggle */}
-        <div className="mt-6 md:hidden">
+        <div className="mt-4 md:hidden">
           <p id={toggleLabelId} className="sr-only">
             Alternar entre estado misturado e organizado
           </p>
           <MobileToggle mode={mode} onChange={setMode} labelId={toggleLabelId} />
-          <div className="relative mt-4 min-h-[22rem]">
+          <div className="relative mt-3">
             <div
               className={cn(
                 "transition-opacity duration-300 motion-reduce:transition-none",
@@ -226,23 +226,23 @@ export function PaidLandingV2Clarity() {
           </div>
         </div>
 
-        <ol className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-3 sm:gap-4">
+        <ol className="mt-5 grid gap-2.5 sm:mt-8 sm:grid-cols-3 sm:gap-4">
           {BEATS.map((beat, index) => (
-            <li key={beat} className="flex gap-3 sm:block">
+            <li key={beat} className="flex gap-2.5 sm:block">
               <span
                 aria-hidden
-                className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-wine/10 font-sans text-xs font-semibold text-wine sm:mb-2 sm:mt-0"
+                className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-wine/10 font-sans text-[11px] font-semibold text-wine sm:mb-2 sm:mt-0 sm:size-7 sm:text-xs"
               >
                 {index + 1}
               </span>
-              <p className="font-sans text-[0.95rem] font-medium leading-snug text-ink">
+              <p className="font-sans text-[0.92rem] font-medium leading-snug text-ink">
                 {beat}
               </p>
             </li>
           ))}
         </ol>
 
-        <p className="mt-6 max-w-2xl text-[0.95rem] leading-snug text-ink-soft sm:mt-7 sm:text-base">
+        <p className="mt-4 max-w-2xl text-sm leading-snug text-ink-soft sm:mt-6 sm:text-base">
           Conteúdos gerais partem de um tema. Aqui, a reflexão parte dos
           detalhes da sua situação.
         </p>

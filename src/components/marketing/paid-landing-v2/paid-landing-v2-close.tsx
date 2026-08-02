@@ -37,7 +37,7 @@ export function PaidLandingV2Close() {
         className="border-t border-border/50 bg-sand-50"
         aria-labelledby="faq-v2-heading"
       >
-        <div className="mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-11">
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-9">
           <h2
             id="faq-v2-heading"
             className="font-sans text-lg font-semibold text-ink sm:text-xl"
@@ -83,9 +83,9 @@ export function PaidLandingV2Close() {
         className="border-t border-border/40 bg-sand-100/60"
         aria-label="Sobre o Amém Chat"
       >
-        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-8">
+        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-7">
           <p className="font-display text-xl text-ink">{brand.name}</p>
-          <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-soft">
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-soft">
             {brand.description}
           </p>
           {legalEntity ? (
@@ -107,18 +107,18 @@ export function PaidLandingV2Close() {
 
       <section
         id="comece-v2-final-cta"
-        className="relative overflow-hidden bg-ink px-4 py-10 text-sand-50 sm:px-6 sm:py-12"
+        className="relative overflow-hidden bg-ink px-4 py-8 text-sand-50 sm:px-6 sm:py-11"
       >
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_30%_0%,rgba(198,160,90,0.22),transparent_48%),radial-gradient(ellipse_at_90%_100%,rgba(107,46,58,0.42),transparent_50%)]"
         />
         <div className="relative mx-auto max-w-3xl text-left sm:text-center">
-          <h2 className="font-display text-[1.65rem] leading-[1.12] tracking-tight text-sand-50 sm:text-[2.15rem] sm:leading-[1.1]">
+          <h2 className="font-display text-[1.5rem] leading-[1.12] tracking-tight text-sand-50 sm:text-[2.05rem] sm:leading-[1.1]">
             Uma situação difícil pode começar a ficar mais clara quando você
             consegue separar o que está em jogo.
           </h2>
-          <div className="mt-6 sm:flex sm:justify-center">
+          <div className="mt-5 sm:flex sm:justify-center">
             <Button
               asChild
               size="lg"

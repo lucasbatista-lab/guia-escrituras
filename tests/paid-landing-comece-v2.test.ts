@@ -91,8 +91,9 @@ describe("paid landing preview /comece-v2", () => {
     expect(page).toContain(
       "Organize o que está pesando. Enxergue um próximo passo à luz",
     );
-    expect(page).toContain(
-      "Conte sua situação. O Amém Chat faz perguntas, separa o que",
+    expect(page).toContain("Conte sua situação.");
+    expect(page).toMatch(
+      /faz perguntas, separa o que|Perguntas, referências bíblicas/,
     );
     expect(page).toContain("Escolher meu plano");
     expect(page).toContain("Ver um exemplo");

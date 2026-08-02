@@ -24,7 +24,7 @@ function PreviewChrome({
   return (
     <article
       className={cn(
-        "flex h-full min-h-[17.5rem] flex-col overflow-hidden rounded-[1.45rem] border bg-sand-50 shadow-[0_22px_48px_-32px_rgba(44,36,28,0.65)]",
+        "flex h-full min-h-[15.5rem] flex-col overflow-hidden rounded-[1.45rem] border bg-sand-50 shadow-[0_22px_48px_-32px_rgba(44,36,28,0.65)]",
         accent ? "border-gold/40" : "border-ink/12",
         className,
       )}
@@ -201,24 +201,23 @@ export function PaidLandingV2Continuity() {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_12%_0%,rgba(198,160,90,0.2),transparent_44%),radial-gradient(ellipse_at_92%_78%,rgba(107,46,58,0.4),transparent_52%)]"
       />
-      <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
+      <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:py-14">
         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-gold">
           Continue sem começar do zero
         </p>
         <h2
           id="continuidade-v2-heading"
-          className="mt-2 max-w-xl font-sans text-[1.55rem] font-semibold leading-snug tracking-tight text-sand-50 sm:text-[1.9rem] lg:text-[2.25rem]"
+          className="mt-1.5 max-w-xl font-sans text-[1.45rem] font-semibold leading-snug tracking-tight text-sand-50 sm:text-[1.85rem] lg:text-[2.2rem]"
         >
           Volte ao mesmo fio quando precisar.
         </h2>
-        <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-sand-50/72 sm:text-base">
-          Histórico, Jornadas e Aprofundar ajudam a manter sua reflexão
-          organizada conforme o plano.
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-sand-50/72 sm:text-base">
+          Histórico, Jornadas e Aprofundar — conforme o plano.
         </p>
 
         <div
           ref={scrollerRef}
-          className="mt-7 -mx-4 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-4 pb-2 md:hidden"
+          className="mt-5 -mx-4 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-4 pb-2 md:hidden"
           role="region"
           aria-label="Prévia das superfícies do produto"
           tabIndex={0}
@@ -267,14 +266,14 @@ export function PaidLandingV2Continuity() {
           </p>
         </div>
 
-        <div className="mt-8 hidden gap-4 md:grid md:grid-cols-2 lg:gap-5">
+        <div className="mt-6 hidden gap-4 md:grid md:grid-cols-2 lg:gap-5">
           <div className="md:translate-y-1">{PREVIEWS[0].node}</div>
           <div>{PREVIEWS[1].node}</div>
           <div>{PREVIEWS[2].node}</div>
           <div className="md:-translate-y-1">{PREVIEWS[3].node}</div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2.5 sm:mt-9 sm:flex-row sm:items-center sm:gap-4">
+        <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:items-center sm:gap-4">
           <Button
             asChild
             size="lg"
