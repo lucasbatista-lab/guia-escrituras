@@ -33,6 +33,13 @@ describe("paid landing /comece", () => {
     "paid-landing",
     "paid-landing-continuity.tsx",
   );
+  const conversation = read(
+    "src",
+    "components",
+    "marketing",
+    "paid-landing",
+    "conversation-language.tsx",
+  );
   const sitemap = read("src", "app", "sitemap.ts");
   const mobileCta = read(
     "src",
@@ -55,6 +62,7 @@ describe("paid landing /comece", () => {
     "paid-landing",
     "paid-landing-media.tsx",
   );
+  const posterSvg = read("public", "marketing", "comece-poster.svg");
 
   it("is a public noindex landing not listed in the sitemap", () => {
     expect(page).toContain('canonical: "/comece"');
@@ -85,69 +93,107 @@ describe("paid landing /comece", () => {
     expect(formatPriceBRL(caminho!.priceMonthlyCents)).toMatch(/58/);
   });
 
-  it("prioritizes Caminho first on mobile and desktop comparison order", () => {
-    const mobileBlock = plans.slice(
-      plans.indexOf("md:hidden"),
-      plans.indexOf("hidden gap-4 md:grid"),
+  it("presents Caminho as the core offer with Essencial and Profundo accessible", () => {
+    expect(plans).toContain("Plano recomendado");
+    expect(plans).toContain("Para quem quer voltar ao longo da semana.");
+    expect(plans).toContain("Escolher Caminho");
+    expect(plans).toContain("Outras formas de usar o Amém Chat");
+    expect(plans).toContain("Escolher Essencial");
+    expect(plans).toContain("Escolher Profundo");
+    expect(plans).toContain("CaminhoOffer");
+    expect(plans.indexOf("CaminhoOffer")).toBeLessThan(
+      plans.indexOf("Outras formas de usar o Amém Chat"),
     );
-    expect(mobileBlock.indexOf("caminho")).toBeLessThan(
-      mobileBlock.indexOf("essencial"),
-    );
-    expect(mobileBlock.indexOf("essencial")).toBeLessThan(
-      mobileBlock.indexOf("profundo"),
-    );
-
-    const desktopBlock = plans.slice(plans.indexOf("hidden gap-4 md:grid"));
-    expect(desktopBlock.indexOf("essencial")).toBeLessThan(
-      desktopBlock.indexOf("caminho"),
-    );
-    expect(desktopBlock.indexOf("caminho")).toBeLessThan(
-      desktopBlock.indexOf("profundo"),
-    );
+    expect(plans).not.toContain("mais escolhido");
+    expect(plans).not.toContain("mais vendido");
+    expect(plans).not.toContain("últimas vagas");
   });
 
-  it("keeps a single primary hero CTA into the demo with price from R$38", () => {
+  it("repositions the hero promise toward plan choice", () => {
+    expect(page).toContain("Reflexões cristãs para situações reais");
     expect(page).toContain(
+      "O que você está vivendo merece mais do que uma resposta genérica.",
+    );
+    expect(page).toContain(
+      "Conte sua situação. O Amém Chat faz perguntas, organiza o contexto e",
+    );
+    expect(page).toContain("sem decidir por você");
+    expect(page).toContain("Escolher meu plano");
+    expect(page).toContain("Ver uma conversa de exemplo");
+    expect(page).toContain('href="#planos"');
+    expect(page).toContain('href="#demonstracao"');
+    expect(page).toContain("A partir de R$38/mês · cobrança mensal");
+    expect(page).toContain(
+      "Conversas privadas · dados não vendidos · IA com limites claros",
+    );
+    expect(page).not.toContain(
       "Sua situação não cabe em um vídeo de 30 segundos.",
     );
-    expect(page).toContain("Ver como funciona");
-    expect(page).toContain('href="#demonstracao"');
-    expect(page).toContain("Ver planos");
-    expect(page).toContain('href="#planos"');
-    expect(page).toContain("Planos a partir de R$38/mês");
-    expect(page).toContain("Cancele a renovação pela sua Conta");
+    expect(page).not.toContain("Ver como funciona");
     expect(page).not.toContain("Começar agora");
-    expect(page).not.toContain("Ver a demonstração");
     expect(page).toContain("Já sou assinante");
     expect(page).toContain('href="/entrar"');
-    expect(page).toContain("A conversa que continua");
-    expect(page).not.toContain("hidden sm:block");
+    expect(page).not.toContain("SiteHeader");
     expect(page.toLowerCase()).not.toMatch(
       /depoimento|testemunho|freemium|% off|última chance|teste grátis|trial/,
     );
-    expect(page).not.toContain("SiteHeader");
     expect(page).not.toMatch(/você está ansios|sua fé está|Deus trouxe você/i);
   });
 
-  it("turns the demonstration into a compact product thread", () => {
+  it("aligns poster and media with the forgiveness example", () => {
+    expect(conversation).toContain(
+      "Quero perdoar, mas não sei se isso significa voltar a conviver.",
+    );
+    expect(conversation).toContain(
+      "O que precisa ser protegido antes de pensar em uma aproximação?",
+    );
+    expect(conversation).toContain("Efésios 4:31–32");
+    expect(conversation).toContain("Colossenses 3:13");
+    expect(conversation).toContain(
+      "Defina o limite que precisaria ser respeitado.",
+    );
+    expect(posterSvg).toContain("Quero perdoar");
+    expect(posterSvg).toContain("voltar a conviver");
+    expect(media).toContain("NEXT_PUBLIC_PAID_LANDING_VIDEO_URL");
+    expect(media).toContain('preload="metadata"');
+    expect(media).toContain("PaidLandingProductPoster");
+    expect(media).toContain("playsInline");
+    expect(media).not.toContain("autoPlay");
+  });
+
+  it("demonstrates a relatable path from tension to clarity", () => {
     expect(demo).not.toContain("fetch(");
     expect(demo).not.toContain("/api/chat");
     expect(demo).toContain("ContinuityThread");
     expect(demo).toContain("UserBubble");
     expect(demo).toContain("GuideBubble");
-    expect(demo).toContain("ScriptureChip");
-    expect(demo).toContain("NextStepBlock");
-    expect(demo).toContain("Assim a conversa organiza o que está em jogo");
-    expect(demo).toContain("Não é mais um vídeo nem um chat genérico");
-    expect(demo).toContain("Contexto → pergunta → próximos passos");
-    expect(demo).not.toContain("1. Situação");
-    expect(demo).not.toContain("2. Pergunta de aprofundamento");
-    expect(demo).not.toContain("5. Continuidade");
+    expect(demo).toContain(
+      "Eu quero perdoar alguém da minha família, mas não sei se perdoar",
+    );
+    expect(demo).toContain(
+      "O que você deseja deixar para trás — e o que ainda precisa ser",
+    );
+    expect(demo).toContain("O que está em jogo");
+    expect(demo).toContain("Deixar a raiva para trás.");
+    expect(demo).toContain("A confiança ainda não foi reconstruída.");
+    expect(demo).toContain("Perdoar não elimina prudência e limites.");
+    expect(demo).toContain("Efésios 4:31–32");
+    expect(demo).toContain("Colossenses 3:13");
+    expect(demo).toContain("Romanos 12:18");
+    expect(demo).toContain(
+      "Escreva o limite que precisaria ser respeitado antes de uma nova",
+    );
+    expect(demo).toContain(
+      "Conteúdos gerais partem de um tema. Aqui partimos da sua situação.",
+    );
+    expect(demo).toContain("a decisão continua sendo sua");
+    expect(demo).not.toMatch(/Deus quer que você|perdoe e volte|nunca volte/i);
+    expect(demo).not.toContain("proposta que melhora a renda");
     expect(page).not.toContain("Três movimentos da conversa");
     expect(page).not.toContain("Mecanismo");
   });
 
-  it("proves continuity with real product surface previews", () => {
+  it("creates a premium continuity discovery rhythm", () => {
     expect(page).toContain("PaidLandingContinuity");
     expect(continuity).toContain("Volte ao mesmo fio quando precisar");
     expect(continuity).toContain("Continuar conversa");
@@ -159,51 +205,57 @@ describe("paid landing /comece", () => {
     expect(continuity).toContain("Só no Profundo");
     expect(continuity).toContain("não no Essencial nem no Caminho");
     expect(continuity).toContain("Disponível no Caminho e no Profundo");
-    expect(continuity).toContain("Parte da sua situação");
+    expect(continuity).toContain("deslize para ver mais");
+    expect(continuity).toContain("Escolher meu plano");
+    expect(continuity).toContain('href="#planos"');
+    expect(continuity).toContain(
+      "Caminho inclui Jornadas · Aprofundar está no Profundo.",
+    );
+    expect(continuity).toContain('bg-ink');
     expect(continuity).not.toMatch(/\b[\w.-]+@[\w.-]+\.\w+\b/);
-    expect(page).not.toContain("A conversa não termina no primeiro dia");
   });
 
-  it("simplifies trust to three pillars and FAQ to four questions", () => {
+  it("places compact trust after the offer and keeps a four-question FAQ", () => {
+    const planosIdx = page.indexOf('id="planos"');
+    const confiancaIdx = page.indexOf('id="confianca"');
+    expect(planosIdx).toBeGreaterThan(-1);
+    expect(confiancaIdx).toBeGreaterThan(planosIdx);
+    expect(page).toContain("Clareza sem ultrapassar limites.");
     expect(page).toContain("Privacidade");
-    expect(page).toContain("Limites honestos");
+    expect(page).toContain("Limites");
     expect(page).toContain("Controle");
-    expect(page).toContain("Cobrança mensal segura com Stripe");
-    expect(page).not.toContain("Pagamento seguro com Stripe na assinatura");
+    expect(page).toContain(
+      "Você escolhe o plano e pode cancelar a renovação pela Conta.",
+    );
     expect(page).toContain("O Amém Chat é apenas um ChatGPT cristão?");
+    expect(page).toContain("Foi feito para reflexão cristã");
     expect(page).toContain("Posso cancelar?");
     expect(page).toContain("Ver todas as dúvidas");
-    expect(page).toContain("Escolher um plano");
+    expect(page).toContain("Escolher meu plano");
     expect(page).toContain(
       "Sua situação tem detalhes. Sua reflexão também pode ter.",
     );
     expect(page).not.toContain("Quando não utilizar?");
     expect(page).not.toContain("As respostas são iguais para todo mundo?");
-    expect(page).not.toContain("Como funciona a privacidade?");
   });
 
-  it("wires sticky CTA to Caminho after the demo with UTM/ref preservation", () => {
-    expect(mobileCta).toContain("demonstracao");
-    expect(mobileCta).toContain("demoSufficientlySeen");
+  it("keeps sticky CTA plan-neutral after the hero CTA leaves view", () => {
+    expect(mobileCta).toContain("comece-hero");
+    expect(mobileCta).toContain('a[href="#planos"]');
+    expect(mobileCta).toContain("heroCtaLeft");
     expect(mobileCta).toContain('sectionInView("planos"');
     expect(mobileCta).toContain("consentOpen");
     expect(mobileCta).toContain('sectionInView("comece-final-cta"');
-    expect(sticky).toContain("Escolher Caminho");
-    expect(sticky).toContain("Caminho ·");
-    expect(sticky).toContain("buildCadastroHref");
-    expect(sticky).toContain("paid_landing_plan_selected");
-    expect(sticky).toContain('conversionPlan="caminho"');
-    expect(sticky).toContain('buildCadastroHref("caminho"');
+    expect(sticky).toContain("Escolher meu plano");
+    expect(sticky).toContain("Planos a partir de R$38/mês");
+    expect(sticky).toContain("A partir de R$38/mês");
+    expect(sticky).toContain('href="#planos"');
+    expect(sticky).toContain("paid_landing_primary_cta_clicked");
+    expect(sticky).not.toContain("Escolher Caminho");
+    expect(sticky).not.toContain("buildCadastroHref");
+    expect(sticky).not.toContain("paid_landing_plan_selected");
+    expect(sticky).not.toContain('conversionPlan="caminho"');
     expect(sticky).not.toContain("Começar agora");
-    expect(sticky).not.toContain(">Ver planos<");
-  });
-
-  it("keeps video non-blocking and poster-ready without dead play controls", () => {
-    expect(media).toContain("NEXT_PUBLIC_PAID_LANDING_VIDEO_URL");
-    expect(media).toContain('preload="metadata"');
-    expect(media).toContain("PaidLandingProductPoster");
-    expect(media).toContain("playsInline");
-    expect(media).not.toContain("autoPlay");
   });
 
   it("wires first-party paid landing events without sensitive fields or Meta Lead", () => {
