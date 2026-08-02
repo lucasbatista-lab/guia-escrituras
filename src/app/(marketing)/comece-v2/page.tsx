@@ -3,6 +3,7 @@ import { brand } from "@/config/brand";
 import { PaidLandingV2Clarity } from "@/components/marketing/paid-landing-v2/paid-landing-v2-clarity";
 import { PaidLandingV2Continuity } from "@/components/marketing/paid-landing-v2/paid-landing-v2-continuity";
 import { PaidLandingV2Media } from "@/components/marketing/paid-landing-v2/paid-landing-v2-media";
+import { PaidLandingV2Offer } from "@/components/marketing/paid-landing-v2/paid-landing-v2-offer";
 import { PaidLandingV2Recognition } from "@/components/marketing/paid-landing-v2/paid-landing-v2-recognition";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
@@ -182,6 +183,7 @@ export default function ComecePaidLandingV2Page() {
         <PaidLandingV2Recognition />
         <PaidLandingV2Clarity />
         <PaidLandingV2Continuity />
+        <PaidLandingV2Offer />
       </main>
     </div>
   );
