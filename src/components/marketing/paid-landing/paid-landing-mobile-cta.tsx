@@ -30,8 +30,8 @@ function sectionInView(id: string, topPad = 0, bottomPad = 0.2): boolean {
 }
 
 /**
- * Mobile sticky CTA — only after the demonstration has been sufficiently seen.
- * Hides on plans, final CTA, consent open, or forms.
+ * Mobile sticky CTA — appears after the hero primary CTA leaves the viewport.
+ * Plan-neutral: scrolls to #planos without selecting Caminho.
  */
 export function PaidLandingMobileCta() {
   const [visible, setVisible] = useState(false);
@@ -43,15 +43,15 @@ export function PaidLandingMobileCta() {
 
   useEffect(() => {
     function update() {
-      const demo = document.getElementById("demonstracao");
-      if (!demo) {
+      const heroCta = document.querySelector(
+        '#comece-hero a[href="#planos"]',
+      );
+      if (!heroCta) {
         setVisible(false);
         return;
       }
-      const demoRect = demo.getBoundingClientRect();
-      const vh = window.innerHeight || 1;
-      // Appear only after the demo has been scrolled through enough
-      const demoSufficientlySeen = demoRect.bottom < vh * 0.55;
+      const heroRect = heroCta.getBoundingClientRect();
+      const heroCtaLeft = heroRect.bottom < 8;
       const plansVisible = sectionInView("planos", 48, 0.15);
       const nearFinalCta = sectionInView("comece-final-cta", 48, 0.1);
       const onForm = Boolean(
@@ -60,8 +60,15 @@ export function PaidLandingMobileCta() {
             document.activeElement.tagName === "TEXTAREA" ||
             document.activeElement.tagName === "SELECT"),
       );
+      const dialogOpen = Boolean(
+        document.querySelector('[role="dialog"], [aria-modal="true"]'),
+      );
       setVisible(
-        demoSufficientlySeen && !plansVisible && !nearFinalCta && !onForm,
+        heroCtaLeft &&
+          !plansVisible &&
+          !nearFinalCta &&
+          !onForm &&
+          !dialogOpen,
       );
     }
 
