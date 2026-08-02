@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { brand } from "@/config/brand";
+import { PaidLandingV2Clarity } from "@/components/marketing/paid-landing-v2/paid-landing-v2-clarity";
 import { PaidLandingV2Media } from "@/components/marketing/paid-landing-v2/paid-landing-v2-media";
 import { PaidLandingV2Recognition } from "@/components/marketing/paid-landing-v2/paid-landing-v2-recognition";
 import { TrackingLink } from "@/components/marketing/tracking-link";
@@ -178,6 +179,7 @@ export default function ComecePaidLandingV2Page() {
         </section>
 
         <PaidLandingV2Recognition />
+        <PaidLandingV2Clarity />
       </main>
     </div>
   );
