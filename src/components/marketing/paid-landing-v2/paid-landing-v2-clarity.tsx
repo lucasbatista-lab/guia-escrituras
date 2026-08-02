@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 /**
  * Clarity board as the visual signature of the V2 landing.
  * Marketing visualization of how a conversation organizes tension —
- * not a literal product screenshot.
+ * not a literal product UI capture.
  */
 
 const BEFORE_FRAGMENTS = [

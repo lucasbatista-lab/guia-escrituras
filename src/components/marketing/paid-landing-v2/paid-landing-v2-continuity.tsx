@@ -247,12 +247,19 @@ export function PaidLandingV2Continuity() {
                 aria-label={`Ver ${item.label}`}
                 onClick={() => goTo(index)}
                 className={cn(
-                  "h-2 min-h-11 rounded-full px-1 transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold",
-                  index === activeIndex
-                    ? "w-6 bg-gold"
-                    : "w-2 bg-sand-50/35 hover:bg-sand-50/55",
+                  "flex min-h-11 min-w-11 items-center justify-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold",
                 )}
-              />
+              >
+                <span
+                  className={cn(
+                    "block h-2 rounded-full transition-all",
+                    index === activeIndex
+                      ? "w-6 bg-gold"
+                      : "w-2 bg-sand-50/35",
+                  )}
+                  aria-hidden
+                />
+              </button>
             ))}
           </div>
           <p className="text-[11px] tracking-wide text-sand-50/65">
