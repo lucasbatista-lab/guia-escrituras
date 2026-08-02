@@ -119,12 +119,24 @@ describe("public conversion events", () => {
     expect(plans).toContain('conversionEvent="plan_selected"');
     expect(signup).toContain('event="signup_started"');
 
-    const paidLanding = readFileSync(
+    const paidLandingPage = readFileSync(
       join(root, "src", "app", "(marketing)", "comece", "page.tsx"),
       "utf8",
     );
-    expect(paidLanding).toContain('event="paid_landing_viewed"');
-    expect(paidLanding).toContain("paid_landing_primary_cta_clicked");
+    const paidLandingCampaign = readFileSync(
+      join(
+        root,
+        "src",
+        "components",
+        "marketing",
+        "paid-landing-v2",
+        "paid-landing-campaign.tsx",
+      ),
+      "utf8",
+    );
+    expect(paidLandingPage).toContain('mode="production"');
+    expect(paidLandingCampaign).toContain('event="paid_landing_viewed"');
+    expect(paidLandingCampaign).toContain("paid_landing_primary_cta_clicked");
 
     const client = readFileSync(
       join(root, "src", "lib", "acquisition", "public-events-client.ts"),
