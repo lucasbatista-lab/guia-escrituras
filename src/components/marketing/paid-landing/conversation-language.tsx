@@ -296,23 +296,24 @@ export function PaidLandingProductPoster({
       className={cn("max-w-md", className)}
       caption="Prévia do produto · exemplo ilustrativo"
     >
-      <ProductFrameHeader />
+      <ProductFrameHeader status="Organizando o que está em jogo" />
       <div className="space-y-2 px-3 py-2.5 font-chat text-[12px] leading-snug sm:space-y-2.5 sm:px-3.5 sm:py-3 sm:text-[12.5px]">
-        <UserBubble className="max-w-[88%] px-2.5 py-1.5 text-[12px] sm:text-[12.5px]">
-          Preciso decidir se aceito um trabalho que melhora a renda, mas afasta
-          a família na semana.
+        <UserBubble className="max-w-[90%] px-2.5 py-1.5 text-[12px] sm:text-[12.5px]">
+          Quero perdoar, mas não sei se isso significa voltar a conviver.
         </UserBubble>
-        <GuideBubble className="max-w-[92%] px-2.5 py-2 text-[12px] sm:text-[12.5px]">
+        <GuideBubble className="max-w-[94%] px-2.5 py-2 text-[12px] sm:text-[12.5px]">
           <p>
-            O que mais pesa: a renda, o tempo em casa, ou o medo de se
-            arrepender?
+            O que precisa ser protegido antes de pensar em uma aproximação?
+          </p>
+          <p className="mt-1.5 text-[11px] leading-snug text-ink-soft">
+            Perdão e convivência não são necessariamente a mesma decisão.
           </p>
           <div className="mt-1.5 flex flex-wrap gap-1">
-            <ScriptureChip withIcon>Tiago 1:5</ScriptureChip>
-            <ScriptureChip>Provérbios 3:5–6</ScriptureChip>
+            <ScriptureChip withIcon>Efésios 4:31–32</ScriptureChip>
+            <ScriptureChip>Colossenses 3:13</ScriptureChip>
           </div>
           <NextStepBlock title="Próximo passo" className="mt-2 text-[10.5px]">
-            <p>Nomeie o critério mínimo que a decisão precisa respeitar.</p>
+            <p>Defina o limite que precisaria ser respeitado.</p>
           </NextStepBlock>
         </GuideBubble>
         <ContinuityMarker className="px-2.5 py-1 text-[10px]">

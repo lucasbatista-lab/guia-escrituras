@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="Prévia do Amém Chat — conversa guiada">
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="Prévia do Amém Chat — da situação à clareza possível">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f5efe6"/>
@@ -12,24 +12,32 @@
   </defs>
   <rect width="1080" height="1920" fill="url(#bg)"/>
   <rect width="1080" height="1920" fill="url(#glow)"/>
-  <rect x="90" y="180" width="900" height="1480" rx="64" fill="#2c241c"/>
-  <rect x="114" y="204" width="852" height="1432" rx="48" fill="#fbf8f3"/>
-  <circle cx="190" cy="280" r="34" fill="#6b2e3a"/>
-  <text x="246" y="272" font-family="Georgia, serif" font-size="36" fill="#2c241c">Amém Chat</text>
-  <text x="246" y="308" font-family="Arial, sans-serif" font-size="22" fill="#6b6258">Reflexão em andamento</text>
-  <text x="780" y="292" font-family="Arial, sans-serif" font-size="22" fill="#6b6258">privada</text>
-  <line x1="114" y1="350" x2="966" y2="350" stroke="#e4d8c8" stroke-width="2"/>
-  <rect x="360" y="420" width="540" height="180" rx="28" fill="#2c241c"/>
-  <text x="400" y="490" font-family="Georgia, serif" font-size="30" fill="#fbf8f3">Preciso decidir sobre um</text>
-  <text x="400" y="535" font-family="Georgia, serif" font-size="30" fill="#fbf8f3">trabalho que afasta a família.</text>
-  <rect x="180" y="660" width="620" height="320" rx="28" fill="#ffffff" stroke="#e4d8c8" stroke-width="2"/>
-  <text x="220" y="730" font-family="Georgia, serif" font-size="30" fill="#2c241c">O que mais pesa agora:</text>
-  <text x="220" y="780" font-family="Georgia, serif" font-size="30" fill="#2c241c">renda, tempo com quem ama,</text>
-  <text x="220" y="830" font-family="Georgia, serif" font-size="30" fill="#2c241c">ou o medo de se arrepender?</text>
-  <rect x="220" y="880" width="180" height="48" rx="24" fill="#f5efe6"/>
-  <text x="246" y="912" font-family="Arial, sans-serif" font-size="22" fill="#5c5046">Tiago 1:5</text>
-  <rect x="220" y="1040" width="540" height="140" rx="20" fill="#f5efe6"/>
-  <text x="250" y="1095" font-family="Arial, sans-serif" font-size="24" fill="#2c241c">Próximo passo</text>
-  <text x="250" y="1140" font-family="Arial, sans-serif" font-size="24" fill="#5c5046">Defina um critério mínimo.</text>
-  <text x="540" y="1760" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#6b6258">A conversa que continua</text>
+  <rect x="90" y="160" width="900" height="1520" rx="64" fill="#2c241c"/>
+  <rect x="114" y="184" width="852" height="1472" rx="48" fill="#fbf8f3"/>
+  <circle cx="190" cy="260" r="34" fill="#6b2e3a"/>
+  <text x="246" y="252" font-family="Georgia, serif" font-size="36" fill="#2c241c">Amém Chat</text>
+  <text x="246" y="288" font-family="Arial, sans-serif" font-size="22" fill="#6b6258">Organizando o que está em jogo</text>
+  <text x="780" y="272" font-family="Arial, sans-serif" font-size="22" fill="#6b6258">privada</text>
+  <line x1="114" y1="330" x2="966" y2="330" stroke="#e4d8c8" stroke-width="2"/>
+  <rect x="300" y="390" width="600" height="170" rx="28" fill="#2c241c"/>
+  <text x="340" y="455" font-family="Georgia, serif" font-size="28" fill="#fbf8f3">Quero perdoar, mas não sei se</text>
+  <text x="340" y="500" font-family="Georgia, serif" font-size="28" fill="#fbf8f3">isso significa voltar a conviver.</text>
+  <rect x="160" y="620" width="680" height="200" rx="28" fill="#ffffff" stroke="#e4d8c8" stroke-width="2"/>
+  <text x="200" y="690" font-family="Georgia, serif" font-size="28" fill="#2c241c">O que precisa ser protegido</text>
+  <text x="200" y="735" font-family="Georgia, serif" font-size="28" fill="#2c241c">antes de pensar em uma</text>
+  <text x="200" y="780" font-family="Georgia, serif" font-size="28" fill="#2c241c">aproximação?</text>
+  <rect x="160" y="860" width="680" height="120" rx="22" fill="#f5efe6"/>
+  <text x="200" y="915" font-family="Arial, sans-serif" font-size="24" fill="#5c5046">Perdão e convivência não são</text>
+  <text x="200" y="952" font-family="Arial, sans-serif" font-size="24" fill="#5c5046">necessariamente a mesma decisão.</text>
+  <rect x="160" y="1020" width="240" height="48" rx="24" fill="#efe4d4"/>
+  <text x="182" y="1052" font-family="Arial, sans-serif" font-size="20" fill="#5c5046">Efésios 4:31–32</text>
+  <rect x="420" y="1020" width="230" height="48" rx="24" fill="#efe4d4"/>
+  <text x="442" y="1052" font-family="Arial, sans-serif" font-size="20" fill="#5c5046">Colossenses 3:13</text>
+  <rect x="160" y="1110" width="680" height="140" rx="20" fill="#f5efe6" stroke="#c6a05a" stroke-opacity="0.35" stroke-width="2"/>
+  <text x="200" y="1165" font-family="Arial, sans-serif" font-size="24" fill="#2c241c">Próximo passo possível</text>
+  <text x="200" y="1210" font-family="Arial, sans-serif" font-size="24" fill="#5c5046">Defina o limite que precisaria ser respeitado.</text>
+  <rect x="160" y="1300" width="520" height="56" rx="28" fill="#ffffff" stroke="#c6a05a" stroke-opacity="0.4" stroke-width="2"/>
+  <circle cx="196" cy="1328" r="8" fill="#c6a05a"/>
+  <text x="220" y="1336" font-family="Arial, sans-serif" font-size="22" fill="#6b6258">Continua no Histórico</text>
+  <text x="540" y="1600" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#6b6258">Da situação confusa à clareza possível</text>
 </svg>
