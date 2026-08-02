@@ -129,6 +129,7 @@ function AltPlan({
   summary,
   outcomes,
   details,
+  accent = "wine",
 }: {
   plan: PlanDefinition;
   href: string;
@@ -136,9 +137,16 @@ function AltPlan({
   summary: string;
   outcomes: readonly string[];
   details: readonly string[];
+  accent?: "wine" | "gold";
 }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-ink/10 bg-sand-50/90 px-4 py-4 sm:px-5 sm:py-5">
+    <article
+      className={
+        accent === "gold"
+          ? "flex flex-col rounded-2xl border border-gold/30 bg-gradient-to-b from-sand-50 to-sand-100/70 px-4 py-4 sm:px-5 sm:py-5"
+          : "flex flex-col rounded-2xl border border-ink/12 bg-sand-50 px-4 py-4 shadow-[0_14px_32px_-28px_rgba(44,36,28,0.55)] sm:px-5 sm:py-5"
+      }
+    >
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="font-sans text-lg font-semibold text-ink">{plan.name}</h3>
         <p className="font-sans text-xl font-semibold text-ink">
@@ -147,7 +155,13 @@ function AltPlan({
         </p>
       </div>
       <p className="mt-1 text-sm text-ink-soft">{pitch}</p>
-      <p className="mt-2 text-[0.8rem] font-medium uppercase tracking-[0.08em] text-wine">
+      <p
+        className={
+          accent === "gold"
+            ? "mt-2 text-[0.8rem] font-medium uppercase tracking-[0.08em] text-ink"
+            : "mt-2 text-[0.8rem] font-medium uppercase tracking-[0.08em] text-wine"
+        }
+      >
         {summary}
       </p>
       <ul className="mt-2.5 flex-1 space-y-1.5 text-sm text-ink-soft">
@@ -248,6 +262,7 @@ function PaidLandingV2OfferInner() {
               href={buildCadastroHref(profundo.key, tracking)}
               pitch="Para temas que pedem outra camada de análise."
               summary="Caminho + Aprofundar"
+              accent="gold"
               outcomes={PROFUNDO_OUTCOMES}
               details={[
                 "Aprofundar sob demanda para análises adicionais",
