@@ -117,18 +117,17 @@ export default function ComecePaidLandingV2Page() {
             className="pointer-events-none absolute -right-16 top-24 hidden h-[28rem] w-[28rem] rounded-full bg-ink/[0.04] blur-3xl lg:block"
           />
 
-          <div className="relative mx-auto grid max-w-6xl gap-3 px-4 pb-4 pt-0.5 sm:gap-6 sm:px-6 sm:pb-10 sm:pt-3 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] lg:items-center lg:gap-8 lg:pb-14 lg:pt-5">
-            <div className="min-w-0 max-w-xl animate-fade-up text-left lg:max-w-[26rem]">
+          <div className="relative mx-auto grid max-w-6xl gap-3 px-4 pb-4 pt-0.5 sm:gap-6 sm:px-6 sm:pb-10 sm:pt-3 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] lg:items-center lg:gap-8 lg:pb-14 lg:pt-5">
+            <div className="min-w-0 max-w-xl animate-fade-up text-left lg:max-w-[34rem]">
               <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-wine">
                 Reflexões cristãs para situações reais
               </p>
               <h1
                 id="comece-v2-hero-heading"
-                className="mt-1.5 font-display text-[clamp(2.05rem,8.4vw,2.65rem)] leading-[1.04] tracking-tight text-ink sm:mt-2 sm:text-[3.15rem] sm:leading-[1.05] lg:text-[4.1rem] lg:leading-[1.03]"
+                className="mt-1.5 font-display text-[clamp(2.05rem,8.4vw,2.65rem)] leading-[1.04] tracking-tight text-ink sm:mt-2 sm:text-[3.15rem] sm:leading-[1.05] lg:text-[3.45rem] lg:leading-[1.05] xl:text-[3.75rem]"
               >
-                Organize o que está pesando.
-                <br />
-                Enxergue um próximo passo.
+                <span className="block">Organize o que está pesando.</span>
+                <span className="block">Enxergue um próximo passo.</span>
               </h1>
               <p className="mt-2 max-w-md text-[0.95rem] leading-snug text-ink-soft sm:mt-3 sm:max-w-lg sm:text-[1.05rem] sm:leading-relaxed">
                 Conte sua situação. Receba perguntas e referências bíblicas que
@@ -136,17 +135,17 @@ export default function ComecePaidLandingV2Page() {
               </p>
 
               <div className="mt-3 sm:mt-5">
-                <div className="flex flex-col items-stretch gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1.5">
+                <div className="flex flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1.5">
                   <Button
                     asChild
                     size="lg"
-                    className="min-h-11 bg-wine px-5 text-[0.95rem] shadow-[0_16px_36px_-18px_rgba(107,46,58,0.8)] hover:bg-wine-soft sm:min-h-12 sm:px-6 sm:text-base"
+                    className="min-h-11 w-full bg-wine px-5 text-[0.95rem] shadow-[0_16px_36px_-18px_rgba(107,46,58,0.8)] hover:bg-wine-soft sm:w-auto sm:min-h-12 sm:px-6 sm:text-base"
                   >
                     <a href="#planos-v2">Escolher meu plano</a>
                   </Button>
                   <a
                     href="#clareza-v2"
-                    className="inline-flex min-h-10 items-center justify-center px-1 text-sm text-ink-soft underline-offset-4 transition hover:text-ink hover:underline sm:min-h-11 sm:justify-start"
+                    className="inline-flex min-h-10 items-center px-1 text-sm text-ink-soft underline-offset-4 transition hover:text-ink hover:underline sm:min-h-11"
                   >
                     Ver um exemplo
                   </a>
