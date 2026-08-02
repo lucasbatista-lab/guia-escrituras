@@ -2,6 +2,7 @@
 
 import { BookOpen, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { PaidLandingScrollCta } from "@/components/marketing/paid-landing/paid-landing-scroll-cta";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -143,9 +144,18 @@ const PREVIEWS = [
   { key: "aprofundar", label: "Aprofundar", node: <PreviewAprofundar /> },
 ] as const;
 
-export function PaidLandingV2Continuity() {
+export function PaidLandingV2Continuity({
+  sectionId = "continuidade-v2",
+  plansHref = "#planos-v2",
+  trackPrimaryCta = false,
+}: {
+  sectionId?: string;
+  plansHref?: `#${string}`;
+  trackPrimaryCta?: boolean;
+}) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const headingId = `${sectionId}-heading`;
 
   useEffect(() => {
     const root = scrollerRef.current;
@@ -193,9 +203,9 @@ export function PaidLandingV2Continuity() {
 
   return (
     <section
-      id="continuidade-v2"
+      id={sectionId}
       className="relative overflow-hidden bg-ink text-sand-50"
-      aria-labelledby="continuidade-v2-heading"
+      aria-labelledby={headingId}
     >
       <div
         aria-hidden
@@ -206,7 +216,7 @@ export function PaidLandingV2Continuity() {
           Continue sem começar do zero
         </p>
         <h2
-          id="continuidade-v2-heading"
+          id={headingId}
           className="mt-1.5 max-w-xl font-sans text-[1.45rem] font-semibold leading-snug tracking-tight text-sand-50 sm:text-[1.85rem] lg:text-[2.2rem]"
         >
           Volte ao mesmo fio quando precisar.
@@ -279,7 +289,16 @@ export function PaidLandingV2Continuity() {
             size="lg"
             className="min-h-12 bg-sand-50 px-6 text-ink hover:bg-sand-100"
           >
-            <a href="#planos-v2">Ver os planos</a>
+            {trackPrimaryCta ? (
+              <PaidLandingScrollCta
+                href={plansHref}
+                event="paid_landing_primary_cta_clicked"
+              >
+                Ver os planos
+              </PaidLandingScrollCta>
+            ) : (
+              <a href={plansHref}>Ver os planos</a>
+            )}
           </Button>
           <p className="text-xs leading-snug text-sand-50/65 sm:text-sm">
             Jornadas no Caminho e no Profundo. Aprofundar no Profundo.

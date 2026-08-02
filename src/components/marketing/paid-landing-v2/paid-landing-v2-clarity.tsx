@@ -168,19 +168,24 @@ function MobileToggle({
   );
 }
 
-export function PaidLandingV2Clarity() {
+export function PaidLandingV2Clarity({
+  sectionId = "clareza-v2",
+}: {
+  sectionId?: string;
+}) {
   const [mode, setMode] = useState<"antes" | "depois">("antes");
   const toggleLabelId = useId();
+  const headingId = `${sectionId}-heading`;
 
   return (
     <section
-      id="clareza-v2"
+      id={sectionId}
       className="relative scroll-mt-6 overflow-hidden bg-sand-50 sm:scroll-mt-8"
-      aria-labelledby="clareza-v2-heading"
+      aria-labelledby={headingId}
     >
       <div className="relative mx-auto max-w-6xl px-4 pb-7 pt-2 sm:px-6 sm:pb-10 sm:pt-3 lg:pb-12">
         <h2
-          id="clareza-v2-heading"
+          id={headingId}
           className="max-w-2xl font-sans text-[1.35rem] font-semibold leading-snug tracking-tight text-ink sm:text-[1.7rem] lg:text-[1.95rem]"
         >
           Do emaranhado à clareza possível.

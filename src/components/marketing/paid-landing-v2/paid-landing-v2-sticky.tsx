@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  getPaidLandingCampaignIds,
+  type PaidLandingCampaignMode,
+} from "@/components/marketing/paid-landing-v2/campaign-ids";
 import { cn } from "@/lib/utils";
 
 function subscribeConsentBanner(listener: () => void) {
@@ -37,14 +41,17 @@ function sectionOverlapsViewport(
 }
 
 /**
- * Compact floating purchase action for V2 mobile.
- * Plan-neutral: scrolls to #planos-v2 without selecting a plan or firing
- * paid_landing_* events (preview isolation).
- *
- * Hidden over product moments (clarity, continuity, offer interfaces)
- * and over competing CTAs. Allowed only in short textual zones such as FAQ.
+ * Compact floating purchase action.
+ * Plan-neutral: scrolls to plans without selecting a plan.
+ * Preview mode never fires paid_landing_* events.
  */
-export function PaidLandingV2Sticky() {
+export function PaidLandingV2Sticky({
+  mode = "preview",
+}: {
+  mode?: PaidLandingCampaignMode;
+}) {
+  const ids = getPaidLandingCampaignIds(mode);
+  const plansHref = `#${ids.plans}` as const;
   const [visible, setVisible] = useState(false);
   const consentOpen = useSyncExternalStore(
     subscribeConsentBanner,
@@ -55,7 +62,7 @@ export function PaidLandingV2Sticky() {
   useEffect(() => {
     function update() {
       const heroCta = document.querySelector(
-        '#comece-v2-hero a[href="#planos-v2"]',
+        `#${ids.hero} a[href="${plansHref}"]`,
       );
       if (!heroCta) {
         setVisible(false);
@@ -65,15 +72,15 @@ export function PaidLandingV2Sticky() {
       const heroCtaLeft = heroRect.bottom < 8;
 
       const onProductMoment =
-        sectionOverlapsViewport("reconhecimento-v2") ||
-        sectionOverlapsViewport("clareza-v2") ||
-        sectionOverlapsViewport("continuidade-v2") ||
-        sectionOverlapsViewport("planos-v2") ||
-        sectionOverlapsViewport("comece-v2-final-cta");
+        sectionOverlapsViewport(ids.recognition) ||
+        sectionOverlapsViewport(ids.clarity) ||
+        sectionOverlapsViewport(ids.continuity) ||
+        sectionOverlapsViewport(ids.plans) ||
+        sectionOverlapsViewport(ids.finalCta);
 
       const inTextualZone =
-        sectionOverlapsViewport("faq-v2", 48, 96) ||
-        sectionOverlapsViewport("marca-v2", 48, 96);
+        sectionOverlapsViewport(ids.faq, 48, 96) ||
+        sectionOverlapsViewport(ids.brand, 48, 96);
 
       const onForm = Boolean(
         document.activeElement &&
@@ -110,7 +117,7 @@ export function PaidLandingV2Sticky() {
       window.removeEventListener("focusin", update);
       window.removeEventListener("focusout", update);
     };
-  }, []);
+  }, [ids, plansHref]);
 
   const show = visible && !consentOpen;
 
@@ -124,7 +131,7 @@ export function PaidLandingV2Sticky() {
       aria-hidden={!show}
     >
       <a
-        href="#planos-v2"
+        href={plansHref}
         tabIndex={show ? 0 : -1}
         aria-label="Ver planos do Amém Chat, a partir de R$38 por mês"
         className={cn(

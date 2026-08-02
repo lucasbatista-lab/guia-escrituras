@@ -203,7 +203,7 @@ function AltPlan({
   );
 }
 
-function PaidLandingV2OfferInner() {
+function PaidLandingV2OfferInner({ plansId }: { plansId: string }) {
   const searchParams = useSearchParams();
   const tracking = {
     referralCode: searchParams.get("ref"),
@@ -227,7 +227,7 @@ function PaidLandingV2OfferInner() {
   }
 
   return (
-    <div id="planos-v2" className="scroll-mt-6 sm:scroll-mt-8">
+    <div id={plansId} className="scroll-mt-6 sm:scroll-mt-8">
       <CaminhoOffer
         plan={caminho}
         href={buildCadastroHref(caminho.key, tracking)}
@@ -277,16 +277,20 @@ function PaidLandingV2OfferInner() {
   );
 }
 
-export function PaidLandingV2Offer() {
+export function PaidLandingV2Offer({
+  plansId = "planos-v2",
+}: {
+  plansId?: string;
+}) {
   return (
     <Suspense
       fallback={
-        <div id="planos-v2" className="bg-ink px-4 py-16" aria-hidden>
+        <div id={plansId} className="bg-ink px-4 py-16" aria-hidden>
           <div className="mx-auto h-64 max-w-6xl rounded-2xl bg-sand-50/5" />
         </div>
       }
     >
-      <PaidLandingV2OfferInner />
+      <PaidLandingV2OfferInner plansId={plansId} />
     </Suspense>
   );
 }

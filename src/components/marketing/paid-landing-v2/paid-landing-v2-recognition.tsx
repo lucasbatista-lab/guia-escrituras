@@ -2,19 +2,24 @@
  * Short recognition beat — one user line, one product question.
  * Flows continuously into the clarity board (single “Exemplo ilustrativo”).
  */
-export function PaidLandingV2Recognition() {
+export function PaidLandingV2Recognition({
+  sectionId = "reconhecimento-v2",
+}: {
+  sectionId?: string;
+}) {
+  const headingId = `${sectionId}-heading`;
   return (
     <section
-      id="reconhecimento-v2"
+      id={sectionId}
       className="relative bg-sand-100/70"
-      aria-labelledby="reconhecimento-v2-heading"
+      aria-labelledby={headingId}
     >
       <div className="mx-auto max-w-6xl px-4 pb-4 pt-6 sm:px-6 sm:pb-5 sm:pt-9 lg:pt-10">
         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-soft">
           Exemplo ilustrativo
         </p>
         <h2
-          id="reconhecimento-v2-heading"
+          id={headingId}
           className="mt-1.5 max-w-lg font-sans text-[1.25rem] font-semibold leading-snug tracking-tight text-ink sm:text-[1.45rem]"
         >
           A situação chega misturada.

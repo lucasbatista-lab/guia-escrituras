@@ -4,7 +4,7 @@ import { trackPublicConversion } from "@/lib/acquisition/public-events-client";
 import { cn } from "@/lib/utils";
 
 type PaidLandingScrollCtaProps = {
-  href: "#planos" | "#demonstracao";
+  href: `#${string}`;
   event: "paid_landing_primary_cta_clicked" | "paid_landing_demo_clicked";
   className?: string;
   children: React.ReactNode;

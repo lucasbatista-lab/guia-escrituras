@@ -1,5 +1,6 @@
 import { brand } from "@/config/brand";
 import { getLegalEntityName, getSupportEmail } from "@/config/legal";
+import { PaidLandingScrollCta } from "@/components/marketing/paid-landing/paid-landing-scroll-cta";
 import { TrackingLink } from "@/components/marketing/tracking-link";
 import { Button } from "@/components/ui/button";
 
@@ -26,20 +27,33 @@ const FAQ = [
  * Compact trust close: FAQ + institutional brand line + final CTA.
  * No invented social proof, founder, or long disclaimer wall.
  */
-export function PaidLandingV2Close() {
+export function PaidLandingV2Close({
+  faqId = "faq-v2",
+  brandId = "marca-v2",
+  finalCtaId = "comece-v2-final-cta",
+  plansHref = "#planos-v2",
+  trackPrimaryCta = false,
+}: {
+  faqId?: string;
+  brandId?: string;
+  finalCtaId?: string;
+  plansHref?: `#${string}`;
+  trackPrimaryCta?: boolean;
+}) {
   const supportEmail = getSupportEmail();
   const legalEntity = getLegalEntityName();
+  const faqHeadingId = `${faqId}-heading`;
 
   return (
     <>
       <section
-        id="faq-v2"
+        id={faqId}
         className="border-t border-border/50 bg-sand-50"
-        aria-labelledby="faq-v2-heading"
+        aria-labelledby={faqHeadingId}
       >
         <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-9">
           <h2
-            id="faq-v2-heading"
+            id={faqHeadingId}
             className="font-sans text-lg font-semibold text-ink sm:text-xl"
           >
             Perguntas frequentes
@@ -79,7 +93,7 @@ export function PaidLandingV2Close() {
       </section>
 
       <section
-        id="marca-v2"
+        id={brandId}
         className="border-t border-border/40 bg-sand-100/60"
         aria-label="Sobre o Amém Chat"
       >
@@ -95,7 +109,7 @@ export function PaidLandingV2Close() {
       </section>
 
       <section
-        id="comece-v2-final-cta"
+        id={finalCtaId}
         className="relative overflow-hidden bg-ink px-4 py-7 text-sand-50 sm:px-6 sm:py-10"
       >
         <div
@@ -114,7 +128,16 @@ export function PaidLandingV2Close() {
               size="lg"
               className="min-h-12 bg-sand-50 px-6 text-ink shadow-[0_14px_32px_-18px_rgba(251,248,243,0.55)] hover:bg-sand-100"
             >
-              <a href="#planos-v2">Escolher meu plano</a>
+              {trackPrimaryCta ? (
+                <PaidLandingScrollCta
+                  href={plansHref}
+                  event="paid_landing_primary_cta_clicked"
+                >
+                  Escolher meu plano
+                </PaidLandingScrollCta>
+              ) : (
+                <a href={plansHref}>Escolher meu plano</a>
+              )}
             </Button>
           </div>
           <p className="mt-2.5 text-xs text-sand-50/65">
