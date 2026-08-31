@@ -145,6 +145,16 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     expect(media).toContain("PaidLandingV2ProductSurface");
   });
 
+  it("does not clip the mobile VSL with a short overflow-hidden max-height", () => {
+    expect(campaign).not.toContain("max-h-[min(54vh,24rem)]");
+    expect(campaign).not.toMatch(
+      /overflow-hidden sm:max-h-none[\s\S]{0,80}PaidLandingV2Media/,
+    );
+    expect(campaign).not.toContain(
+      "from-sand-50 to-transparent sm:hidden",
+    );
+  });
+
   it("uses compact campaign consent on /comece without changing legal semantics", () => {
     expect(consent).toContain('pathname === "/comece"');
     expect(consent).toContain('pathname === "/comece-v2"');

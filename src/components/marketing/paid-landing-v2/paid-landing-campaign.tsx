@@ -174,14 +174,15 @@ export function PaidLandingCampaign({
                 aria-hidden
                 className="pointer-events-none absolute -bottom-3 -right-2 h-24 w-24 rounded-full bg-gold/25 blur-2xl sm:h-32 sm:w-32"
               />
-              <div className="relative max-h-[min(54vh,24rem)] overflow-hidden sm:max-h-none lg:translate-x-2 lg:scale-[1.04]">
+              {/*
+                Do not clamp/overflow-hide the media on mobile: the 9:16 VSL
+                (~320×569 at max-w-20rem) exceeds the old 54vh/24rem cap and
+                clipped native controls + burned-in captions (~180px).
+              */}
+              <div className="relative lg:translate-x-2 lg:scale-[1.04]">
                 <PaidLandingV2Media
                   priority
                   className="mx-auto w-full max-w-[20rem] sm:max-w-[26rem] lg:max-w-none"
-                />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-sand-50 to-transparent sm:hidden"
                 />
               </div>
             </div>
