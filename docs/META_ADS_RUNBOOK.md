@@ -17,13 +17,28 @@ Landing paga: `/comece` (pública, `noindex`, fora do sitemap).
 
 Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A landing e o checkout continuam funcionando.
 
+**`META_ADS_ENABLED`:** mantenha `false` (ou unset) até concluir Test Events no Events Manager. Só então ligue `true` conscientemente.
+
+## CSP (browser)
+
+Permitidos de forma mínima em `next.config.ts` (consentimento continua mandatório):
+
+| Diretiva | Hosts |
+|---|---|
+| `script-src` | `https://connect.facebook.net` (`fbevents.js` + `/signals/config`) |
+| `connect-src` | `https://www.facebook.com`, `https://connect.facebook.net` |
+| `img-src` | `https://www.facebook.com` (beacon `/tr`) |
+| `media-src` | `'self'`, `https://*.public.blob.vercel-storage.com` (VSL no Vercel Blob) |
+
+CAPI server → `graph.facebook.com` **não** depende desta CSP. Sem consentimento de publicidade o Pixel **não** carrega mesmo com CSP aberta.
+
 ## Configurar Pixel / Dataset
 
 1. No Events Manager da Meta, crie (ou use) um Pixel/Dataset.
 2. Copie o Pixel ID para `NEXT_PUBLIC_META_PIXEL_ID`.
 3. Gere um token da Conversions API e coloque em `META_CAPI_ACCESS_TOKEN` (somente server/Vercel encrypted env).
 4. Defina `META_GRAPH_API_VERSION` com a versão Graph documentada no momento (não invente).
-5. Defina `META_ADS_ENABLED=true` só quando for validar ou operar.
+5. Defina `META_ADS_ENABLED=true` só quando for validar ou operar (após Test Events).
 
 ## Consentimento
 
@@ -76,11 +91,13 @@ Eventos first-party (`signup_started`, `paid_landing_*`, etc.) continuam indepen
 
 ## Vídeo da landing
 
-- Opcional: `NEXT_PUBLIC_PAID_LANDING_VIDEO_URL`
+- Opcional: `NEXT_PUBLIC_PAID_LANDING_VIDEO_URL` (HTTPS absoluto; preferir Vercel Blob public)
 - Sem URL: poster/produto estático fiel
-- Com URL: play explícito, `preload=metadata`, sem autoplay com áudio
+- Com URL: `<video>` nativo, play explícito, `preload=metadata`, sem autoplay com áudio
 - Poster: `/marketing/comece-poster.svg`
-- Preferir 9:16 no mobile; desktop aceita apresentação equilibrada
+- Slot reservado 9:16 com `object-contain` (não corta 9:16 nem 4:5)
+- Não versionar o MP4 no Git/`public`
+- **P2 (não nesta versão):** first-party `paid_landing_vsl_play` / quartis / complete — sem envio à Meta
 
 ## Deduplicação / idempotência
 

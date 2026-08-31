@@ -72,4 +72,14 @@ describe("meta pixel browser tracking", () => {
     expect(lead).toMatch(/Intentionally no-op|disabled/i);
     expect(lead).not.toContain('trackMetaBrowserEvent');
   });
+
+  it("keeps consent gate and sensitive-path exclusion after CSP unlock", () => {
+    const gate = read("src", "components", "meta", "meta-pixel-gate.tsx");
+    expect(gate).toContain("advertisingGranted");
+    expect(gate).toContain("disableMetaPixelRuntime");
+    expect(gate).toContain("isMetaPixelSurface");
+    expect(isMetaPixelSurface("/assinatura/sucesso")).toBe(false);
+    expect(isMetaPixelSurface("/conversas")).toBe(false);
+    expect(isMetaPixelSurface("/conta")).toBe(false);
+  });
 });

@@ -43,9 +43,20 @@ describe("web security headers", () => {
     expect(config).toContain("wss://*.supabase.co");
     expect(config).not.toContain("script-src *");
     expect(config).not.toContain("default-src *");
-    expect(config).not.toMatch(/connect-src[^;]*https:\/\/\*(?!\.supabase\.co)/);
+    // Supabase + Vercel Blob media wildcards are intentional; reject others.
+    expect(config).toContain("https://*.public.blob.vercel-storage.com");
     expect(config).not.toContain("googleapis.com");
     expect(config).not.toContain("js.stripe.com");
     expect(config).not.toContain("unsafe-eval");
+    expect(config).not.toContain("googletagmanager");
+    expect(config).not.toContain("*.facebook.com");
+    expect(config).not.toContain("*.facebook.net");
+  });
+
+  it("allows Meta Pixel + Blob media hosts required for paid acquisition", () => {
+    const config = read("next.config.ts");
+    expect(config).toContain("https://connect.facebook.net");
+    expect(config).toContain("https://www.facebook.com");
+    expect(config).toContain('media-src \'self\' https://*.public.blob.vercel-storage.com');
   });
 });

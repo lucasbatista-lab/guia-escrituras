@@ -137,6 +137,10 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     expect(media).toContain("NEXT_PUBLIC_PAID_LANDING_VIDEO_URL");
     expect(media).toContain('preload="metadata"');
     expect(media).toContain("playsInline");
+    expect(media).toContain("controls");
+    expect(media).toContain("object-contain");
+    expect(media).not.toContain("object-cover");
+    expect(media).toContain("aspect-[9/16]");
     expect(media).not.toContain("autoPlay");
     expect(media).toContain("PaidLandingV2ProductSurface");
   });

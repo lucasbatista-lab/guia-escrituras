@@ -58,6 +58,9 @@ export function PaidLandingV2ProductSurface({
 /**
  * Video-ready media for V2. Without NEXT_PUBLIC_PAID_LANDING_VIDEO_URL,
  * shows a large static product composition — never a dead play button.
+ *
+ * When a URL is set, the frame is reserved (9:16) and the video uses
+ * object-contain so 9:16 or 4:5 sources stay fully visible (no cover crop).
  */
 export function PaidLandingV2Media({
   className,
@@ -79,10 +82,9 @@ export function PaidLandingV2Media({
   return (
     <div className={className}>
       <div className="relative mx-auto w-full overflow-hidden rounded-[1.85rem] border border-ink/15 bg-ink/90 shadow-[0_28px_70px_-36px_rgba(44,36,28,0.6)] sm:rounded-[2.1rem]">
-        {/* Fixed slot: vertical/4:5 mobile, wider desktop — same height budget as poster */}
-        <div className="relative aspect-[4/5] w-full max-h-[min(54vh,24rem)] bg-ink/90 sm:aspect-[4/5] sm:max-h-[min(72vh,38rem)] lg:max-h-none">
+        <div className="relative mx-auto aspect-[9/16] w-full max-h-[min(70vh,36rem)] bg-ink/90 sm:max-h-[min(75vh,42rem)]">
           <video
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain"
             controls
             playsInline
             preload="metadata"
@@ -90,7 +92,7 @@ export function PaidLandingV2Media({
             controlsList="nodownload"
             data-priority={priority ? "true" : undefined}
           >
-            <source src={videoUrl} />
+            <source src={videoUrl} type="video/mp4" />
             Seu navegador não reproduz este vídeo.
           </video>
         </div>
