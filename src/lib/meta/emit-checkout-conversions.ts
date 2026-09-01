@@ -1,9 +1,9 @@
 import "server-only";
 
 import type Stripe from "stripe";
-import { logger } from "@/lib/logging/logger";
 import { getStripeClient } from "@/lib/stripe/client";
 import { sendMetaCapiEvent } from "./capi";
+import { logMetaCapiAttempt } from "./capi-response";
 import {
   sanitizeEventId,
   sanitizeEventSourceUrl,
@@ -185,7 +185,15 @@ export async function emitInitiateCheckoutSafe(
   userContext: CapiCheckoutUserContext,
 ): Promise<void> {
   try {
-    if (!ads?.advertisingConsent) return;
+    if (!ads?.advertisingConsent) {
+      logMetaCapiAttempt({
+        outcome: "skipped",
+        eventName: "InitiateCheckout",
+        eventId: sanitizeEventId(ads?.eventId) ?? undefined,
+        reason: "consent_not_granted",
+      });
+      return;
+    }
 
     const eventId =
       sanitizeEventId(ads.eventId) ||
@@ -194,7 +202,7 @@ export async function emitInitiateCheckoutSafe(
     const sourceUrl = sanitizeEventSourceUrl(ads.eventSourceUrl);
     const amount = sessionAmountMajor(session);
 
-    await sendMetaCapiEvent({
+    const result = await sendMetaCapiEvent({
       eventName: "InitiateCheckout",
       eventId,
       eventTime: Math.floor(Date.now() / 1000),
@@ -213,11 +221,14 @@ export async function emitInitiateCheckoutSafe(
         currency: amount.currency,
       },
     });
+    // Result already logged in sendMetaCapiEvent — observe without duplicating.
+    void result.status;
   } catch (error) {
-    logger.info("meta_capi_failed", {
-      event_name: "InitiateCheckout",
-      event_id: ads?.eventId?.slice(0, 64),
-      status: "failed",
+    logMetaCapiAttempt({
+      outcome: "failed",
+      eventName: "InitiateCheckout",
+      eventId: sanitizeEventId(ads?.eventId) ?? undefined,
+      reason: "emit_swallowed",
       code: "emit_swallowed",
     });
     void error;
@@ -238,17 +249,34 @@ export async function emitPurchaseConversionSafe(
 ): Promise<void> {
   try {
     const consent = session.metadata?.[META_SESSION_META.consent];
-    if (consent !== "granted") return;
+    if (consent !== "granted") {
+      logMetaCapiAttempt({
+        outcome: "skipped",
+        eventName: "Purchase",
+        eventId: sanitizeEventId(providerEventId) ?? undefined,
+        reason: "consent_not_granted",
+      });
+      return;
+    }
 
     const eventId = sanitizeEventId(providerEventId);
-    if (!eventId) return;
+    if (!eventId) {
+      logMetaCapiAttempt({
+        outcome: "rejected",
+        eventName: "Purchase",
+        reason: "event_id_invalid",
+        code: "event_id_invalid",
+      });
+      return;
+    }
 
     const amount = sessionAmountMajor(session);
     if (amount.value === undefined || !amount.currency) {
-      logger.info("meta_capi_rejected", {
-        event_name: "Purchase",
-        event_id: eventId.slice(0, 64),
-        status: "rejected",
+      logMetaCapiAttempt({
+        outcome: "rejected",
+        eventName: "Purchase",
+        eventId,
+        reason: "amount_missing",
         code: "amount_missing",
       });
       return;
@@ -264,7 +292,7 @@ export async function emitPurchaseConversionSafe(
         ? providerEventTime
         : Math.floor(Date.now() / 1000);
 
-    await sendMetaCapiEvent({
+    const result = await sendMetaCapiEvent({
       eventName: "Purchase",
       eventId,
       eventTime,
@@ -278,11 +306,13 @@ export async function emitPurchaseConversionSafe(
         currency: amount.currency,
       },
     });
+    void result.status;
   } catch (error) {
-    logger.info("meta_capi_failed", {
-      event_name: "Purchase",
-      event_id: providerEventId.slice(0, 64),
-      status: "failed",
+    logMetaCapiAttempt({
+      outcome: "failed",
+      eventName: "Purchase",
+      eventId: sanitizeEventId(providerEventId) ?? undefined,
+      reason: "emit_swallowed",
       code: "emit_swallowed",
     });
     void error;

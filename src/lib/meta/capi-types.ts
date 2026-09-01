@@ -35,19 +35,43 @@ export type MetaCapiEventInput = {
 };
 
 export type MetaCapiSendResult =
-  | { status: "disabled"; reason: string }
-  | { status: "sent"; eventName: MetaCapiEventName; eventId: string }
+  | {
+      status: "disabled";
+      reason: string;
+      eventName: MetaCapiEventName;
+      eventId: string;
+    }
+  | {
+      status: "skipped";
+      reason: string;
+      eventName: MetaCapiEventName;
+      eventId?: string;
+    }
+  | {
+      status: "sent";
+      eventName: MetaCapiEventName;
+      eventId: string;
+      httpStatus: number;
+      eventsReceived: number;
+      fbtraceId?: string;
+    }
   | {
       status: "rejected";
       eventName: MetaCapiEventName;
       eventId: string;
+      reason: string;
       code: string;
+      httpStatus?: number;
+      fbtraceId?: string;
     }
   | {
       status: "failed";
       eventName: MetaCapiEventName;
       eventId: string;
+      reason: string;
       code: string;
+      httpStatus?: number;
+      fbtraceId?: string;
     };
 
 export function isMetaCapiEventName(

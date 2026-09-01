@@ -139,4 +139,14 @@ describe("advertising consent controls", () => {
     expect(privacy).toContain("hash SHA-256");
     expect(privacy).toContain("/cookies");
   });
+
+  it("keeps checkout CAPI gated on advertising consent with an observable skip", () => {
+    const collect = read("src", "lib", "meta", "collect-ads-checkout-context.ts");
+    const emit = read("src", "lib", "meta", "emit-checkout-conversions.ts");
+    expect(collect).toContain("hasAdvertisingConsent(readStoredConsent())");
+    expect(collect).toContain("advertisingConsent: false");
+    expect(emit).toContain("if (!ads?.advertisingConsent)");
+    expect(emit).toContain('reason: "consent_not_granted"');
+    expect(emit).toContain("logMetaCapiAttempt");
+  });
 });

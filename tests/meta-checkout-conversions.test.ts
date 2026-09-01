@@ -59,6 +59,7 @@ describe("meta checkout and purchase conversions", () => {
 
     expect(checkout).toContain("buildAdsSessionMetadata");
     expect(checkout).toContain("captureCapiRequestContext");
+    expect(checkout).toContain("await emitInitiateCheckoutSafe");
     expect(checkout).toContain("emitInitiateCheckoutSafe");
     expect(checkout).toContain("sessionMetadata");
     expect(checkout).toContain("metadata: sharedMetadata");
@@ -96,5 +97,23 @@ describe("meta checkout and purchase conversions", () => {
     expect(continuar).toContain("StartCheckoutButton");
     expect(action).toContain("AdsCheckoutContext");
     expect(action).toContain("createSubscriptionCheckout(intentToken, adsContext)");
+  });
+
+  it("awaits CAPI after session create and fail-opens on Meta errors", () => {
+    const checkout = read("src", "lib", "stripe", "checkout.ts");
+    const emit = read("src", "lib", "meta", "emit-checkout-conversions.ts");
+    const action = read("src", "lib", "billing", "checkout-action.ts");
+
+    const emitIndex = checkout.indexOf("await emitInitiateCheckoutSafe");
+    const returnIndex = checkout.indexOf("return { ok: true, url: session.url");
+    expect(emitIndex).toBeGreaterThan(0);
+    expect(returnIndex).toBeGreaterThan(emitIndex);
+    expect(checkout).toContain("must never fail checkout");
+
+    expect(emit).toContain("consent_not_granted");
+    expect(emit).toContain("logMetaCapiAttempt");
+    expect(emit).toContain("void result.status");
+    expect(action).toContain("redirect(result.url)");
+    expect(action).not.toContain("sendMetaCapiEvent");
   });
 });
