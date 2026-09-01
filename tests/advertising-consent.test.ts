@@ -136,7 +136,7 @@ describe("advertising consent controls", () => {
     expect(cookies).toContain("Desativada por padrão");
     expect(cookies).toContain("amem_acq_first");
     expect(privacy).toContain("Meta");
-    expect(privacy).toContain("Não enviamos à Meta o");
+    expect(privacy).toContain("hash SHA-256");
     expect(privacy).toContain("/cookies");
   });
 });

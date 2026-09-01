@@ -12,7 +12,7 @@ Landing paga: `/comece` (pública, `noindex`, fora do sitemap).
 | `NEXT_PUBLIC_PAID_LANDING_VIDEO_URL` | Browser | Não |
 | `META_ADS_ENABLED` | Server | Sim (`true`/`1`/`yes`/`on`) |
 | `META_CAPI_ACCESS_TOKEN` | Server only | Sim |
-| `META_GRAPH_API_VERSION` | Server only | Sim (ex.: `v21.0`) — **não adivinhar** |
+| `META_GRAPH_API_VERSION` | Server only | Sim — use a **current** Graph API version from Meta docs at setup time; **never guess in code** |
 | `META_CAPI_TEST_EVENT_CODE` | Server only | Não (somente teste) |
 
 Sem essas variáveis, Pixel e CAPI permanecem desabilitados com segurança. A landing e o checkout continuam funcionando.
@@ -116,15 +116,24 @@ Eventos first-party (`signup_started`, `paid_landing_*`, etc.) continuam indepen
 - `event_name`, `event_id`, `event_time`, `event_source_url`, `action_source`
 - `value`, `currency` (quando aplicável)
 - `_fbp`, `_fbc` quando existirem
+- `em` (e-mail normalizado + SHA-256 hex lowercase, nunca plaintext)
+- `external_id` (UUID interno do usuário + SHA-256 hex lowercase)
+- `client_ip_address` (IP do comprador no momento do checkout, não hasheado)
+- `client_user_agent` (User-Agent do comprador no checkout, não hasheado)
+
+IP e User-Agent são capturados na criação da Stripe Checkout Session e repassados via metadata (`meta_client_ip`, `meta_client_ua`) para o Purchase no webhook — nunca o IP/UA do request do webhook Stripe.
 
 ## Dados que nunca são enviados
 
-- e-mail / telefone (nem hash) / advanced matching / `external_id` / IP / user agent
+- e-mail / telefone em plaintext
 - plano, tradição religiosa, conteúdo de conversa
 - situação pessoal, emoção, crise, mensagem, prompt
 - versão bíblica, perfil espiritual
+- UTMs com PII na `event_source_url` (query/hash são removidos)
 
-EMQ menor é aceito conscientemente em favor da privacidade nesta versão.
+## Dataset Quality API (P2 — pós-lançamento)
+
+A Dataset Quality API da Meta é útil para diagnóstico operacional de Event Match Quality (EMQ), mas **não é requisito** para enviar conversões nem sinal direto adicional para otimização. Não implementada nesta versão. Avaliar após Test Events e primeiras campanhas.
 
 ## Checklist visual (antes de ativar)
 

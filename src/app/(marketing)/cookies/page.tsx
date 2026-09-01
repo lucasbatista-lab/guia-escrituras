@@ -34,8 +34,11 @@ export default function CookiesPage() {
         Meta Pixel e cookies relacionados (_fbp, _fbc) para medir e otimizar
         campanhas. Eventos enviados à Meta, quando autorizados, limitam-se a
         identificadores técnicos de evento, URL de origem, valor/moeda quando
-        aplicável e cookies publicitários — sem e-mail, telefone, conteúdo de
-        conversa, tradição religiosa ou perfil espiritual.
+        aplicável, cookies publicitários, identificadores criptograficamente
+        transformados (por exemplo, e-mail em hash SHA-256 para correspondência
+        de eventos) e dados técnicos de conexão capturados no checkout (IP e
+        User-Agent) — sem conteúdo de conversa, tradição religiosa ou perfil
+        espiritual.
       </p>
       <p>
         Você pode aceitar, recusar ou alterar essa escolha a qualquer momento. Ao

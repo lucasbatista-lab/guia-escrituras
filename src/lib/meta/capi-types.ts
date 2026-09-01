@@ -10,8 +10,18 @@ export type MetaCapiCustomData = {
 };
 
 export type MetaCapiUserData = {
+  /** Plaintext email — hashed server-side; never sent to Meta. */
+  email?: string;
+  /** Pre-computed SHA-256 hex email hash. */
+  emHash?: string;
+  /** Stable internal user UUID — hashed server-side. */
+  userId?: string;
+  /** Pre-computed SHA-256 hex external_id hash. */
+  externalIdHash?: string;
   fbp?: string;
   fbc?: string;
+  clientIpAddress?: string;
+  clientUserAgent?: string;
 };
 
 export type MetaCapiEventInput = {

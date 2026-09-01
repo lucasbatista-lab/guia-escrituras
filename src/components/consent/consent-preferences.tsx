@@ -65,8 +65,9 @@ export function ConsentPreferencesPanel({ titleId }: { titleId: string }) {
               id="consent-ads-help"
               className="mt-0.5 block text-xs leading-relaxed text-ink-soft"
             >
-              Meta Pixel, cookies _fbp/_fbc e eventos de mensuração de campanha.
-              Desativada por padrão.
+              Meta Pixel, cookies _fbp/_fbc e eventos de mensuração de campanha
+              (incluindo identificadores em hash e dados técnicos de conexão no
+              checkout). Desativada por padrão.
             </span>
           </span>
         </label>

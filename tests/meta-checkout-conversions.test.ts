@@ -22,19 +22,24 @@ describe("meta checkout and purchase conversions", () => {
       }),
     ).toEqual({});
 
-    const granted = buildAdsSessionMetadata({
-      advertisingConsent: true,
-      eventSourceUrl: "https://amemchat.com.br/assinar/continuar?utm_source=ig",
-      fbp: "fb.1.1700000000.1",
-      fbc: "fb.1.1700000000.AbC",
-      eventId: "evt_ic_1",
-    });
+    const granted = buildAdsSessionMetadata(
+      {
+        advertisingConsent: true,
+        eventSourceUrl: "https://amemchat.com.br/assinar/continuar?utm_source=ig",
+        fbp: "fb.1.1700000000.1",
+        fbc: "fb.1.1700000000.AbC",
+        eventId: "evt_ic_1",
+      },
+      { clientIp: "203.0.113.1", clientUa: "Mozilla/5.0" },
+    );
     expect(granted[META_SESSION_META.consent]).toBe("granted");
     expect(granted[META_SESSION_META.eventSourceUrl]).toBe(
       "https://amemchat.com.br/assinar/continuar",
     );
     expect(granted[META_SESSION_META.fbp]).toBe("fb.1.1700000000.1");
     expect(granted[META_SESSION_META.initiateEventId]).toBe("evt_ic_1");
+    expect(granted[META_SESSION_META.clientIp]).toBe("203.0.113.1");
+    expect(granted[META_SESSION_META.clientUa]).toBe("Mozilla/5.0");
     expect(granted).not.toHaveProperty("plan_key");
     expect(granted).not.toHaveProperty("user_id");
   });
@@ -53,16 +58,20 @@ describe("meta checkout and purchase conversions", () => {
     const emit = read("src", "lib", "meta", "emit-checkout-conversions.ts");
 
     expect(checkout).toContain("buildAdsSessionMetadata");
+    expect(checkout).toContain("captureCapiRequestContext");
     expect(checkout).toContain("emitInitiateCheckoutSafe");
     expect(checkout).toContain("sessionMetadata");
     expect(checkout).toContain("metadata: sharedMetadata");
     expect(checkout).toContain("metadata: sessionMetadata");
     expect(webhook).toContain("emitPurchaseConversionSafe");
     expect(webhook).toContain("checkout.session.completed");
+    expect(webhook).toContain("event.created");
     expect(success).not.toContain("sendMetaCapiEvent");
     expect(success).not.toContain("emitPurchaseConversionSafe");
     expect(emit).toContain("server-side only");
     expect(emit).toContain("providerEventId");
+    expect(emit).toContain("META_SESSION_META.clientIp");
+    expect(emit).toContain("META_SESSION_META.clientUa");
   });
 
   it("wires client ads context into checkout without financial mutation helpers", () => {

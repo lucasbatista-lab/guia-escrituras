@@ -126,7 +126,8 @@ describe("meta conversions API client", () => {
     expect(sent.status).toBe("sent");
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("graph.facebook.com/v21.0/1234567890/events");
+    const graphVersion = process.env.META_GRAPH_API_VERSION;
+    expect(url).toContain(`graph.facebook.com/${graphVersion}/1234567890/events`);
     const body = JSON.parse(String(init.body)) as Record<string, unknown>;
     expect(body.test_event_code).toBe("TEST12345");
     expect(body.access_token).toBe("server-token-only");

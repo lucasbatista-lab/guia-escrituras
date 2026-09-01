@@ -18,4 +18,6 @@ export const META_SESSION_META = {
   fbp: "meta_fbp",
   fbc: "meta_fbc",
   initiateEventId: "meta_initiate_checkout_event_id",
+  clientIp: "meta_client_ip",
+  clientUa: "meta_client_ua",
 } as const;

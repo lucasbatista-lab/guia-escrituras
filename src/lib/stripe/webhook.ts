@@ -78,7 +78,7 @@ export async function handleStripeWebhookEvent(
         // Purchase is server-side only after financial processing succeeds.
         // Uses Stripe event.id for idempotency across webhook retries.
         // Meta failures must never undo payment or change this handler's result.
-        await emitPurchaseConversionSafe(checkoutSession, event.id);
+        await emitPurchaseConversionSafe(checkoutSession, event.id, event.created);
         break;
       }
       case "customer.subscription.created":

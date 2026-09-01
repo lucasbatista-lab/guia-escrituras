@@ -1,8 +1,8 @@
 /** First-party advertising consent — bump when policy categories change. */
-export const CONSENT_POLICY_VERSION = 1;
+export const CONSENT_POLICY_VERSION = 2;
 
 export const CONSENT_COOKIE_NAME = "amem_consent";
-export const CONSENT_STORAGE_KEY = "amem_consent_v1";
+export const CONSENT_STORAGE_KEY = "amem_consent_v2";
 
 /** ~180 days */
 export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 180;

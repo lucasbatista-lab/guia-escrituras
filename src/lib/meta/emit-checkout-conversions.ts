@@ -2,6 +2,7 @@ import "server-only";
 
 import type Stripe from "stripe";
 import { logger } from "@/lib/logging/logger";
+import { getStripeClient } from "@/lib/stripe/client";
 import { sendMetaCapiEvent } from "./capi";
 import {
   sanitizeEventId,
@@ -11,10 +12,40 @@ import {
 } from "./capi-sanitize";
 import { META_SESSION_META } from "./ads-checkout-context";
 import type { AdsCheckoutContext } from "./ads-checkout-context";
+import {
+  extractClientIpFromHeaders,
+  extractClientUserAgentFromHeaders,
+  sanitizeClientIp,
+  sanitizeClientUserAgent,
+  truncateStripeMetadataValue,
+} from "./request-client";
+
+export type CapiCheckoutUserContext = {
+  userId: string;
+  email: string | null;
+  clientIp: string | null;
+  clientUa: string | null;
+};
+
+export type CapiServerRequestContext = {
+  clientIp: string | null;
+  clientUa: string | null;
+};
+
+/** Capture client IP/UA from the checkout server action request. */
+export function captureCapiRequestContext(headers: {
+  get(name: string): string | null;
+}): CapiServerRequestContext {
+  return {
+    clientIp: extractClientIpFromHeaders(headers),
+    clientUa: extractClientUserAgentFromHeaders(headers),
+  };
+}
 
 /** Build non-financial session metadata when advertising is consented. */
 export function buildAdsSessionMetadata(
   ads: AdsCheckoutContext | null | undefined,
+  requestContext?: CapiServerRequestContext | null,
 ): Record<string, string> {
   if (!ads?.advertisingConsent) {
     return {};
@@ -35,6 +66,16 @@ export function buildAdsSessionMetadata(
 
   const eventId = sanitizeEventId(ads.eventId);
   if (eventId) out[META_SESSION_META.initiateEventId] = eventId;
+
+  const ip = sanitizeClientIp(requestContext?.clientIp);
+  if (ip) {
+    out[META_SESSION_META.clientIp] = truncateStripeMetadataValue(ip);
+  }
+
+  const ua = sanitizeClientUserAgent(requestContext?.clientUa);
+  if (ua) {
+    out[META_SESSION_META.clientUa] = truncateStripeMetadataValue(ua);
+  }
 
   return out;
 }
@@ -57,6 +98,83 @@ function sessionAmountMajor(session: Stripe.Checkout.Session): {
   return { value: undefined, currency: undefined };
 }
 
+function userDataFromSessionMetadata(
+  session: Stripe.Checkout.Session,
+  email: string | null,
+  userId: string | null,
+): {
+  email?: string;
+  userId?: string;
+  fbp?: string;
+  fbc?: string;
+  clientIpAddress?: string;
+  clientUserAgent?: string;
+} {
+  const meta = session.metadata ?? {};
+  const out: {
+    email?: string;
+    userId?: string;
+    fbp?: string;
+    fbc?: string;
+    clientIpAddress?: string;
+    clientUserAgent?: string;
+  } = {};
+
+  if (email) out.email = email;
+  if (userId) out.userId = userId;
+
+  const fbp = sanitizeFbp(meta[META_SESSION_META.fbp]);
+  if (fbp) out.fbp = fbp;
+
+  const fbc = sanitizeFbc(meta[META_SESSION_META.fbc]);
+  if (fbc) out.fbc = fbc;
+
+  const ip = sanitizeClientIp(meta[META_SESSION_META.clientIp]);
+  if (ip) out.clientIpAddress = ip;
+
+  const ua = sanitizeClientUserAgent(meta[META_SESSION_META.clientUa]);
+  if (ua) out.clientUserAgent = ua;
+
+  return out;
+}
+
+async function resolvePurchaseEmail(
+  session: Stripe.Checkout.Session,
+): Promise<string | null> {
+  const fromDetails = session.customer_details?.email?.trim();
+  if (fromDetails) return fromDetails;
+
+  const fromSession = session.customer_email?.trim();
+  if (fromSession) return fromSession;
+
+  const customerRef = session.customer;
+  const customerId =
+    typeof customerRef === "string"
+      ? customerRef
+      : customerRef && typeof customerRef === "object" && "id" in customerRef
+        ? String(customerRef.id)
+        : null;
+
+  if (!customerId) return null;
+
+  try {
+    const stripe = getStripeClient();
+    const customer = await stripe.customers.retrieve(customerId);
+    if (
+      customer &&
+      !("deleted" in customer && customer.deleted) &&
+      typeof customer.email === "string" &&
+      customer.email.trim()
+    ) {
+      return customer.email.trim();
+    }
+  } catch {
+    // Best-effort — Purchase still fires with external_id when email unavailable.
+  }
+
+  return null;
+}
+
 /**
  * InitiateCheckout after a real Checkout Session create.
  * Never throws — advertising failures must not affect checkout.
@@ -64,6 +182,7 @@ function sessionAmountMajor(session: Stripe.Checkout.Session): {
 export async function emitInitiateCheckoutSafe(
   session: Stripe.Checkout.Session,
   ads: AdsCheckoutContext | null | undefined,
+  userContext: CapiCheckoutUserContext,
 ): Promise<void> {
   try {
     if (!ads?.advertisingConsent) return;
@@ -82,8 +201,12 @@ export async function emitInitiateCheckoutSafe(
       eventSourceUrl: sourceUrl,
       actionSource: "website",
       userData: {
+        email: userContext.email ?? undefined,
+        userId: userContext.userId,
         fbp: sanitizeFbp(ads.fbp) ?? undefined,
         fbc: sanitizeFbc(ads.fbc) ?? undefined,
+        clientIpAddress: userContext.clientIp ?? undefined,
+        clientUserAgent: userContext.clientUa ?? undefined,
       },
       customData: {
         value: amount.value,
@@ -111,6 +234,7 @@ export async function emitInitiateCheckoutSafe(
 export async function emitPurchaseConversionSafe(
   session: Stripe.Checkout.Session,
   providerEventId: string,
+  providerEventTime?: number,
 ): Promise<void> {
   try {
     const consent = session.metadata?.[META_SESSION_META.consent];
@@ -130,20 +254,25 @@ export async function emitPurchaseConversionSafe(
       return;
     }
 
+    const userId = session.metadata?.user_id?.trim() || null;
+    const email = await resolvePurchaseEmail(session);
+
+    const eventTime =
+      typeof providerEventTime === "number" &&
+      Number.isFinite(providerEventTime) &&
+      providerEventTime > 0
+        ? providerEventTime
+        : Math.floor(Date.now() / 1000);
+
     await sendMetaCapiEvent({
       eventName: "Purchase",
       eventId,
-      eventTime: Math.floor(Date.now() / 1000),
+      eventTime,
       eventSourceUrl: sanitizeEventSourceUrl(
         session.metadata?.[META_SESSION_META.eventSourceUrl],
       ),
       actionSource: "website",
-      userData: {
-        fbp:
-          sanitizeFbp(session.metadata?.[META_SESSION_META.fbp]) ?? undefined,
-        fbc:
-          sanitizeFbc(session.metadata?.[META_SESSION_META.fbc]) ?? undefined,
-      },
+      userData: userDataFromSessionMetadata(session, email, userId),
       customData: {
         value: amount.value,
         currency: amount.currency,

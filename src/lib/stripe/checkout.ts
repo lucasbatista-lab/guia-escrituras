@@ -1,5 +1,6 @@
 import "server-only";
 
+import { headers } from "next/headers";
 import { getAuthUserContext } from "@/lib/auth/session";
 import { assessCheckoutEligibility } from "@/lib/billing/checkout-guard";
 import { loadUserSubscriptions } from "@/lib/billing/subscription-lookup";
@@ -36,7 +37,9 @@ import {
 import type { AdsCheckoutContext } from "@/lib/meta/ads-checkout-context";
 import {
   buildAdsSessionMetadata,
+  captureCapiRequestContext,
   emitInitiateCheckoutSafe,
+  type CapiServerRequestContext,
 } from "@/lib/meta/emit-checkout-conversions";
 
 export type CreateCheckoutResult =
@@ -226,7 +229,17 @@ export async function createSubscriptionCheckout(
     };
     // Advertising metadata is session-only (non-financial). Never mutate
     // price/line_items/customer/subscription commercial fields for Meta.
-    const adsMetadata = buildAdsSessionMetadata(adsContext);
+    let capiRequest: CapiServerRequestContext = {
+      clientIp: null,
+      clientUa: null,
+    };
+    try {
+      const requestHeaders = await headers();
+      capiRequest = captureCapiRequestContext(requestHeaders);
+    } catch {
+      // Outside a Next request (tests/edge) — checkout proceeds without IP/UA.
+    }
+    const adsMetadata = buildAdsSessionMetadata(adsContext, capiRequest);
     const sessionMetadata = { ...sharedMetadata, ...adsMetadata };
 
     let session;
@@ -309,7 +322,12 @@ export async function createSubscriptionCheckout(
     });
 
     // Meta InitiateCheckout is additive and must never fail checkout.
-    await emitInitiateCheckoutSafe(session, adsContext);
+    await emitInitiateCheckoutSafe(session, adsContext, {
+      userId: auth.userId,
+      email: auth.email,
+      clientIp: capiRequest.clientIp,
+      clientUa: capiRequest.clientUa,
+    });
 
     return { ok: true, url: session.url, requestId };
   } catch (error) {

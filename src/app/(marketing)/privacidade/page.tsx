@@ -48,9 +48,12 @@ export default function PrivacidadePage() {
         publicidade (incluindo o Meta Pixel e a Conversions API) para medir e
         otimizar campanhas. Nesses casos, a Meta pode processar eventos
         publicitários técnicos — como nome do evento, identificadores de evento,
-        horário, URL de origem, valor e moeda quando aplicáveis, e cookies
-        publicitários (_fbp/_fbc) quando existirem. Não enviamos à Meta o
-        conteúdo das conversas, assuntos espirituais, tradição religiosa, e-mail,
+        horário, URL de origem, valor e moeda quando aplicáveis, cookies
+        publicitários (_fbp/_fbc) quando existirem, identificadores
+        criptograficamente transformados (por exemplo, e-mail em hash SHA-256
+        para correspondência de eventos) e dados técnicos de conexão (IP e
+        User-Agent do navegador no momento do checkout). Não enviamos à Meta o
+        conteúdo das conversas, assuntos espirituais, tradição religiosa,
         telefone nem perfil espiritual nesta integração.
       </p>
       <p>

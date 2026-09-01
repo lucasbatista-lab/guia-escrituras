@@ -7,7 +7,7 @@ export function getTermsVersion(): string {
 }
 
 export function getPrivacyVersion(): string {
-  return process.env.NEXT_PUBLIC_PRIVACY_VERSION?.trim() || "2026-07-12";
+  return process.env.NEXT_PUBLIC_PRIVACY_VERSION?.trim() || "2026-08-31";
 }
 
 export function getLegalEntityName(): string | null {
