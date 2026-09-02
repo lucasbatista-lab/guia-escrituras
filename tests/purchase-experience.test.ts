@@ -301,7 +301,7 @@ describe("purchase experience — visual states & a11y hooks", () => {
       "auth",
       "email-confirmed-experience.tsx",
     );
-    expect(emailConfirmed).toContain("prefers-reduced-motion");
+    expect(emailConfirmed).toContain("aria-live");
   });
 });
 

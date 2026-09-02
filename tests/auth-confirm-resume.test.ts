@@ -453,7 +453,8 @@ describe("sign-up redirects to confirm and check-email", () => {
       "utf8",
     );
     expect(src).toContain("getEmailRedirectToWithIntent");
-    expect(src).toContain("associateIntentUserAwaitingConfirmation");
+    expect(src).toContain("attemptPaidCheckout");
+    expect(src).toContain("createSubscriptionCheckoutForActor");
     expect(src).toContain("/confira-seu-email");
     expect(src).toContain("setSignupIntentCookie");
     expect(src).not.toContain("getAuthCallbackUrlForIntent");

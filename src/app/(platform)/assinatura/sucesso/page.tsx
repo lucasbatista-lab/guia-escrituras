@@ -42,6 +42,10 @@ export default async function AssinaturaSucessoPage({
           : "processing";
 
   const initialNextPath = view.kind === "active" ? view.nextPath : null;
+  const initialEmailConfirmed =
+    view.kind === "active" ? view.emailConfirmed : true;
+  const initialEmailMasked =
+    view.kind === "active" ? view.emailMasked : null;
 
   const auth = await getAuthUserContext();
   const shareUrl = auth
@@ -54,6 +58,8 @@ export default async function AssinaturaSucessoPage({
       <CheckoutSuccessClient
         initialStatus={initialStatus}
         initialNextPath={initialNextPath}
+        initialEmailConfirmed={initialEmailConfirmed}
+        initialEmailMasked={initialEmailMasked}
       />
       {shareUrl && initialStatus !== "forbidden" ? (
         <aside className="mt-12 border-t border-border/50 pt-8 opacity-90">

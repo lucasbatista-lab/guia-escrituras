@@ -52,6 +52,13 @@ export type CreateCheckoutResult =
       ref: string;
     };
 
+/** Trusted checkout actor — always constructed server-side, never from client input. */
+export type CheckoutTrustedActor = {
+  userId: string;
+  email: string;
+  source: "new_signup" | "authenticated_user";
+};
+
 async function resolveCheckoutView(
   authUserId: string,
   intentToken: string | null,
@@ -85,21 +92,21 @@ function fail(
   };
 }
 
-export async function createSubscriptionCheckout(
+/**
+ * Core checkout — accepts a server-derived trusted actor.
+ * Never call with userId/email supplied by the client.
+ */
+export async function createSubscriptionCheckoutForActor(
+  actor: CheckoutTrustedActor,
   intentToken: string | null = null,
   adsContext: AdsCheckoutContext | null = null,
+  requestId: string = createRequestId(),
 ): Promise<CreateCheckoutResult> {
-  const requestId = createRequestId();
-  let stage: CheckoutStage = "auth";
+  let stage: CheckoutStage = "config";
   let planKey: string | undefined;
   let mode: string | undefined;
 
   try {
-    const auth = await getAuthUserContext();
-    if (!auth || auth.demoMode) {
-      return fail(requestId, "unauthenticated", "auth");
-    }
-
     stage = "config";
     try {
       assertStripeConfigured();
@@ -115,7 +122,7 @@ export async function createSubscriptionCheckout(
     }
 
     stage = "intent";
-    const view = await resolveCheckoutView(auth.userId, intentToken);
+    const view = await resolveCheckoutView(actor.userId, intentToken);
     if (view.kind === "expired") {
       return fail(requestId, "expired", "intent");
     }
@@ -132,14 +139,14 @@ export async function createSubscriptionCheckout(
 
     const intent = intentToken
       ? await loadSignupIntentByToken(intentToken)
-      : await loadSignupIntentByIdForUser(view.intentId, auth.userId);
+      : await loadSignupIntentByIdForUser(view.intentId, actor.userId);
 
-    if (!intent || intent.userId !== auth.userId) {
+    if (!intent || intent.userId !== actor.userId) {
       return fail(requestId, "invalid_intent", "intent", { planKey, mode });
     }
 
     stage = "subscription_guard";
-    const subscriptions = await loadUserSubscriptions(auth.userId, {
+    const subscriptions = await loadUserSubscriptions(actor.userId, {
       useAdmin: true,
     });
     const eligibility = assessCheckoutEligibility(subscriptions);
@@ -204,7 +211,7 @@ export async function createSubscriptionCheckout(
     stage = "customer";
     let customerId: string;
     try {
-      customerId = await getOrCreateBillingCustomer(auth.userId, auth.email);
+      customerId = await getOrCreateBillingCustomer(actor.userId, actor.email);
     } catch (error) {
       const mapped = mapStripeCheckoutError(error);
       return fail(
@@ -222,10 +229,11 @@ export async function createSubscriptionCheckout(
     stage = "create_session";
     const { successUrl, cancelUrl } = getCheckoutUrls();
     const sharedMetadata = {
-      user_id: auth.userId,
+      user_id: actor.userId,
       plan_key: view.planKey,
       signup_intent_id: intent.id,
       stripe_mode: mode,
+      checkout_source: actor.source,
     };
     // Advertising metadata is session-only (non-financial). Never mutate
     // price/line_items/customer/subscription commercial fields for Meta.
@@ -248,7 +256,7 @@ export async function createSubscriptionCheckout(
         mode: "subscription",
         locale: "pt-BR",
         customer: customerId,
-        client_reference_id: auth.userId,
+        client_reference_id: actor.userId,
         line_items: [{ price: priceId, quantity: 1 }],
         allow_promotion_codes: true,
         success_url: successUrl,
@@ -323,8 +331,8 @@ export async function createSubscriptionCheckout(
 
     // Meta InitiateCheckout is additive and must never fail checkout.
     await emitInitiateCheckoutSafe(session, adsContext, {
-      userId: auth.userId,
-      email: auth.email,
+      userId: actor.userId,
+      email: actor.email,
       clientIp: capiRequest.clientIp,
       clientUa: capiRequest.clientUa,
     });
@@ -338,4 +346,31 @@ export async function createSubscriptionCheckout(
       issue: mapped.providerCode ?? "unexpected",
     });
   }
+}
+
+/** Authenticated checkout wrapper — requires a valid Supabase session. */
+export async function createSubscriptionCheckout(
+  intentToken: string | null = null,
+  adsContext: AdsCheckoutContext | null = null,
+): Promise<CreateCheckoutResult> {
+  const requestId = createRequestId();
+  const auth = await getAuthUserContext();
+  if (!auth || auth.demoMode) {
+    return fail(requestId, "unauthenticated", "auth");
+  }
+  if (!auth.email) {
+    return fail(requestId, "unauthenticated", "auth", {
+      issue: "missing_email",
+    });
+  }
+  return createSubscriptionCheckoutForActor(
+    {
+      userId: auth.userId,
+      email: auth.email,
+      source: "authenticated_user",
+    },
+    intentToken,
+    adsContext,
+    requestId,
+  );
 }

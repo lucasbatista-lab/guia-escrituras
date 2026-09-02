@@ -8,7 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getPrivacyVersion, getTermsVersion } from "@/config/legal";
+import { ACCOUNT_EXISTS_ACTIONABLE_MESSAGE } from "@/lib/auth/sign-up-errors";
 import { signUpAction } from "@/lib/auth/sign-up-action";
+import { collectAdsCheckoutContext } from "@/lib/meta/collect-ads-checkout-context";
 import type { SignupTrackingParams } from "@/lib/signup-intents";
 import type { PlanKey } from "@/lib/entitlements";
 import { hasSupabaseEnv } from "@/lib/utils";
@@ -43,13 +45,16 @@ export function SignUpForm({
     terms?: string;
   }>({});
   const [error, setError] = useState<string | null>(null);
+  const [showLoginCtas, setShowLoginCtas] = useState(false);
   const [requestIdHint, setRequestIdHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const termsRef = useRef<HTMLButtonElement>(null);
   const formErrorRef = useRef<HTMLParagraphElement>(null);
 
+  const isPaidFunnel = Boolean(planKey);
   const termsVersion = getTermsVersion();
   const privacyVersion = getPrivacyVersion();
   const checks = useMemo(() => passwordChecks(password), [password]);
@@ -74,7 +79,9 @@ export function SignUpForm({
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (submittingRef.current) return;
     setError(null);
+    setShowLoginCtas(false);
     setRequestIdHint(null);
     setFieldError({});
 
@@ -98,6 +105,7 @@ export function SignUpForm({
       return;
     }
 
+    submittingRef.current = true;
     setLoading(true);
 
     try {
@@ -109,6 +117,8 @@ export function SignUpForm({
         return;
       }
 
+      const adsContext = isPaidFunnel ? collectAdsCheckoutContext() : null;
+
       const result = await signUpAction({
         displayName,
         email,
@@ -116,9 +126,16 @@ export function SignUpForm({
         planKey,
         termsAccepted,
         tracking,
+        adsContext,
       });
 
       if (!result.ok) {
+        if (result.code === "account_exists_actionable") {
+          setError(ACCOUNT_EXISTS_ACTIONABLE_MESSAGE);
+          setShowLoginCtas(true);
+          focusFirstError({ form: true });
+          return;
+        }
         if (result.code === "email_invalid") {
           setFieldError({ email: result.message });
           focusFirstError({ email: result.message });
@@ -130,6 +147,9 @@ export function SignUpForm({
           focusFirstError({ terms: result.message });
         } else {
           setError(result.message);
+          if (result.checkoutRef) {
+            setRequestIdHint(result.checkoutRef);
+          }
           focusFirstError({ form: true });
         }
         if (result.code === "unexpected" || result.code === "email_service_unavailable") {
@@ -138,8 +158,10 @@ export function SignUpForm({
         return;
       }
 
-      // Meta Lead is disabled in this version: soft-success paths
-      // (duplicate email / enumeration-safe ok) must not emit Lead.
+      if (result.stripeCheckout && result.redirectTo) {
+        window.location.href = result.redirectTo;
+        return;
+      }
 
       if (result.needsEmailConfirmation && result.redirectTo) {
         router.push(result.redirectTo);
@@ -156,6 +178,7 @@ export function SignUpForm({
       );
       focusFirstError({ form: true });
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   }
@@ -168,6 +191,11 @@ export function SignUpForm({
           públicas do projeto.
         </p>
       )}
+      {isPaidFunnel ? (
+        <p className="text-sm leading-relaxed text-ink-soft">
+          Informe seus dados uma única vez e siga para o pagamento seguro.
+        </p>
+      ) : null}
       <div className="space-y-2">
         <Label htmlFor="name">Nome</Label>
         <Input
@@ -316,6 +344,13 @@ export function SignUpForm({
         </p>
       ) : null}
 
+      {isPaidFunnel ? (
+        <p className="text-xs leading-relaxed text-ink-soft">
+          A confirmação do e-mail libera seu acesso ao Amém Chat, mas não
+          interrompe o pagamento.
+        </p>
+      ) : null}
+
       {error && (
         <p
           ref={formErrorRef}
@@ -332,13 +367,30 @@ export function SignUpForm({
         </p>
       )}
 
+      {showLoginCtas ? (
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild variant="outline" className="min-h-12 flex-1 rounded-xl">
+            <Link href={loginHref}>Entrar</Link>
+          </Button>
+          <Button asChild variant="outline" className="min-h-12 flex-1 rounded-xl">
+            <Link href="/recuperar-senha">Recuperar senha</Link>
+          </Button>
+        </div>
+      ) : null}
+
       <Button
         type="submit"
         className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft"
         disabled={loading || !hasSupabaseEnv()}
         aria-busy={loading}
       >
-        {loading ? "Criando…" : "Criar conta"}
+        {loading
+          ? isPaidFunnel
+            ? "Preparando pagamento…"
+            : "Criando…"
+          : isPaidFunnel
+            ? "Continuar para pagamento seguro"
+            : "Criar conta"}
       </Button>
       <p className="text-center text-sm text-ink-soft">
         Já tem conta?{" "}

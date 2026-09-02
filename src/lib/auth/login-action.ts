@@ -15,7 +15,12 @@ const loginSchema = z.object({
 
 export type LoginActionResult =
   | { ok: true; redirectTo: string; requestId: string }
-  | { ok: false; message: string; requestId: string };
+  | {
+      ok: false;
+      message: string;
+      requestId: string;
+      code?: "invalid_credentials" | "email_not_confirmed" | "config_missing";
+    };
 
 export async function loginAction(input: {
   email: string;
@@ -30,6 +35,7 @@ export async function loginAction(input: {
       message:
         "Autenticação indisponível: configure o Supabase neste ambiente.",
       requestId,
+      code: "config_missing",
     };
   }
 
@@ -39,6 +45,7 @@ export async function loginAction(input: {
       ok: false,
       message: "Não foi possível entrar. Verifique e-mail e senha.",
       requestId,
+      code: "invalid_credentials",
     };
   }
 
@@ -49,23 +56,40 @@ export async function loginAction(input: {
       message:
         "Autenticação indisponível: configure o Supabase neste ambiente.",
       requestId,
+      code: "config_missing",
     };
   }
 
   const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
+    email: parsed.data.email.trim().toLowerCase(),
     password: parsed.data.password,
   });
 
   if (error) {
+    const authCode = (error.code ?? "").toLowerCase();
     logger.warn("login_failed", {
       requestId,
       authCode: error.code ?? null,
     });
+
+    if (
+      authCode === "email_not_confirmed" ||
+      error.message?.toLowerCase().includes("email not confirmed")
+    ) {
+      return {
+        ok: false,
+        message:
+          "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada ou solicite um novo link de confirmação.",
+        requestId,
+        code: "email_not_confirmed",
+      };
+    }
+
     return {
       ok: false,
       message: "Não foi possível entrar. Verifique e-mail e senha.",
       requestId,
+      code: "invalid_credentials",
     };
   }
 

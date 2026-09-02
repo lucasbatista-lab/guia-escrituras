@@ -35,12 +35,9 @@ describe("first-use onboarding — subscription success", () => {
   );
 
   it("prioritizes confirmation and next-step CTA without auto-redirect", () => {
-    expect(client).toContain("Assinatura confirmada");
-    expect(client).toContain("Personalizar minha experiência");
-    expect(client).toContain("Começar uma reflexão");
-    expect(client).toContain(
-      "ajuste sua experiência para receber reflexões mais alinhadas",
-    );
+    expect(client).toContain("Pagamento confirmado");
+    expect(client).toContain("Personalizar meu Amém Chat");
+    expect(client).toContain("Já confirmei — entrar");
     expect(client).not.toContain("router.replace(data.nextPath)");
     expect(page).toContain('view.kind === "active"');
     expect(page).not.toContain("redirect(view.nextPath)");

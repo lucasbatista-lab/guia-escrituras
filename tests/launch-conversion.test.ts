@@ -126,7 +126,7 @@ describe("launch conversion cadastro", () => {
   it("shows plan panel or honest no-plan guidance", () => {
     expect(page).toContain("PlanSupportCard");
     expect(page).toContain("NoPlanSupportCard");
-    expect(page).toContain("Você só pagará depois de confirmar seu e-mail");
+    expect(page).toContain("Pagamento seguro processado pela Stripe");
     expect(page).toContain("Plano depois do cadastro");
     expect(page).toContain("Renovação");
     expect(page).toContain("Cancelamento");

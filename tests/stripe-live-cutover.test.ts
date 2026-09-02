@@ -177,7 +177,7 @@ describe("webhook livemode guard", () => {
 describe("checkout cutover fields", () => {
   it("sets client_reference_id and stripe_mode metadata", () => {
     const checkout = read("src", "lib", "stripe", "checkout.ts");
-    expect(checkout).toContain("client_reference_id: auth.userId");
+    expect(checkout).toContain("client_reference_id: actor.userId");
     expect(checkout).toContain("stripe_mode:");
     expect(checkout).toContain("allow_promotion_codes: true");
     expect(checkout).toContain("subscription_data");

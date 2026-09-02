@@ -12,7 +12,7 @@ describe("signup anti-enumeration contracts", () => {
     const src = read("src", "lib", "auth", "sign-up-action.ts");
     expect(src).toContain("checkEmailSoftSuccess");
     expect(src).not.toContain('fail("email_taken"');
-    expect(src).toContain("Do not associate intent");
+    expect(src).toContain("tryExistingAccountCheckout");
   });
 
   it("check-email copy is enumeration-safe for signup", () => {

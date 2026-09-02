@@ -14,7 +14,7 @@ type PollStatus =
   | "sync_error";
 
 const POLL_INTERVAL_MS = 2500;
-const MAX_POLLS = 24; // ~60s
+const MAX_POLLS = 24;
 
 const COPY: Record<
   Exclude<PollStatus, "active" | "unauthenticated">,
@@ -22,7 +22,7 @@ const COPY: Record<
 > = {
   processing: {
     title: "Confirmando seu pagamento",
-    body: "Estamos confirmando sua assinatura. Isso costuma levar poucos segundos — você permanece conectado enquanto aguarda.",
+    body: "Estamos confirmando sua assinatura. Isso costuma levar poucos segundos.",
   },
   sync_error: {
     title: "Ainda sincronizando",
@@ -34,31 +34,25 @@ const COPY: Record<
   },
 };
 
-function primaryCtaLabel(nextPath: string) {
-  if (nextPath === "/personalizar") {
-    return "Personalizar minha experiência";
-  }
-  return "Começar uma reflexão";
-}
-
-function activeBody(nextPath: string) {
-  if (nextPath === "/personalizar") {
-    return "Agora, ajuste sua experiência para receber reflexões mais alinhadas à forma como você vive a fé.";
-  }
-  return "Sua assinatura está ativa. Você já pode começar uma reflexão no Amém Chat.";
-}
-
 export function CheckoutSuccessClient({
   initialStatus,
   initialNextPath = null,
+  initialEmailConfirmed = true,
+  initialEmailMasked = null,
 }: {
   initialStatus: "processing" | "sync_error" | "forbidden" | "active";
   initialNextPath?: "/personalizar" | "/inicio" | null;
+  initialEmailConfirmed?: boolean;
+  initialEmailMasked?: string | null;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<PollStatus>(initialStatus);
   const [polls, setPolls] = useState(0);
   const [nextPath, setNextPath] = useState<string | null>(initialNextPath);
+  const [emailConfirmed, setEmailConfirmed] = useState(initialEmailConfirmed);
+  const [emailMasked, setEmailMasked] = useState<string | null>(
+    initialEmailMasked,
+  );
   const stopped = useRef(initialStatus === "active" || initialStatus === "forbidden");
 
   useEffect(() => {
@@ -81,6 +75,8 @@ export function CheckoutSuccessClient({
         const data = (await res.json()) as {
           status?: PollStatus;
           nextPath?: string;
+          emailConfirmed?: boolean;
+          emailMasked?: string | null;
         };
         if (cancelled) return;
 
@@ -99,8 +95,13 @@ export function CheckoutSuccessClient({
         if (data.status === "active" && data.nextPath) {
           setStatus("active");
           setNextPath(data.nextPath);
+          if (typeof data.emailConfirmed === "boolean") {
+            setEmailConfirmed(data.emailConfirmed);
+          }
+          if (data.emailMasked !== undefined) {
+            setEmailMasked(data.emailMasked);
+          }
           stopped.current = true;
-          // Stay on confirmation — no auto-redirect so the next step is clear.
           return;
         }
 
@@ -139,35 +140,54 @@ export function CheckoutSuccessClient({
   }, [initialStatus, router]);
 
   if (status === "active" && nextPath) {
+    if (emailConfirmed) {
+      return (
+        <div className="space-y-6">
+          <FocusPageTitle className="font-display text-3xl text-ink">
+            Pagamento confirmado
+          </FocusPageTitle>
+          <p className="text-base leading-relaxed text-ink" aria-live="polite" role="status">
+            Sua assinatura está ativa. Personalize seu Amém Chat para começar.
+          </p>
+          <Button asChild className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto sm:min-w-[16rem]">
+            <Link href={nextPath}>Personalizar meu Amém Chat</Link>
+          </Button>
+          <p className="text-sm text-ink-soft">
+            <Link href="/conta" className="underline-offset-4 hover:text-ink hover:underline">
+              Ver minha conta
+            </Link>
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6">
         <FocusPageTitle className="font-display text-3xl text-ink">
-          Assinatura confirmada
+          Pagamento confirmado
         </FocusPageTitle>
         <p className="text-base leading-relaxed text-ink" aria-live="polite" role="status">
-          {activeBody(nextPath)}
-        </p>
-        <Button asChild className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto sm:min-w-[16rem]">
-          <Link href={nextPath}>{primaryCtaLabel(nextPath)}</Link>
-        </Button>
-        <p className="text-sm text-ink-soft">
-          {nextPath === "/inicio" ? (
+          Sua compra foi concluída com sucesso.
+          {emailMasked ? (
             <>
-              <Link
-                href="/conversar"
-                className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                Ir para o Amém Chat
-              </Link>
-              {" · "}
+              {" "}
+              Enviamos um link para confirmar seu e-mail ({emailMasked}) e liberar
+              seu acesso.
             </>
-          ) : null}
-          <Link
-            href="/conta"
-            className="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            Ver minha conta
-          </Link>
+          ) : (
+            <> Enviamos um link para confirmar seu e-mail e liberar seu acesso.</>
+          )}
+        </p>
+        <div className="flex flex-col gap-3">
+          <Button asChild className="min-h-11 w-full bg-ink hover:bg-ink/90">
+            <Link href="/confira-seu-email">Reenviar confirmação</Link>
+          </Button>
+          <Button asChild variant="outline" className="min-h-11 w-full">
+            <Link href="/entrar?next=/personalizar">Já confirmei — entrar</Link>
+          </Button>
+        </div>
+        <p className="text-sm text-ink-soft">
+          Não é necessário pagar novamente. Sua assinatura já está registrada.
         </p>
       </div>
     );

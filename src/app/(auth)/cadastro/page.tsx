@@ -73,9 +73,13 @@ export default async function CadastroPage({
         />
         <section className="rounded-3xl border border-border/70 bg-card/85 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-8">
           <p className="mb-4 text-xs font-medium text-ink-soft sm:hidden">
-            Conta <span aria-hidden>·</span> depois: confirmar e-mail e pagar
+            {plan ? "Plano · Pagamento" : "Conta · depois: confirmar e-mail"}
           </p>
-          <PurchaseJourneySteps current="conta" className="mb-6 hidden sm:block" />
+          <PurchaseJourneySteps
+            current={plan ? "pagamento" : "conta"}
+            variant={plan ? "paid" : "full"}
+            className="mb-6 hidden sm:block"
+          />
           {plan ? (
             <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-gold/25 bg-sand-100/60 px-4 py-3 lg:hidden">
               <div>
@@ -97,7 +101,7 @@ export default async function CadastroPage({
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
             {plan
-              ? `Você escolheu o plano ${plan.name}. Crie a conta, confirme o e-mail e continue para o pagamento seguro.`
+              ? `Você escolheu o plano ${plan.name}. Informe seus dados uma única vez e siga para o pagamento seguro.`
               : "Crie sua conta para começar. Depois você escolhe o plano e confirma o pagamento com segurança."}
           </p>
           <div className="mt-5 sm:mt-7">
@@ -145,7 +149,7 @@ function PlanSupportCard({ plan }: { plan: PlanDefinition }) {
         <p>Pagamento seguro processado pela Stripe.</p>
         <p className="flex items-center gap-1.5 font-medium text-sand-50">
           <LockKeyhole aria-hidden className="size-3.5" />
-          Você só pagará depois de confirmar seu e-mail.
+          Pagamento seguro processado pela Stripe.
         </p>
       </div>
       <TrackingLink

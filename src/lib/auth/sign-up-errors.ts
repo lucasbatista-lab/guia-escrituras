@@ -45,6 +45,9 @@ export function safeSignUpMessage(code: SignUpClientCode): string {
 export const SIGNUP_CHECK_EMAIL_PUBLIC_MESSAGE =
   "Confira seu e-mail para continuar. Caso já exista uma conta, você receberá as orientações disponíveis para esse endereço.";
 
+export const ACCOUNT_EXISTS_ACTIONABLE_MESSAGE =
+  "Não foi possível continuar com esses dados. Se você já tem uma conta, entre ou recupere sua senha.";
+
 /** Mask local-part; never log a full email. */
 export function maskEmail(email: string): string {
   const trimmed = email.trim();

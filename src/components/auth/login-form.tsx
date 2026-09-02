@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,6 @@ const AUTH_LINK_ERRORS: Record<string, string> = {
 };
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
   const errorParam = searchParams.get("error");
@@ -40,7 +39,9 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(linkError);
+  const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const signupHref =
@@ -48,7 +49,10 @@ export function LoginForm() {
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (submittingRef.current) return;
     setError(null);
+    setEmailNotConfirmed(false);
+    submittingRef.current = true;
     setLoading(true);
 
     try {
@@ -68,16 +72,19 @@ export function LoginForm() {
 
       if (!result.ok) {
         setError(result.message);
+        if (result.code === "email_not_confirmed") {
+          setEmailNotConfirmed(true);
+        }
         queueMicrotask(() => emailRef.current?.focus());
         return;
       }
 
-      router.push(result.redirectTo);
-      router.refresh();
+      window.location.assign(result.redirectTo);
     } catch {
       setError("Algo deu errado. Tente novamente.");
       queueMicrotask(() => errorRef.current?.focus());
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   }
@@ -163,6 +170,13 @@ export function LoginForm() {
           {error}
         </p>
       )}
+      {emailNotConfirmed ? (
+        <p className="text-sm text-ink-soft">
+          <Link href="/confira-seu-email" className="text-ink underline-offset-4 hover:underline">
+            Reenviar confirmação de e-mail
+          </Link>
+        </p>
+      ) : null}
       <Button
         type="submit"
         className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft"

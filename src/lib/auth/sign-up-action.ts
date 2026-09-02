@@ -11,11 +11,12 @@ import {
   mapSignUpAuthError,
   maskEmail,
   safeSignUpMessage,
+  ACCOUNT_EXISTS_ACTIONABLE_MESSAGE,
   type SignUpClientCode,
 } from "@/lib/auth/sign-up-errors";
 import { logger } from "@/lib/logging/logger";
+import type { AdsCheckoutContext } from "@/lib/meta/ads-checkout-context";
 import {
-  associateIntentUserAwaitingConfirmation,
   completeIntentAfterConfirmation,
   createSignupIntentWithToken,
   SignupIntentConfigError,
@@ -24,6 +25,8 @@ import {
 } from "@/lib/signup-intents";
 import { setSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
 import { resolveTrackingForSignupIntent } from "@/lib/acquisition";
+import { createSubscriptionCheckoutForActor } from "@/lib/stripe/checkout";
+import { checkoutFailureMessage } from "@/lib/stripe/checkout-errors";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import { createRequestId } from "@/lib/utils";
@@ -49,16 +52,29 @@ const signUpSchema = z.object({
       utmTerm: z.string().nullable().optional(),
     })
     .optional(),
+  adsContext: z
+    .object({
+      advertisingConsent: z.boolean(),
+      eventSourceUrl: z.string().nullable().optional(),
+      fbp: z.string().nullable().optional(),
+      fbc: z.string().nullable().optional(),
+      eventId: z.string().nullable().optional(),
+    })
+    .optional()
+    .nullable(),
 });
 
 export type SignUpActionResult =
   | {
       ok: true;
       needsEmailConfirmation: boolean;
+      stripeCheckout?: boolean;
       redirectTo:
         | "/confira-seu-email"
         | `/confira-seu-email?${string}`
         | `/assinar/continuar?intent=${string}`
+        | `https://${string}`
+        | `http://${string}`
         | null;
       requestId: string;
       emailMasked?: string;
@@ -66,9 +82,11 @@ export type SignUpActionResult =
     }
   | {
       ok: false;
-      code: SignUpClientCode;
+      code: SignUpClientCode | "account_exists_actionable" | "checkout_failed";
       message: string;
       requestId: string;
+      showLoginCtas?: boolean;
+      checkoutRef?: string;
     };
 
 function fail(
@@ -90,7 +108,7 @@ function checkEmailPath(emailMasked: string, planKey: string | null): string {
   return `/confira-seu-email?${params.toString()}`;
 }
 
-/** Enumeration-safe success: never confirms whether the account already exists. */
+/** Enumeration-safe success for organic signup without plan. */
 function checkEmailSoftSuccess(
   requestId: string,
   email: string,
@@ -110,6 +128,123 @@ function checkEmailSoftSuccess(
   };
 }
 
+function accountExistsActionable(requestId: string): SignUpActionResult {
+  return {
+    ok: false,
+    code: "account_exists_actionable",
+    message: ACCOUNT_EXISTS_ACTIONABLE_MESSAGE,
+    requestId,
+    showLoginCtas: true,
+  };
+}
+
+async function attemptPaidCheckout(params: {
+  userId: string;
+  email: string;
+  intentToken: string;
+  adsContext: AdsCheckoutContext | null | undefined;
+  requestId: string;
+  needsEmailConfirmation: boolean;
+  planKey: string;
+}): Promise<SignUpActionResult> {
+  const completed = await completeIntentAfterConfirmation(
+    params.intentToken,
+    params.userId,
+    params.requestId,
+  );
+  if (!completed.ok) {
+    logger.warn("sign_up_intent_complete_failed", {
+      requestId: params.requestId,
+      code: completed.code,
+    });
+    return {
+      ok: false,
+      code: "checkout_failed",
+      message:
+        "Não foi possível preparar o pagamento agora. Tente novamente em instantes.",
+      requestId: params.requestId,
+    };
+  }
+
+  const checkout = await createSubscriptionCheckoutForActor(
+    {
+      userId: params.userId,
+      email: params.email,
+      source: "new_signup",
+    },
+    params.intentToken,
+    params.adsContext ?? null,
+    params.requestId,
+  );
+
+  if (!checkout.ok) {
+    logger.error("sign_up_checkout_failed", {
+      requestId: params.requestId,
+      code: checkout.code,
+      ref: checkout.ref,
+    });
+    return {
+      ok: false,
+      code: "checkout_failed",
+      message: checkoutFailureMessage(checkout.code),
+      requestId: params.requestId,
+      checkoutRef: checkout.ref,
+    };
+  }
+
+  logger.info("sign_up_checkout_redirect", {
+    requestId: params.requestId,
+    needsEmailConfirmation: params.needsEmailConfirmation,
+    planKey: params.planKey,
+  });
+
+  return {
+    ok: true,
+    needsEmailConfirmation: params.needsEmailConfirmation,
+    stripeCheckout: true,
+    redirectTo: checkout.url as `https://${string}`,
+    requestId: params.requestId,
+    emailMasked: maskEmail(params.email),
+    planKey: params.planKey,
+  };
+}
+
+async function tryExistingAccountCheckout(params: {
+  email: string;
+  password: string;
+  intentToken: string;
+  intentId: string;
+  adsContext: AdsCheckoutContext | null | undefined;
+  requestId: string;
+  planKey: string;
+  supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>;
+}): Promise<SignUpActionResult> {
+  const { data, error } = await params.supabase.auth.signInWithPassword({
+    email: params.email,
+    password: params.password,
+  });
+
+  if (error || !data.user) {
+    logger.warn("sign_up_existing_login_failed", {
+      requestId: params.requestId,
+      authCode: error?.code ?? null,
+    });
+    return accountExistsActionable(params.requestId);
+  }
+
+  await setSignupIntentCookie(params.intentToken);
+
+  return attemptPaidCheckout({
+    userId: data.user.id,
+    email: params.email,
+    intentToken: params.intentToken,
+    adsContext: params.adsContext,
+    requestId: params.requestId,
+    needsEmailConfirmation: !data.session,
+    planKey: params.planKey,
+  });
+}
+
 export async function signUpAction(input: {
   displayName: string;
   email: string;
@@ -117,6 +252,7 @@ export async function signUpAction(input: {
   planKey?: string | null;
   termsAccepted?: boolean;
   tracking?: SignupTrackingParams;
+  adsContext?: AdsCheckoutContext | null;
 }): Promise<SignUpActionResult> {
   const requestId = createRequestId();
 
@@ -154,6 +290,7 @@ export async function signUpAction(input: {
   const termsVersion = getTermsVersion();
   const privacyVersion = getPrivacyVersion();
   const termsAcceptedAt = new Date().toISOString();
+  const normalizedEmail = parsed.data.email.trim().toLowerCase();
 
   let intentToken: string | null = null;
   let intentId: string | null = null;
@@ -221,7 +358,7 @@ export async function signUpAction(input: {
   }
 
   const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
+    email: normalizedEmail,
     password: parsed.data.password,
     options: {
       data: {
@@ -243,16 +380,25 @@ export async function signUpAction(input: {
       authCode: error.code ?? null,
       authStatus: error.status ?? null,
       authMessage: (error.message ?? "").slice(0, 160),
-      emailMasked: maskEmail(parsed.data.email),
+      emailMasked: maskEmail(normalizedEmail),
       hasIntent: Boolean(intentId),
     });
-    // Never reveal account existence to the client.
-    if (mapped.code === "email_taken") {
-      return checkEmailSoftSuccess(
+
+    if (mapped.code === "email_taken" && intentToken && intentId && selectedPlanKey) {
+      return tryExistingAccountCheckout({
+        email: normalizedEmail,
+        password: parsed.data.password,
+        intentToken,
+        intentId,
+        adsContext: parsed.data.adsContext as AdsCheckoutContext | null | undefined,
         requestId,
-        parsed.data.email,
-        selectedPlanKey,
-      );
+        planKey: selectedPlanKey,
+        supabase,
+      });
+    }
+
+    if (mapped.code === "email_taken") {
+      return checkEmailSoftSuccess(requestId, normalizedEmail, selectedPlanKey);
     }
     return {
       ok: false,
@@ -272,14 +418,23 @@ export async function signUpAction(input: {
       requestId,
       route: "signUpAction",
       code: "email_taken",
-      emailMasked: maskEmail(parsed.data.email),
+      emailMasked: maskEmail(normalizedEmail),
     });
-    // Do not associate intent or set cookie — user is already registered.
-    return checkEmailSoftSuccess(
-      requestId,
-      parsed.data.email,
-      selectedPlanKey,
-    );
+
+    if (intentToken && intentId && selectedPlanKey) {
+      return tryExistingAccountCheckout({
+        email: normalizedEmail,
+        password: parsed.data.password,
+        intentToken,
+        intentId,
+        adsContext: parsed.data.adsContext as AdsCheckoutContext | null | undefined,
+        requestId,
+        planKey: selectedPlanKey,
+        supabase,
+      });
+    }
+
+    return checkEmailSoftSuccess(requestId, normalizedEmail, selectedPlanKey);
   }
 
   if (!data.user) {
@@ -288,48 +443,27 @@ export async function signUpAction(input: {
       route: "signUpAction",
       code: "unexpected",
       reason: "empty_user",
-      emailMasked: maskEmail(parsed.data.email),
+      emailMasked: maskEmail(normalizedEmail),
       hasIntent: Boolean(intentId),
     });
     return fail("unexpected", requestId);
   }
 
   const needsEmailConfirmation = !data.session;
+  const userEmail = data.user.email?.trim().toLowerCase() || normalizedEmail;
 
-  if (intentId && intentToken) {
+  if (intentId && intentToken && selectedPlanKey) {
     await setSignupIntentCookie(intentToken);
 
-    if (needsEmailConfirmation) {
-      try {
-        await associateIntentUserAwaitingConfirmation(intentId, data.user.id);
-      } catch (associateError) {
-        logger.error("sign_up_intent_associate_failed", {
-          requestId,
-          error:
-            associateError instanceof Error
-              ? associateError.message
-              : "unknown",
-        });
-      }
-    } else {
-      const completed = await completeIntentAfterConfirmation(
-        intentToken,
-        data.user.id,
-        requestId,
-      );
-      if (completed.ok) {
-        return {
-          ok: true,
-          needsEmailConfirmation: false,
-          redirectTo: `/assinar/continuar?intent=${encodeURIComponent(intentToken)}` as `/assinar/continuar?intent=${string}`,
-          requestId,
-        };
-      }
-      logger.warn("sign_up_intent_complete_failed", {
-        requestId,
-        code: completed.code,
-      });
-    }
+    return attemptPaidCheckout({
+      userId: data.user.id,
+      email: userEmail,
+      intentToken,
+      adsContext: parsed.data.adsContext as AdsCheckoutContext | null | undefined,
+      requestId,
+      needsEmailConfirmation,
+      planKey: selectedPlanKey,
+    });
   }
 
   logger.info("sign_up_ok", {
@@ -337,11 +471,11 @@ export async function signUpAction(input: {
     route: "signUpAction",
     needsEmailConfirmation,
     hasPlan,
-    emailMasked: maskEmail(parsed.data.email),
+    emailMasked: maskEmail(normalizedEmail),
   });
 
   if (needsEmailConfirmation) {
-    const emailMasked = maskEmail(parsed.data.email);
+    const emailMasked = maskEmail(normalizedEmail);
     return {
       ok: true,
       needsEmailConfirmation: true,
@@ -358,9 +492,7 @@ export async function signUpAction(input: {
   return {
     ok: true,
     needsEmailConfirmation: false,
-    redirectTo: intentToken
-      ? (`/assinar/continuar?intent=${encodeURIComponent(intentToken)}` as const)
-      : "/confira-seu-email",
+    redirectTo: "/confira-seu-email",
     requestId,
   };
 }

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getAuthUserContext } from "@/lib/auth/session";
+import { maskEmail } from "@/lib/auth/sign-up-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isActiveSubscription } from "@/lib/billing";
 import {
@@ -20,6 +21,8 @@ export type CheckoutSuccessView =
   | {
       kind: "active";
       nextPath: "/personalizar" | "/inicio";
+      emailConfirmed: boolean;
+      emailMasked: string | null;
     };
 
 /**
@@ -62,10 +65,7 @@ export async function resolveCheckoutSuccessState(options?: {
 
     if (sub && isActiveSubscription(sub.status as "active" | "trialing")) {
       await clearCheckoutReturnCookie();
-      const nextPath = auth.spiritualProfile.onboardingCompleted
-        ? "/inicio"
-        : "/personalizar";
-      return { kind: "active", nextPath };
+      return activeSuccessView(auth);
     }
     return { kind: "processing" };
   }
@@ -99,10 +99,7 @@ export async function resolveCheckoutSuccessState(options?: {
 
     if (sub && isActiveSubscription(sub.status as "active" | "trialing")) {
       await clearCheckoutReturnCookie();
-      const nextPath = auth.spiritualProfile.onboardingCompleted
-        ? "/inicio"
-        : "/personalizar";
-      return { kind: "active", nextPath };
+      return activeSuccessView(auth);
     }
 
     // Paid at Stripe but webhook not reflected yet — keep user on success page.
@@ -119,14 +116,52 @@ export async function resolveCheckoutSuccessState(options?: {
   }
 }
 
+async function resolveEmailConfirmationState(
+  userId: string,
+  email: string | null,
+): Promise<{ emailConfirmed: boolean; emailMasked: string | null }> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin.auth.admin.getUserById(userId);
+    const confirmed = Boolean(data.user?.email_confirmed_at);
+    const resolvedEmail = data.user?.email ?? email;
+    return {
+      emailConfirmed: confirmed,
+      emailMasked: resolvedEmail ? maskEmail(resolvedEmail) : null,
+    };
+  } catch {
+    return { emailConfirmed: true, emailMasked: email ? maskEmail(email) : null };
+  }
+}
+
+async function activeSuccessView(
+  auth: NonNullable<Awaited<ReturnType<typeof getAuthUserContext>>>,
+): Promise<Extract<CheckoutSuccessView, { kind: "active" }>> {
+  const emailState = await resolveEmailConfirmationState(
+    auth.userId,
+    auth.email,
+  );
+  const nextPath = auth.spiritualProfile.onboardingCompleted
+    ? "/inicio"
+    : "/personalizar";
+  return { kind: "active", nextPath, ...emailState };
+}
+
 /** Lightweight poll payload — never includes Stripe ids or secrets. */
 export async function getCheckoutSuccessPollPayload(): Promise<{
   status: "processing" | "active" | "forbidden" | "unauthenticated" | "sync_error";
   nextPath?: "/personalizar" | "/inicio";
+  emailConfirmed?: boolean;
+  emailMasked?: string | null;
 }> {
   const view = await resolveCheckoutSuccessState();
   if (view.kind === "active") {
-    return { status: "active", nextPath: view.nextPath };
+    return {
+      status: "active",
+      nextPath: view.nextPath,
+      emailConfirmed: view.emailConfirmed,
+      emailMasked: view.emailMasked,
+    };
   }
   if (view.kind === "unauthenticated") {
     return { status: "unauthenticated" };
