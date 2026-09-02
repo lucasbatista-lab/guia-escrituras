@@ -1,14 +1,19 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { emailConfirmFlashCookieEntry } from "@/lib/auth/email-confirm-flash";
 import {
   completeIntentAfterConfirmation,
   loadSignupIntentByToken,
 } from "@/lib/signup-intents";
 import {
   clearSignupIntentCookie,
-  setSignupIntentCookie,
+  signupIntentCookieEntry,
 } from "@/lib/signup-intents/continuity-cookie";
 import { safeNextPath } from "@/lib/navigation/safe-next-path";
+import {
+  createRouteHandlerSupabaseClient,
+  redirectWithCollectedCookies,
+  type CollectedRouteCookie,
+} from "@/lib/supabase/route-handler";
 import { createRequestId } from "@/lib/utils";
 import { logger } from "@/lib/logging/logger";
 
@@ -23,21 +28,98 @@ const ALLOWED_OTP_TYPES = new Set([
 
 function isOpaqueIntentToken(value: string | null): value is string {
   if (!value) return false;
-  // base64url opaque token — length/shape guard only; never log the value.
   return value.length >= 16 && value.length <= 128 && /^[A-Za-z0-9_-]+$/.test(value);
+}
+
+function isOtpExpired(error: { message?: string; code?: string | null }): boolean {
+  const msg = (error.message ?? "").toLowerCase();
+  return (
+    msg.includes("expired") ||
+    msg.includes("otp_expired") ||
+    error.code === "otp_expired"
+  );
+}
+
+function isOtpAlreadyUsed(error: { message?: string; code?: string | null }): boolean {
+  const msg = (error.message ?? "").toLowerCase();
+  const code = (error.code ?? "").toLowerCase();
+  return (
+    msg.includes("already") ||
+    msg.includes("already been used") ||
+    msg.includes("invalid grant") ||
+    code === "otp_disabled"
+  );
 }
 
 function confirmErrorRedirect(
   origin: string,
   code: "token" | "expired" | "session" | "type" | "already",
   type: string | null,
+  requestId: string,
+  reason: string,
 ): NextResponse {
+  logger.warn("auth_confirm_failed", {
+    requestId,
+    outcome: "error",
+    reason,
+    type,
+  });
   const params = new URLSearchParams({ error: code });
   const path = type === "recovery" ? "/recuperar-senha" : "/entrar";
   return NextResponse.redirect(new URL(`${path}?${params.toString()}`, origin));
 }
 
-export async function GET(request: Request) {
+function buildEmailConfirmadoPath(intentToken: string | null): string {
+  if (!intentToken) return "/email-confirmado";
+  return `/email-confirmado?intent=${encodeURIComponent(intentToken)}`;
+}
+
+function finishSignupConfirmRedirect(
+  origin: string,
+  path: string,
+  collectedCookies: readonly CollectedRouteCookie[],
+  options: {
+    requestId: string;
+    sessionAvailable: boolean;
+    intentPresent: boolean;
+    intentToken: string | null;
+    extraCookies?: CollectedRouteCookie[];
+  },
+): NextResponse {
+  const extras: CollectedRouteCookie[] = [
+    emailConfirmFlashCookieEntry(),
+    ...(options.extraCookies ?? []),
+  ];
+
+  if (options.intentToken) {
+    extras.push(signupIntentCookieEntry(options.intentToken));
+  }
+
+  const cookiesAttached = collectedCookies.length + extras.length;
+
+  logger.info("auth_confirm_redirect", {
+    requestId: options.requestId,
+    redirect_path: path.split("?")[0],
+    intent_present: options.intentPresent,
+  });
+  logger.info(
+    options.sessionAvailable
+      ? "auth_confirm_session_available"
+      : "auth_confirm_session_missing",
+    {
+      requestId: options.requestId,
+      session_available: options.sessionAvailable,
+    },
+  );
+  logger.info("auth_confirm_cookies_attached", {
+    requestId: options.requestId,
+    cookies_attached: cookiesAttached,
+  });
+
+  return redirectWithCollectedCookies(new URL(path, origin), collectedCookies, extras);
+}
+
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const tokenHash = searchParams.get("token_hash");
   const typeRaw = searchParams.get("type");
@@ -49,18 +131,31 @@ export async function GET(request: Request) {
   const requestId = createRequestId();
 
   if (intentToken && !isOpaqueIntentToken(intentToken)) {
-    logger.warn("auth_confirm_invalid_intent_shape", { requestId });
+    logger.warn("auth_confirm_failed", {
+      requestId,
+      outcome: "error",
+      reason: "invalid_intent_shape",
+    });
     return NextResponse.redirect(new URL("/planos", origin));
   }
 
   if (!tokenHash || tokenHash.length < 16) {
-    logger.warn("auth_confirm_missing_token_hash", { requestId });
-    return confirmErrorRedirect(origin, "token", typeRaw);
+    logger.warn("auth_confirm_failed", {
+      requestId,
+      outcome: "error",
+      reason: "missing_token_hash",
+    });
+    return confirmErrorRedirect(origin, "token", typeRaw, requestId, "missing_token_hash");
   }
 
   if (!typeRaw || !ALLOWED_OTP_TYPES.has(typeRaw)) {
-    logger.warn("auth_confirm_invalid_type", { requestId });
-    return confirmErrorRedirect(origin, "type", typeRaw);
+    logger.warn("auth_confirm_failed", {
+      requestId,
+      outcome: "error",
+      reason: "invalid_type",
+      type: typeRaw,
+    });
+    return confirmErrorRedirect(origin, "type", typeRaw, requestId, "invalid_type");
   }
 
   const type = typeRaw as
@@ -71,12 +166,20 @@ export async function GET(request: Request) {
     | "recovery"
     | "email_change";
 
-  const supabase = await createClient();
-  if (!supabase) {
+  const ctx = createRouteHandlerSupabaseClient(request);
+  if (!ctx) {
     const path =
       type === "recovery" ? "/recuperar-senha?error=config" : "/entrar?error=config";
+    logger.warn("auth_confirm_failed", {
+      requestId,
+      outcome: "error",
+      reason: "config_missing",
+      type,
+    });
     return NextResponse.redirect(new URL(path, origin));
   }
+
+  const { supabase, getCollectedCookies } = ctx;
 
   const { error: otpError } = await supabase.auth.verifyOtp({
     type,
@@ -84,45 +187,110 @@ export async function GET(request: Request) {
   });
 
   if (otpError) {
-    const msg = (otpError.message ?? "").toLowerCase();
-    const expired =
-      msg.includes("expired") ||
-      msg.includes("otp_expired") ||
-      otpError.code === "otp_expired";
+    const expired = isOtpExpired(otpError);
+    const already = isOtpAlreadyUsed(otpError);
     logger.warn("auth_confirm_verify_failed", {
       requestId,
       authCode: otpError.code ?? null,
       expired,
+      already,
       type,
     });
 
-    // Already confirmed / used token: try continuing if session exists.
     const {
       data: { user: maybeUser },
     } = await supabase.auth.getUser();
-    if (!maybeUser) {
-      return confirmErrorRedirect(origin, expired ? "expired" : "token", type);
+
+    if (maybeUser && type !== "recovery") {
+      const collected = getCollectedCookies();
+      const dest = buildEmailConfirmadoPath(intentToken);
+      return finishSignupConfirmRedirect(origin, dest, collected, {
+        requestId,
+        sessionAvailable: true,
+        intentPresent: Boolean(intentToken),
+        intentToken,
+      });
     }
+
+    if (already) {
+      return confirmErrorRedirect(origin, "already", type, requestId, "otp_already_used");
+    }
+    return confirmErrorRedirect(
+      origin,
+      expired ? "expired" : "token",
+      type,
+      requestId,
+      expired ? "otp_expired" : "otp_invalid",
+    );
   }
+
+  logger.info("auth_confirm_verified", {
+    requestId,
+    outcome: "success",
+    type,
+  });
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return confirmErrorRedirect(origin, "session", type);
+  const sessionAvailable = Boolean(user);
+  const collected = getCollectedCookies();
+
+  if (type === "recovery") {
+    if (!sessionAvailable) {
+      return confirmErrorRedirect(origin, "session", type, requestId, "recovery_no_session");
+    }
+    logger.info("auth_confirm_redirect", {
+      requestId,
+      redirect_path: "/redefinir-senha",
+      intent_present: false,
+    });
+    logger.info("auth_confirm_cookies_attached", {
+      requestId,
+      cookies_attached: collected.length,
+    });
+    return redirectWithCollectedCookies(
+      new URL("/redefinir-senha", origin),
+      collected,
+    );
   }
 
-  // Password recovery: session created → set new password (cross-browser safe).
-  if (type === "recovery") {
-    return NextResponse.redirect(new URL("/redefinir-senha", origin));
+  if (!sessionAvailable) {
+    logger.info("auth_confirm_session_missing", {
+      requestId,
+      session_available: false,
+    });
+  } else {
+    logger.info("auth_confirm_session_available", {
+      requestId,
+      session_available: true,
+    });
   }
 
   if (intentToken) {
     const existing = await loadSignupIntentByToken(intentToken).catch(() => null);
     if (existing?.status === "expired") {
       await clearSignupIntentCookie();
-      return NextResponse.redirect(new URL("/assinar/continuar?expired=1", origin));
+      return redirectWithCollectedCookies(
+        new URL("/assinar/continuar?expired=1", origin),
+        collected,
+        [emailConfirmFlashCookieEntry()],
+      );
+    }
+
+    if (!user) {
+      return finishSignupConfirmRedirect(
+        origin,
+        buildEmailConfirmadoPath(intentToken),
+        collected,
+        {
+          requestId,
+          sessionAvailable: false,
+          intentPresent: true,
+          intentToken,
+        },
+      );
     }
 
     const result = await completeIntentAfterConfirmation(
@@ -132,42 +300,71 @@ export async function GET(request: Request) {
     );
 
     if (result.ok) {
-      await setSignupIntentCookie(intentToken);
+      logger.info("auth_confirm_intent_completed", {
+        requestId,
+        outcome: "success",
+        intent_present: true,
+      });
       const dest = result.redirectTo.includes("intent=")
         ? result.redirectTo
-        : `/email-confirmado?intent=${encodeURIComponent(intentToken)}`;
-      return NextResponse.redirect(new URL(dest, origin));
+        : buildEmailConfirmadoPath(intentToken);
+      return finishSignupConfirmRedirect(origin, dest, collected, {
+        requestId,
+        sessionAvailable,
+        intentPresent: true,
+        intentToken,
+      });
     }
 
-    logger.warn("auth_confirm_intent_failed", {
+    logger.warn("auth_confirm_failed", {
       requestId,
-      code: result.code,
-      userId: user.id,
+      outcome: "intent_error",
+      reason: result.code,
     });
 
     if (result.code === "expired") {
       await clearSignupIntentCookie();
-      return NextResponse.redirect(new URL("/assinar/continuar?expired=1", origin));
-    }
-    if (result.code === "wrong_user") {
-      return NextResponse.redirect(new URL("/planos", origin));
-    }
-    if (result.code === "consent_failed" || result.code === "missing_consent_data") {
-      return NextResponse.redirect(
-        new URL("/assinar/continuar?error=consent", origin),
+      return redirectWithCollectedCookies(
+        new URL("/assinar/continuar?expired=1", origin),
+        collected,
+        [emailConfirmFlashCookieEntry()],
       );
     }
-    // Invalid status / used: fall through to safe next (often already confirmed).
+    if (result.code === "wrong_user") {
+      return redirectWithCollectedCookies(new URL("/planos", origin), collected);
+    }
+    if (result.code === "consent_failed" || result.code === "missing_consent_data") {
+      return redirectWithCollectedCookies(
+        new URL("/assinar/continuar?error=consent", origin),
+        collected,
+        [emailConfirmFlashCookieEntry()],
+      );
+    }
     if (result.code === "invalid_status") {
-      return NextResponse.redirect(new URL("/email-confirmado", origin));
+      return finishSignupConfirmRedirect(
+        origin,
+        buildEmailConfirmadoPath(intentToken),
+        collected,
+        {
+          requestId,
+          sessionAvailable,
+          intentPresent: true,
+          intentToken,
+        },
+      );
     }
   }
 
   const destination = next.startsWith("/email-confirmado")
     ? next
     : intentToken
-      ? `/email-confirmado?intent=${encodeURIComponent(intentToken)}`
+      ? buildEmailConfirmadoPath(intentToken)
       : next;
 
-  return NextResponse.redirect(new URL(destination, origin));
+  return finishSignupConfirmRedirect(origin, destination, collected, {
+    requestId,
+    sessionAvailable,
+    intentPresent: Boolean(intentToken),
+    intentToken,
+  });
 }

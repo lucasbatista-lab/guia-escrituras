@@ -44,4 +44,5 @@ export {
   readSignupIntentCookie,
   clearSignupIntentCookie,
   signupIntentCookieOptions,
+  signupIntentCookieEntry,
 } from "./continuity-cookie";

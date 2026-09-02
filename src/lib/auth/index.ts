@@ -20,3 +20,8 @@ export { requestPasswordResetAction } from "./password-reset-action";
 export { updatePasswordAction } from "./update-password-action";
 export { loginAction } from "./login-action";
 export { resolvePostLoginDestination } from "./post-login-destination";
+export {
+  consumeEmailConfirmFlash,
+  emailConfirmFlashCookieEntry,
+  EMAIL_CONFIRM_FLASH_COOKIE,
+} from "./email-confirm-flash";

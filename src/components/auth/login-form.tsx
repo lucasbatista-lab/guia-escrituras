@@ -16,6 +16,8 @@ const AUTH_LINK_ERRORS: Record<string, string> = {
   session:
     "Não foi possível concluir a confirmação. Tente entrar ou peça um novo link.",
   type: "Este link é inválido. Solicite um novo e-mail.",
+  already:
+    "Este link já foi usado. Se sua conta já estiver confirmada, entre para continuar.",
   confirm: "Não foi possível confirmar o acesso. Tente novamente.",
   config: "Autenticação temporariamente indisponível. Tente mais tarde.",
 };
@@ -25,6 +27,11 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
   const errorParam = searchParams.get("error");
+  const contextParam = searchParams.get("context");
+  const showPostConfirmBanner =
+    contextParam === "post_confirm" ||
+    nextParam === "/email-confirmado" ||
+    nextParam?.startsWith("/email-confirmado?");
   const linkError =
     errorParam && AUTH_LINK_ERRORS[errorParam]
       ? AUTH_LINK_ERRORS[errorParam]
@@ -77,6 +84,21 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      {showPostConfirmBanner ? (
+        <div
+          className="rounded-xl border border-gold/30 bg-sand-100/80 px-4 py-3 text-sm text-ink"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="font-medium">Seu e-mail foi confirmado.</p>
+          <p className="mt-1 text-ink-soft">
+            Entre para continuar sua assinatura.
+          </p>
+          <p className="mt-1 text-xs text-ink-soft">
+            Use o mesmo e-mail e senha informados no cadastro.
+          </p>
+        </div>
+      ) : null}
       {!hasSupabaseEnv() && (
         <p className="rounded-md bg-sand-200/70 px-3 py-2 text-xs text-ink-soft">
           Supabase ainda não configurado neste ambiente. O login real exige

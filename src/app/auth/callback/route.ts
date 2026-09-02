@@ -1,8 +1,15 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { emailConfirmFlashCookieEntry } from "@/lib/auth/email-confirm-flash";
 import { completeIntentAfterConfirmation } from "@/lib/signup-intents";
-import { setSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
+import {
+  setSignupIntentCookie,
+  signupIntentCookieEntry,
+} from "@/lib/signup-intents/continuity-cookie";
 import { safeNextPath } from "@/lib/navigation/safe-next-path";
+import {
+  createRouteHandlerSupabaseClient,
+  redirectWithCollectedCookies,
+} from "@/lib/supabase/route-handler";
 import { createRequestId } from "@/lib/utils";
 import { logger } from "@/lib/logging/logger";
 
@@ -10,17 +17,19 @@ import { logger } from "@/lib/logging/logger";
  * Legacy/compat callback (PKCE code exchange).
  * New signup confirmation emails should use /auth/confirm with token_hash.
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const intentToken = searchParams.get("intent");
   const next = safeNextPath(searchParams.get("next"), "/planos");
   const requestId = createRequestId();
 
-  const supabase = await createClient();
-  if (!supabase) {
+  const ctx = createRouteHandlerSupabaseClient(request);
+  if (!ctx) {
     return NextResponse.redirect(new URL("/entrar?error=config", origin));
   }
+
+  const { supabase, getCollectedCookies } = ctx;
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -33,13 +42,18 @@ export async function GET(request: Request) {
     }
   }
 
+  const collected = getCollectedCookies();
+
   if (intentToken) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.redirect(new URL("/entrar?error=session", origin));
+      return redirectWithCollectedCookies(
+        new URL("/entrar?error=session", origin),
+        collected,
+      );
     }
 
     const result = await completeIntentAfterConfirmation(
@@ -50,7 +64,11 @@ export async function GET(request: Request) {
 
     if (result.ok) {
       await setSignupIntentCookie(intentToken);
-      return NextResponse.redirect(new URL(result.redirectTo, origin));
+      return redirectWithCollectedCookies(
+        new URL(result.redirectTo, origin),
+        collected,
+        [emailConfirmFlashCookieEntry(), signupIntentCookieEntry(intentToken)],
+      );
     }
 
     logger.warn("auth_callback_intent_failed", {
@@ -60,15 +78,19 @@ export async function GET(request: Request) {
     });
 
     if (result.code === "expired") {
-      return NextResponse.redirect(new URL("/assinar/continuar?expired=1", origin));
-    }
-    if (result.code === "consent_failed" || result.code === "missing_consent_data") {
-      return NextResponse.redirect(
-        new URL("/assinar/continuar?error=consent", origin),
+      return redirectWithCollectedCookies(
+        new URL("/assinar/continuar?expired=1", origin),
+        collected,
       );
     }
-    return NextResponse.redirect(new URL("/planos", origin));
+    if (result.code === "consent_failed" || result.code === "missing_consent_data") {
+      return redirectWithCollectedCookies(
+        new URL("/assinar/continuar?error=consent", origin),
+        collected,
+      );
+    }
+    return redirectWithCollectedCookies(new URL("/planos", origin), collected);
   }
 
-  return NextResponse.redirect(new URL(next, origin));
+  return redirectWithCollectedCookies(new URL(next, origin), collected);
 }

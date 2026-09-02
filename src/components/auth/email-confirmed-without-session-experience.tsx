@@ -4,16 +4,14 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
-export function EmailConfirmedExperience({
+export function EmailConfirmedWithoutSessionExperience({
   planName,
-  continueHref,
+  loginHref,
   hasPlan,
-  emailMasked,
 }: {
   planName: string | null;
-  continueHref: string;
+  loginHref: string;
   hasPlan: boolean;
-  emailMasked: string | null;
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -47,36 +45,30 @@ export function EmailConfirmedExperience({
           tabIndex={-1}
           className="font-display text-3xl text-ink outline-none"
         >
-          Seu e-mail foi confirmado
+          E-mail confirmado com sucesso
         </h1>
         <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
-          Sua conta está pronta. Agora falta apenas concluir sua assinatura.
+          Sua conta está ativa. Para continuar neste navegador, entre com o
+          mesmo e-mail e senha usados no cadastro.
         </p>
-        {emailMasked ? (
-          <p className="mt-3 text-sm text-ink-soft">
-            E-mail de acesso:{" "}
-            <span className="font-medium text-ink">{emailMasked}</span>
-          </p>
-        ) : null}
         {planName ? (
           <p className="mt-3 rounded-full border border-gold/25 bg-sand-100 px-3 py-1.5 text-sm text-ink">
             Plano reservado: <strong>{planName}</strong>
           </p>
-        ) : null}
+        ) : hasPlan ? null : (
+          <p className="mt-3 text-sm text-ink-soft">
+            Depois de entrar, você poderá escolher ou retomar seu plano.
+          </p>
+        )}
       </div>
 
       <Button asChild className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft">
-        <Link href={continueHref}>
-          {hasPlan ? "Continuar para pagamento" : "Escolher meu plano"}
-        </Link>
+        <Link href={loginHref}>Entrar e continuar</Link>
       </Button>
 
-      <Button asChild variant="outline" className="min-h-12 w-full rounded-xl">
-        <Link href="/entrar">Entrar no Amém Chat</Link>
-      </Button>
-
-      <p className="text-center text-sm text-ink-soft">
-        Abriu em outro aparelho? Use o mesmo e-mail e senha para continuar.
+      <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">
+        Isso pode acontecer quando o link é aberto em outro navegador ou
+        dispositivo. Nenhuma cobrança ocorreu nesta etapa.
       </p>
     </div>
   );

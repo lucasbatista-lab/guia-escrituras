@@ -160,8 +160,9 @@ describe("auth confirm token_hash flow", () => {
     expect(src).toContain("token_hash");
     expect(src).toContain("completeIntentAfterConfirmation");
     expect(src).toContain("safeNextPath");
-    expect(src).toContain("setSignupIntentCookie");
-    expect(src).toContain("auth_confirm_missing_token_hash");
+    expect(src).toContain("createRouteHandlerSupabaseClient");
+    expect(src).toContain("redirectWithCollectedCookies");
+    expect(src).toContain("reason: \"missing_token_hash\"");
     expect(src).not.toContain("exchangeCodeForSession");
   });
 
@@ -399,7 +400,7 @@ describe("post-signup and confirmed pages", () => {
     expect(exp).not.toContain(">Criar conta<");
   });
 
-  it("email-confirmado requires session and links to payment without GET checkout", () => {
+  it("email-confirmado supports session and flash fallback without silent login redirect", () => {
     const page = readFileSync(
       join(process.cwd(), "src", "app", "(auth)", "email-confirmado", "page.tsx"),
       "utf8",
@@ -408,13 +409,28 @@ describe("post-signup and confirmed pages", () => {
       join(process.cwd(), "src", "components", "auth", "email-confirmed-experience.tsx"),
       "utf8",
     );
+    const noSession = readFileSync(
+      join(
+        process.cwd(),
+        "src",
+        "components",
+        "auth",
+        "email-confirmed-without-session-experience.tsx",
+      ),
+      "utf8",
+    );
     expect(page).toContain("getAuthUserContext");
-    expect(page).toContain("redirect");
+    expect(page).toContain("consumeEmailConfirmFlash");
+    expect(page).not.toMatch(
+      /redirect\(\s*["']\/entrar\?next=\/email-confirmado["']\s*\)/,
+    );
     expect(page).toContain("/assinar/continuar");
-    expect(exp).toContain("E-mail confirmado");
+    expect(exp).toContain("Seu e-mail foi confirmado");
     expect(exp).toContain("Continuar para pagamento");
-    expect(exp).toContain("prefers-reduced-motion");
-    expect(exp).toContain("continueHref");
+    expect(exp).not.toContain("setTimeout");
+    expect(exp).not.toContain("router.push");
+    expect(noSession).toContain("E-mail confirmado com sucesso");
+    expect(noSession).toContain("Entrar e continuar");
     expect(exp).not.toContain("checkout.sessions");
     expect(exp).not.toContain("createSubscriptionCheckout");
   });
@@ -482,6 +498,7 @@ describe("no token leakage in confirm logs", () => {
       expect(block).not.toContain("token_hash:");
       expect(block).not.toContain("intentToken");
       expect(block).not.toMatch(/email\s*:/);
+      expect(block).not.toContain("userId:");
     }
   });
 });

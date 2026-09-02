@@ -2,6 +2,10 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { getAuthCookieOptions } from "@/lib/supabase/auth-cookie-options";
+import {
+  toCollectedCookie,
+  type CollectedRouteCookie,
+} from "@/lib/supabase/route-handler";
 import { SIGNUP_INTENT_TTL_HOURS } from "./tokens";
 
 export const SIGNUP_INTENT_COOKIE = "amem_signup_intent";
@@ -14,6 +18,15 @@ export function signupIntentCookieOptions(maxAge = MAX_AGE_SECONDS) {
     httpOnly: true,
     maxAge,
   };
+}
+
+/** Cookie spec for Route Handler redirects (same-browser resume). */
+export function signupIntentCookieEntry(token: string): CollectedRouteCookie {
+  return toCollectedCookie(
+    SIGNUP_INTENT_COOKIE,
+    token,
+    signupIntentCookieOptions(),
+  );
 }
 
 /** Persist only the opaque intent token for same-browser resume. */
