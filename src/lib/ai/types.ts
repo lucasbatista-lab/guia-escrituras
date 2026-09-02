@@ -19,6 +19,13 @@ export interface AiGenerateInput {
   /** Curated biblical grounding for this turn (required in production path). */
   grounding: BiblicalGroundingResult;
   responseDepth?: ChatResponseDepth;
+  abortSignal?: AbortSignal;
+  /** Human-visible answer snapshots only — never raw JSON. */
+  onAnswerSnapshot?: (answer: string) => void;
+  onStreamTelemetry?: (event: {
+    openaiStreamStartedAt?: number;
+    openaiFirstDeltaAt?: number;
+  }) => void;
 }
 
 export interface AiGenerateResult {
@@ -36,6 +43,9 @@ export interface AiGenerateResult {
   groundingProvider: "curated_v1";
   retrievedReferenceIds: string[];
   groundingCount: number;
+  streamed?: boolean;
+  openaiTtftMs?: number | null;
+  openaiCompleteMs?: number;
 }
 
 export interface AiProvider {

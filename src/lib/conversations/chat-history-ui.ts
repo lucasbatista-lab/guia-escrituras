@@ -10,6 +10,8 @@ export type ChatUiMessage = {
     biblicalReferences?: BiblicalReference[];
     interpretationNotice?: string;
     followUpQuestion?: string;
+    /** Session-only: in-flight stream; not a finalized assistant row. */
+    streaming?: boolean;
     /** Session-only: this assistant turn used Aprofundar (not persisted). */
     deepened?: boolean;
     /**
@@ -79,24 +81,65 @@ export function appendAssistantUiMessage(
   },
 ): ChatUiMessage[] {
   const id = assistantMessageId(input.requestId);
-  if (prev.some((m) => m.id === id && m.role === "assistant")) {
+  const finalized: ChatUiMessage = {
+    id,
+    role: "assistant",
+    content: input.answer,
+    meta: {
+      biblicalReferences: input.biblicalReferences,
+      interpretationNotice: input.interpretationNotice,
+      followUpQuestion: input.followUpQuestion,
+      deepened: input.deepened || undefined,
+      safetyMode: input.safetyMode,
+    },
+  };
+  const index = prev.findIndex((m) => m.id === id && m.role === "assistant");
+  if (index === -1) {
+    return [...prev, finalized];
+  }
+  const existing = prev[index];
+  if (existing.meta && existing.meta.streaming !== true) {
     return prev;
   }
-  return [
-    ...prev,
-    {
-      id,
-      role: "assistant",
-      content: input.answer,
-      meta: {
-        biblicalReferences: input.biblicalReferences,
-        interpretationNotice: input.interpretationNotice,
-        followUpQuestion: input.followUpQuestion,
-        deepened: input.deepened || undefined,
-        safetyMode: input.safetyMode,
+  const next = prev.slice();
+  next[index] = finalized;
+  return next;
+}
+
+/** Paint or replace the in-flight assistant bubble for a streaming turn. */
+export function upsertStreamingAssistantMessage(
+  prev: ChatUiMessage[],
+  input: { requestId: string; answer: string },
+): ChatUiMessage[] {
+  const id = assistantMessageId(input.requestId);
+  const index = prev.findIndex((m) => m.id === id && m.role === "assistant");
+  if (index === -1) {
+    return [
+      ...prev,
+      {
+        id,
+        role: "assistant",
+        content: input.answer,
+        meta: { streaming: true },
       },
-    },
-  ];
+    ];
+  }
+  const next = prev.slice();
+  next[index] = {
+    ...next[index],
+    content: input.answer,
+    meta: { ...next[index].meta, streaming: true },
+  };
+  return next;
+}
+
+/** Drop the streaming assistant bubble when the turn fails or is cancelled. */
+export function rollbackStreamingAssistantMessage(
+  prev: ChatUiMessage[],
+  requestId: string,
+): ChatUiMessage[] {
+  const id = assistantMessageId(requestId);
+  return prev.filter((m) => m.id !== id);
 }
 
 /**

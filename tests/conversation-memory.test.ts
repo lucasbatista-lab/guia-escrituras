@@ -163,8 +163,8 @@ describe("depth calibration", () => {
       max: 300,
     });
     expect(getResponseDepthGuidance("balanced").wordRange).toEqual({
-      min: 300,
-      max: 600,
+      min: 180,
+      max: 350,
     });
     expect(getResponseDepthGuidance("deep").wordRange).toEqual({
       min: 600,

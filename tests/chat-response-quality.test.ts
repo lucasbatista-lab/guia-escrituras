@@ -14,6 +14,7 @@ import { theologyPolicyResolver, IDENTITY_DISCLAIMER } from "@/lib/theology";
 import { createBiblicalGroundingProvider } from "@/lib/biblical";
 import { AppError } from "@/lib/safety";
 import { parseAndValidateAiProviderContent } from "@/lib/ai/provider-output";
+import { openaiEventStream } from "./helpers/openai-event-stream";
 
 describe("response depth guidance", () => {
   it("resolves brief, balanced and deep", () => {
@@ -38,6 +39,8 @@ describe("response depth guidance", () => {
     expect(balanced.referenceCount.max).toBe(4);
     expect(deep.referenceCount.max).toBe(5);
     expect(brief.maxApplications).toBeLessThanOrEqual(3);
+    expect(balanced.wordRange).toEqual({ min: 180, max: 350 });
+    expect(deep.wordRange).toEqual({ min: 600, max: 1000 });
     expect(groundingLimitForDepth("brief")).toBe(2);
     expect(groundingLimitForDepth("deep")).toBe(5);
   });
@@ -56,9 +59,8 @@ describe("openai chat config defaults", () => {
     expect(getMaxOutputTokensForDepth("balanced")).toBeGreaterThan(
       getMaxOutputTokensForDepth("brief"),
     );
-    expect(getMaxOutputTokensForDepth("deep")).toBeGreaterThan(
-      getMaxOutputTokensForDepth("balanced"),
-    );
+    expect(getMaxOutputTokensForDepth("balanced")).toBe(1800);
+    expect(getMaxOutputTokensForDepth("deep")).toBe(6000);
   });
 });
 
@@ -126,14 +128,21 @@ describe("mock grounded response quality", () => {
 describe("OpenAI provider incomplete / invalid (no network)", () => {
   it("throws safely on incomplete responses", async () => {
     const provider = new OpenAiResponsesProvider("sk-test");
-    const create = vi.fn().mockResolvedValue({
-      status: "incomplete",
-      incomplete_details: { reason: "max_output_tokens" },
-      output_text: "",
-      usage: { input_tokens: 10, output_tokens: 0 },
-    });
-    (provider as unknown as { client: { responses: { create: typeof create } } }).client =
-      { responses: { create } };
+    const stream = openaiEventStream([
+      { type: "response.created" },
+      {
+        type: "response.completed",
+        response: {
+          status: "incomplete",
+          incomplete_details: { reason: "max_output_tokens" },
+          output_text: "",
+          usage: { input_tokens: 10, output_tokens: 0 },
+        },
+      },
+    ]);
+    const createStream = vi.fn().mockReturnValue(stream);
+    (provider as unknown as { client: { responses: { stream: typeof createStream } } }).client =
+      { responses: { stream: createStream } };
 
     const grounding = createBiblicalGroundingProvider().retrieve({
       question: "paz",
@@ -167,8 +176,8 @@ describe("OpenAI provider incomplete / invalid (no network)", () => {
       }),
     ).rejects.toThrow(AppError);
 
-    expect(create).toHaveBeenCalled();
-    const callArg = create.mock.calls[0]?.[0] as {
+    expect(createStream).toHaveBeenCalled();
+    const callArg = createStream.mock.calls[0]?.[0] as {
       max_output_tokens?: number;
       reasoning?: { effort?: string };
     };
@@ -178,13 +187,21 @@ describe("OpenAI provider incomplete / invalid (no network)", () => {
 
   it("rejects invalid structured output without calling real network after mock", async () => {
     const provider = new OpenAiResponsesProvider("sk-test");
-    const create = vi.fn().mockResolvedValue({
-      status: "completed",
-      output_text: "{not-json",
-      usage: { input_tokens: 1, output_tokens: 1 },
-    });
-    (provider as unknown as { client: { responses: { create: typeof create } } }).client =
-      { responses: { create } };
+    const stream = openaiEventStream([
+      { type: "response.created" },
+      { type: "response.output_text.delta", delta: "{not-json" },
+      {
+        type: "response.completed",
+        response: {
+          status: "completed",
+          output_text: "{not-json",
+          usage: { input_tokens: 1, output_tokens: 1 },
+        },
+      },
+    ]);
+    const createStream = vi.fn().mockReturnValue(stream);
+    (provider as unknown as { client: { responses: { stream: typeof createStream } } }).client =
+      { responses: { stream: createStream } };
 
     const grounding = createBiblicalGroundingProvider().retrieve({
       question: "paz",

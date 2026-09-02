@@ -21,9 +21,9 @@ const DEPTH_TABLE: Record<
     maxApplications: 3,
   },
   balanced: {
-    wordRange: { min: 300, max: 600 },
+    wordRange: { min: 180, max: 350 },
     referenceCount: { min: 2, max: 4 },
-    maxApplications: 5,
+    maxApplications: 4,
   },
   deep: {
     wordRange: { min: 600, max: 1000 },
@@ -60,7 +60,7 @@ export function getResponseDepthGuidance(
             "- deep: maior aprofundamento, nuances e aplicação cuidadosa, sem virar palestra.",
           ]
         : [
-            "- balanced: reflexão clara e humana, com passos práticos sem excesso.",
+            "- balanced: reflexão clara e humana em 180–350 palavras, com poucos passos práticos — sem palestra.",
           ];
 
   const promptLines = [

@@ -1,5 +1,7 @@
 import OpenAI from "openai";
+import type { ResponseStreamEvent } from "openai/resources/responses/responses";
 import type { AiGenerateInput, AiGenerateResult, AiProvider } from "./types";
+import { extractStreamedAnswer } from "./structured-answer-stream";
 import {
   AI_PROVIDER_JSON_SCHEMA,
   parseAndValidateAiProviderContent,
@@ -63,7 +65,8 @@ function extractOutputText(response: {
 
 /**
  * OpenAI Responses API provider with structured outputs + Zod validation.
- * Streaming is intentionally deferred.
+ * Streams official `response.output_text.delta` events; persists only the
+ * completed, Zod-validated object.
  */
 export class OpenAiResponsesProvider implements AiProvider {
   private client: OpenAI;
@@ -123,25 +126,91 @@ export class OpenAiResponsesProvider implements AiProvider {
       .filter(Boolean)
       .join("\n");
 
-    let response;
+    let accumulatedJson = "";
+    let lastEmittedAnswer = "";
+    let firstDeltaAt: number | null = null;
+    let completedResponse: {
+      status?: string;
+      incomplete_details?: { reason?: string } | null;
+      output_text?: string;
+      output?: unknown;
+      usage?: { input_tokens?: number; output_tokens?: number } | null;
+    } | null = null;
+
     try {
-      response = await this.client.responses.create({
-        model: input.model,
-        input: [
-          { role: "system", content: system },
-          { role: "user", content: userPrompt },
-        ],
-        max_output_tokens: maxOutputTokens,
-        reasoning: { effort: reasoningEffort },
-        text: {
-          format: {
-            type: "json_schema",
-            name: "chat_reflection",
-            strict: true,
-            schema: AI_PROVIDER_JSON_SCHEMA,
+      const stream = this.client.responses.stream(
+        {
+          model: input.model,
+          input: [
+            { role: "system", content: system },
+            { role: "user", content: userPrompt },
+          ],
+          max_output_tokens: maxOutputTokens,
+          reasoning: { effort: reasoningEffort },
+          text: {
+            format: {
+              type: "json_schema",
+              name: "chat_reflection",
+              strict: true,
+              schema: AI_PROVIDER_JSON_SCHEMA,
+            },
           },
         },
-      });
+        {
+          timeout: getOpenAiRequestTimeoutMs(),
+          maxRetries: 0,
+          signal: input.abortSignal,
+        },
+      );
+
+      for await (const event of stream as AsyncIterable<ResponseStreamEvent>) {
+        if (input.abortSignal?.aborted) {
+          break;
+        }
+        if (event.type === "response.created") {
+          input.onStreamTelemetry?.({ openaiStreamStartedAt: Date.now() });
+          continue;
+        }
+        if (event.type === "error") {
+          logger.error("openai_responses_stream_error_event", {
+            requestId: input.requestId,
+            failureType: "stream_error_event",
+          });
+          throw openAiFailureToAppError(new Error("stream_error"));
+        }
+        if (event.type === "response.output_text.delta") {
+          if (firstDeltaAt == null) {
+            firstDeltaAt = Date.now();
+            input.onStreamTelemetry?.({ openaiFirstDeltaAt: firstDeltaAt });
+          }
+          const delta =
+            "delta" in event && typeof event.delta === "string"
+              ? event.delta
+              : "";
+          accumulatedJson += delta;
+          const human = extractStreamedAnswer(accumulatedJson);
+          if (human && human !== lastEmittedAnswer) {
+            lastEmittedAnswer = human;
+            input.onAnswerSnapshot?.(human);
+          }
+          continue;
+        }
+        if (event.type === "response.completed") {
+          completedResponse = event.response;
+        }
+      }
+
+      if (input.abortSignal?.aborted) {
+        throw openAiFailureToAppError(new Error("aborted"));
+      }
+
+      const withFinal = stream as unknown as {
+        finalResponse?: () => Promise<typeof completedResponse>;
+      };
+      if (typeof withFinal.finalResponse === "function") {
+        completedResponse =
+          (await withFinal.finalResponse()) ?? completedResponse;
+      }
     } catch (error) {
       logger.error("openai_responses_create_failed", {
         requestId: input.requestId,
@@ -149,6 +218,23 @@ export class OpenAiResponsesProvider implements AiProvider {
         err: error instanceof Error ? error.message : "unknown",
       });
       throw openAiFailureToAppError(error);
+    }
+
+    if (input.abortSignal?.aborted) {
+      throw openAiFailureToAppError(new Error("aborted"));
+    }
+
+    const response = completedResponse;
+    if (!response) {
+      logger.error("openai_responses_stream_missing_completed", {
+        requestId: input.requestId,
+      });
+      throw new AppError(
+        "ai_invalid_output",
+        "ai_invalid_output",
+        503,
+        "Não foi possível gerar a reflexão agora. Tente novamente.",
+      );
     }
 
     if (response.status === "incomplete") {
@@ -167,7 +253,7 @@ export class OpenAiResponsesProvider implements AiProvider {
       );
     }
 
-    const raw = extractOutputText(response);
+    const raw = extractOutputText(response) || accumulatedJson;
     if (!raw.trim()) {
       logger.error("ai_empty_output", { requestId: input.requestId });
       throw new AppError(
@@ -239,6 +325,10 @@ export class OpenAiResponsesProvider implements AiProvider {
       groundingProvider: "curated_v1",
       retrievedReferenceIds: input.grounding.retrievedReferenceIds,
       groundingCount: input.grounding.groundingCount,
+      streamed: true,
+      openaiTtftMs:
+        firstDeltaAt != null ? Math.max(0, firstDeltaAt - started) : null,
+      openaiCompleteMs: Date.now() - started,
     };
   }
 }

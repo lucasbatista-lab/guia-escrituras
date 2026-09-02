@@ -6,14 +6,21 @@ import { InlineNotice } from "@/components/platform/inline-notice";
 import { Button } from "@/components/ui/button";
 import type { ChatResponsePayload } from "@/lib/ai/chat-schema";
 import {
+  consumeChatNdjsonStream,
+  looksLikeStructuredJsonLeak,
+} from "@/lib/ai/chat-stream-protocol";
+import {
   hasRenderableFollowUpQuestion,
   hasRenderableInterpretationNotice,
 } from "@/lib/ai/normalize-assistant-presentation";
 import { formatBiblicalReference } from "@/lib/biblical";
 import {
   appendAssistantUiMessage,
+  assistantMessageId,
   conversationHasCrisisSafetyMode,
   rollbackOptimisticUserMessage,
+  rollbackStreamingAssistantMessage,
+  upsertStreamingAssistantMessage,
   syncConversationUrl,
   type ChatUiMessage,
 } from "@/lib/conversations/chat-history-ui";
@@ -215,6 +222,31 @@ export function ChatPanel({
     abortRef.current = abortController;
     const generation = ++sendGenerationRef.current;
 
+    const applyClientError = (
+      view: ReturnType<typeof resolveChatClientError>,
+    ) => {
+      setError(view.message);
+      setErrorKind(view.kind);
+      setInput(trimmed);
+      setMessages((prev) => {
+        let next = rollbackStreamingAssistantMessage(prev, requestId);
+        if (!view.keepPendingRequest) {
+          next = rollbackOptimisticUserMessage(next, requestId);
+        }
+        return next;
+      });
+      if (!view.keepPendingRequest) {
+        setPendingRequestId(null);
+        pendingDeepRef.current = false;
+        setSendingDeep(false);
+      }
+      if (view.clearDeepPreference) {
+        setPreferDeep(false);
+        pendingDeepRef.current = false;
+        setSendingDeep(false);
+      }
+    };
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -236,9 +268,126 @@ export function ChatPanel({
         return;
       }
 
-      const data = (await response.json()) as
-        | ChatResponsePayload
-        | { message?: string; error?: string; code?: string };
+      const contentType = response.headers.get("Content-Type") ?? "";
+      const isNdjson = contentType.toLowerCase().includes("ndjson");
+
+      if (!response.ok || !isNdjson) {
+        const data = (await response.json()) as
+          | ChatResponsePayload
+          | { message?: string; error?: string; code?: string };
+        if (
+          abortController.signal.aborted ||
+          generation !== sendGenerationRef.current
+        ) {
+          return;
+        }
+        if (!response.ok) {
+          const code = "code" in data ? data.code : undefined;
+          const serverMessage =
+            "message" in data && typeof data.message === "string"
+              ? data.message
+              : undefined;
+          applyClientError(
+            resolveChatClientError({
+              status: response.status,
+              code,
+              message: serverMessage,
+              retryAfterSeconds: parseRetryAfterHeader(
+                response.headers.get("Retry-After"),
+              ),
+            }),
+          );
+          return;
+        }
+        const payload = data as ChatResponsePayload;
+        clearComposerDraft(conversationId, undefined, userId);
+        clearComposerDraft(payload.conversationId, undefined, userId);
+        setConversationId(payload.conversationId);
+        syncConversationUrl(payload.conversationId);
+        setPendingRequestId(null);
+        pendingDeepRef.current = false;
+        setPreferDeep(false);
+        setSendingDeep(false);
+        setMessages((prev) =>
+          appendAssistantUiMessage(prev, {
+            requestId: payload.requestId,
+            answer: payload.answer,
+            biblicalReferences: payload.biblicalReferences,
+            interpretationNotice: payload.interpretationNotice,
+            followUpQuestion: payload.followUpQuestion,
+            deepened: useDeep,
+            safetyMode: payload.safetyMode,
+          }),
+        );
+        return;
+      }
+
+      let pendingSnapshot = "";
+      let lastFlushAt = 0;
+      let rafId = 0;
+      const streamOutcome: {
+        completed: ChatResponsePayload | null;
+        error: { code: string; message: string } | null;
+      } = { completed: null, error: null };
+
+      const flushSnapshot = () => {
+        if (!pendingSnapshot) return;
+        if (looksLikeStructuredJsonLeak(pendingSnapshot)) return;
+        const answer = pendingSnapshot;
+        setMessages((prev) =>
+          upsertStreamingAssistantMessage(prev, { requestId, answer }),
+        );
+      };
+
+      const scheduleSnapshot = (answer: string) => {
+        pendingSnapshot = answer;
+        const now = Date.now();
+        if (now - lastFlushAt >= 50) {
+          lastFlushAt = now;
+          flushSnapshot();
+          return;
+        }
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = 0;
+          lastFlushAt = Date.now();
+          flushSnapshot();
+        });
+      };
+
+      await consumeChatNdjsonStream(
+        response,
+        (event) => {
+          if (
+            abortController.signal.aborted ||
+            generation !== sendGenerationRef.current
+          ) {
+            return;
+          }
+          if (event.type === "started") {
+            setConversationId(event.conversationId);
+            syncConversationUrl(event.conversationId);
+            return;
+          }
+          if (event.type === "assistant_snapshot") {
+            scheduleSnapshot(event.answer);
+            return;
+          }
+          if (event.type === "completed") {
+            streamOutcome.completed = event.payload;
+            return;
+          }
+          if (event.type === "error") {
+            streamOutcome.error = { code: event.code, message: event.message };
+          }
+        },
+        abortController.signal,
+      );
+
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
 
       if (
         abortController.signal.aborted ||
@@ -247,41 +396,33 @@ export function ChatPanel({
         return;
       }
 
-      if (!response.ok) {
-        const code = "code" in data ? data.code : undefined;
-        const serverMessage =
-          "message" in data && typeof data.message === "string"
-            ? data.message
-            : undefined;
-        const view = resolveChatClientError({
-          status: response.status,
-          code,
-          message: serverMessage,
-          retryAfterSeconds: parseRetryAfterHeader(
-            response.headers.get("Retry-After"),
-          ),
-        });
-        setError(view.message);
-        setErrorKind(view.kind);
-        // Always restore the draft so the user can retry or edit without losing text.
-        setInput(trimmed);
-        if (!view.keepPendingRequest) {
-          setPendingRequestId(null);
-          pendingDeepRef.current = false;
-          setSendingDeep(false);
-          setMessages((prev) =>
-            rollbackOptimisticUserMessage(prev, requestId),
-          );
-        }
-        if (view.clearDeepPreference) {
-          setPreferDeep(false);
-          pendingDeepRef.current = false;
-          setSendingDeep(false);
-        }
+      if (streamOutcome.error) {
+        applyClientError(
+          resolveChatClientError({
+            status: 503,
+            code: streamOutcome.error.code,
+            message: streamOutcome.error.message,
+          }),
+        );
         return;
       }
 
-      const payload = data as ChatResponsePayload;
+      if (!streamOutcome.completed) {
+        applyClientError(
+          resolveChatClientError({
+            status: 503,
+            code: "ai_failed",
+            message:
+              "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
+          }),
+        );
+        return;
+      }
+
+      const payload = streamOutcome.completed;
+      if (rafId === 0) {
+        pendingSnapshot = "";
+      }
       clearComposerDraft(conversationId, undefined, userId);
       clearComposerDraft(payload.conversationId, undefined, userId);
       setConversationId(payload.conversationId);
@@ -309,11 +450,14 @@ export function ChatPanel({
       ) {
         return;
       }
-      setError(
-        "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
+      applyClientError(
+        resolveChatClientError({
+          status: 503,
+          code: "ai_failed",
+          message:
+            "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
+        }),
       );
-      setErrorKind("retryable");
-      setInput(trimmed);
     } finally {
       if (generation === sendGenerationRef.current) {
         sendingRef.current = false;
@@ -332,7 +476,12 @@ export function ChatPanel({
     const reqId = inflightRequestIdRef.current;
     if (text) setInput(text);
     if (reqId) {
-      setMessages((prev) => rollbackOptimisticUserMessage(prev, reqId));
+      setMessages((prev) =>
+        rollbackOptimisticUserMessage(
+          rollbackStreamingAssistantMessage(prev, reqId),
+          reqId,
+        ),
+      );
     }
     setPendingRequestId(null);
     pendingDeepRef.current = false;
@@ -369,6 +518,14 @@ export function ChatPanel({
     canDeepen && !deepenFeatureDisabled && !suppressCommercialPrompts;
   const deepenActive = deepenEligible && preferDeep;
   const showEmptyState = !hasHistory && messages.length === 0;
+  const inflightAssistantId = pendingRequestId
+    ? assistantMessageId(pendingRequestId)
+    : null;
+  const showPreparingStatus =
+    loading &&
+    !messages.some(
+      (m) => m.id === inflightAssistantId && m.role === "assistant",
+    );
   const showDeepenControls = deepenEligible;
   const showDeepUpsellHint =
     !canDeepen && !suppressCommercialPrompts && !chatFeatureDisabled;
@@ -481,7 +638,7 @@ export function ChatPanel({
                 e vale só para o próximo envio se você marcar de novo.
               </p>
             ) : null}
-            {message.meta ? (
+            {message.meta && !message.meta.streaming ? (
               <AssistantMetaFooter meta={message.meta} />
             ) : null}
             {message.role === "assistant" &&
@@ -510,7 +667,7 @@ export function ChatPanel({
           </article>
         ))}
 
-        {loading ? (
+        {showPreparingStatus ? (
           <p
             className="animate-soft-pulse text-sm text-ink-soft"
             role="status"
@@ -670,6 +827,7 @@ export function ChatPanel({
                 : "Conte o que você está vivendo…"
             }
             aria-invalid={Boolean(error)}
+            aria-busy={loading}
             aria-describedby={
               error
                 ? "chat-error"

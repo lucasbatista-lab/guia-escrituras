@@ -6,6 +6,8 @@ import {
   isOpenAiConfigured,
 } from "@/lib/ai/gateway";
 import type { ChatRequestInput, ChatResponsePayload } from "@/lib/ai/chat-schema";
+import type { ChatStreamEvent } from "@/lib/ai/chat-stream-protocol";
+import type { AiGenerateResult } from "@/lib/ai/types";
 import { resolveAuthorizedPersonaKey } from "@/lib/ai/chat-persona";
 import type { AuthUserContext } from "@/lib/auth";
 import { requiresRealOpenAiForChat } from "@/config/runtime";
@@ -74,7 +76,39 @@ export async function runChatTurn(input: {
   requestId: string;
   auth: AuthUserContext;
   body: ChatRequestInput;
+  abortSignal?: AbortSignal;
 }): Promise<ChatResponsePayload> {
+  let completed: ChatResponsePayload | undefined;
+  for await (const event of runChatTurnStream(input)) {
+    if (event.type === "completed") {
+      completed = event.payload;
+    }
+    if (event.type === "error") {
+      throw new AppError(
+        event.code,
+        event.code,
+        503,
+        event.message,
+      );
+    }
+  }
+  if (!completed) {
+    throw new AppError(
+      "ai_failed",
+      "ai_failed",
+      503,
+      "Não foi possível gerar a reflexão agora. Tente novamente.",
+    );
+  }
+  return completed;
+}
+
+export async function* runChatTurnStream(input: {
+  requestId: string;
+  auth: AuthUserContext;
+  body: ChatRequestInput;
+  abortSignal?: AbortSignal;
+}): AsyncGenerator<ChatStreamEvent> {
   const { requestId, auth, body } = input;
 
   if (isFeatureDisabled("chat")) {
@@ -174,10 +208,11 @@ export async function runChatTurn(input: {
       conversationId: existingAssistant.conversationId,
       flowStatus: "idempotent_return",
       durationMs: Date.now() - turnStartedMs,
+      streamed: true,
     });
     // Do not expose internal idempotency wording in the public notice field.
     // Notice/follow-up are not persisted on MessageRecord (no migration).
-    return {
+    const payload: ChatResponsePayload = {
       answer: existingAssistant.content,
       biblicalReferences: existingAssistant.biblicalReferences,
       interpretationNotice: "",
@@ -194,6 +229,13 @@ export async function runChatTurn(input: {
       conversationId: existingAssistant.conversationId,
       provider: "openai",
     };
+    yield {
+      type: "started",
+      requestId,
+      conversationId: existingAssistant.conversationId,
+    };
+    yield { type: "completed", requestId, payload };
+    return;
   }
 
   // Process-local single-flight: same requestId must not call the AI twice here.
@@ -230,21 +272,31 @@ export async function runChatTurn(input: {
       flowStatus: "idempotent_return_under_lock",
       durationMs: Date.now() - turnStartedMs,
     });
-    return {
-      answer: assistantUnderLock.content,
-      biblicalReferences: assistantUnderLock.biblicalReferences,
-      interpretationNotice:
-        "Resposta recuperada de uma solicitação anterior (idempotente).",
-      usage: {
-        level: "normal",
-        label: usageLevelLabel("normal"),
-        inputTokens: 0,
-        outputTokens: 0,
-      },
+    yield {
+      type: "started",
       requestId,
       conversationId: assistantUnderLock.conversationId,
-      provider: "openai",
     };
+    yield {
+      type: "completed",
+      requestId,
+      payload: {
+        answer: assistantUnderLock.content,
+        biblicalReferences: assistantUnderLock.biblicalReferences,
+        interpretationNotice:
+          "Resposta recuperada de uma solicitação anterior (idempotente).",
+        usage: {
+          level: "normal",
+          label: usageLevelLabel("normal"),
+          inputTokens: 0,
+          outputTokens: 0,
+        },
+        requestId,
+        conversationId: assistantUnderLock.conversationId,
+        provider: "openai",
+      },
+    };
+    return;
   }
 
   const personaResolution = resolveAuthorizedPersonaKey({
@@ -343,21 +395,36 @@ export async function runChatTurn(input: {
       success: true,
     });
 
-    return {
-      answer: crisisAnswer,
-      biblicalReferences: [],
-      interpretationNotice: CRISIS_INTERPRETATION_NOTICE,
-      usage: {
-        level: "normal",
-        label: usageLevelLabel("normal"),
-        inputTokens: 0,
-        outputTokens: 0,
-      },
+    yield {
+      type: "started",
       requestId,
       conversationId: crisisConversation.id,
-      provider: "mock",
-      safetyMode: "crisis",
     };
+    yield {
+      type: "assistant_snapshot",
+      requestId,
+      answer: crisisAnswer,
+    };
+    yield {
+      type: "completed",
+      requestId,
+      payload: {
+        answer: crisisAnswer,
+        biblicalReferences: [],
+        interpretationNotice: CRISIS_INTERPRETATION_NOTICE,
+        usage: {
+          level: "normal",
+          label: usageLevelLabel("normal"),
+          inputTokens: 0,
+          outputTokens: 0,
+        },
+        requestId,
+        conversationId: crisisConversation.id,
+        provider: "mock",
+        safetyMode: "crisis",
+      },
+    };
+    return;
   }
 
   // Ordinary turns only: commercial usage gates.
@@ -460,6 +527,16 @@ export async function runChatTurn(input: {
     });
   }
 
+  yield {
+    type: "started",
+    requestId,
+    conversationId: conversation.id,
+  };
+
+  if (input.abortSignal?.aborted) {
+    throw openAiFailureToAppError(new Error("aborted"));
+  }
+
   // Idempotent user insert: same requestId must not create a second user row.
   // If a prior attempt already stored the user message (AI failed afterward), reuse it.
   const persistedUser = await repos.messages.insertUserMessage({
@@ -540,9 +617,30 @@ export async function runChatTurn(input: {
     : resolveChatModel({ preferDeep: Boolean(body.preferDeep) });
 
   const provider = createAiProvider();
-  let result;
+  const preOpenaiMs = Date.now() - turnStartedMs;
+  let openaiStreamStartedAt: number | null = null;
+  let openaiFirstDeltaAt: number | null = null;
+  let result: AiGenerateResult | undefined;
   try {
-    result = await provider.generate({
+    const snapshotQueue: Array<
+      | { kind: "snapshot"; answer: string }
+      | { kind: "done"; value: AiGenerateResult }
+      | { kind: "fail"; error: unknown }
+    > = [];
+    let notify: (() => void) | null = null;
+    const waitForItem = () =>
+      new Promise<void>((resolve) => {
+        notify = resolve;
+      });
+    const enqueue = (
+      item: (typeof snapshotQueue)[number],
+    ) => {
+      snapshotQueue.push(item);
+      notify?.();
+      notify = null;
+    };
+
+    const generatePromise = provider.generate({
       messages: contextMessages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -554,7 +652,44 @@ export async function runChatTurn(input: {
       requestId,
       grounding,
       responseDepth,
-    });
+      abortSignal: input.abortSignal,
+      onAnswerSnapshot: (answer) => {
+        enqueue({ kind: "snapshot", answer });
+      },
+      onStreamTelemetry: (event) => {
+        if (event.openaiStreamStartedAt) {
+          openaiStreamStartedAt = event.openaiStreamStartedAt;
+        }
+        if (event.openaiFirstDeltaAt) {
+          openaiFirstDeltaAt = event.openaiFirstDeltaAt;
+        }
+      },
+    }).then(
+      (value) => enqueue({ kind: "done", value }),
+      (error) => enqueue({ kind: "fail", error }),
+    );
+
+    let finished = false;
+    while (!finished) {
+      if (snapshotQueue.length === 0) {
+        await waitForItem();
+      }
+      const item = snapshotQueue.shift();
+      if (!item) continue;
+      if (item.kind === "snapshot") {
+        yield {
+          type: "assistant_snapshot",
+          requestId,
+          answer: item.answer,
+        };
+      } else if (item.kind === "done") {
+        result = item.value;
+        finished = true;
+      } else {
+        throw item.error;
+      }
+    }
+    await generatePromise;
   } catch (error) {
     if (error instanceof AppError) {
       logger.error("ai_generate_failed", {
@@ -577,6 +712,15 @@ export async function runChatTurn(input: {
       err: error instanceof Error ? error.message : "unknown",
     });
     throw openAiFailureToAppError(error);
+  }
+
+  if (!result) {
+    throw new AppError(
+      "ai_failed",
+      "ai_failed",
+      503,
+      "Não foi possível gerar a reflexão agora. Tente novamente.",
+    );
   }
 
   const presented = normalizeAssistantPresentation({
@@ -605,6 +749,7 @@ export async function runChatTurn(input: {
     }
   }
 
+  const persistStartedMs = Date.now();
   // Provider output is validated before this point; never persist invalid assistant content.
   let costs;
   try {
@@ -723,6 +868,14 @@ export async function runChatTurn(input: {
     config: budgetConfig,
   });
 
+  const dbPostMs = Date.now() - persistStartedMs;
+  const responseCompleteMs = Date.now() - turnStartedMs;
+  const openaiTtftMs =
+    result.openaiTtftMs ??
+    (openaiFirstDeltaAt != null
+      ? Math.max(0, openaiFirstDeltaAt - (turnStartedMs + preOpenaiMs))
+      : null);
+
   logger.info("chat_turn_completed", {
     requestId,
     userId: maskUserId(auth.userId),
@@ -740,39 +893,52 @@ export async function runChatTurn(input: {
     usageInserted: usageInsert.inserted,
     featureType: body.preferDeep ? "chat_deep" : "chat_standard",
     persistWarning: persistWarning ?? null,
-    // Context telemetry (logs only — usage_events has no metadata column).
     recentMessageCount: contextMessages.length,
     summaryUsed,
     summaryLength: sanitizeConversationMemory(result.conversationMemory ?? "")
       .length,
     depth: responseDepth,
     flowStatus: "completed",
-    durationMs: Date.now() - turnStartedMs,
+    durationMs: responseCompleteMs,
     isIdempotentRetry,
+    streamed: result.streamed === true,
+    // usage_events has no metadata column — context telemetry lives on this log.
+    request_start: turnStartedMs,
+    pre_openai_ms: preOpenaiMs,
+    openai_stream_started: openaiStreamStartedAt != null,
+    openai_ttft_ms: openaiTtftMs,
+    openai_complete_ms: result.openaiCompleteMs ?? result.latencyMs,
+    db_post_ms: dbPostMs,
+    response_complete_ms: responseCompleteMs,
   });
 
-  return {
-    answer: presented.answer,
-    biblicalReferences: result.biblicalReferences,
-    interpretationNotice: presented.interpretationNotice,
-    followUpQuestion: presented.followUpQuestion,
-    usage: {
-      level:
-        updatedBudget.level === "blocked"
-          ? "near_limit"
-          : updatedBudget.level,
-      label: usageLevelLabel(
-        updatedBudget.level === "blocked"
-          ? "near_limit"
-          : updatedBudget.level,
-      ),
-      inputTokens: result.inputTokens,
-      outputTokens: result.outputTokens,
-    },
+  yield {
+    type: "completed",
     requestId,
-    conversationId: conversation.id,
-    provider: result.provider,
+    payload: {
+      answer: presented.answer,
+      biblicalReferences: result.biblicalReferences,
+      interpretationNotice: presented.interpretationNotice,
+      followUpQuestion: presented.followUpQuestion,
+      usage: {
+        level:
+          updatedBudget.level === "blocked"
+            ? "near_limit"
+            : updatedBudget.level,
+        label: usageLevelLabel(
+          updatedBudget.level === "blocked"
+            ? "near_limit"
+            : updatedBudget.level,
+        ),
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+      },
+      requestId,
+      conversationId: conversation.id,
+      provider: result.provider,
+    },
   };
+  return;
   } finally {
     turnLock.release();
   }

@@ -298,19 +298,27 @@ describe("chat turn context alignment", () => {
     );
     const { createBiblicalGroundingProvider } = await import("@/lib/biblical");
     const { theologyPolicyResolver } = await import("@/lib/theology");
+    const { openaiEventStream } = await import("./helpers/openai-event-stream");
 
     const provider = new OpenAiResponsesProvider("sk-test");
-    const create = vi.fn().mockResolvedValue({
-      status: "incomplete",
-      incomplete_details: { reason: "max_output_tokens" },
-      output_text: "",
-      usage: { input_tokens: 1, output_tokens: 0 },
-    });
+    const stream = openaiEventStream([
+      { type: "response.created" },
+      {
+        type: "response.completed",
+        response: {
+          status: "incomplete",
+          incomplete_details: { reason: "max_output_tokens" },
+          output_text: "",
+          usage: { input_tokens: 1, output_tokens: 0 },
+        },
+      },
+    ]);
+    const createStream = vi.fn().mockReturnValue(stream);
     (
       provider as unknown as {
-        client: { responses: { create: typeof create } };
+        client: { responses: { stream: typeof createStream } };
       }
-    ).client = { responses: { create } };
+    ).client = { responses: { stream: createStream } };
 
     const grounding = createBiblicalGroundingProvider().retrieve({
       question: "silêncio espiritual",
@@ -349,7 +357,7 @@ describe("chat turn context alignment", () => {
       }),
     ).rejects.toThrow();
 
-    const payload = create.mock.calls[0]?.[0] as {
+    const payload = createStream.mock.calls[0]?.[0] as {
       input: Array<{ role: string; content: string }>;
     };
     const userPrompt = payload.input.find((i) => i.role === "user")?.content ?? "";

@@ -86,6 +86,9 @@ export class MockAiProvider implements AiProvider {
       input.requestId,
     );
 
+    input.onAnswerSnapshot?.(answer.slice(0, Math.min(48, answer.length)));
+    input.onAnswerSnapshot?.(answer);
+
     return {
       answer,
       biblicalReferences: accepted.slice(0, guidance.referenceCount.max),
@@ -113,6 +116,9 @@ export class MockAiProvider implements AiProvider {
       groundingProvider: "curated_v1",
       retrievedReferenceIds: input.grounding.retrievedReferenceIds,
       groundingCount: input.grounding.groundingCount,
+      streamed: true,
+      openaiTtftMs: 0,
+      openaiCompleteMs: Date.now() - started,
     };
   }
 }

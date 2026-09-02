@@ -7,6 +7,8 @@ import {
   conversationChatPath,
   mapStoredMessagesToUi,
   rollbackOptimisticUserMessage,
+  rollbackStreamingAssistantMessage,
+  upsertStreamingAssistantMessage,
   syncConversationUrl,
 } from "@/lib/conversations/chat-history-ui";
 import { createMemoryRepositories } from "@/lib/database/repositories/memory";
@@ -108,6 +110,25 @@ describe("chat history UI helpers", () => {
     expect(assistantMessageId("req-a")).toBe("req-a-assistant");
   });
 
+  it("upgrades a streaming bubble into the finalized assistant message", () => {
+    const streaming = upsertStreamingAssistantMessage([], {
+      requestId: "req-stream",
+      answer: "Paz",
+    });
+    expect(streaming[0]?.meta?.streaming).toBe(true);
+    const finalized = appendAssistantUiMessage(streaming, {
+      requestId: "req-stream",
+      answer: "Paz completa",
+      interpretationNotice: "Síntese editorial.",
+    });
+    expect(finalized).toHaveLength(1);
+    expect(finalized[0]?.content).toBe("Paz completa");
+    expect(finalized[0]?.meta?.streaming).toBeUndefined();
+    expect(finalized[0]?.meta?.interpretationNotice).toBe("Síntese editorial.");
+    const rolled = rollbackStreamingAssistantMessage(streaming, "req-stream");
+    expect(rolled).toHaveLength(0);
+  });
+
   it("marks deepened assistant turns in session meta only", () => {
     const withDeep = appendAssistantUiMessage([], {
       requestId: "req-deep",
@@ -166,6 +187,9 @@ describe("chat reliability — history contracts in source", () => {
     expect(panel).toContain("syncConversationUrl");
     expect(panel).toContain("rollbackOptimisticUserMessage");
     expect(panel).toContain("appendAssistantUiMessage");
+    expect(panel).toContain("upsertStreamingAssistantMessage");
+    expect(panel).toContain("consumeChatNdjsonStream");
+    expect(panel).toContain("rollbackStreamingAssistantMessage");
   });
 
   it("conversar page maps meta, soft-fails invalid UUID and load errors", () => {

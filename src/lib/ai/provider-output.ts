@@ -38,7 +38,12 @@ export const aiProviderContentSchema = z
 
 export type AiProviderContent = z.infer<typeof aiProviderContentSchema>;
 
-/** JSON Schema for OpenAI Responses structured outputs (strict subset). */
+/**
+ * JSON Schema for OpenAI Responses structured outputs (strict subset).
+ * `answer` is first in `required`/`properties` so official incremental
+ * snapshots can expose the human field via SDK `partialParse` before the
+ * rest of the object completes. Final persistence still uses full Zod.
+ */
 export const AI_PROVIDER_JSON_SCHEMA = {
   type: "object",
   additionalProperties: false,

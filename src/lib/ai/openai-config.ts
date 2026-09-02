@@ -24,9 +24,9 @@ export function getOpenAiReasoningEffortDefault(): ReasoningEffort {
 }
 
 const DEFAULT_MAX_OUTPUT: Record<ChatResponseDepth, number> = {
-  // Leave headroom so reasoning + JSON schema do not exhaust the budget.
-  brief: 2_500,
-  balanced: 4_000,
+  // Headroom for reasoning + JSON envelope around a concise visible answer.
+  brief: 1_200,
+  balanced: 1_800,
   deep: 6_000,
 };
 
