@@ -29,8 +29,17 @@ export function ConsentBanner() {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const authCompact =
+    pathname === "/entrar" ||
+    pathname === "/cadastro" ||
+    pathname === "/confira-seu-email" ||
+    pathname === "/email-confirmado" ||
+    pathname === "/recuperar-senha" ||
+    pathname === "/redefinir-senha";
   const campaignCompact =
-    pathname === "/comece" || pathname === "/comece-v2";
+    pathname === "/comece" ||
+    pathname === "/comece-v2" ||
+    authCompact;
 
   useEffect(() => {
     if (!bannerVisible && !preferencesOpen) return;

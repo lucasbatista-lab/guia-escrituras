@@ -29,7 +29,7 @@ export function AuthShell({
       <main
         id={MAIN_CONTENT_ID}
         tabIndex={-1}
-        className="relative mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 py-8 outline-none sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 lg:py-12"
+        className="relative mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 py-8 pb-[max(5.5rem,var(--safe-bottom))] outline-none sm:px-6 sm:pb-[max(6rem,var(--safe-bottom))] lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 lg:py-12 lg:pb-[max(6rem,var(--safe-bottom))]"
       >
         <section className="mx-auto w-full max-w-md rounded-3xl border border-border/70 bg-card/85 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-8">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">

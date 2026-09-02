@@ -55,17 +55,20 @@ export default async function AssinarContinuarPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const auth = await getAuthUserContext();
-  if (!auth || auth.demoMode) {
-    redirect("/entrar?next=/assinar/continuar");
-  }
-
   const params = await searchParams;
   const expiredFlag = params.expired === "1";
   const intentRaw = params.intent;
   const intentFromQuery = Array.isArray(intentRaw) ? intentRaw[0] : intentRaw;
   const intentFromCookie = await readSignupIntentCookie();
   const intentToken = intentFromQuery?.trim() || intentFromCookie;
+
+  const auth = await getAuthUserContext();
+  if (!auth || auth.demoMode) {
+    const loginNext = intentToken
+      ? `/assinar/continuar?intent=${encodeURIComponent(intentToken)}`
+      : "/assinar/continuar";
+    redirect(`/entrar?next=${encodeURIComponent(loginNext)}`);
+  }
   const checkoutError = parseCheckoutError(params.checkout_error);
   const checkoutRef = parseCheckoutRef(params.ref);
 

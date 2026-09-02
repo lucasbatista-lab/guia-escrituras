@@ -15,12 +15,14 @@ export function CheckEmailExperience({
   emailHint,
   planName,
   planKey,
+  intentToken = null,
   mode = "signup",
   supportEmail,
 }: {
   emailHint: string | null;
   planName: string | null;
   planKey: string | null;
+  intentToken?: string | null;
   mode?: "signup" | "recovery";
   supportEmail: string | null;
 }) {
@@ -50,7 +52,10 @@ export function CheckEmailExperience({
     try {
       const result = isRecovery
         ? await requestPasswordResetAction({ email: resendEmail })
-        : await resendConfirmationAction({ email: resendEmail });
+        : await resendConfirmationAction({
+            email: resendEmail,
+            intentToken,
+          });
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       if (!result.ok) {
         setResendFeedback(result.message);

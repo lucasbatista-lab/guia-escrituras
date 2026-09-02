@@ -101,10 +101,15 @@ function fail(
   };
 }
 
-function checkEmailPath(emailMasked: string, planKey: string | null): string {
+function checkEmailPath(
+  emailMasked: string,
+  planKey: string | null,
+  intentToken?: string | null,
+): string {
   const params = new URLSearchParams();
   params.set("hint", emailMasked);
   if (planKey) params.set("plan", planKey);
+  if (intentToken) params.set("intent", intentToken);
   return `/confira-seu-email?${params.toString()}`;
 }
 
@@ -113,6 +118,7 @@ function checkEmailSoftSuccess(
   requestId: string,
   email: string,
   planKey: string | null,
+  intentToken?: string | null,
 ): Extract<SignUpActionResult, { ok: true }> {
   const emailMasked = maskEmail(email);
   return {
@@ -121,6 +127,7 @@ function checkEmailSoftSuccess(
     redirectTo: checkEmailPath(
       emailMasked,
       planKey,
+      intentToken,
     ) as `/confira-seu-email?${string}`,
     requestId,
     emailMasked,
@@ -398,7 +405,12 @@ export async function signUpAction(input: {
     }
 
     if (mapped.code === "email_taken") {
-      return checkEmailSoftSuccess(requestId, normalizedEmail, selectedPlanKey);
+      return checkEmailSoftSuccess(
+        requestId,
+        normalizedEmail,
+        selectedPlanKey,
+        intentToken,
+      );
     }
     return {
       ok: false,
@@ -434,7 +446,12 @@ export async function signUpAction(input: {
       });
     }
 
-    return checkEmailSoftSuccess(requestId, normalizedEmail, selectedPlanKey);
+    return checkEmailSoftSuccess(
+      requestId,
+      normalizedEmail,
+      selectedPlanKey,
+      intentToken,
+    );
   }
 
   if (!data.user) {

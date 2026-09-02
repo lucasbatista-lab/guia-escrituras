@@ -20,6 +20,15 @@ export default async function ConfiraSeuEmailPage({
   const emailHint = Array.isArray(hintRaw) ? hintRaw[0] : hintRaw;
   const planParam = Array.isArray(planRaw) ? planRaw[0] : planRaw;
   const modeParam = Array.isArray(modeRaw) ? modeRaw[0] : modeRaw;
+  const intentRaw = params.intent;
+  const intentParam = Array.isArray(intentRaw) ? intentRaw[0] : intentRaw;
+  const intentToken =
+    intentParam?.trim() &&
+    intentParam.trim().length >= 16 &&
+    intentParam.trim().length <= 128 &&
+    /^[A-Za-z0-9_-]+$/.test(intentParam.trim())
+      ? intentParam.trim()
+      : null;
   const mode = modeParam === "recovery" ? "recovery" : "signup";
 
   const planKey =
@@ -62,6 +71,7 @@ export default async function ConfiraSeuEmailPage({
           emailHint={emailHint?.trim() || null}
           planName={plan?.name ?? null}
           planKey={planKey}
+          intentToken={intentToken}
           mode={mode}
           supportEmail={brand.supportEmail}
         />
