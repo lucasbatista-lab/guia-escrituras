@@ -427,10 +427,31 @@ export async function* runChatTurnStream(input: {
     return;
   }
 
-  // Ordinary turns only: commercial usage gates.
+  // Ordinary turns only: commercial usage gates (parallel independent reads).
   const budgetConfig = getBudgetConfig(auth.planKey);
   const yearMonth = currentYearMonth();
-  const monthly = await repos.usage.getMonthly(auth.userId, yearMonth);
+  const shortConfig = getShortRateLimitConfig();
+  const [
+    monthly,
+    requestsToday,
+    existingUser,
+    existingUsage,
+    countLast60s,
+    countLast10m,
+  ] = await Promise.all([
+    repos.usage.getMonthly(auth.userId, yearMonth),
+    repos.usage.countRequestsSince(auth.userId, startOfUtcDayIso()),
+    repos.messages.findByRequestId(auth.userId, requestId, "user"),
+    repos.usage.findEventByRequestId(auth.userId, requestId),
+    repos.messages.countUserMessagesSince(
+      auth.userId,
+      secondsAgoIso(shortConfig.perMinute.windowSeconds),
+    ),
+    repos.messages.countUserMessagesSince(
+      auth.userId,
+      secondsAgoIso(shortConfig.perTenMinutes.windowSeconds),
+    ),
+  ]);
 
   const budget = evaluateMonthlyBudget({
     usedBrlCents: monthly.usedBrlCents,
@@ -446,10 +467,6 @@ export async function* runChatTurnStream(input: {
     );
   }
 
-  const requestsToday = await repos.usage.countRequestsSince(
-    auth.userId,
-    startOfUtcDayIso(),
-  );
   const burst = evaluateDailyBurst({
     requestsToday,
     dailyBurstLimit: budgetConfig.dailyBurstLimit,
@@ -463,29 +480,9 @@ export async function* runChatTurnStream(input: {
     );
   }
 
-  const existingUser = await repos.messages.findByRequestId(
-    auth.userId,
-    requestId,
-    "user",
-  );
-  const existingUsage = await repos.usage.findEventByRequestId(
-    auth.userId,
-    requestId,
-  );
   const isIdempotentRetry = Boolean(existingUser || existingUsage);
 
   if (!isIdempotentRetry) {
-    const shortConfig = getShortRateLimitConfig();
-    const [countLast60s, countLast10m] = await Promise.all([
-      repos.messages.countUserMessagesSince(
-        auth.userId,
-        secondsAgoIso(shortConfig.perMinute.windowSeconds),
-      ),
-      repos.messages.countUserMessagesSince(
-        auth.userId,
-        secondsAgoIso(shortConfig.perTenMinutes.windowSeconds),
-      ),
-    ]);
     const short = evaluateShortRateLimits({
       countLast60s,
       countLast10m,
@@ -548,12 +545,14 @@ export async function* runChatTurnStream(input: {
 
   // Fetch enough history so that after excluding the current turn we still have
   // up to RECENT_CONTEXT_MESSAGE_LIMIT prior messages.
-  const recent = await repos.messages.listRecent(
-    conversation.id,
-    auth.userId,
-    RECENT_CONTEXT_MESSAGE_LIMIT + 2,
-  );
-  const summary = await repos.summaries.get(conversation.id, auth.userId);
+  const [recent, summary] = await Promise.all([
+    repos.messages.listRecent(
+      conversation.id,
+      auth.userId,
+      RECENT_CONTEXT_MESSAGE_LIMIT + 2,
+    ),
+    repos.summaries.get(conversation.id, auth.userId),
+  ]);
   const contextMessages = selectContextMessages({
     recentChronological: recent,
     currentRequestId: requestId,

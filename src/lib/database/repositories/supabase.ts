@@ -468,11 +468,14 @@ class SupabaseSummaries implements ConversationSummaryRepository {
 
   async upsert(input: ConversationSummaryRecord) {
     const admin = createAdminClient();
-    const { error } = await admin.from("conversation_summaries").upsert({
-      conversation_id: input.conversationId,
-      user_id: input.userId,
-      summary: input.summary,
-    });
+    const { error } = await admin.from("conversation_summaries").upsert(
+      {
+        conversation_id: input.conversationId,
+        user_id: input.userId,
+        summary: input.summary,
+      },
+      { onConflict: "conversation_id" },
+    );
     if (error) {
       throw new AppError(
         error.message,
@@ -572,11 +575,14 @@ class SupabaseUsage implements UsageRepository {
 
     const { data, error } = await admin
       .from("usage_monthly")
-      .upsert({
-        user_id: input.userId,
-        year_month: input.yearMonth,
-        ...next,
-      })
+      .upsert(
+        {
+          user_id: input.userId,
+          year_month: input.yearMonth,
+          ...next,
+        },
+        { onConflict: "user_id,year_month" },
+      )
       .select("*")
       .single();
 

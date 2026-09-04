@@ -106,6 +106,7 @@ export class OpenAiResponsesProvider implements AiProvider {
       "Nunca afirme ser Jesus, Deus ou uma revelação sobrenatural.",
       "A pergunta atual (abaixo) é o foco obrigatório desta resposta; mensagens recentes e o resumo são só contexto.",
       "No campo answer: NÃO repita interpretationNotice, followUpQuestion nem uma lista final de biblicalReferences — a interface já renderiza esses campos.",
+      "No JSON de saída, escreva o campo answer primeiro (antes de biblicalReferences e demais campos) para o texto útil aparecer cedo no stream.",
       "interpretationNotice: uma frase curta sobre referência/síntese (não um essay).",
       "Finalize com no máximo uma pergunta de continuidade (followUpQuestion), apenas no campo dedicado.",
     ].join("\n");

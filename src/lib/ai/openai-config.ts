@@ -19,8 +19,9 @@ export function getOpenAiReasoningEffortDefault(): ReasoningEffort {
   if (raw && (allowed as string[]).includes(raw)) {
     return raw as ReasoningEffort;
   }
-  // Low effort for common chat — reduces latency/cost on reasoning models.
-  return "low";
+  // Minimal effort for common chat — production TTFT on gpt-5-mini with
+  // "low" was ~4s to first output_text delta; keep safety/grounding intact.
+  return "minimal";
 }
 
 const DEFAULT_MAX_OUTPUT: Record<ChatResponseDepth, number> = {

@@ -94,19 +94,22 @@ export const getAuthUserContext = cache(async function getAuthUserContext(): Pro
 
   if (!user) return null;
 
-  const { data: spiritual } = await supabase
-    .from("spiritual_profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const effective = await getEffectiveSubscriptionForUser(user.id);
-
-  const { data: adminRole } = await supabase
-    .from("admin_roles")
-    .select("role")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Parallelize independent lookups — sequential round-trips dominated pre-stream TTFB.
+  const [spiritualResult, effective, adminRoleResult] = await Promise.all([
+    supabase
+      .from("spiritual_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    getEffectiveSubscriptionForUser(user.id),
+    supabase
+      .from("admin_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
+  const { data: spiritual } = spiritualResult;
+  const { data: adminRole } = adminRoleResult;
 
   const spiritualProfile: SpiritualProfilePrefs = spiritual
     ? {

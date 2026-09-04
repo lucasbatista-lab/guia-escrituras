@@ -47,10 +47,10 @@ describe("response depth guidance", () => {
 });
 
 describe("openai chat config defaults", () => {
-  it("uses low reasoning effort by default without requiring env", () => {
+  it("uses minimal reasoning effort by default without requiring env", () => {
     const prev = process.env.OPENAI_REASONING_EFFORT_DEFAULT;
     delete process.env.OPENAI_REASONING_EFFORT_DEFAULT;
-    expect(getOpenAiReasoningEffortDefault()).toBe("low");
+    expect(getOpenAiReasoningEffortDefault()).toBe("minimal");
     if (prev !== undefined) process.env.OPENAI_REASONING_EFFORT_DEFAULT = prev;
   });
 
@@ -182,7 +182,7 @@ describe("OpenAI provider incomplete / invalid (no network)", () => {
       reasoning?: { effort?: string };
     };
     expect(callArg.max_output_tokens).toBeGreaterThanOrEqual(800);
-    expect(callArg.reasoning?.effort).toBe("low");
+    expect(callArg.reasoning?.effort).toBe("minimal");
   });
 
   it("rejects invalid structured output without calling real network after mock", async () => {
