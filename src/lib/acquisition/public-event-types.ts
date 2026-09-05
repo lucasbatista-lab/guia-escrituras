@@ -22,11 +22,14 @@ export type ViewportClass = "mobile" | "tablet" | "desktop";
 
 export type PublicConversionEventPayload = {
   event: PublicConversionEventName;
+  event_id: string;
+  session_key: string;
   path: string;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
   utm_content: string | null;
+  /** Accepted for logs only — not persisted. */
   plan: PlanKey | null;
   viewport_class: ViewportClass;
 };

@@ -18,8 +18,9 @@ Migrations em `supabase/migrations/`.
 | `010` journey_progress complete RPC unnest fix | repara `complete_journey_progress_step` (PG 42883) | **Aplicada** em produção (humano, **2026-07-26**) · checks de função verdes; postcheck `table_grants_ok` falso por grants históricos |
 | `011` journey_progress role least privilege | revoga DELETE/TRUNCATE/REFERENCES/TRIGGER de `authenticated` + `service_role` | **Aplicada** em produção (humano, **2026-07-26**) · postcheck `overall_ok = true` |
 | `012` journey_progress complete RPC runtime fix | reescreve complete: `merged` + `expected <@ merged` (sem `ANY((SELECT))`) | **Aplicada** em produção (humano, **2026-07-27**) · runtime smoke `overall_ok=true` · Jornada integral 7/7 verde · postcheck estrutural: único campo falso `plpgsql_vars_present` = **falso negativo** (ver abaixo) |
+| `013` public_conversion_events | beacons first-party duráveis (funil pago) | **Aplicada** em produção (humano/CLI, **2026-09-04/05 BRT**) · postcheck `overall_ok=true` · ver `docs/ACQUISITION_EVENTS.md` |
 
-**Não** reaplicar migrations. **Não** executar rollback. Postchecks são **somente leitura** (exceto smokes transacionais, que usam `BEGIN`/`ROLLBACK` sem persistir).
+**Não** reaplicar migrations já aplicadas. **Não** executar rollback destrutivo sem backup. Postchecks são **somente leitura** (exceto smokes transacionais, que usam `BEGIN`/`ROLLBACK` sem persistir).
 
 Handoff de lançamento: `docs/_ai/AMEM_LAUNCH_GO_HANDOFF_2026-07-28.md`.
 
@@ -80,6 +81,7 @@ Pacote: `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`.
 10. `20260712000010_journey_progress_complete_rpc_unnest_fix.sql` — repara aliases unnest (**aplicada**; não reaplicar; não editar 008–009)
 11. `20260712000011_journey_progress_role_least_privilege.sql` — privilégio mínimo tabela (**aplicada**; não reaplicar; não editar 008–010)
 12. `20260712000012_journey_progress_complete_rpc_runtime_fix.sql` — reescrita runtime complete (**aplicada 2026-07-27**; não reaplicar; não editar 008–011)
+13. `20260904000013_public_conversion_events.sql` — eventos first-party do funil (**aplicada**; apply/rollback em `docs/ACQUISITION_EVENTS.md`)
 
 ## Migration 004 (resumo — aplicada)
 

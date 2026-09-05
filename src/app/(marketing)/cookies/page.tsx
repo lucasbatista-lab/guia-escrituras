@@ -24,8 +24,11 @@ export default function CookiesPage() {
       <p>
         Sempre ativos. Incluem sessão e segurança da conta, bem como cookies
         first-party de aquisição (por exemplo, origem de campanha UTM/ref) usados
-        para operar o funil e entender como as pessoas chegaram ao Amém Chat. Esses
-        dados não incluem o conteúdo das conversas.
+        para operar o funil e entender como as pessoas chegaram ao Amém Chat. O
+        servidor também pode registrar eventos agregados do funil público
+        (página vista, clique em CTA, início de cadastro) com identificador de
+        sessão de aba — sem conteúdo das conversas, e-mail ou tokens. Esses
+        sinais não substituem o opt-in de publicidade (Meta).
       </p>
 
       <h2 className="mt-8 font-display text-2xl text-ink">Publicidade</h2>

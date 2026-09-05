@@ -66,6 +66,9 @@ Reintrodução futura exige evento **autoritativo e idempotente** que não permi
 **Não otimize a campanha inicial para Lead.** Prefira Landing Page Views / cliques ou Purchase quando houver volume.
 
 Eventos first-party (`signup_started`, `paid_landing_*`, etc.) continuam independentes da Meta.
+Eles passam por `POST /api/acquisition/events` e, após a migration `013`, também persistem em
+`public_conversion_events` (sem e-mail, conversa, tokens ou URL completa). Detalhes, gaps de
+medição e relatório BRT: `docs/ACQUISITION_EVENTS.md`.
 
 ## Validar browser (PageView / ViewContent)
 

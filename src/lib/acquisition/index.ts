@@ -28,3 +28,8 @@ export {
   LAUNCH_CAMPAIGN_EXAMPLES,
   buildCampaignQuery,
 } from "./campaigns";
+export {
+  PUBLIC_CONVERSION_PATH_ALLOWLIST,
+  isPublicConversionPath,
+} from "./public-event-paths";
+export { isSyntheticQaAcquisition } from "./synthetic-qa";
