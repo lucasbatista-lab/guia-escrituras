@@ -17,6 +17,7 @@ export type CheckoutSuccessView =
   | { kind: "unauthenticated"; resumePath: string }
   | { kind: "forbidden" }
   | { kind: "processing" }
+  | { kind: "activating" }
   | { kind: "sync_error" }
   | {
       kind: "active";
@@ -107,7 +108,7 @@ export async function resolveCheckoutSuccessState(options?: {
       paymentLooksDone &&
       (!sessionUserId || sessionUserId === auth.userId)
     ) {
-      return { kind: "processing" };
+      return { kind: "activating" };
     }
 
     return { kind: "processing" };
@@ -149,7 +150,13 @@ async function activeSuccessView(
 
 /** Lightweight poll payload — never includes Stripe ids or secrets. */
 export async function getCheckoutSuccessPollPayload(): Promise<{
-  status: "processing" | "active" | "forbidden" | "unauthenticated" | "sync_error";
+  status:
+    | "processing"
+    | "activating"
+    | "active"
+    | "forbidden"
+    | "unauthenticated"
+    | "sync_error";
   nextPath?: "/personalizar" | "/inicio";
   emailConfirmed?: boolean;
   emailMasked?: string | null;

@@ -39,7 +39,9 @@ export default async function AssinaturaSucessoPage({
         ? "sync_error"
         : view.kind === "active"
           ? "active"
-          : "processing";
+          : view.kind === "activating"
+            ? "activating"
+            : "processing";
 
   const initialNextPath = view.kind === "active" ? view.nextPath : null;
   const initialEmailConfirmed =
