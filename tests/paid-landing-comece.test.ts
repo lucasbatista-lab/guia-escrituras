@@ -134,14 +134,22 @@ describe("paid landing /comece (promoted V2 composition)", () => {
   });
 
   it("keeps video-ready media without autoplay and without Meta Lead", () => {
+    const video = read(
+      "src",
+      "components",
+      "marketing",
+      "paid-landing-v2",
+      "paid-landing-v2-video.tsx",
+    );
     expect(media).toContain("NEXT_PUBLIC_PAID_LANDING_VIDEO_URL");
-    expect(media).toContain('preload="metadata"');
-    expect(media).toContain("playsInline");
-    expect(media).toContain("controls");
-    expect(media).toContain("object-contain");
-    expect(media).not.toContain("object-cover");
-    expect(media).toContain("aspect-[9/16]");
-    expect(media).not.toContain("autoPlay");
+    expect(media).toContain("PaidLandingV2Video");
+    expect(video).toContain('preload="metadata"');
+    expect(video).toContain("playsInline");
+    expect(video).toContain("controls={started}");
+    expect(video).toContain("object-contain");
+    expect(video).not.toContain("object-cover");
+    expect(video).toContain("aspect-[9/16]");
+    expect(video).not.toContain("autoPlay");
     expect(media).toContain("PaidLandingV2ProductSurface");
   });
 

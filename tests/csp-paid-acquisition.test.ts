@@ -99,18 +99,29 @@ describe("paid landing VSL media contract", () => {
   });
 
   it("uses native video without autoplay audio and without cover crop", () => {
-    expect(media).toContain("<video");
-    expect(media).toContain("controls");
-    expect(media).toContain("playsInline");
-    expect(media).toContain('preload="metadata"');
-    expect(media).toContain('poster={POSTER_SRC}');
-    expect(media).toContain("/marketing/comece-poster.svg");
-    expect(media).toContain('type="video/mp4"');
-    expect(media).not.toContain("autoPlay");
-    expect(media).not.toContain("autoplay");
-    expect(media).toContain("object-contain");
-    expect(media).not.toContain("object-cover");
-    expect(media).toContain("aspect-[9/16]");
+    const video = read(
+      "src",
+      "components",
+      "marketing",
+      "paid-landing-v2",
+      "paid-landing-v2-video.tsx",
+    );
+    expect(media).toContain("PaidLandingV2Video");
+    expect(video).toContain("<video");
+    expect(video).toContain("controls={started}");
+    expect(video).toContain("playsInline");
+    expect(video).toContain('preload="metadata"');
+    expect(video).toContain("poster={POSTER_SRC}");
+    expect(video).toContain("/marketing/comece-poster.svg");
+    expect(video).toContain('type="video/mp4"');
+    expect(video).toContain("PaidLandingProductPoster");
+    expect(video).toContain("Toque para reproduzir");
+    expect(video).toContain('aria-label="Reproduzir demonstração do produto"');
+    expect(video).not.toContain("autoPlay");
+    expect(video).not.toContain("autoplay");
+    expect(video).toContain("object-contain");
+    expect(video).not.toContain("object-cover");
+    expect(video).toContain("aspect-[9/16]");
   });
 });
 

@@ -8,9 +8,8 @@ import {
   ScriptureChip,
   UserBubble,
 } from "@/components/marketing/paid-landing/conversation-language";
+import { PaidLandingV2Video } from "@/components/marketing/paid-landing-v2/paid-landing-v2-video";
 import { cn } from "@/lib/utils";
-
-const POSTER_SRC = "/marketing/comece-poster.svg";
 
 /**
  * Large-scale product surface for the V2 campaign hero.
@@ -59,8 +58,8 @@ export function PaidLandingV2ProductSurface({
  * Video-ready media for V2. Without NEXT_PUBLIC_PAID_LANDING_VIDEO_URL,
  * shows a large static product composition — never a dead play button.
  *
- * When a URL is set, the frame is reserved (9:16) and the video uses
- * object-contain so 9:16 or 4:5 sources stay fully visible (no cover crop).
+ * When a URL is set, the frame is reserved (9:16) with a readable product
+ * cover until play; the video uses object-contain so sources stay fully visible.
  */
 export function PaidLandingV2Media({
   className,
@@ -81,25 +80,7 @@ export function PaidLandingV2Media({
 
   return (
     <div className={className}>
-      <div className="relative mx-auto w-full overflow-hidden rounded-[1.85rem] border border-ink/15 bg-ink/90 shadow-[0_28px_70px_-36px_rgba(44,36,28,0.6)] sm:rounded-[2.1rem]">
-        <div className="relative mx-auto aspect-[9/16] w-full max-h-[min(70vh,36rem)] bg-ink/90 sm:max-h-[min(75vh,42rem)]">
-          <video
-            className="absolute inset-0 h-full w-full object-contain"
-            controls
-            playsInline
-            preload="metadata"
-            poster={POSTER_SRC}
-            controlsList="nodownload"
-            data-priority={priority ? "true" : undefined}
-          >
-            <source src={videoUrl} type="video/mp4" />
-            Seu navegador não reproduz este vídeo.
-          </video>
-        </div>
-        <p className="px-3 py-2 text-center text-[11px] text-sand-50/75">
-          Demonstração do produto — toque para reproduzir · sem áudio automático
-        </p>
-      </div>
+      <PaidLandingV2Video videoUrl={videoUrl} priority={priority} />
     </div>
   );
 }
