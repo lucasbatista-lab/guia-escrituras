@@ -162,8 +162,9 @@ export function CheckEmailExperience({
 
       {!isRecovery ? (
         <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">
-          Nenhuma cobrança ocorreu. O pagamento só acontece depois da confirmação
-          do e-mail, no checkout seguro.
+          {planKey
+            ? "A confirmação do e-mail libera seu acesso. Se o pagamento já foi concluído, não é necessário pagar de novo."
+            : "Nenhuma cobrança ocorreu ainda. Depois da confirmação, você escolhe o plano e conclui o pagamento no checkout seguro."}
         </p>
       ) : (
         <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">

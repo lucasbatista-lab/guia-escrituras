@@ -109,7 +109,7 @@ export default async function PlanosPage() {
               <span className="font-medium text-ink">
                 Por que o Caminho está em destaque?
               </span>{" "}
-              É o equilíbrio oficial para quem quer voltar durante a semana e
+              É o equilíbrio natural para quem quer voltar durante a semana e
               seguir Jornadas, sem precisar do Aprofundar. Todos os planos seguem
               a{" "}
               <TrackingLink

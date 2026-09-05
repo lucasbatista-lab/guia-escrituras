@@ -191,11 +191,6 @@ export function SignUpForm({
           públicas do projeto.
         </p>
       )}
-      {isPaidFunnel ? (
-        <p className="text-sm leading-relaxed text-ink-soft">
-          Informe seus dados uma única vez e siga para o pagamento seguro.
-        </p>
-      ) : null}
       <div className="space-y-2">
         <Label htmlFor="name">Nome</Label>
         <Input

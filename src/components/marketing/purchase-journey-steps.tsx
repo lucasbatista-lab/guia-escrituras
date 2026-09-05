@@ -15,7 +15,7 @@ const FULL_ORDER: PurchaseJourneyStepKey[] = [
   "reflexao",
 ];
 
-const PAID_ORDER: PurchaseJourneyStepKey[] = ["plano", "pagamento", "conta"];
+const PAID_ORDER: PurchaseJourneyStepKey[] = ["plano", "conta", "pagamento"];
 
 const FULL_LABELS: Record<PurchaseJourneyStepKey, string> = {
   plano: "Plano",
@@ -27,7 +27,7 @@ const FULL_LABELS: Record<PurchaseJourneyStepKey, string> = {
 
 const PAID_LABELS: Record<PurchaseJourneyStepKey, string> = {
   plano: "Plano",
-  conta: "Começar",
+  conta: "Conta",
   pagamento: "Pagamento",
   personalizacao: "Personalização",
   reflexao: "Primeira reflexão",
@@ -40,7 +40,7 @@ export function PurchaseJourneySteps({
 }: {
   current: PurchaseJourneyStepKey;
   className?: string;
-  /** Paid funnel: Plano → Pagamento → Começar (3 steps). */
+  /** Paid funnel: Plano → Conta → Pagamento (3 steps). */
   variant?: "full" | "paid";
 }) {
   const order = variant === "paid" ? PAID_ORDER : FULL_ORDER;

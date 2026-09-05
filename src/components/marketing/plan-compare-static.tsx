@@ -82,8 +82,8 @@ export function PlanCompareStatic({
         Comparação detalhada
       </h2>
       <p className="mt-3 max-w-2xl text-ink-soft">
-        Abra cada plano para ver o que muda — legível no celular, sem tabela
-        horizontal.
+        Abra cada plano para ver o que muda entre uso pontual, Jornadas e
+        Aprofundar.
       </p>
 
       <div className="mt-8 space-y-3">

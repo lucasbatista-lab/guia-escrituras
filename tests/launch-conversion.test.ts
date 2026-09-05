@@ -101,7 +101,9 @@ describe("launch conversion home", () => {
     expect(demo).toContain(
       "Estou com medo de tomar uma decisão errada e me arrepender",
     );
-    expect(demo).toContain("Sem chamada à API");
+    expect(demo).toContain("Exemplo ilustrativo");
+    expect(demo).toContain("Não é voz divina");
+    expect(demo).not.toContain("Sem chamada à API");
     expect(demo).not.toContain("fetch(");
     expect(demo).not.toContain("/api/chat");
     expect(demo).not.toContain("openai");

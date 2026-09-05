@@ -200,8 +200,7 @@ export function ChatDemo() {
           <p className="text-sm italic text-ink-soft">{active.followUp}</p>
         </div>
         <p className="text-center font-sans text-[11px] text-ink-soft">
-          Este é um exemplo local, sem dados reais. Sem chamada à API. Não é voz
-          divina.
+          Exemplo ilustrativo, sem dados reais. Não é voz divina.
         </p>
       </div>
 

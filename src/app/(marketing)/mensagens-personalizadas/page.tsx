@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { buildPublicPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: "Mensagens personalizadas",
+  title: "Plano Particular",
   description:
     "O plano Particular do Amém Chat é um acompanhamento sob medida, habilitado sob solicitação — sem checkout automático.",
   path: "/mensagens-personalizadas",

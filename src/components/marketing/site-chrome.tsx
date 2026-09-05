@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/como-funciona", label: "Como funciona" },
   { href: "/planos", label: "Planos" },
-  { href: "/mensagens-personalizadas", label: "Mensagens" },
+  { href: "/mensagens-personalizadas", label: "Particular" },
 ];
 
 export function SiteHeader({ className }: { className?: string }) {

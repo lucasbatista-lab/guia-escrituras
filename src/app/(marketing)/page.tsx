@@ -259,7 +259,7 @@ export default function HomePage() {
               Pronto para escolher um plano?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-              Compare Essencial, Caminho e Profundo, confirme o e-mail e comece a
+              Compare Essencial, Caminho e Profundo, crie sua conta e comece a
               conversar com a tradição que faz sentido para você — a partir de{" "}
               {ESSENCIAL_PRICE_LABEL}/mês. O produto evolui com honestidade: o
               que você contrata hoje está claro nos planos.

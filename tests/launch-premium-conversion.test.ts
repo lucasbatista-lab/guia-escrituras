@@ -45,9 +45,10 @@ describe("launch premium conversion", () => {
 
   it("demo stays local with visible references and no API", () => {
     const demo = read("src", "components", "marketing", "chat-demo.tsx");
-    expect(demo).toContain("Sem chamada à API");
+    expect(demo).toContain("Exemplo ilustrativo");
+    expect(demo).toContain("Não é voz divina");
+    expect(demo).not.toContain("Sem chamada à API");
     expect(demo).toContain("Referências ·");
-    expect(demo).toContain("exemplo local");
     expect(demo).not.toContain("fetch(");
     expect(demo).not.toContain("/api/chat");
     expect(demo).toContain('href="/planos"');

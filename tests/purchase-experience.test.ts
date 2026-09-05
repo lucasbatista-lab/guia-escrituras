@@ -73,11 +73,14 @@ describe("purchase experience — home copy & flow order", () => {
     expect(home).toContain("voz divina");
   });
 
-  it("how-to page describes plan → email → pay → personalize → converse", () => {
+  it("how-to page describes plan → account → pay → confirm → personalize", () => {
     expect(howItWorks).toContain("Escolha seu plano");
-    expect(howItWorks).toContain("Crie sua conta e confirme o e-mail");
+    expect(howItWorks).toContain("Crie sua conta");
     expect(howItWorks).toContain("Conclua o pagamento com segurança");
-    expect(howItWorks).toContain("Personalize a experiência e traga sua situação");
+    expect(howItWorks).toContain("Confirme o e-mail e personalize");
+    expect(howItWorks).not.toContain(
+      "Você só segue para o pagamento depois da confirmação",
+    );
   });
 
   it("does not show fake social proof or urgency", () => {

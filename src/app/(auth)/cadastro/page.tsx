@@ -73,10 +73,10 @@ export default async function CadastroPage({
         />
         <section className="rounded-3xl border border-border/70 bg-card/85 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-8">
           <p className="mb-4 text-xs font-medium text-ink-soft sm:hidden">
-            {plan ? "Plano · Pagamento" : "Conta · depois: confirmar e-mail"}
+            {plan ? "Plano · Conta" : "Conta · depois: confirmar e-mail"}
           </p>
           <PurchaseJourneySteps
-            current={plan ? "pagamento" : "conta"}
+            current="conta"
             variant={plan ? "paid" : "full"}
             className="mb-6 hidden sm:block"
           />
@@ -146,7 +146,6 @@ function PlanSupportCard({ plan }: { plan: PlanDefinition }) {
       <div className="mt-6 space-y-2 border-t border-sand-50/15 pt-4 text-xs leading-relaxed text-sand-200">
         <p>Renovação automática mensal.</p>
         <p>Cancelamento da renovação pela sua conta no Amém Chat.</p>
-        <p>Pagamento seguro processado pela Stripe.</p>
         <p className="flex items-center gap-1.5 font-medium text-sand-50">
           <LockKeyhole aria-hidden className="size-3.5" />
           Pagamento seguro processado pela Stripe.

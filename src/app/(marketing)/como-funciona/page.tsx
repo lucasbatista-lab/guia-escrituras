@@ -9,7 +9,7 @@ import { buildPublicPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPublicPageMetadata({
   title: "Como funciona",
   description:
-    "Entenda como o Amém Chat funciona: escolha o plano, confirme o e-mail, pague com segurança e personalize a experiência.",
+    "Entenda como o Amém Chat funciona: escolha o plano, crie a conta, pague com segurança, confirme o e-mail e personalize a experiência.",
   path: "/como-funciona",
 });
 
@@ -19,16 +19,16 @@ const steps = [
     body: "Essencial, Caminho ou Profundo — com o que já está disponível hoje.",
   },
   {
-    title: "Crie sua conta e confirme o e-mail",
-    body: "Você só segue para o pagamento depois da confirmação.",
+    title: "Crie sua conta",
+    body: "Informe nome, e-mail e senha uma única vez. Com plano escolhido, o pagamento segue em seguida.",
   },
   {
     title: "Conclua o pagamento com segurança",
     body: "Checkout pela Stripe. Renovação mensal, cancelável na sua conta.",
   },
   {
-    title: "Personalize a experiência e traga sua situação",
-    body: "Escolha tradição e profundidade. Depois receba orientação com referências bíblicas, interpretação e um próximo passo possível.",
+    title: "Confirme o e-mail e personalize",
+    body: "A confirmação libera o acesso. Escolha tradição e profundidade; depois traga sua situação com referências bíblicas e um próximo passo possível.",
   },
 ];
 
@@ -76,7 +76,8 @@ export default function ComoFuncionaPage() {
           ))}
         </ol>
         <p className="mt-8 text-sm text-ink-soft">
-          Você confirma o e-mail antes do pagamento. Depois da assinatura, a
+          A confirmação do e-mail libera o acesso; no fluxo com plano, o
+          pagamento não fica bloqueado por ela. Depois da assinatura, a
           personalização leva poucos instantes e pode ser revista na conta.
         </p>
       </main>

@@ -43,8 +43,9 @@ export function JourneyPreviewStatic({
           Como uma Jornada aparece na prática
         </h2>
         <p className="mt-3 text-ink-soft">
-          Exemplo estático com conteúdo editorial real — sem conta e sem dados
-          de usuário. O progresso fica salvo para quem tem acesso às Jornadas.
+          Exemplo ilustrativo com conteúdo editorial real — sem conta e sem
+          dados de usuário. O progresso fica salvo para quem tem acesso às
+          Jornadas.
         </p>
       </div>
 
