@@ -115,7 +115,9 @@ describe("paid landing preview /comece-v2", () => {
     expect(recognition).toContain(
       "Quero perdoar, mas não sei se isso significa voltar a conviver.",
     );
-    expect(clarity).toContain("Do emaranhado à clareza possível.");
+    expect(clarity).toContain("Veja como uma situação pode ganhar clareza.");
+    expect(clarity).toContain("AcquisitionChatDemo");
+    expect(clarity).not.toContain("Do emaranhado à clareza possível.");
     expect(clarity).not.toContain("Parte da sua situação.");
     expect(continuity).toContain("Volte ao mesmo fio quando precisar.");
     expect(close).toContain("Separe o que está em jogo.");

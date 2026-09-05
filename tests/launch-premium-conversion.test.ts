@@ -51,7 +51,7 @@ describe("launch premium conversion", () => {
     expect(demo).toContain("Referências ·");
     expect(demo).not.toContain("fetch(");
     expect(demo).not.toContain("/api/chat");
-    expect(demo).toContain('href="/planos"');
+    expect(demo).toContain('ctaHref = "/planos"');
   });
 
   it("plans stay honest with concrete CTAs and no upcoming in primary benefits", () => {

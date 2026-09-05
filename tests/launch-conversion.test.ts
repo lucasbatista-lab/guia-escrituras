@@ -12,6 +12,7 @@ function read(...parts: string[]) {
 describe("launch conversion home", () => {
   const home = read("src", "app", "(marketing)", "page.tsx");
   const demo = read("src", "components", "marketing", "chat-demo.tsx");
+  const demoScenarios = read("src", "lib", "marketing", "demo-scenarios.ts");
   const trust = read(
     "src",
     "components",
@@ -66,9 +67,9 @@ describe("launch conversion home", () => {
     expect(journeyIdx).toBeGreaterThan(ecosystemIdx);
     expect(deepenIdx).toBeGreaterThan(journeyIdx);
     expect(plansIdx).toBeGreaterThan(deepenIdx);
-    expect(demo).toContain("Tenho contas vencendo");
-    expect(demo).toContain("Parece que Deus está em silêncio");
-    expect(demo).toContain("Luto e saudade");
+    expect(demoScenarios).toContain("Tenho contas vencendo");
+    expect(demoScenarios).toContain("Parece que Deus está em silêncio");
+    expect(demoScenarios).toContain("Luto e saudade");
     expect(home).toContain("<TrustPrinciples");
     expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Stripe");
@@ -93,12 +94,12 @@ describe("launch conversion home", () => {
   it("ships local interactive demo without API or OpenAI calls", () => {
     expect(demo).toContain('"use client"');
     expect(demo).not.toContain('id="demonstracao"');
-    expect(demo).toContain("Ansiedade e decisões");
-    expect(demo).toContain("Dinheiro e trabalho");
-    expect(demo).toContain("Perdão e família");
-    expect(demo).toContain("Culpa e recomeço");
-    expect(demo).toContain("Silêncio espiritual");
-    expect(demo).toContain(
+    expect(demoScenarios).toContain("Ansiedade e decisões");
+    expect(demoScenarios).toContain("Dinheiro e trabalho");
+    expect(demoScenarios).toContain("Perdão e limites");
+    expect(demoScenarios).toContain("Culpa e recomeço");
+    expect(demoScenarios).toContain("Silêncio espiritual");
+    expect(demoScenarios).toContain(
       "Estou com medo de tomar uma decisão errada e me arrepender",
     );
     expect(demo).toContain("Exemplo ilustrativo");
@@ -108,7 +109,7 @@ describe("launch conversion home", () => {
     expect(demo).not.toContain("/api/chat");
     expect(demo).not.toContain("openai");
     expect(demo).toContain("TrackingLink");
-    expect(demo).toContain('href="/planos"');
+    expect(demo).toContain('ctaHref = "/planos"');
     expect(demo).toContain("Ver os planos");
   });
 

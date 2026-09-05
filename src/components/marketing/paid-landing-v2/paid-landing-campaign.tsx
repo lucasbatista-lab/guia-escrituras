@@ -190,7 +190,7 @@ export function PaidLandingCampaign({
         </section>
 
         <PaidLandingV2Recognition sectionId={ids.recognition} />
-        <PaidLandingV2Clarity sectionId={ids.clarity} />
+        <PaidLandingV2Clarity sectionId={ids.clarity} plansHref="/planos" />
         <PaidLandingV2Continuity
           sectionId={ids.continuity}
           plansHref={plansHref}
