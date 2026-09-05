@@ -106,8 +106,9 @@ describe("launch premium conversion", () => {
       "onboarding-form.tsx",
     );
     expect(personalizationPage).toContain("PersonalizationForm");
-    expect(personalizationForm).toContain("ProgressSteps");
-    expect(personalizationForm).toContain("currentStep");
+    expect(personalizationForm).toContain("Ajustar estilo e profundidade");
+    expect(personalizationForm).toContain("Salvar e começar");
+    expect(personalizationForm).toContain("tradition_key");
   });
 
   it("first paid entry and support address are clear", () => {

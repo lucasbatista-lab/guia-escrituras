@@ -36,7 +36,7 @@ export default async function PersonalizarPage({
       <PlatformPageHeader
         eyebrow="Seu espaço, do seu jeito"
         title="Personalize sua experiência"
-        description="Escolha tradição, estilo e profundidade em três passos rápidos. Você poderá revisar tudo na Conta."
+        description="Escolha sua tradição para começar. Estilo e profundidade já têm padrões seguros e podem ser ajustados agora ou depois na Conta."
       />
       <PersonalizationForm completionHref={completionHref} />
     </div>

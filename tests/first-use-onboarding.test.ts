@@ -74,6 +74,9 @@ describe("first-use onboarding — personalization clarity", () => {
     const form = read("src", "components", "auth", "onboarding-form.tsx");
     expect(form).toContain("PERSONALIZATION_DEPTH_NOTE");
     expect(form).toContain("Profundidade padrão");
+    expect(form).toContain("Ajustar estilo e profundidade");
+    expect(form).toContain("Salvar e começar");
+    expect(form).not.toContain("ProgressSteps");
     expect(form).not.toContain("chat_deep");
   });
 });
