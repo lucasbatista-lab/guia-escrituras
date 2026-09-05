@@ -67,9 +67,10 @@ describe("authenticated UX polish", () => {
     const page = read("src", "app", "(platform)", "personalizar", "page.tsx");
     const form = read("src", "components", "auth", "onboarding-form.tsx");
     expect(page).toContain("Personalize sua experiência");
-    expect(page).toContain("tradição, estilo e profundidade");
+    expect(page).toContain("tradição");
     expect(form).toContain("Salvar e começar");
-    expect(form).toContain("ProgressSteps");
+    expect(form).toContain("Ajustar estilo e profundidade");
+    expect(form).not.toContain("ProgressSteps");
     expect(form).toContain("PERSONALIZATION_TRADITIONS");
     expect(form).toContain("PERSONALIZATION_STYLES");
     expect(form).toContain("PERSONALIZATION_DEPTHS");
