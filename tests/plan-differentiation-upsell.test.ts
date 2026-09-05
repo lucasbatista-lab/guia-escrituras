@@ -67,7 +67,7 @@ describe("plan differentiation — catalog", () => {
     expect(plan.highlightBadge).not.toMatch(/popular|preferido|campeão/i);
     expect(plan.ctaLabel).toBe("Escolher o Caminho");
     expect(plan.displayBenefits.join(" ").toLowerCase()).toMatch(
-      /volta várias vezes na semana/,
+      /mais espaço de conversa/,
     );
   });
 

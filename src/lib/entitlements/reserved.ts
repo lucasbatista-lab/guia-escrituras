@@ -58,12 +58,12 @@ export const PLAN_USAGE_PROFILES: Record<
     example: "Quero conversar quando uma situação específica surgir.",
   },
   caminho: {
-    headline: "Para quem volta várias vezes na semana",
+    headline: "Mais espaço de conversa no mês",
     example:
       "Quero acompanhar Jornadas guiadas e voltar ao chat ao longo da semana.",
   },
   profundo: {
-    headline: "Para uso mais intenso e análises adicionais",
+    headline: "Uso mais intenso com Aprofundar",
     example:
       "Quero o ritmo do Caminho e acionar Aprofundar quando a situação pedir mais detalhe.",
   },

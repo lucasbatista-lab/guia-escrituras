@@ -39,7 +39,7 @@ export const PLAN_COMMERCIAL_FAQ = [
   PLAN_CHANGE_FAQ,
   {
     q: "O que acontece quando atinjo o limite de uso?",
-    a: "O Amém Chat usa uso justo — sem cota rígida de mensagens. Se você atingir o espaço do plano ou um limite diário de segurança, aguarde e tente de novo. Limites temporários são diferentes do espaço mensal do plano.",
+    a: "Não há cota rígida de mensagens. Se o espaço do plano no período acabar, novas reflexões pausam até o próximo ciclo. Um dia muito intenso pode pedir espera até amanhã; várias mensagens seguidas pedem uma breve pausa. Histórico, conta e ajuda continuam acessíveis.",
   },
   {
     q: "O Amém Chat fala literalmente em nome de Jesus?",

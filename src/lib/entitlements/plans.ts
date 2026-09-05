@@ -13,10 +13,10 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     ctaLabel: "Começar com o Essencial",
     entitlements: ["chat_standard", "short_memory"],
     displayBenefits: [
-      "Reflexões cristãs personalizadas com orientação bíblica",
+      "Conversa personalizada com referências bíblicas",
+      "Histórico privado para retomar",
       "Tradição ecumênica, evangélica ou católica no perfil",
-      "Continuidade dentro da conversa e histórico privado",
-      "Para uso pontual, dentro da política de uso justo",
+      "Espaço de uso para situações pontuais, dentro do uso justo",
       "Cancelamento da renovação pela sua conta",
     ],
   },
@@ -25,7 +25,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     name: "Caminho",
     idealFor: "Constância com Jornadas",
     tagline:
-      "Tudo do Essencial, com Jornadas guiadas de 7 etapas para quem quer voltar ao longo da semana.",
+      "Tudo do Essencial, com Jornadas guiadas de 7 etapas e mais espaço para voltar ao longo da semana.",
     priceMonthlyCents: 5800,
     currency: "BRL",
     ctaType: "checkout",
@@ -42,7 +42,7 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
     displayBenefits: [
       "Tudo do Essencial: conversa personalizada e histórico",
       "Jornadas de leitura guiadas de 7 etapas",
-      "Mais espaço para quem volta várias vezes na semana",
+      "Mais espaço de conversa no mês do que o Essencial",
       "Temas reais da vida, no seu ritmo",
       "Dentro da política de uso justo",
     ],
@@ -70,10 +70,10 @@ export const PLAN_DEFINITIONS: PlanDefinition[] = [
       "fair_use_extended",
     ],
     displayBenefits: [
-      "Tudo do Caminho",
+      "Tudo do Caminho, incluindo Jornadas",
       "Aprofundar sob demanda para análises adicionais",
       "Mais contexto, tensões e próximos passos quando você pedir",
-      "Para uso mais intenso, dentro da política de uso justo",
+      "Mais espaço de uso no mês do que o Caminho",
       "Cancelamento da renovação pela sua conta",
     ],
     upcomingBenefits: [

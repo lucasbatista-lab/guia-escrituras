@@ -46,8 +46,8 @@ const COMPARE_ROWS: {
     label: "Espaço de uso no mês",
     values: {
       essencial: "Para uso pontual, dentro do uso justo",
-      caminho: "Mais espaço para conversas frequentes",
-      profundo: "Para uso mais intenso, dentro do uso justo",
+      caminho: "Mais espaço de conversa do que o Essencial",
+      profundo: "Mais espaço de uso do que o Caminho",
     },
   },
 ];

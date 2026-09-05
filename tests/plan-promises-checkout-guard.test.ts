@@ -45,7 +45,7 @@ describe("plan promises — catalog honesty", () => {
     const active = plan.displayBenefits.join(" ").toLowerCase();
     expect(plan.idealFor).toMatch(/Comece com clareza/i);
     expect(plan.tagline).toMatch(/pontuais/i);
-    expect(active).toMatch(/reflexões/);
+    expect(active).toMatch(/conversa/);
     expect(active).toMatch(/tradição|histórico/);
     expect(active).toMatch(/cancelamento/);
     expect(active).not.toMatch(/jornadas/);
@@ -59,7 +59,7 @@ describe("plan promises — catalog honesty", () => {
     expect(plan.highlightBadge).toMatch(/Melhor equilíbrio/i);
     expect(plan.ctaLabel).toBe("Escolher o Caminho");
     expect(active).toMatch(/tudo do essencial/);
-    expect(active).toMatch(/volta várias vezes na semana/);
+    expect(active).toMatch(/mais espaço de conversa/);
     expect(active).toMatch(/jornadas de leitura/);
     expect(active).not.toMatch(/\bmargem\b/);
     expect(
@@ -111,12 +111,14 @@ describe("plan promises — catalog honesty", () => {
     expect(planos).not.toMatch(/Em desenvolvimento/);
   });
 
-  it("uso-justo aligns with punctual/weekly/intensive tiers", () => {
+  it("uso-justo explains interruption, return and what stays accessible", () => {
     const uso = read("src", "app", "(marketing)", "uso-justo", "page.tsx");
-    expect(uso).toMatch(/uso pontual/i);
-    expect(uso).toMatch(/volta várias vezes na semana/i);
-    expect(uso).toMatch(/uso mais intenso/i);
-    expect(uso).toMatch(/franquia fixa de mensagens/);
+    expect(uso).toMatch(/espaço do plano/i);
+    expect(uso).toMatch(/limite diário/i);
+    expect(uso).toMatch(/próximo ciclo/i);
+    expect(uso).toMatch(/histórico/i);
+    expect(uso).toMatch(/cota.*mensagens|quantidade fixa de mensagens/i);
+    expect(uso).not.toMatch(/ilimitado/i);
     expect(uso).not.toMatch(/\bmargem\b/i);
   });
 

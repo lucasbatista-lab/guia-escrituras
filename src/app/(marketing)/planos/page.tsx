@@ -118,7 +118,9 @@ export default async function PlanosPage() {
               >
                 política de uso justo
               </TrackingLink>
-              .
+              : sem cota fixa de mensagens; se o espaço do período ou o limite
+              diário se esgotar, novas reflexões pausam — histórico e ajuda
+              continuam acessíveis.
             </p>
           </section>
 
