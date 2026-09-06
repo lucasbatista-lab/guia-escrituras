@@ -39,12 +39,24 @@ describe("checkout success — paid + email pending states", () => {
   });
 
   it("explains email gate without requiring a second purchase", () => {
-    expect(client).toContain("e-mail precisa ser confirmado");
-    expect(client).toContain("não é necessário pagar outra vez");
+    const clientText = client.replace(/\s+/g, " ");
+    expect(clientText).toContain("e-mail precisa ser confirmado");
+    expect(clientText).toMatch(
+      /não é necessário pagar (outra vez|de novo)/i,
+    );
     expect(client).toContain("/confira-seu-email");
     expect(client).toContain("/entrar?next=/personalizar");
     expect(client).toContain("/recuperar-senha");
     expect(client).toContain("Paguei e não consigo acessar");
+    // Email-pending copy is for active+unconfirmed — not the activating wait state.
+    expect(client).toContain("Pagamento recebido");
+    expect(client).toContain(
+      "Estamos ativando a assinatura na sua conta",
+    );
+    expect(clientText).toContain(
+      "Sua assinatura está ativa. Personalize seu Amém Chat para começar.",
+    );
+    expect(client).not.toMatch(/checkout\.sessions\.create|createCheckout/i);
   });
 
   it("keeps DB subscription as authority for active unlock", () => {

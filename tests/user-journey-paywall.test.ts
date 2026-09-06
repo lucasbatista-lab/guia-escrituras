@@ -241,9 +241,21 @@ describe("Portuguese personalization labels", () => {
 
     const form = readSrc("src", "components", "auth", "onboarding-form.tsx");
     expect(form).toContain("PERSONALIZATION_TRADITIONS");
+    expect(form).toContain("Sua tradição cristã");
     expect(form).toContain("Salvar e começar");
+    expect(form).toContain("<details");
+    expect(form).toContain("Ajustar estilo e profundidade");
+    expect(form).toContain('useState<string>("reflective")');
+    expect(form).toContain('useState<string>("balanced")');
     expect(form).not.toContain("Concluir onboarding");
     expect(form).not.toMatch(/>\s*ecumenical\s*</);
+    // Style/depth stay behind details — not peer-level required fieldsets.
+    const traditionIdx = form.indexOf("Sua tradição cristã");
+    const detailsIdx = form.indexOf("<details");
+    const styleLegendIdx = form.indexOf("Estilo da conversa");
+    expect(traditionIdx).toBeGreaterThan(-1);
+    expect(detailsIdx).toBeGreaterThan(traditionIdx);
+    expect(styleLegendIdx).toBeGreaterThan(detailsIdx);
   });
 
   it("personalizar page has required copy", () => {
@@ -255,7 +267,11 @@ describe("Portuguese personalization labels", () => {
       "page.tsx",
     );
     expect(page).toContain("Personalize sua experiência");
-    expect(page).toContain("tradição, estilo e profundidade");
+    expect(page).toContain("Escolha sua tradição para começar");
+    expect(page).toContain(
+      "Estilo e profundidade já têm padrões seguros",
+    );
+    expect(page).not.toContain("tradição, estilo e profundidade");
   });
 });
 

@@ -127,7 +127,15 @@ describe("purchase experience — honest plan cards", () => {
       /aprofundar/i.test(b),
     )).toBe(false);
     expect(profundo?.displayBenefits.join(" ")).toMatch(/aprofundar/i);
-    expect(profundo?.displayBenefits.join(" ")).toMatch(/intens/i);
+    expect(profundo?.displayBenefits).toContain(
+      "Mais espaço de uso no mês do que o Caminho",
+    );
+    const caminho = getPlanByKey("caminho");
+    expect(caminho?.displayBenefits).toContain(
+      "Mais espaço de conversa no mês do que o Essencial",
+    );
+    expect(profundo?.priceMonthlyCents).toBe(18800);
+    expect(profundo?.ctaType).toBe("checkout");
   });
 
   it("planos page explains renewal, cancellation and flexible use", () => {
