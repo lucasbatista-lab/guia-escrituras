@@ -137,6 +137,32 @@ describe("public conversion events", () => {
     const row = insertMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(row).not.toHaveProperty("plan");
     expect(row).not.toHaveProperty("email");
+    expect(row).not.toHaveProperty("landing_variant");
+  });
+
+  it("accepts landing_variant for logs only without persisting it", async () => {
+    const response = await POST(
+      eventRequest(
+        validPayload({
+          event: "paid_landing_viewed",
+          path: "/comece",
+          landing_variant: "direct_v1",
+          plan: null,
+        }),
+      ),
+    );
+    expect(response.status).toBe(202);
+    expect(info).toHaveBeenCalledWith(
+      "public_conversion_event",
+      expect.objectContaining({
+        event: "paid_landing_viewed",
+        path: "/comece",
+        landing_variant: "direct_v1",
+      }),
+    );
+    const row = insertMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(row).not.toHaveProperty("landing_variant");
+    expect(row.event_name).toBe("paid_landing_viewed");
   });
 
   it("treats duplicate event_id as success without double insert error", async () => {

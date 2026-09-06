@@ -9,11 +9,20 @@ import type {
 
 const SESSION_STORAGE_KEY = "amem_pce_session";
 const EVENT_ID_PREFIX = "amem_pce_eid:";
+/** Logged-only composition tag for /comece (direct path). Not persisted. */
+const PAID_LANDING_VARIANT = "direct_v1";
 
 function viewportClass(): ViewportClass {
   if (window.innerWidth < 768) return "mobile";
   if (window.innerWidth < 1024) return "tablet";
   return "desktop";
+}
+
+function landingVariantForPath(path: string): string | null {
+  if (path === "/comece" || path === "/comece-v2") {
+    return PAID_LANDING_VARIANT;
+  }
+  return null;
 }
 
 function newOpaqueId(): string {
@@ -83,6 +92,7 @@ export function trackPublicConversion(
     utm_campaign: params.get("utm_campaign"),
     utm_content: params.get("utm_content"),
     plan,
+    landing_variant: landingVariantForPath(path),
     viewport_class: viewportClass(),
   };
 

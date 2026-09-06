@@ -2,6 +2,7 @@
 
 import { Check, ChevronDown } from "lucide-react";
 import { TrackingLink } from "@/components/marketing/tracking-link";
+import { ParticularAccessNote } from "@/components/marketing/plan-cards";
 import { Button } from "@/components/ui/button";
 import {
   formatPriceBRL,
@@ -271,6 +272,7 @@ function PaidLandingV2OfferInner({ plansId }: { plansId: string }) {
               ]}
             />
           </div>
+          <ParticularAccessNote className="mt-5" />
         </div>
       </section>
     </div>

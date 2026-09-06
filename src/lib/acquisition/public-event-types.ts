@@ -31,5 +31,7 @@ export type PublicConversionEventPayload = {
   utm_content: string | null;
   /** Accepted for logs only — not persisted. */
   plan: PlanKey | null;
+  /** Landing composition tag for logs only — not persisted (no migration). */
+  landing_variant: string | null;
   viewport_class: ViewportClass;
 };

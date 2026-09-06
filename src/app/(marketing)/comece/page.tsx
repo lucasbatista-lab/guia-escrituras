@@ -6,9 +6,9 @@ import {
   socialTwitterImages,
 } from "@/lib/seo";
 
-const PAGE_TITLE = "Organize o que está pesando";
+const PAGE_TITLE = "Conte o que você está vivendo";
 const PAGE_DESCRIPTION =
-  "Conte sua situação. Receba perguntas e referências bíblicas que ajudam a separar o que está em jogo — com responsabilidade.";
+  "Receba uma reflexão cristã feita para o seu momento — com referências bíblicas, respeito à tradição escolhida e um próximo passo prático. Assinaturas a partir de R$38/mês.";
 
 /**
  * Official paid acquisition landing.

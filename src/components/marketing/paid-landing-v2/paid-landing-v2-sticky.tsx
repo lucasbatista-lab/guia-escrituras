@@ -5,6 +5,7 @@ import {
   getPaidLandingCampaignIds,
   type PaidLandingCampaignMode,
 } from "@/components/marketing/paid-landing-v2/campaign-ids";
+import { trackPublicConversion } from "@/lib/acquisition/public-events-client";
 import { cn } from "@/lib/utils";
 
 function subscribeConsentBanner(listener: () => void) {
@@ -41,7 +42,8 @@ function sectionOverlapsViewport(
 }
 
 /**
- * Compact floating purchase action.
+ * Compact floating purchase action (mobile).
+ * Visible after leaving the hero; hidden over plans / footer.
  * Plan-neutral: scrolls to plans without selecting a plan.
  * Preview mode never fires paid_landing_* events.
  */
@@ -52,6 +54,7 @@ export function PaidLandingV2Sticky({
 }) {
   const ids = getPaidLandingCampaignIds(mode);
   const plansHref = `#${ids.plans}` as const;
+  const isProduction = mode === "production";
   const [visible, setVisible] = useState(false);
   const consentOpen = useSyncExternalStore(
     subscribeConsentBanner,
@@ -61,26 +64,18 @@ export function PaidLandingV2Sticky({
 
   useEffect(() => {
     function update() {
-      const heroCta = document.querySelector(
-        `#${ids.hero} a[href="${plansHref}"]`,
-      );
-      if (!heroCta) {
+      const hero = document.getElementById(ids.hero);
+      if (!hero) {
         setVisible(false);
         return;
       }
-      const heroRect = heroCta.getBoundingClientRect();
-      const heroCtaLeft = heroRect.bottom < 8;
+      const heroLeft = hero.getBoundingClientRect().bottom < 8;
 
-      const onProductMoment =
-        sectionOverlapsViewport(ids.recognition) ||
-        sectionOverlapsViewport(ids.clarity) ||
-        sectionOverlapsViewport(ids.continuity) ||
-        sectionOverlapsViewport(ids.plans) ||
-        sectionOverlapsViewport(ids.finalCta);
-
-      const inTextualZone =
+      const onPlans = sectionOverlapsViewport(ids.plans, 48, 96);
+      const onFooter =
         sectionOverlapsViewport(ids.faq, 48, 96) ||
-        sectionOverlapsViewport(ids.brand, 48, 96);
+        sectionOverlapsViewport(ids.brand, 48, 96) ||
+        sectionOverlapsViewport(ids.finalCta, 48, 96);
 
       const onForm = Boolean(
         document.activeElement &&
@@ -97,9 +92,9 @@ export function PaidLandingV2Sticky({
       );
 
       setVisible(
-        heroCtaLeft &&
-          inTextualZone &&
-          !onProductMoment &&
+        heroLeft &&
+          !onPlans &&
+          !onFooter &&
           !onForm &&
           !dialogOpen &&
           !videoControls,
@@ -117,14 +112,14 @@ export function PaidLandingV2Sticky({
       window.removeEventListener("focusin", update);
       window.removeEventListener("focusout", update);
     };
-  }, [ids, plansHref]);
+  }, [ids]);
 
   const show = visible && !consentOpen;
 
   return (
     <div
       className={cn(
-        "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[max(0.75rem,var(--safe-bottom))] pt-2 md:hidden",
+        "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(0.75rem,var(--safe-bottom))] pt-2 md:hidden",
         "transition-opacity duration-200 motion-reduce:transition-none",
         show ? "opacity-100" : "opacity-0",
       )}
@@ -135,13 +130,18 @@ export function PaidLandingV2Sticky({
         tabIndex={show ? 0 : -1}
         aria-label="Ver planos do Amém Chat, a partir de R$38 por mês"
         className={cn(
-          "pointer-events-auto inline-flex h-12 w-[9.25rem] min-h-11 items-center justify-center rounded-full bg-wine px-5 text-sm font-medium text-sand-50",
+          "pointer-events-auto inline-flex h-12 max-w-[min(100%,20rem)] min-h-11 items-center justify-center rounded-full bg-wine px-4 text-sm font-medium text-sand-50",
           "shadow-[0_12px_28px_-14px_rgba(107,46,58,0.8)] transition hover:bg-wine-soft",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-sand-50",
           !show && "pointer-events-none",
         )}
+        onClick={() => {
+          if (isProduction) {
+            trackPublicConversion("paid_landing_primary_cta_clicked");
+          }
+        }}
       >
-        Ver planos
+        Ver planos — a partir de R$38/mês
       </a>
     </div>
   );

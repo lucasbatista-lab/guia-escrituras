@@ -70,15 +70,16 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     expect(ids).toContain('hero: "comece-hero"');
   });
 
-  it("promotes the lapidated V2 hero promise and CTAs", () => {
-    expect(campaign).toContain("Organize o que está pesando.");
-    expect(campaign).toContain("Enxergue um próximo passo.");
-    expect(campaign).toContain("Receba perguntas e referências bíblicas");
-    expect(campaign).toContain("Escolher meu plano");
-    expect(campaign).toContain("Ver um exemplo");
-    expect(campaign).toContain(
-      "A partir de R$38/mês · cancele a renovação pela Conta",
-    );
+  it("promotes the direct_v1 hero promise and CTAs", () => {
+    expect(campaign).toContain("Reflexões cristãs personalizadas");
+    expect(campaign).toContain("Conte o que você está vivendo.");
+    expect(campaign).toContain("respeito à tradição escolhida");
+    expect(campaign).toContain("próximo passo prático");
+    expect(campaign).toContain("Assinaturas a partir de R$38/mês.");
+    expect(campaign).toContain("Ver uma reflexão de exemplo");
+    expect(campaign).toContain("Conhecer os planos");
+    expect(campaign).toContain("paid_landing_demo_clicked");
+    expect(campaign).toContain("paid_landing_primary_cta_clicked");
     expect(campaign).not.toContain("à luz das Escrituras");
     expect(page.toLowerCase()).not.toMatch(
       /depoimento|testemunho|freemium|% off|última chance|teste grátis|trial/,
@@ -95,11 +96,15 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     expect(campaign).toContain("paid_landing_demo_viewed");
     expect(campaign).toContain("paid_landing_plans_viewed");
     expect(campaign).toContain("isProduction");
+    expect(campaign).toContain("PaidLandingV2Clarity");
+    expect(campaign).toContain("PaidLandingV2Offer");
     expect(offer).toContain("paid_landing_plan_selected");
     expect(offer).toContain("buildCadastroHref");
     expect(offer).toContain("utm_source");
     expect(offer).toContain("referralCode");
-    expect(sticky).not.toContain("paid_landing_plan_selected");
+    expect(offer).toContain("ParticularAccessNote");
+    expect(sticky).toContain("Ver planos — a partir de R$38/mês");
+    expect(sticky).toContain("paid_landing_primary_cta_clicked");
     expect(sticky).not.toContain("buildCadastroHref");
     expect(offer).not.toMatch(/perdão|família|Efésios 4|voltar a conviver/i);
     const client = read(
@@ -108,6 +113,8 @@ describe("paid landing /comece (promoted V2 composition)", () => {
       "acquisition",
       "public-events-client.ts",
     );
+    expect(client).toContain("direct_v1");
+    expect(client).toContain("landing_variant");
     expect(client).not.toMatch(/email|message|tradition|emotion|crisis|prompt/i);
     const browserEvents = read("src", "lib", "meta", "browser-events.ts");
     expect(browserEvents).not.toMatch(/trackLead|Lead/);
@@ -153,14 +160,18 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     expect(media).toContain("PaidLandingV2ProductSurface");
   });
 
-  it("does not clip the mobile VSL with a short overflow-hidden max-height", () => {
+  it("shortens the path: hero → demo → plans → video (no hero VSL)", () => {
+    const heroIdx = campaign.indexOf("id={ids.hero}");
+    const clarityIdx = campaign.indexOf("<PaidLandingV2Clarity");
+    const offerIdx = campaign.indexOf("<PaidLandingV2Offer");
+    const mediaIdx = campaign.indexOf("<PaidLandingV2Media");
+    const recognitionIdx = campaign.indexOf("<PaidLandingV2Recognition");
+    expect(heroIdx).toBeGreaterThan(-1);
+    expect(clarityIdx).toBeGreaterThan(heroIdx);
+    expect(offerIdx).toBeGreaterThan(clarityIdx);
+    expect(mediaIdx).toBeGreaterThan(offerIdx);
+    expect(recognitionIdx).toBeGreaterThan(mediaIdx);
     expect(campaign).not.toContain("max-h-[min(54vh,24rem)]");
-    expect(campaign).not.toMatch(
-      /overflow-hidden sm:max-h-none[\s\S]{0,80}PaidLandingV2Media/,
-    );
-    expect(campaign).not.toContain(
-      "from-sand-50 to-transparent sm:hidden",
-    );
   });
 
   it("uses compact campaign consent on /comece without changing legal semantics", () => {

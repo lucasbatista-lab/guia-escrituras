@@ -1,15 +1,18 @@
 import { AcquisitionChatDemo } from "@/components/marketing/chat-demo";
 
 /**
- * Interactive editorial demo for the paid landing — replaces the static
- * before/after clarity board with the same home ChatDemo patterns.
+ * Interactive editorial demo for the paid landing — placed immediately after
+ * the hero so the visitor can sample the product before long media or copy.
  */
 export function PaidLandingV2Clarity({
   sectionId = "clareza-v2",
   plansHref = "/planos",
+  trackPlanCta = false,
 }: {
   sectionId?: string;
   plansHref?: string;
+  /** When true, demo→plans uses paid_landing_primary_cta_clicked. */
+  trackPlanCta?: boolean;
 }) {
   const headingId = `${sectionId}-heading`;
 
@@ -35,7 +38,15 @@ export function PaidLandingV2Clarity({
         </p>
 
         <div className="mt-5 max-w-2xl sm:mt-6">
-          <AcquisitionChatDemo plansHref={plansHref} />
+          <AcquisitionChatDemo
+            plansHref={plansHref}
+            ctaLabel="Escolher meu plano"
+            ctaConversionEvent={
+              trackPlanCta
+                ? "paid_landing_primary_cta_clicked"
+                : "plans_cta_clicked"
+            }
+          />
         </div>
       </div>
     </section>

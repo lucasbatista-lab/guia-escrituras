@@ -102,21 +102,19 @@ describe("paid landing preview /comece-v2", () => {
     expect(campaign).toContain("isProduction ? (");
   });
 
-  it("keeps the polished V2 hero and product sequence", () => {
-    expect(campaign).toContain("Reflexões cristãs para situações reais");
-    expect(campaign).toContain("Organize o que está pesando.");
-    expect(campaign).toContain("Enxergue um próximo passo.");
-    expect(campaign).toContain("Receba perguntas e referências bíblicas");
-    expect(campaign).toContain("Escolher meu plano");
-    expect(campaign).toContain("Ver um exemplo");
-    expect(campaign).toContain(
-      "A partir de R$38/mês · cancele a renovação pela Conta",
-    );
+  it("keeps the direct_v1 hero and product sequence", () => {
+    expect(campaign).toContain("Reflexões cristãs personalizadas");
+    expect(campaign).toContain("Conte o que você está vivendo.");
+    expect(campaign).toContain("Assinaturas a partir de R$38/mês.");
+    expect(campaign).toContain("Ver uma reflexão de exemplo");
+    expect(campaign).toContain("Conhecer os planos");
     expect(recognition).toContain(
       "Quero perdoar, mas não sei se isso significa voltar a conviver.",
     );
     expect(clarity).toContain("Veja como uma situação pode ganhar clareza.");
     expect(clarity).toContain("AcquisitionChatDemo");
+    expect(clarity).toContain("Escolher meu plano");
+    expect(clarity).toContain("paid_landing_primary_cta_clicked");
     expect(clarity).not.toContain("Do emaranhado à clareza possível.");
     expect(clarity).not.toContain("Parte da sua situação.");
     expect(continuity).toContain("Volte ao mesmo fio quando precisar.");
@@ -134,8 +132,8 @@ describe("paid landing preview /comece-v2", () => {
     expect(formatPriceBRL(caminho!.priceMonthlyCents)).toMatch(/58/);
   });
 
-  it("keeps sticky plan-neutral and clear of product moments", () => {
-    expect(sticky).toContain("Ver planos");
+  it("keeps sticky plan-neutral with clear price cue", () => {
+    expect(sticky).toContain("Ver planos — a partir de R$38/mês");
     expect(sticky).toContain("getPaidLandingCampaignIds");
     expect(sticky).not.toContain("buildCadastroHref");
     expect(sticky).not.toContain("paid_landing_plan_selected");

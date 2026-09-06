@@ -28,6 +28,7 @@ const eventSchema = z
     utm_campaign: z.string().max(160).nullable(),
     utm_content: z.string().max(160).nullable(),
     plan: z.enum(["essencial", "caminho", "profundo"]).nullable(),
+    landing_variant: z.string().max(64).nullable().optional(),
     viewport_class: z.enum(["mobile", "tablet", "desktop"]),
   })
   .strict();
@@ -79,6 +80,7 @@ export async function POST(request: NextRequest) {
     utm_campaign,
     utm_content,
     plan: input.plan,
+    landing_variant: input.landing_variant ?? null,
     viewport_class: input.viewport_class,
   });
 

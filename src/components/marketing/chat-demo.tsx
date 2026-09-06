@@ -139,9 +139,20 @@ export function ChatDemo({
           asChild
           className="mt-3 min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto"
         >
-          <TrackingLink href={ctaHref} conversionEvent={ctaConversionEvent}>
-            {ctaLabel}
-          </TrackingLink>
+          {ctaHref.startsWith("#") ? (
+            <a
+              href={ctaHref}
+              onClick={() => {
+                trackPublicConversion(ctaConversionEvent);
+              }}
+            >
+              {ctaLabel}
+            </a>
+          ) : (
+            <TrackingLink href={ctaHref} conversionEvent={ctaConversionEvent}>
+              {ctaLabel}
+            </TrackingLink>
+          )}
         </Button>
       </div>
     </div>
@@ -151,10 +162,14 @@ export function ChatDemo({
 /** Campaign landing: three acquisition themes, CTA toward plans. */
 export function AcquisitionChatDemo({
   plansHref = "/planos",
+  ctaLabel = "Conhecer os planos",
+  ctaConversionEvent = "plans_cta_clicked",
   className,
   headingId,
 }: {
   plansHref?: string;
+  ctaLabel?: string;
+  ctaConversionEvent?: PublicConversionEventName;
   className?: string;
   headingId?: string;
 }) {
@@ -162,10 +177,10 @@ export function AcquisitionChatDemo({
     <ChatDemo
       scenarios={getDemoScenariosByIds(ACQUISITION_DEMO_SCENARIO_IDS)}
       title="Escolha um exemplo"
-      subtitle="Para refletir sobre a sua situação, conheça os planos. No produto, a conversa pode continuar no Histórico e nas Jornadas."
+      subtitle="Para refletir sobre a sua situação, escolha um plano. No produto, a conversa pode continuar no Histórico e nas Jornadas."
       ctaHref={plansHref}
-      ctaLabel="Conhecer os planos"
-      ctaConversionEvent="plans_cta_clicked"
+      ctaLabel={ctaLabel}
+      ctaConversionEvent={ctaConversionEvent}
       trackTopicSelection
       className={className}
       headingId={headingId}
