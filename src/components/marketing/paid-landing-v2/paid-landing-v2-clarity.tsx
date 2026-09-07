@@ -33,8 +33,11 @@ export function PaidLandingV2Clarity({
           Veja como uma situação pode ganhar clareza.
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
-          Escolha um exemplo ilustrativo. Não é conversa ao vivo nem geração de
-          IA nesta página — é o formato da reflexão que o produto oferece.
+          Escolha uma situação e veja o formato de uma reflexão do Amém Chat.
+        </p>
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink sm:text-[0.95rem]">
+          A experiência pode respeitar uma tradição católica, evangélica ou
+          ecumênica.
         </p>
 
         <div className="mt-5 max-w-2xl sm:mt-6">
@@ -46,6 +49,7 @@ export function PaidLandingV2Clarity({
                 ? "paid_landing_primary_cta_clicked"
                 : "plans_cta_clicked"
             }
+            compactDisclaimer
           />
         </div>
       </div>

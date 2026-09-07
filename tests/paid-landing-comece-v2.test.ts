@@ -26,12 +26,12 @@ describe("paid landing preview /comece-v2", () => {
     "paid-landing-v2",
     "campaign-ids.ts",
   );
-  const recognition = read(
+  const continuity = read(
     "src",
     "components",
     "marketing",
     "paid-landing-v2",
-    "paid-landing-v2-recognition.tsx",
+    "paid-landing-v2-continuity.tsx",
   );
   const clarity = read(
     "src",
@@ -39,13 +39,6 @@ describe("paid landing preview /comece-v2", () => {
     "marketing",
     "paid-landing-v2",
     "paid-landing-v2-clarity.tsx",
-  );
-  const continuity = read(
-    "src",
-    "components",
-    "marketing",
-    "paid-landing-v2",
-    "paid-landing-v2-continuity.tsx",
   );
   const offer = read(
     "src",
@@ -108,24 +101,34 @@ describe("paid landing preview /comece-v2", () => {
     expect(campaign).toContain("Assinaturas a partir de R$38/mês.");
     expect(campaign).toContain("Ver uma reflexão de exemplo");
     expect(campaign).toContain("Conhecer os planos");
-    expect(recognition).toContain(
-      "Quero perdoar, mas não sei se isso significa voltar a conviver.",
-    );
-    expect(clarity).toContain("Veja como uma situação pode ganhar clareza.");
+    expect(campaign).toContain("dados não vendidos");
+    expect(clarity).toContain("Escolha uma situação e veja o formato");
+    expect(clarity).toContain("tradição católica, evangélica ou");
+    expect(clarity).toContain("ecumênica.");
     expect(clarity).toContain("AcquisitionChatDemo");
     expect(clarity).toContain("Escolher meu plano");
     expect(clarity).toContain("paid_landing_primary_cta_clicked");
-    expect(clarity).not.toContain("Do emaranhado à clareza possível.");
-    expect(clarity).not.toContain("Parte da sua situação.");
+    expect(clarity).toContain("compactDisclaimer");
+    expect(clarity).not.toContain("Não é conversa ao vivo");
     expect(continuity).toContain("Volte ao mesmo fio quando precisar.");
     expect(close).toContain("Separe o que está em jogo.");
   });
 
   it("packages Caminho / Essencial / Profundo from PLAN_DEFINITIONS", () => {
     expect(offer).toContain("getPublicCheckoutPlans");
-    expect(offer).toContain("Retome sem começar do zero.");
-    expect(offer).toContain("Conversa + Histórico");
-    expect(offer).toContain("Caminho + Aprofundar");
+    expect(offer).toContain("Para criar continuidade, não apenas receber uma resposta.");
+    expect(offer).toContain(
+      "Para começar com reflexões personalizadas e Histórico.",
+    );
+    expect(offer).toContain(
+      "Para temas complexos que pedem uma segunda camada de análise.",
+    );
+    expect(offer).toContain(
+      "Pagamento seguro · renovação mensal · cancele pela Conta",
+    );
+    expect(offer).toContain("Conhecer o Particular");
+    expect(offer).not.toContain("ParticularAccessNote");
+    expect(offer).not.toContain("Para uma situação pontual.");
     expect(offer).toContain("paid_landing_plan_selected");
     const caminho = PLAN_DEFINITIONS.find((p) => p.key === "caminho");
     expect(caminho?.priceMonthlyCents).toBe(5800);

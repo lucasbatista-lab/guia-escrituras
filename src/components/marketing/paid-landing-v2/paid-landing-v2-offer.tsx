@@ -2,7 +2,6 @@
 
 import { Check, ChevronDown } from "lucide-react";
 import { TrackingLink } from "@/components/marketing/tracking-link";
-import { ParticularAccessNote } from "@/components/marketing/plan-cards";
 import { Button } from "@/components/ui/button";
 import {
   formatPriceBRL,
@@ -59,7 +58,7 @@ function CaminhoOffer({
             Plano recomendado
           </p>
           <h2 className="mt-2 font-sans text-[1.55rem] font-semibold leading-snug tracking-tight text-sand-50 sm:text-[1.9rem] lg:text-[2.2rem]">
-            Para situações que não terminam na primeira conversa.
+            Para criar continuidade, não apenas receber uma resposta.
           </h2>
         </div>
 
@@ -110,11 +109,11 @@ function CaminhoOffer({
                 Escolher Caminho
               </TrackingLink>
             </Button>
-            <p className="mt-2.5 max-w-xs text-xs leading-snug text-sand-50/65">
-              Cobrança mensal com Stripe · cancele pela Conta
+            <p className="mt-2.5 max-w-sm text-xs leading-snug text-sand-50/70">
+              Pagamento seguro · renovação mensal · cancele pela Conta
             </p>
-            <p className="mt-3 text-[11px] leading-snug tracking-wide text-sand-50/70">
-              Privado · dados não vendidos · IA com limites claros
+            <p className="mt-2 text-[11px] leading-snug tracking-wide text-sand-50/65">
+              Conversas privadas · dados não vendidos · IA com limites claros
             </p>
           </div>
         </div>
@@ -249,7 +248,7 @@ function PaidLandingV2OfferInner({ plansId }: { plansId: string }) {
             <AltPlan
               plan={essencial}
               href={buildCadastroHref(essencial.key, tracking)}
-              pitch="Para uma situação pontual."
+              pitch="Para começar com reflexões personalizadas e Histórico."
               summary="Conversa + Histórico"
               outcomes={ESSENCIAL_OUTCOMES}
               details={[
@@ -261,7 +260,7 @@ function PaidLandingV2OfferInner({ plansId }: { plansId: string }) {
             <AltPlan
               plan={profundo}
               href={buildCadastroHref(profundo.key, tracking)}
-              pitch="Para temas que pedem outra camada de análise."
+              pitch="Para temas complexos que pedem uma segunda camada de análise."
               summary="Caminho + Aprofundar"
               accent="gold"
               outcomes={PROFUNDO_OUTCOMES}
@@ -272,7 +271,15 @@ function PaidLandingV2OfferInner({ plansId }: { plansId: string }) {
               ]}
             />
           </div>
-          <ParticularAccessNote className="mt-5" />
+          <p className="mt-5 text-center text-xs leading-snug text-ink-soft sm:text-left">
+            Precisa de acompanhamento sob medida?{" "}
+            <TrackingLink
+              href="/mensagens-personalizadas"
+              className="underline underline-offset-4 hover:text-ink"
+            >
+              Conhecer o Particular
+            </TrackingLink>
+          </p>
         </div>
       </section>
     </div>

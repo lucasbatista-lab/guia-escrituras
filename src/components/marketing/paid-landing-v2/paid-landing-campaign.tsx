@@ -8,7 +8,6 @@ import { PaidLandingV2Close } from "@/components/marketing/paid-landing-v2/paid-
 import { PaidLandingV2Continuity } from "@/components/marketing/paid-landing-v2/paid-landing-v2-continuity";
 import { PaidLandingV2Media } from "@/components/marketing/paid-landing-v2/paid-landing-v2-media";
 import { PaidLandingV2Offer } from "@/components/marketing/paid-landing-v2/paid-landing-v2-offer";
-import { PaidLandingV2Recognition } from "@/components/marketing/paid-landing-v2/paid-landing-v2-recognition";
 import { PaidLandingV2Sticky } from "@/components/marketing/paid-landing-v2/paid-landing-v2-sticky";
 import { PaidLandingScrollCta } from "@/components/marketing/paid-landing/paid-landing-scroll-cta";
 import { PaidLandingSectionView } from "@/components/marketing/paid-landing/paid-landing-section-view";
@@ -122,6 +121,9 @@ export function PaidLandingCampaign({
               <p className="mt-2 text-[0.9rem] font-medium leading-snug text-ink sm:text-base">
                 Assinaturas a partir de R$38/mês.
               </p>
+              <p className="mt-1.5 max-w-md text-[0.8rem] leading-snug text-ink-soft">
+                Conversas privadas · dados não vendidos · IA com limites claros
+              </p>
 
               <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2">
                 <Button
@@ -173,25 +175,21 @@ export function PaidLandingCampaign({
           className="border-t border-border/40 bg-sand-100/40"
           aria-label="Vídeo de apresentação"
         >
-          <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
+          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-wine">
               Apresentação
             </p>
-            <h2 className="mt-1.5 max-w-xl font-sans text-[1.25rem] font-semibold leading-snug text-ink sm:text-[1.5rem]">
-              Se preferir, veja o Amém Chat em vídeo.
+            <h2 className="mt-1.5 max-w-xl font-sans text-[1.2rem] font-semibold leading-snug text-ink sm:text-[1.35rem]">
+              Preferir vídeo? Assista depois dos planos.
             </h2>
-            <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-soft">
-              Opcional — a demonstração acima já mostra o formato da reflexão.
-            </p>
-            <div className="relative mt-5 min-w-0 sm:mt-6">
+            <div className="relative mt-4 min-w-0 sm:mt-5">
               <PaidLandingV2Media
-                className="mx-auto w-full max-w-[18rem] sm:max-w-[22rem] lg:max-w-[24rem]"
+                className="mx-auto w-full max-w-[16rem] sm:max-w-[20rem] lg:max-w-[22rem]"
               />
             </div>
           </div>
         </section>
 
-        <PaidLandingV2Recognition sectionId={ids.recognition} />
         <PaidLandingV2Continuity
           sectionId={ids.continuity}
           plansHref={plansHref}

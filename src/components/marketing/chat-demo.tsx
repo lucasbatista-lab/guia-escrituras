@@ -24,6 +24,8 @@ export function ChatDemo({
   trackTopicSelection = true,
   className,
   headingId,
+  /** Single footer disclaimer (paid landing). Home keeps the fuller default. */
+  compactDisclaimer = false,
 }: {
   scenarios?: DemoScenario[];
   title?: string;
@@ -34,6 +36,7 @@ export function ChatDemo({
   trackTopicSelection?: boolean;
   className?: string;
   headingId?: string;
+  compactDisclaimer?: boolean;
 }) {
   const list =
     scenarios && scenarios.length > 0
@@ -59,7 +62,7 @@ export function ChatDemo({
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-sand-50/15 bg-sand-50/10 px-2.5 py-1 text-[10px] uppercase tracking-wide text-sand-100">
-          exemplo ilustrativo
+          demonstração
         </span>
       </div>
 
@@ -125,8 +128,10 @@ export function ChatDemo({
           </div>
           <p className="text-sm italic text-ink-soft">{active.followUp}</p>
         </div>
-        <p className="text-center font-sans text-[11px] text-ink-soft">
-          Exemplo ilustrativo, sem dados reais. Não é voz divina.
+        <p className="text-center font-sans text-[11px] leading-snug text-ink-soft">
+          {compactDisclaimer
+            ? "Demonstração ilustrativa. O Amém Chat não fala em nome de Deus."
+            : "Exemplo ilustrativo, sem dados reais. Não é voz divina."}
         </p>
       </div>
 
@@ -164,24 +169,27 @@ export function AcquisitionChatDemo({
   plansHref = "/planos",
   ctaLabel = "Conhecer os planos",
   ctaConversionEvent = "plans_cta_clicked",
+  compactDisclaimer = false,
   className,
   headingId,
 }: {
   plansHref?: string;
   ctaLabel?: string;
   ctaConversionEvent?: PublicConversionEventName;
+  compactDisclaimer?: boolean;
   className?: string;
   headingId?: string;
 }) {
   return (
     <ChatDemo
       scenarios={getDemoScenariosByIds(ACQUISITION_DEMO_SCENARIO_IDS)}
-      title="Escolha um exemplo"
+      title="Escolha uma situação"
       subtitle="Para refletir sobre a sua situação, escolha um plano. No produto, a conversa pode continuar no Histórico e nas Jornadas."
       ctaHref={plansHref}
       ctaLabel={ctaLabel}
       ctaConversionEvent={ctaConversionEvent}
       trackTopicSelection
+      compactDisclaimer={compactDisclaimer}
       className={className}
       headingId={headingId}
     />

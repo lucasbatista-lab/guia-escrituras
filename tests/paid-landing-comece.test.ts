@@ -102,7 +102,8 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     expect(offer).toContain("buildCadastroHref");
     expect(offer).toContain("utm_source");
     expect(offer).toContain("referralCode");
-    expect(offer).toContain("ParticularAccessNote");
+    expect(offer).toContain("Conhecer o Particular");
+    expect(offer).not.toContain("ParticularAccessNote");
     expect(sticky).toContain("Ver planos — a partir de R$38/mês");
     expect(sticky).toContain("paid_landing_primary_cta_clicked");
     expect(sticky).not.toContain("buildCadastroHref");
@@ -126,9 +127,19 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     expect(offer).toContain("Escolher Caminho");
     expect(offer).toContain("Escolher Essencial");
     expect(offer).toContain("Escolher Profundo");
+    expect(offer).toContain(
+      "Para criar continuidade, não apenas receber uma resposta.",
+    );
+    expect(offer).toContain(
+      "Para começar com reflexões personalizadas e Histórico.",
+    );
+    expect(offer).toContain(
+      "Pagamento seguro · renovação mensal · cancele pela Conta",
+    );
     expect(offer).not.toContain("3800");
     expect(offer).not.toContain("trial");
     expect(offer).not.toContain("mais escolhido");
+    expect(offer).not.toContain("Para uma situação pontual.");
 
     const caminho = PLAN_DEFINITIONS.find((p) => p.key === "caminho");
     const essencial = PLAN_DEFINITIONS.find((p) => p.key === "essencial");
@@ -165,12 +176,13 @@ describe("paid landing /comece (promoted V2 composition)", () => {
     const clarityIdx = campaign.indexOf("<PaidLandingV2Clarity");
     const offerIdx = campaign.indexOf("<PaidLandingV2Offer");
     const mediaIdx = campaign.indexOf("<PaidLandingV2Media");
-    const recognitionIdx = campaign.indexOf("<PaidLandingV2Recognition");
+    const continuityIdx = campaign.indexOf("<PaidLandingV2Continuity");
     expect(heroIdx).toBeGreaterThan(-1);
     expect(clarityIdx).toBeGreaterThan(heroIdx);
     expect(offerIdx).toBeGreaterThan(clarityIdx);
     expect(mediaIdx).toBeGreaterThan(offerIdx);
-    expect(recognitionIdx).toBeGreaterThan(mediaIdx);
+    expect(continuityIdx).toBeGreaterThan(mediaIdx);
+    expect(campaign).not.toContain("PaidLandingV2Recognition");
     expect(campaign).not.toContain("max-h-[min(54vh,24rem)]");
   });
 
