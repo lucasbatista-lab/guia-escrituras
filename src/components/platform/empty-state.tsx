@@ -27,7 +27,7 @@ export function EmptyState({
         {description}
       </p>
       {actionHref && actionLabel ? (
-        <Button asChild className="mt-6 min-h-11 bg-ink hover:bg-ink/90">
+        <Button asChild variant="ritual" className="mt-6 min-h-11">
           <Link href={actionHref}>{actionLabel}</Link>
         </Button>
       ) : null}

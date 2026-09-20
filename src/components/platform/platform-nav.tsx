@@ -195,11 +195,11 @@ export function PlatformNav({
 
       {showBottomNav && bottomTabs && !isChat ? (
         <nav
-          className="amem-bottom-nav fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/95 pb-safe backdrop-blur-lg md:hidden"
+          className="amem-bottom-nav amem-bottom-nav-float fixed z-40 md:hidden"
           aria-label="Navegação principal"
           data-nav-plan={plan ?? undefined}
         >
-          <div className="grid h-16 grid-cols-5 px-safe">
+          <div className="grid h-full grid-cols-5 px-1">
             {bottomTabs.map((tab) => {
               const Icon = iconForTab(tab);
               const current = isBottomNavTabActive(pathname, tab.href);
@@ -210,22 +210,26 @@ export function PlatformNav({
                   aria-current={current ? "page" : undefined}
                   aria-label={tab.label}
                   className={cn(
-                    "relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                    "relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                     current
-                      ? "font-semibold text-wine"
-                      : "font-normal text-ink-soft",
+                      ? "text-wine"
+                      : "text-[color:var(--amem-nav-inactive,#8A8278)]",
                   )}
                 >
-                  {current ? (
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-wine"
-                    />
-                  ) : null}
-                  <Icon
+                  <span
                     aria-hidden
-                    className={cn("size-5", current && "stroke-[2.25]")}
-                  />
+                    className={cn(
+                      "flex h-[30px] w-11 items-center justify-center rounded-[14px]",
+                      current && "amem-nav-active-pill",
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "size-[22px]",
+                        current ? "stroke-[1.65]" : "stroke-[1.65]",
+                      )}
+                    />
+                  </span>
                   <span>{tab.label}</span>
                 </Link>
               );
@@ -236,10 +240,15 @@ export function PlatformNav({
               aria-expanded={open}
               aria-controls={menuId}
               aria-label="Abrir menu"
-              className="flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-[11px] text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              className="flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] text-[color:var(--amem-nav-inactive,#8A8278)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               onClick={() => setOpen(true)}
             >
-              <Menu aria-hidden className="size-5" />
+              <span
+                aria-hidden
+                className="flex h-[30px] w-11 items-center justify-center rounded-[14px]"
+              >
+                <Menu className="size-[22px] stroke-[1.65]" />
+              </span>
               <span>Menu</span>
             </button>
           </div>
