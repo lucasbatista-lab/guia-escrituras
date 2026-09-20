@@ -5,6 +5,7 @@ import { PresenceLight } from "@/components/brand/presence-light";
 import { PaperGrain } from "@/components/brand/paper-grain";
 import { AmemSplash } from "@/components/brand/amem-splash";
 import { PresenceShareCard } from "@/components/share/presence-share-card";
+import { SharePresenceActions } from "@/components/share/share-presence-actions";
 import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
 import { PlatformNav } from "@/components/platform/platform-nav";
 import { Button } from "@/components/ui/button";
@@ -82,14 +83,29 @@ export default async function AmemW2QaPage({
         </div>
       );
     case "share":
+      // Standalone preview — no platform header/nav (exported asset must stay shell-free).
       return (
-        <Shell plan="free">
+        <div
+          className="flex min-h-app flex-col items-center justify-center gap-4 bg-[color:var(--amem-dusk,#2A1824)] px-4 py-8"
+          data-amem-share-standalone
+        >
           <PresenceShareCard
             eyebrow="Presença · 20 set"
             quote="Você esteve presente. Isso basta por hoje."
             reference="João 14:27"
+            className="max-w-md"
           />
-        </Shell>
+          <SharePresenceActions
+            className="w-full max-w-md"
+            payload={{
+              eyebrow: "Presença · 20 set",
+              quote: "Você esteve presente. Isso basta por hoje.",
+              reference: "João 14:27",
+              brandWord: "Amém",
+            }}
+            shareText="Você esteve presente. Isso basta por hoje."
+          />
+        </div>
       );
     case "paywall":
       return (
@@ -118,7 +134,7 @@ function Shell({
       <PresenceLight size="sm" />
       <PaperGrain />
       <PlatformNav items={items} plan={plan} />
-      <main className="relative z-10 mx-auto max-w-lg px-4 pb-28 pt-6">
+      <main className="relative mx-auto max-w-lg px-4 pb-28 pt-6">
         {children}
       </main>
     </div>

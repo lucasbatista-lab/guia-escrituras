@@ -15,6 +15,7 @@ import {
   type UserDailyInteraction,
 } from "@/lib/daily";
 import { copyTextToClipboard, isUserShareCancellation } from "@/lib/share";
+import { sharePresenceShareCard } from "@/lib/share/export-presence-card";
 
 type Phase = "start" | "mid" | "complete";
 
@@ -176,14 +177,30 @@ export function HojeRitual({
     setBusy(true);
     setStatus(null);
     const text = buildDailyShareText({ content, shareUrl });
+    const cardPayload = {
+      eyebrow: `Presença · ${dateLabel}`,
+      quote: "Você esteve presente. Isso basta por hoje.",
+      reference: content.scriptureReference,
+      brandWord: "Amém",
+    };
     try {
-      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        await navigator.share({
-          title: `${content.scriptureReference} · Amém Chat`,
-          text,
-          url: shareUrl,
-        });
+      const cardResult = await sharePresenceShareCard({
+        payload: cardPayload,
+        format: "story",
+        shareUrl,
+        title: `${content.scriptureReference} · Amém`,
+        text,
+      });
+      if (cardResult === "cancelled") {
+        setBusy(false);
+        return;
+      }
+      if (cardResult === "downloaded") {
+        setStatus("Cartão salvo. Header e navegação não entram no arquivo.");
+      } else if (cardResult === "shared") {
+        setStatus(null);
       } else {
+        // fallback text path if exporter unavailable
         const copied = await copyTextToClipboard(text);
         if (!copied) {
           setStatus("Copie o texto e compartilhe com quem quiser.");
