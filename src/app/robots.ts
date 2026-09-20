@@ -31,6 +31,8 @@ export default function robots(): MetadataRoute.Robots {
           "/admin/",
           "/api",
           "/api/",
+          "/dev",
+          "/dev/",
           "/conta",
           "/conversar",
           "/conversas",

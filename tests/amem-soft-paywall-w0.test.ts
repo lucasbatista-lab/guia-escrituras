@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -11,6 +11,10 @@ import {
 import { canUseReadingJourneys } from "@/lib/entitlements";
 import { resolveEntitlements } from "@/lib/entitlements";
 import type { UserJourneyState } from "@/lib/journey/journey-state";
+
+// Top-level so Vitest hoist order matches intent.
+vi.unmock("@/config/runtime");
+vi.unmock("next/navigation");
 
 const root = process.cwd();
 function readSrc(...parts: string[]) {
@@ -42,6 +46,11 @@ describe("W0 soft paywall foundation", () => {
     expect(copy.minimumPlanName).toBe("Essencial");
     expect(copy.badgeLabel).toBe("Essencial");
     expect(copy.resourceLabel).toBe("Conversar");
+    expect(copy.eyebrow).toBe("CONVERSAR");
+    expect(copy.eyebrow.toLowerCase()).not.toContain("aprofundar");
+    expect(copy.dismissLabel).toBe("Agora não");
+    expect(copy.leaveLabel).toBe("Voltar ao Hoje");
+    expect(copy.dismissHref).toBe("/inicio");
     expect(copy.footerNote).toMatch(/Conta grátis continua/i);
     expect(resolveEntitlements({ planKey: "essencial" }).has("chat_standard")).toBe(
       true,
@@ -55,6 +64,11 @@ describe("W0 soft paywall foundation", () => {
     expect(copy.minimumPlanName).toBe("Caminho");
     expect(copy.badgeLabel).toBe("Caminho");
     expect(copy.badgeLabel.toLowerCase()).not.toBe("profundo");
+    expect(copy.eyebrow).toBe("CAMINHOS");
+    expect(copy.eyebrow.toLowerCase()).not.toContain("aprofundar");
+    expect(copy.dismissLabel).toBe("Agora não");
+    expect(copy.leaveLabel).toBe("Voltar ao Hoje");
+    expect(copy.dismissHref).toBe("/inicio");
     expect(canUseReadingJourneys("caminho")).toBe(true);
     expect(canUseReadingJourneys("essencial")).toBe(false);
     expect(canUseReadingJourneys(null)).toBe(false);
@@ -80,7 +94,7 @@ describe("W0 soft paywall foundation", () => {
     expect(route).not.toContain("Não há plano gratuito");
   });
 
-  it("conversar and jornadas render SoftPaywallGate for FREE (no silent /inicio)", () => {
+  it("free /conversar reaches page-level SoftPaywallGate (proxy allows soft states through)", () => {
     const conversar = readSrc("src", "app", "(platform)", "conversar", "page.tsx");
     expect(conversar).toContain("SoftPaywallGate");
     expect(conversar).toContain('resource="conversar"');
@@ -89,17 +103,48 @@ describe("W0 soft paywall foundation", () => {
       conversar.indexOf("getRequiredDestinationForState"),
     );
 
+    // Proxy behavioral contract: soft-paywall states pass through to the page
+    // (no silent /inicio). Do not couple to SoftPaywallSheet component strings.
+    const proxy = readSrc("src", "lib", "supabase", "proxy.ts");
+    expect(proxy).toContain("journeyShowsSoftPaywall");
+    expect(proxy).toMatch(
+      /pathname === "\/conversar"[\s\S]*?journeyShowsSoftPaywall\([\s\S]*?return supabaseResponse/,
+    );
+    expect(proxy).not.toMatch(/SoftPaywallSheet/);
+  });
+
+  it("jornadas FREE gate is page-level SoftPaywallGate (not a proxy comment contract)", () => {
     const jornadas = readSrc("src", "app", "(platform)", "jornadas", "page.tsx");
     expect(jornadas).toContain("SoftPaywallGate");
     expect(jornadas).toContain('resource="jornadas"');
     expect(jornadas).toContain("journeyShowsSoftPaywall");
+    // Soft gate return precedes the authenticated journey catalog render.
+    expect(jornadas).toMatch(
+      /journeyShowsSoftPaywall[\s\S]*SoftPaywallGate[\s\S]*resource="jornadas"/,
+    );
 
+    const slug = readSrc(
+      "src",
+      "app",
+      "(platform)",
+      "jornadas",
+      "[slug]",
+      "page.tsx",
+    );
+    expect(slug).toContain("SoftPaywallGate");
+    expect(slug).toContain('resource="jornadas"');
+    expect(slug).toContain("journeyShowsSoftPaywall");
+
+    // Jornadas entitlement gate lives on the page; proxy has no jornadas SoftPaywall coupling.
     const proxy = readSrc("src", "lib", "supabase", "proxy.ts");
-    expect(proxy).toContain("journeyShowsSoftPaywall");
-    expect(proxy).toContain("SoftPaywallSheet");
+    const jornadasInProxy = /pathname[\s\S]{0,80}\/jornadas/.test(proxy);
+    // If proxy mentions jornadas paths in future, it still must not hard-code sheet component names.
+    if (jornadasInProxy) {
+      expect(proxy).not.toMatch(/SoftPaywallSheet/);
+    }
   });
 
-  it("SoftPaywallSheet is dismissible and keeps free value messaging", () => {
+  it("SoftPaywallSheet is dismissible with a11y contract and gold Button primitive", () => {
     const sheet = readSrc(
       "src",
       "components",
@@ -108,10 +153,28 @@ describe("W0 soft paywall foundation", () => {
     );
     expect(sheet).toContain("useState(defaultOpen)");
     expect(sheet).toContain('role="dialog"');
+    expect(sheet).toContain("aria-modal");
+    expect(sheet).toContain("aria-labelledby");
+    expect(sheet).toContain("aria-describedby");
     expect(sheet).toContain("dismiss");
     expect(sheet).toContain("PremiumBadge");
     expect(sheet).toContain("LockPill");
     expect(sheet).toContain("Escape");
+    expect(sheet).toContain('variant="gold"');
+    // Gold CTA uses Button variant="gold" (ritual dot may still use token color).
+    expect(sheet).toMatch(
+      /<Button[\s\S]*?variant="gold"[\s\S]*?<Link href=\{copy\.ctaHref\}/,
+    );
+    expect(sheet).not.toMatch(
+      /<Button[^>]*variant="gold"[^>]*style=/,
+    );
+    // Focus trap + scroll lock + restore hooks present.
+    expect(sheet).toContain("listFocusable");
+    expect(sheet).toContain('document.body.style.overflow = "hidden"');
+    expect(sheet).toContain('document.body.style.position = "fixed"');
+    expect(sheet).toContain("restoreFocusRef");
+    expect(sheet).toContain("copy.leaveLabel");
+    expect(sheet).toContain("copy.dismissLabel");
   });
 
   it("paid active users still use chat entitlement gate (no improper free paywall helper)", () => {
@@ -123,5 +186,53 @@ describe("W0 soft paywall foundation", () => {
     expect(conversar).toMatch(
       /if \(!journeyAllowsChat[\s\S]*journeyShowsSoftPaywall[\s\S]*SoftPaywallGate/,
     );
+  });
+});
+
+describe("W0 QA route /dev/amem-w0-qa hardening", () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+    vi.resetModules();
+  });
+
+  it("robots production disallow includes /dev (crawl hint, not auth)", () => {
+    const robotsSrc = readSrc("src", "app", "robots.ts");
+    expect(robotsSrc).toContain('"/dev"');
+    expect(robotsSrc).toContain('"/dev/"');
+  });
+
+  it("QA page is not served when mocks are not allowed (notFound/404)", async () => {
+    vi.resetModules();
+    const notFound = vi.fn(() => {
+      const err = new Error("NEXT_HTTP_ERROR_FALLBACK;404");
+      (err as Error & { digest?: string }).digest = "NEXT_HTTP_ERROR_FALLBACK;404";
+      throw err;
+    });
+    vi.doMock("next/navigation", () => ({ notFound }));
+    vi.doMock("@/config/runtime", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("@/config/runtime")>();
+      return {
+        ...actual,
+        allowsMocks: () => false,
+        getAppRuntime: () => "production" as const,
+      };
+    });
+
+    const mod = await import("@/app/dev/amem-w0-qa/page");
+    await expect(
+      mod.default({ searchParams: Promise.resolve({}) }),
+    ).rejects.toThrow(/404|NOT_FOUND|FALLBACK/i);
+    expect(notFound).toHaveBeenCalledTimes(1);
+  });
+
+  it("QA page source keeps development + allowsMocks fail-closed (no mock expansion)", () => {
+    const page = readSrc("src", "app", "dev", "amem-w0-qa", "page.tsx");
+    expect(page).toContain("getAppRuntime()");
+    expect(page).toContain('!== "development"');
+    expect(page).toContain("allowsMocks()");
+    expect(page).toContain("notFound()");
+    expect(page).not.toMatch(/allowsMocks\s*=\s*\(\)\s*=>\s*true/);
   });
 });

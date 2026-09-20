@@ -17,20 +17,23 @@ import {
   FREE_ACCOUNT_STATUS_LABEL,
   getSoftPaywallCopy,
 } from "@/lib/commerce/soft-paywall";
-import { allowsMocks } from "@/config/runtime";
+import { allowsMocks, getAppRuntime } from "@/config/runtime";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Local visual QA fixture for W0/W1 — not a production path.
- * Gated by allowsMocks() so production never serves it.
+ * Restricted to local development AND allowsMocks() fail-closed.
+ * robots.txt also disallows /dev (crawl hint only — not an auth gate).
+ * Preview/production never serve this page.
  */
 export default async function AmemW0QaPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  if (!allowsMocks()) notFound();
+  // Local development only + mocks fail-closed. Do not expand mock permissions.
+  if (getAppRuntime() !== "development" || !allowsMocks()) notFound();
 
   const params = await searchParams;
   const raw = params.view;

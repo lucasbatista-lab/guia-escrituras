@@ -376,7 +376,7 @@ export async function updateSession(request: NextRequest) {
         pathname.startsWith("/conversas/")
       ) {
         if (!isLive) {
-          // FREE / lapsed: allow page to render SoftPaywallSheet (no silent /inicio).
+          // FREE / lapsed: allow page-level soft paywall gate (no silent /inicio).
           if (journeyShowsSoftPaywall(state)) {
             return supabaseResponse;
           }

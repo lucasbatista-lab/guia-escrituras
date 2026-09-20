@@ -35,7 +35,10 @@ export type SoftPaywallCopy = {
   badgeLabel: string;
   ctaLabel: string;
   ctaHref: string;
+  /** Close-only label for the sheet dismiss control (does not navigate). */
   dismissLabel: string;
+  /** Navigate label shown after dismiss when leaving the gated surface. */
+  leaveLabel: string;
   dismissHref: string;
   footerNote: string;
 };
@@ -51,7 +54,7 @@ export function getSoftPaywallCopy(
     return {
       resourceId: resource,
       resourceLabel: "Conversar",
-      eyebrow: "Aprofundar",
+      eyebrow: "CONVERSAR",
       title: "Converse com acompanhamento bíblico",
       body: "Reflexão personalizada com referências bíblicas e histórico privado — no seu ritmo, sem culpa se pausar.",
       benefits: [
@@ -64,7 +67,8 @@ export function getSoftPaywallCopy(
       badgeLabel: minimumPlanName,
       ctaLabel: "Ver planos",
       ctaHref: "/planos",
-      dismissLabel: "Continuar com a conta grátis",
+      dismissLabel: "Agora não",
+      leaveLabel: "Voltar ao Hoje",
       dismissHref: "/inicio",
       footerNote: "Conta grátis continua · ritual diário intacto",
     };
@@ -73,7 +77,7 @@ export function getSoftPaywallCopy(
   return {
     resourceId: resource,
     resourceLabel: "Caminhos",
-    eyebrow: "Aprofundar",
+    eyebrow: "CAMINHOS",
     title: "Continue o caminho com acompanhamento",
     body: "Jornadas guiadas de 7 etapas sobre temas reais da vida — progresso salvo, no seu ritmo.",
     benefits: [
@@ -86,7 +90,8 @@ export function getSoftPaywallCopy(
     badgeLabel: minimumPlanName,
     ctaLabel: "Ver planos",
     ctaHref: "/planos#comparar-uso",
-    dismissLabel: "Voltar ao Hoje",
+    dismissLabel: "Agora não",
+    leaveLabel: "Voltar ao Hoje",
     dismissHref: "/inicio",
     footerNote: "Conta grátis continua · ritual diário intacto",
   };
