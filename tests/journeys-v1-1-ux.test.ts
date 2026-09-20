@@ -74,7 +74,7 @@ describe("journeys V1.1 step completion UX", () => {
     expect(detail).toContain("o progresso fica salvo");
   });
 
-  it("step page uses Escritura / Reflexão / Ação hierarchy", () => {
+  it("step page uses guided chapter hierarchy (contexto → fecho)", () => {
     const page = read(
       "src",
       "app",
@@ -84,12 +84,16 @@ describe("journeys V1.1 step completion UX", () => {
       "[step]",
       "page.tsx",
     );
-    expect(page).toContain("Escritura");
+    expect(page).toContain("Contexto");
+    expect(page).toContain("Passagem");
     expect(page).toContain("Reflexão");
-    expect(page).toContain("Ação prática");
+    expect(page).toContain("Pergunta");
+    expect(page).toContain("Oração");
+    expect(page).toContain("Prática");
+    expect(page).toContain("Fecho · Levo");
     expect(page).toContain("Para conversar");
-    expect(page).toContain("Conclusão da etapa");
-    expect(page).toContain("Etapa ${step.number} de ${totalSteps}");
+    expect(page).toContain("journeyDayLabel");
+    expect(page).not.toMatch(/streak|sequência de dias/i);
   });
 
   it("catalog cards use distinct accents and contextual CTAs", () => {

@@ -131,7 +131,7 @@ describe("reading journeys progress service", () => {
 describe("reading journeys routes and nav", () => {
   it("exposes jornadas routes and legacy redirect", () => {
     expect(read("src", "app", "(platform)", "jornadas", "page.tsx")).toContain(
-      "Jornadas de leitura",
+      "Caminhos",
     );
     expect(
       read("src", "app", "(platform)", "jornada", "page.tsx"),

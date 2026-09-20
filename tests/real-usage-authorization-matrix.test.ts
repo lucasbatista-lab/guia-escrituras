@@ -102,7 +102,7 @@ describe("real-usage: plan entitlement matrix", () => {
 });
 
 describe("real-usage: Essencial journey URL gate in pages", () => {
-  it("slug and step pages redirect non-entitled to catalog", () => {
+  it("slug and step pages soft-paywall non-entitled (no silent catalog redirect)", () => {
     const slugPage = readSrc("app", "(platform)", "jornadas", "[slug]", "page.tsx");
     const stepPage = readSrc(
       "app",
@@ -113,9 +113,17 @@ describe("real-usage: Essencial journey URL gate in pages", () => {
       "page.tsx",
     );
     expect(slugPage).toContain("canUseReadingJourneys");
-    expect(slugPage).toContain('redirect("/jornadas")');
+    expect(slugPage).toContain("SoftPaywallGate");
+    expect(slugPage).toContain('resource="jornadas"');
     expect(stepPage).toContain("canUseReadingJourneys");
-    expect(stepPage).toContain('redirect("/jornadas")');
+    expect(stepPage).toContain("SoftPaywallGate");
+    expect(stepPage).toContain('resource="jornadas"');
+    expect(slugPage).toMatch(
+      /if \(!canUseReadingJourneys[\s\S]*SoftPaywallGate/,
+    );
+    expect(stepPage).toMatch(
+      /if \(!canUseReadingJourneys[\s\S]*SoftPaywallGate/,
+    );
   });
 
   it("catalog still renders preview path for non-entitled", () => {

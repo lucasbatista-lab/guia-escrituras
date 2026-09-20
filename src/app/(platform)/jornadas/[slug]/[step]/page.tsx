@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { JourneyStepCompleteButton } from "@/components/journeys/journey-step-complete-button";
-import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
-import { PlatformPageHeader } from "@/components/platform/page-header";
+import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
 import { Button } from "@/components/ui/button";
 import { JourneyStepNote } from "@/components/workspace/journey-step-note";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
-import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
 import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
@@ -34,6 +32,7 @@ import {
   buildLoginHref,
 } from "@/lib/navigation/safe-next-path";
 import { loadJourneyStepNote } from "@/lib/workspace/entries";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +67,7 @@ export default async function JornadaStepPage({
   if (!step) notFound();
 
   if (!canUseReadingJourneys(auth.planKey)) {
-    redirect("/jornadas");
+    return <SoftPaywallGate resource="jornadas" />;
   }
 
   const progress = await ensureJourneyStarted(auth.userId, journey.slug);
@@ -80,13 +79,12 @@ export default async function JornadaStepPage({
   const chatHref = `/conversar?jornada=${encodeURIComponent(journey.slug)}&etapa=${encodeURIComponent(step.slug)}`;
   const isLastStep = !nextSlug;
   const totalSteps = journey.steps.length;
-  const doneCount = progress.completedStepIds.length;
 
   return (
-    <article className="space-y-8 pb-32">
+    <article className="space-y-6 pb-36">
       <nav className="text-sm text-ink-soft">
         <Link href="/jornadas" className="underline underline-offset-4">
-          Jornadas
+          Caminhos
         </Link>
         <span aria-hidden> · </span>
         <Link
@@ -97,114 +95,163 @@ export default async function JornadaStepPage({
         </Link>
       </nav>
 
-      <PlatformPageHeader
-        title={step.title}
-        description={`${journeyDayLabel(step.number, totalSteps)} · Etapa ${step.number} de ${totalSteps} · ~${step.estimatedMinutes} min nesta etapa${
-          stepCompleted ? " · concluída" : ""
-        }`}
-      />
+      <header className="space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[color:var(--amem-brass)]">
+          {journey.title}
+        </p>
+        <h1 className="font-display text-[28px] leading-tight text-ink">
+          {journeyDayLabel(step.number, totalSteps)} · {step.title}
+        </h1>
+        <p className="text-sm text-ink-soft">
+          ~{step.estimatedMinutes} min
+          {stepCompleted ? " · concluído" : ""}
+          {" · "}
+          progresso salvo — retome quando quiser
+        </p>
+      </header>
 
-      <JourneyProgressBar
-        progress={progress}
-        totalSteps={totalSteps}
-        journeySlug={journey.slug}
-        labelId="journey-step-progress"
-      />
+      <ol
+        className="flex items-center gap-1.5"
+        aria-label={`Progresso: dia ${step.number} de ${totalSteps}`}
+      >
+        {journey.steps.map((s) => {
+          const done = progress.completedStepIds.includes(s.id);
+          const current = s.id === step.id;
+          return (
+            <li key={s.id} className="flex-1">
+              <span
+                className={cn(
+                  "block h-[3.5px] rounded-full",
+                  done
+                    ? "bg-[image:var(--amem-trilho)]"
+                    : current
+                      ? "bg-wine"
+                      : "bg-[color:var(--amem-trilho-track)] opacity-50",
+                )}
+                style={
+                  done
+                    ? {
+                        background:
+                          "linear-gradient(90deg, var(--amem-wine-deep), var(--amem-wine) 55%, var(--amem-plum))",
+                      }
+                    : undefined
+                }
+                title={`Dia ${s.number}`}
+              />
+            </li>
+          );
+        })}
+      </ol>
 
-      <p className="text-sm text-ink-soft">
-        O progresso fica salvo — você pode pausar e retomar quando quiser.
-        {nextStep
-          ? ` Depois desta etapa: ${nextStep.title}.`
-          : doneCount >= totalSteps - 1
-            ? " Esta é a última etapa da jornada."
-            : ""}
-      </p>
+      <section
+        aria-labelledby="step-cena-heading"
+        className="amem-surface-poco relative"
+      >
+        <h2
+          id="step-cena-heading"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine"
+        >
+          Contexto
+        </h2>
+        <p className="mt-3 font-display text-lg leading-snug text-ink">
+          {step.objective}
+        </p>
+      </section>
 
       <section
         aria-labelledby="step-escritura-heading"
-        className="border-l-2 border-wine/30 pl-4"
+        className="amem-lex-scripture"
       >
         <h2
           id="step-escritura-heading"
-          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine"
         >
-          Escritura
+          Passagem
         </h2>
-        <p className="mt-2 font-display text-lg text-ink">
-          {step.bibleReference}
-        </p>
+        <p className="mt-2 font-display text-lg text-ink">{step.bibleReference}</p>
         <p className="mt-3 text-sm leading-relaxed text-ink-soft">
           {step.paraphrase}
         </p>
+        <div className="amem-lex-scripture-ref">Em outras palavras · não é citação inventada</div>
       </section>
 
-      <section aria-labelledby="step-reflexao-heading">
+      <section aria-labelledby="step-reflexao-heading" className="space-y-2">
         <h2
           id="step-reflexao-heading"
-          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-[color:var(--amem-plum)]"
         >
           Reflexão
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          {step.reflection}
-        </p>
+        <p className="text-[15px] leading-relaxed text-ink">{step.reflection}</p>
       </section>
 
-      <section aria-labelledby="step-pergunta-heading">
+      <section
+        aria-labelledby="step-pergunta-heading"
+        className="border-l-[2.5px] border-wine/40 pl-4"
+      >
         <h2
           id="step-pergunta-heading"
-          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft"
         >
           Pergunta
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+        <p className="mt-2 text-[15px] leading-relaxed text-ink">
           {step.personalQuestion}
         </p>
       </section>
 
       <section
-        aria-labelledby="step-acao-heading"
-        className="rounded-xl border border-gold/25 bg-sand-100/40 px-4 py-4"
+        aria-labelledby="step-oracao-heading"
+        className="rounded-[18px] bg-[color:var(--amem-surface)] px-4 py-4 shadow-[inset_0_0_0_1px_var(--amem-hairline)]"
       >
         <h2
-          id="step-acao-heading"
-          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
-        >
-          Ação prática
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink">
-          {step.practicalAction}
-        </p>
-      </section>
-
-      <section aria-labelledby="step-oracao-heading">
-        <h2
           id="step-oracao-heading"
-          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine"
         >
           Oração
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+        <p className="mt-2 font-display text-[17px] italic leading-snug text-ink">
           {stepPrayer(step)}
         </p>
       </section>
 
-      <section aria-labelledby="step-conversar-heading">
+      <section aria-labelledby="step-acao-heading" className="space-y-2">
+        <h2
+          id="step-acao-heading"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft"
+        >
+          Prática
+        </h2>
+        <p className="text-sm leading-relaxed text-ink">{step.practicalAction}</p>
+      </section>
+
+      <section
+        aria-labelledby="step-fecho-heading"
+        className="rounded-[18px] border border-[rgba(184,150,90,0.28)] bg-[color:var(--amem-recess)]/55 px-4 py-4"
+      >
+        <h2
+          id="step-fecho-heading"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-[color:var(--amem-brass)]"
+        >
+          Fecho · Levo
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink">{stepClosing(step)}</p>
+      </section>
+
+      <section aria-labelledby="step-conversar-heading" className="space-y-3">
         <h2
           id="step-conversar-heading"
-          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft"
         >
           Para conversar
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          Se quiser aprofundar, o chat recebe só o contexto editorial desta
-          etapa — não envia anotações pessoais.
+        <p className="text-sm leading-relaxed text-ink-soft">
+          Se quiser continuar, o chat recebe só o contexto editorial desta etapa —
+          não envia anotações pessoais.
         </p>
-        <div className="mt-4">
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href={chatHref}>Conversar sobre esta reflexão</Link>
-          </Button>
-        </div>
+        <Button asChild variant="outline" className="min-h-11">
+          <Link href={chatHref}>Conversar sobre esta reflexão</Link>
+        </Button>
       </section>
 
       <JourneyStepNote
@@ -214,8 +261,8 @@ export default async function JornadaStepPage({
       />
 
       {step.safetyNote ? (
-        <div className="rounded-xl border border-border/70 bg-sand-50/80 p-4">
-          <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+        <div className="rounded-xl border border-border/70 bg-[color:var(--amem-surface)] p-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft">
             Cuidado
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-soft">
@@ -228,13 +275,9 @@ export default async function JornadaStepPage({
         aria-labelledby="step-conclusao-heading"
         className="space-y-3 border-t border-border/60 pt-6"
       >
-        <h2
-          id="step-conclusao-heading"
-          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
-        >
+        <h2 id="step-conclusao-heading" className="sr-only">
           Conclusão da etapa
         </h2>
-        <p className="text-sm leading-relaxed text-ink-soft">{stepClosing(step)}</p>
         <JourneyStepCompleteButton
           journeySlug={journey.slug}
           stepId={step.id}
@@ -247,29 +290,32 @@ export default async function JornadaStepPage({
           isLastStep={isLastStep}
           journeyCompleted={progress.isCompleted}
         />
+        <p className="text-center text-xs text-ink-soft">
+          Sem culpa se voltar depois — o próximo dia espera no seu ritmo.
+        </p>
         <Button asChild variant="ghost" className="min-h-11">
-          <Link href={`/jornadas/${journey.slug}`}>Voltar à jornada</Link>
+          <Link href={`/jornadas/${journey.slug}`}>Voltar ao caminho</Link>
         </Button>
       </section>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-10 border-t border-border/70 bg-background/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm"
-        aria-label="Navegação entre etapas"
+        className="fixed inset-x-0 bottom-0 z-10 border-t border-border/70 bg-[color:var(--amem-surface)]/95 px-4 py-3 pb-[max(5.5rem,calc(4.5rem+env(safe-area-inset-bottom)))] backdrop-blur-sm md:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+        aria-label="Navegação entre dias"
       >
-        <div className="mx-auto flex max-w-5xl gap-2">
+        <div className="mx-auto flex max-w-5xl gap-2 md:max-w-3xl">
           {prevSlug ? (
             <Button asChild variant="outline" className="min-h-11 flex-1">
               <Link href={`/jornadas/${journey.slug}/${prevSlug}`}>
-                Etapa anterior
+                Dia anterior
               </Link>
             </Button>
           ) : (
             <span className="flex-1" />
           )}
           {nextSlug ? (
-            <Button asChild className="min-h-11 flex-1">
+            <Button asChild variant="ritual" className="min-h-11 flex-1">
               <Link href={`/jornadas/${journey.slug}/${nextSlug}`}>
-                Próxima etapa
+                Próximo dia
               </Link>
             </Button>
           ) : (

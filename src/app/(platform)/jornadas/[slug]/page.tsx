@@ -66,7 +66,7 @@ export default async function JornadaDetailPage({
   if (!journey) notFound();
 
   if (!canUseReadingJourneys(auth.planKey)) {
-    redirect("/jornadas");
+    return <SoftPaywallGate resource="jornadas" />;
   }
 
   const progress = await ensureJourneyStarted(auth.userId, journey.slug);
@@ -162,7 +162,7 @@ export default async function JornadaDetailPage({
 
       <section aria-labelledby="steps-heading">
         <h2 id="steps-heading" className="font-display text-lg text-ink">
-          Etapas
+          Dias do caminho
         </h2>
         <ol className="mt-4 space-y-2">
           {journey.steps.map((step) => {
@@ -207,7 +207,7 @@ export default async function JornadaDetailPage({
       </section>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <Button asChild className="min-h-11">
+        <Button asChild variant="ritual" className="min-h-11">
           <Link href={nextHref}>
             {reallyCompleted ? "Rever Jornada" : cta}
           </Link>
