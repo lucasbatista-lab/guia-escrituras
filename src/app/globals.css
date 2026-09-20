@@ -4,30 +4,106 @@
 
 @layer base {
   :root {
-    --background: 36 40% 97%;
+    --background: 36 33% 91%;
     --foreground: 28 22% 14%;
-    --card: 36 45% 99%;
+    --card: 40 60% 98%;
     --card-foreground: 28 22% 14%;
-    --popover: 36 45% 99%;
+    --popover: 40 60% 98%;
     --popover-foreground: 28 22% 14%;
-    --primary: 28 22% 18%;
+    --primary: 345 40% 30%;
     --primary-foreground: 36 40% 97%;
     --secondary: 34 28% 92%;
     --secondary-foreground: 28 22% 18%;
     --muted: 34 22% 93%;
     --muted-foreground: 28 12% 40%;
-    --accent: 345 35% 30%;
-    --accent-foreground: 36 40% 97%;
+    --accent: 40 45% 55%;
+    --accent-foreground: 28 22% 14%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 98%;
     --border: 34 20% 86%;
     --input: 34 20% 86%;
     --ring: 40 35% 47%;
-    --radius: 0.75rem;
+    --radius: 1rem;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
+
+    /* ——— Amém V13 editorial presence tokens ——— */
+    --amem-canvas: #F3EBE0;
+    --amem-canvas-deep: #E9DFD0;
+    --amem-cream-50: #FBF7F0;
+    --amem-cream-100: #F4EDE3;
+    --amem-cream-200: #E4D7C4;
+
+    --amem-ink-950: #1F1914;
+    --amem-ink-900: #2C241C;
+    --amem-ink-700: #5A4E44;
+    --amem-ink-500: #8A7B6C;
+    --amem-ink-300: #B8AA9A;
+
+    --amem-wine-900: #3A1520;
+    --amem-wine-800: #4A1C2A;
+    --amem-wine-700: #6B2E3A;
+    --amem-wine-500: #8A4452;
+    --amem-wine-100: rgba(107, 46, 58, 0.10);
+    --amem-wine-060: rgba(107, 46, 58, 0.06);
+
+    /* Gold = editorial/spiritual accent (NOT premium-only) */
+    --amem-gold-600: #A8843E;
+    --amem-gold-500: #C6A05A;
+    --amem-gold-300: #E0C48A;
+    --amem-gold-120: rgba(198, 160, 90, 0.18);
+    --amem-gold-080: rgba(198, 160, 90, 0.10);
+
+    --amem-surface: #FFFCF7;
+    --amem-surface-elev: #FFFEFB;
+    --amem-field: #F7F1E8;
+    --amem-ink-wash: #2A221C;
+    --amem-ink-wash-soft: #3A322A;
+
+    --amem-premium-badge-bg: #2C241C;
+    --amem-premium-badge-fg: #E0C48A;
+    --amem-lock-scrim: rgba(44, 36, 28, 0.45);
+
+    --amem-serif: var(--font-display), "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --amem-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    --amem-text-display: 1.875rem;
+    --amem-text-display-sm: 1.5rem;
+    --amem-text-section: 1.3125rem;
+    --amem-text-verse: 1.375rem;
+    --amem-text-body: 1rem;
+    --amem-text-body-tight: 0.9375rem;
+    --amem-text-soft: 0.8125rem;
+    --amem-text-eyebrow: 0.6875rem;
+    --amem-leading-body: 1.55;
+    --amem-leading-verse: 1.38;
+
+    --amem-r-sm: 10px;
+    --amem-r-md: 16px;
+    --amem-r-lg: 22px;
+    --amem-r-xl: 28px;
+    --amem-pill: 999px;
+    --amem-s1: 4px;
+    --amem-s2: 8px;
+    --amem-s3: 12px;
+    --amem-s4: 16px;
+    --amem-s5: 24px;
+    --amem-s6: 32px;
+    --amem-s7: 48px;
+
+    --amem-sh-soft: 0 10px 36px rgba(44, 36, 28, 0.10);
+    --amem-sh-float: 0 14px 40px rgba(44, 36, 28, 0.14);
+    --amem-sh-inset: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+
+    --amem-ease-presence: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --amem-dur-instant: 80ms;
+    --amem-dur-fast: 140ms;
+    --amem-dur-base: 220ms;
+    --amem-dur-slow: 380ms;
+    --amem-dur-ritual: 680ms;
+    --amem-dur-page: 280ms;
   }
 }
 
@@ -42,10 +118,13 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-size: var(--amem-text-body);
+    line-height: var(--amem-leading-body);
+    background-color: var(--amem-canvas);
     background-image:
-      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(166, 139, 75, 0.08), transparent 50%),
+      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(198, 160, 90, 0.14), transparent 50%),
       radial-gradient(ellipse 60% 40% at 90% 0%, rgba(107, 46, 58, 0.05), transparent 45%),
-      linear-gradient(180deg, #fbf8f3 0%, #f5efe6 48%, #f8f4ee 100%);
+      linear-gradient(180deg, var(--amem-cream-50) 0%, var(--amem-canvas) 48%, var(--amem-cream-100) 100%);
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: clip;
@@ -142,6 +221,163 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-soft-pulse,
   .animate-fade-up {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --amem-dur-instant: 1ms;
+    --amem-dur-fast: 1ms;
+    --amem-dur-base: 1ms;
+    --amem-dur-slow: 1ms;
+    --amem-dur-ritual: 1ms;
+    --amem-dur-page: 1ms;
+  }
+}
+
+@layer utilities {
+  .amem-presence-light {
+    pointer-events: none;
+    position: absolute;
+    top: -40px;
+    left: -30px;
+    z-index: 0;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(198, 160, 90, 0.32) 0%,
+      rgba(198, 160, 90, 0.08) 42%,
+      transparent 70%
+    );
+  }
+
+  .amem-presence-light-center {
+    left: 50%;
+    top: 80px;
+    width: 320px;
+    height: 320px;
+    transform: translateX(-50%);
+    background: radial-gradient(
+      circle,
+      rgba(198, 160, 90, 0.38) 0%,
+      rgba(198, 160, 90, 0.10) 45%,
+      transparent 72%
+    );
+  }
+
+  .amem-paper-grain {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.045;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .amem-ritual-marker {
+    display: inline-block;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--amem-gold-500);
+    box-shadow: 0 0 0 4px var(--amem-gold-080);
+  }
+
+  .amem-ritual-marker-wine {
+    background: var(--amem-wine-700);
+    box-shadow: 0 0 0 4px var(--amem-wine-060);
+  }
+
+  .amem-presence-pulse {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--amem-gold-500);
+    animation: amem-presence-pulse var(--amem-dur-ritual) var(--amem-ease-presence) infinite;
+  }
+
+  @keyframes amem-presence-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 var(--amem-gold-120);
+      opacity: 0.85;
+    }
+    50% {
+      box-shadow: 0 0 0 10px transparent;
+      opacity: 1;
+    }
+  }
+
+  .amem-surface-scene {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--amem-r-lg);
+    background:
+      linear-gradient(165deg, rgba(255, 252, 247, 0.72), rgba(243, 235, 224, 0.92)),
+      radial-gradient(ellipse at 20% 0%, rgba(198, 160, 90, 0.18), transparent 55%);
+    box-shadow: var(--amem-sh-inset);
+  }
+
+  .amem-surface-editorial {
+    position: relative;
+    padding-left: 0.875rem;
+  }
+
+  .amem-surface-editorial::before {
+    content: "";
+    position: absolute;
+    top: 0.15rem;
+    bottom: 0.15rem;
+    left: 0;
+    width: 2px;
+    border-radius: 999px;
+    background: var(--amem-wine-700);
+  }
+
+  .amem-surface-editorial-gold::before {
+    background: var(--amem-gold-500);
+  }
+
+  .amem-surface-field {
+    border-radius: var(--amem-r-md);
+    border: 1px solid color-mix(in srgb, var(--amem-cream-200) 80%, transparent);
+    background: var(--amem-field);
+  }
+
+  .amem-list-row {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--amem-cream-200) 70%, transparent);
+    padding: 0.75rem 0;
+  }
+
+  .amem-scripture-ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--amem-text-soft);
+    letter-spacing: 0.02em;
+    color: var(--amem-ink-700);
+  }
+
+  .amem-scripture-ref::before {
+    content: "";
+    display: inline-block;
+    width: 0.75rem;
+    height: 1px;
+    background: var(--amem-gold-500);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amem-presence-pulse {
     animation: none !important;
   }
 }

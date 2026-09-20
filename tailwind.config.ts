@@ -53,14 +53,24 @@ export default {
         wine: {
           DEFAULT: "#6B2E3A",
           soft: "#8A4452",
+          700: "#6B2E3A",
+          800: "#4A1C2A",
         },
         gold: {
-          DEFAULT: "#A68B4B",
-          soft: "#C4AE78",
+          DEFAULT: "#C6A05A",
+          soft: "#E0C48A",
+          500: "#C6A05A",
+          600: "#A8843E",
         },
         ink: {
           DEFAULT: "#2C241C",
-          soft: "#5C5046",
+          soft: "#5A4E44",
+          900: "#2C241C",
+          700: "#5A4E44",
+        },
+        canvas: {
+          DEFAULT: "#F3EBE0",
+          deep: "#E9DFD0",
         },
       },
       fontFamily: {
@@ -82,11 +92,31 @@ export default {
           "0%, 100%": { opacity: "0.55" },
           "50%": { opacity: "1" },
         },
+        "amem-presence-pulse": {
+          "0%, 100%": {
+            opacity: "0.85",
+            boxShadow: "0 0 0 0 var(--amem-gold-120)",
+          },
+          "50%": {
+            opacity: "1",
+            boxShadow: "0 0 0 10px transparent",
+          },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.7s ease-out both",
         "fade-up-delayed": "fade-up 0.8s ease-out 0.15s both",
         "soft-pulse": "soft-pulse 2.4s ease-in-out infinite",
+        "amem-presence-pulse":
+          "amem-presence-pulse var(--amem-dur-ritual) var(--amem-ease-presence) infinite",
+      },
+      fontSize: {
+        "amem-body": ["var(--amem-text-body)", { lineHeight: "var(--amem-leading-body)" }],
+        "amem-soft": ["var(--amem-text-soft)", { lineHeight: "1.4" }],
+        "amem-eyebrow": [
+          "var(--amem-text-eyebrow)",
+          { lineHeight: "1.3", letterSpacing: "0.14em", fontWeight: "700" },
+        ],
       },
     },
   },
