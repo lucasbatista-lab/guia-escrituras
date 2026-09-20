@@ -16,7 +16,7 @@ function titleFor(type: SavedItemType, key: string): { title: string; href: stri
     const content = getDailyContentForDate(key);
     return {
       title: `${content.scriptureReference} · ${content.title}`,
-      href: "/inicio",
+      href: "/hoje",
     };
   }
   return { title: key, href: null };

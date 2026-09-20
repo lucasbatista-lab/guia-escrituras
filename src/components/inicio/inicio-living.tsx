@@ -180,7 +180,7 @@ export async function InicioLiving({
             }}
           />
           <p className="mt-2.5 text-[13px] font-semibold tracking-[-0.01em] text-ink-soft">
-            {allowsChat && journeyTitle ? "Jornada" : "Caminhos"}
+            Caminhos
           </p>
           <p className="mt-1 text-[11px] leading-snug text-[color:var(--amem-mute)]">
             {allowsChat
