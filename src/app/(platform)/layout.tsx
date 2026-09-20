@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MAIN_CONTENT_ID } from "@/components/a11y/main-content-id";
 import { PlatformNav } from "@/components/platform/platform-nav";
+import { AmemSplashHost } from "@/components/brand/amem-splash-host";
 import {
   getBottomNavPlan,
   getPlatformNavItemsForState,
@@ -26,11 +27,12 @@ export default async function PlatformLayout({
 
   return (
     <div className="min-h-app">
+      <AmemSplashHost />
       <PlatformNav items={navItems} plan={navPlan} />
       <main
         id={MAIN_CONTENT_ID}
         tabIndex={-1}
-        className="platform-main mx-auto w-full max-w-6xl px-4 pb-24 pt-4 outline-none sm:px-6 sm:pt-6 md:ml-60 md:w-[calc(100%-15rem)] md:px-8 md:pb-10 md:pt-8"
+        className="platform-main mx-auto w-full max-w-6xl px-4 pb-28 pt-4 outline-none sm:px-6 sm:pt-6 md:ml-60 md:w-[calc(100%-15rem)] md:px-8 md:pb-10 md:pt-8"
       >
         {children}
       </main>

@@ -197,7 +197,8 @@ export function SoftPaywallSheet({
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 cursor-default border-0 bg-[color:var(--amem-lock-scrim,rgba(44,36,28,0.45))] p-0"
+            className="fixed inset-0 z-40 cursor-default border-0 p-0 backdrop-blur-[6px]"
+            style={{ background: "rgba(247,245,241,0.42)" }}
             aria-label="Fechar painel"
             tabIndex={-1}
             onClick={dismiss}
@@ -212,66 +213,69 @@ export function SoftPaywallSheet({
             className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg outline-none"
           >
             <div
-              className="rounded-t-[28px] border border-border/80 bg-[color:var(--amem-surface,#FFFCF7)] px-5 pb-[max(1.25rem,var(--safe-bottom))] pt-3 shadow-[var(--amem-sh-float,0_14px_40px_rgba(44,36,28,0.14))]"
+              className="rounded-t-[28px] bg-[color:var(--amem-surface,#FFFDFC)] px-[22px] pb-[max(2.5rem,var(--safe-bottom))] pt-7 shadow-[0_-18px_48px_rgba(25,22,19,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
               style={{
                 transition: `transform var(--amem-dur-base, 220ms) var(--amem-ease-presence, cubic-bezier(0.22, 0.61, 0.36, 1))`,
               }}
             >
               <div
-                className="mx-auto mb-3 h-1 w-10 rounded-full bg-sand-200"
+                className="mx-auto mb-[18px] h-1 w-9 rounded-full bg-[rgba(25,22,19,0.12)]"
                 aria-hidden
               />
-              <div className="flex items-center justify-between gap-3">
-                <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-ink-soft">
-                  <span
-                    aria-hidden
-                    className="inline-block h-1.5 w-1.5 rounded-full"
-                    style={{ background: "var(--amem-gold-500, #C6A05A)" }}
-                  />
-                  {copy.eyebrow}
-                </p>
-                <PremiumBadge label={copy.badgeLabel} />
-              </div>
+              <div
+                aria-hidden
+                className="mb-[18px] h-1 w-10 rounded"
+                style={{
+                  background:
+                    "linear-gradient(90deg, var(--amem-wine-deep), var(--amem-brass))",
+                }}
+              />
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
+                {copy.eyebrow}
+              </p>
               <h2
                 id={titleId}
-                className="mt-2 font-display text-[1.3125rem] text-ink"
+                className="mt-2 text-2xl font-bold tracking-[-0.025em] leading-tight text-ink"
               >
                 {copy.title}
               </h2>
               <p
                 id={descriptionId}
-                className="mt-2 text-[0.9375rem] leading-relaxed text-ink-soft"
+                className="mt-2.5 text-[15px] leading-relaxed text-ink-soft"
               >
                 {copy.body}
               </p>
-              <p className="mt-2 text-xs text-ink-soft">
-                Recurso:{" "}
-                <span className="font-medium text-ink">{copy.resourceLabel}</span>
-                {" · "}
-                Plano mínimo:{" "}
-                <span className="font-medium text-ink">{copy.minimumPlanName}</span>
-              </p>
-              <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-ink-soft">
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <p className="text-xs text-[color:var(--amem-mute)]">
+                  Recurso:{" "}
+                  <span className="font-medium text-ink">{copy.resourceLabel}</span>
+                  {" · "}
+                  Plano mínimo:{" "}
+                  <span className="font-medium text-ink">{copy.minimumPlanName}</span>
+                </p>
+                <PremiumBadge label={copy.badgeLabel} />
+              </div>
+              <ul className="sr-only">
                 {copy.benefits.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
               <Button
                 asChild
-                variant="gold"
-                className="mt-4 min-h-11 w-full text-base font-semibold"
+                variant="premium"
+                className="mt-[22px] min-h-[52px] w-full text-[15px] font-bold"
               >
                 <Link href={copy.ctaHref}>{copy.ctaLabel}</Link>
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                className="mt-1 min-h-11 w-full text-ink-soft"
+                className="mt-2.5 min-h-[52px] w-full"
                 onClick={dismiss}
               >
                 {copy.dismissLabel}
               </Button>
-              <p className="mt-3 text-center text-[0.8125rem] text-ink-soft">
+              <p className="mt-3 text-center text-[0.8125rem] text-[color:var(--amem-mute)]">
                 {copy.footerNote}
               </p>
             </div>

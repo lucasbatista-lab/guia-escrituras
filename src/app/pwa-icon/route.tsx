@@ -22,7 +22,7 @@ export function GET(request: Request) {
           justifyContent: "center",
           position: "relative",
           background:
-            "radial-gradient(circle at 50% 38%, #fffaf2 0%, #f5ede2 72%, #eadfce 100%)",
+            "radial-gradient(circle at 50% 38%, #FFFDFC 0%, #F7F5F1 72%, #F0EDE7 100%)",
           borderRadius: Math.round(size * 0.18),
         }}
       >
@@ -33,7 +33,7 @@ export function GET(request: Request) {
             width: Math.round(size * 0.045),
             height: Math.round(size * 0.045),
             borderRadius: "999px",
-            background: "#c6a05a",
+            background: "#B8965A",
           }}
         />
         <div
@@ -50,7 +50,7 @@ export function GET(request: Request) {
             style={{
               width: pageWidth,
               height: pageHeight,
-              border: `${Math.max(5, Math.round(size * 0.025))}px solid #6b2e3a`,
+              border: `${Math.max(5, Math.round(size * 0.025))}px solid #5A2232`,
               borderRadius: `${Math.round(size * 0.08)}px ${Math.round(size * 0.025)}px ${Math.round(size * 0.025)}px ${Math.round(size * 0.08)}px`,
               transform: "skewY(8deg)",
               background: "rgba(107,46,58,0.06)",
@@ -60,7 +60,7 @@ export function GET(request: Request) {
             style={{
               width: pageWidth,
               height: pageHeight,
-              border: `${Math.max(5, Math.round(size * 0.025))}px solid #6b2e3a`,
+              border: `${Math.max(5, Math.round(size * 0.025))}px solid #5A2232`,
               borderRadius: `${Math.round(size * 0.025)}px ${Math.round(size * 0.08)}px ${Math.round(size * 0.08)}px ${Math.round(size * 0.025)}px`,
               transform: "skewY(-8deg)",
               background: "rgba(107,46,58,0.06)",

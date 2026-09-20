@@ -18,7 +18,7 @@ export default function OpenGraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "linear-gradient(145deg, #FBF8F3 0%, #F5EFE6 55%, #E8DCC8 100%)",
+          background: "linear-gradient(155deg, #3A1520 0%, #5A2232 42%, #6B3A4A 78%, #7A4A52 100%)",
           padding: "72px 80px",
         }}
       >
@@ -34,8 +34,8 @@ export default function OpenGraphImage() {
               width: 64,
               height: 64,
               borderRadius: 14,
-              background: "#6B2E3A",
-              color: "#FBF8F3",
+              background: "linear-gradient(90deg, #D4C09A, #B8965A)",
+              color: "#3A1520",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -49,7 +49,7 @@ export default function OpenGraphImage() {
             style={{
               fontSize: 42,
               fontWeight: 700,
-              color: "#2C241C",
+              color: "#FFFDFC",
               letterSpacing: "-0.02em",
             }}
           >
@@ -62,7 +62,7 @@ export default function OpenGraphImage() {
             style={{
               fontSize: 54,
               fontWeight: 700,
-              color: "#2C241C",
+              color: "#FFFDFC",
               lineHeight: 1.15,
               letterSpacing: "-0.03em",
             }}
@@ -72,7 +72,7 @@ export default function OpenGraphImage() {
           <div
             style={{
               fontSize: 28,
-              color: "#5C5046",
+              color: "rgba(255,253,252,0.72)",
               lineHeight: 1.35,
               maxWidth: 780,
             }}
@@ -86,14 +86,14 @@ export default function OpenGraphImage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderTop: "1px solid rgba(44, 36, 28, 0.12)",
+            borderTop: "1px solid rgba(255, 253, 252, 0.14)",
             paddingTop: 28,
           }}
         >
-          <div style={{ fontSize: 22, color: "#5C5046" }}>
+          <div style={{ fontSize: 22, color: "rgba(255,253,252,0.72)" }}>
             Inteligência artificial · baseada nas Escrituras
           </div>
-          <div style={{ fontSize: 22, fontWeight: 600, color: "#6B2E3A" }}>
+          <div style={{ fontSize: 22, fontWeight: 600, color: "#D4C09A" }}>
             amemchat.com.br
           </div>
         </div>

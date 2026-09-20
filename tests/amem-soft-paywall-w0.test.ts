@@ -46,9 +46,11 @@ describe("W0 soft paywall foundation", () => {
     expect(copy.minimumPlanName).toBe("Essencial");
     expect(copy.badgeLabel).toBe("Essencial");
     expect(copy.resourceLabel).toBe("Conversar");
-    expect(copy.eyebrow).toBe("CONVERSAR");
+    expect(copy.title).toBe("Essencial abre Conversar");
+    expect(copy.body).toMatch(/Hoje e Espaço continuam grátis/i);
+    expect(copy.eyebrow).toBe("ACOMPANHAMENTO");
     expect(copy.eyebrow.toLowerCase()).not.toContain("aprofundar");
-    expect(copy.dismissLabel).toBe("Agora não");
+    expect(copy.dismissLabel).toBe("Ficar no grátis");
     expect(copy.leaveLabel).toBe("Voltar ao Hoje");
     expect(copy.dismissHref).toBe("/inicio");
     expect(copy.footerNote).toMatch(/Conta grátis continua/i);
@@ -66,7 +68,7 @@ describe("W0 soft paywall foundation", () => {
     expect(copy.badgeLabel.toLowerCase()).not.toBe("profundo");
     expect(copy.eyebrow).toBe("CAMINHOS");
     expect(copy.eyebrow.toLowerCase()).not.toContain("aprofundar");
-    expect(copy.dismissLabel).toBe("Agora não");
+    expect(copy.dismissLabel).toBe("Ficar no grátis");
     expect(copy.leaveLabel).toBe("Voltar ao Hoje");
     expect(copy.dismissHref).toBe("/inicio");
     expect(canUseReadingJourneys("caminho")).toBe(true);
@@ -144,7 +146,7 @@ describe("W0 soft paywall foundation", () => {
     }
   });
 
-  it("SoftPaywallSheet is dismissible with a11y contract and gold Button primitive", () => {
+  it("SoftPaywallSheet is dismissible with a11y contract and premium Button primitive", () => {
     const sheet = readSrc(
       "src",
       "components",
@@ -160,13 +162,13 @@ describe("W0 soft paywall foundation", () => {
     expect(sheet).toContain("PremiumBadge");
     expect(sheet).toContain("LockPill");
     expect(sheet).toContain("Escape");
-    expect(sheet).toContain('variant="gold"');
-    // Gold CTA uses Button variant="gold" (ritual dot may still use token color).
+    expect(sheet).toContain('variant="premium"');
+    // Premium CTA = wine + brass hairline (V17); gold alias remains on Button.
     expect(sheet).toMatch(
-      /<Button[\s\S]*?variant="gold"[\s\S]*?<Link href=\{copy\.ctaHref\}/,
+      /<Button[\s\S]*?variant="premium"[\s\S]*?<Link href=\{copy\.ctaHref\}/,
     );
     expect(sheet).not.toMatch(
-      /<Button[^>]*variant="gold"[^>]*style=/,
+      /<Button[^>]*variant="premium"[^>]*style=/,
     );
     // Focus trap + scroll lock + restore hooks present.
     expect(sheet).toContain("listFocusable");
