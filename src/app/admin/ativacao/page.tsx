@@ -6,7 +6,7 @@ import {
   AdminOpLink,
   AdminSection,
 } from "@/components/admin/admin-primitives";
-import { AdminMetricsError, getAdminActivationMetrics } from "@/lib/admin";
+import { AdminMetricsError, getAdminActivationMetrics, getAdminFreeFunnelReport } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +28,8 @@ export default async function AdminAtivacaoPage() {
     }
     throw error;
   }
+
+  const funnel = await getAdminFreeFunnelReport().catch(() => null);
 
   return (
     <div className="space-y-8">
@@ -88,6 +90,61 @@ export default async function AdminAtivacaoPage() {
           </AdminOpLink>
         </div>
       </AdminSection>
+
+      {funnel ? (
+        <AdminSection
+          title="Funil FREE"
+          description="Contagens de product_events sem texto espiritual. Assinaturas continuam em Aquisição. D1 deriva viewed/completed/saved — não usa check-in."
+        >
+          <div className="grid gap-3 sm:grid-cols-3">
+            {(["24h", "7d", "30d"] as const).map((window) => {
+              const row = funnel.windows[window];
+              return (
+                <div
+                  key={window}
+                  className="rounded-lg border border-border/60 px-3 py-3 text-sm"
+                >
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+                    {window}
+                  </p>
+                  <dl className="mt-2 space-y-1 text-ink-soft">
+                    <div className="flex justify-between gap-2">
+                      <dt>Contas free</dt>
+                      <dd className="text-ink">{row.free_account_created}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt>Abriram Hoje</dt>
+                      <dd className="text-ink">{row.daily_opened}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt>Concluíram</dt>
+                      <dd className="text-ink">{row.daily_completed}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt>Compartilharam</dt>
+                      <dd className="text-ink">{row.daily_shared}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt>Clicaram premium</dt>
+                      <dd className="text-ink">{row.premium_prompt_clicked}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt>Chat iniciado</dt>
+                      <dd className="text-ink">{row.chat_started}</dd>
+                    </div>
+                  </dl>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-sm text-ink">
+            D1 ({funnel.d1.cohortDate}): {funnel.d1.returnedNextDay} de{" "}
+            {funnel.d1.activeOnCohort}
+            {funnel.d1.ratePct == null ? "" : ` (${funnel.d1.ratePct}%)`}.{" "}
+            <span className="text-ink-soft">{funnel.d1.note}</span>
+          </p>
+        </AdminSection>
+      ) : null}
 
       <AdminSection
         title="Cadastros"

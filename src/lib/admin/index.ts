@@ -90,6 +90,13 @@ export {
   type AdminJourneyProgressRow,
 } from "./activation";
 export {
+  getAdminFreeFunnelReport,
+  aggregateProductEventFunnel,
+  deriveD1Return,
+  type FreeFunnelReport,
+  type FreeFunnelWindow,
+} from "./free-funnel";
+export {
   getAdminCrisisSnapshot,
   CRISIS_MARKER_MODEL_VALUE,
   type AdminCrisisSnapshot,
