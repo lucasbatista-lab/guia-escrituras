@@ -32,7 +32,6 @@ import {
 import { RESPONSE_FORMAT_HINT } from "@/lib/conversations/response-format-hint";
 import type { PlanKey } from "@/lib/entitlements";
 import { getPlanUpsellSuggestion } from "@/lib/marketing/plan-upsell";
-import { cn } from "@/lib/utils";
 import {
   parseRetryAfterHeader,
   resolveChatClientError,
