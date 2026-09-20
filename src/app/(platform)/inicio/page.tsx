@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DailyHomeSection } from "@/components/daily/daily-home-section";
+import { InicioLiving } from "@/components/inicio/inicio-living";
 import { JourneysInicioCard } from "@/components/journeys/journeys-inicio-card";
 import { PersonalSpaceCard } from "@/components/workspace/personal-space-card";
 import { ActivationSessionChecklist } from "@/components/platform/activation-session-checklist";
@@ -292,32 +293,11 @@ export default async function InicioPage() {
 
   if (state === "confirmed_without_plan" || state === "ended") {
     return (
-      <div className="space-y-6">
-        <header>
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-            Hoje
-          </p>
-          <h1 className="mt-1 font-display text-2xl text-ink sm:text-3xl">
-            {greeting}
-          </h1>
-          <p className="mt-1 text-sm text-ink-soft">
-            Um espaço diário de fé, no seu ritmo. Conversar continua sendo um
-            recurso dos planos pagos.
-          </p>
-        </header>
-        <DailyHomeSection userId={auth.userId} allowsChat={false} />
-        <PersonalSpaceCard userId={auth.userId} />
-        <p className="text-sm text-ink-soft">
-          Quando quiser aprofundar em conversa,{" "}
-          <Link
-            href="/planos"
-            className="font-medium text-ink underline-offset-4 hover:underline"
-          >
-            veja os planos
-          </Link>
-          .
-        </p>
-      </div>
+      <InicioLiving
+        greeting={greeting}
+        allowsChat={false}
+        userId={auth.userId}
+      />
     );
   }
 
@@ -340,151 +320,41 @@ export default async function InicioPage() {
 
   if (!returnSelection) {
     return (
-      <div className="space-y-6">
-        <header>
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-            Hoje
-          </p>
-          <h1 className="mt-1 font-display text-2xl text-ink sm:text-3xl">
-            {greeting}
-          </h1>
-          {state === "canceling_at_period_end" ? (
-            <p className="mt-1 text-sm text-ink-soft">
-              Seu acesso continua até o fim do período pago.
-            </p>
-          ) : null}
-        </header>
-
-        <DailyHomeSection userId={auth.userId} allowsChat={allowsChat} />
-
-        <section
-          aria-labelledby="first-reflection-heading"
-          className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.08] via-card to-sand-100/80 p-5 sm:p-7"
-        >
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-wine">
-            Sua primeira reflexão
-          </p>
-          <h2 id="first-reflection-heading" className="mt-2 font-display text-2xl text-ink">
-            O que está pesando hoje?
-          </h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Conte com suas palavras. Não é preciso formular uma pergunta perfeita.
-          </p>
-          <Button asChild className="mt-4 min-h-12 w-full bg-wine hover:bg-wine-soft sm:w-auto">
-            <Link href="/conversar">Começar uma reflexão</Link>
-          </Button>
-        </section>
-
-        <PersonalSpaceCard userId={auth.userId} />
-
-        <QuickActions showPersonalize={!auth.spiritualProfile.onboardingCompleted} />
-        <ActivationSessionChecklist planKey={auth.planKey} />
-        <ThemeShortcutsSection headingId="theme-shortcuts-heading" />
-        <JourneysInicioCard userId={auth.userId} planKey={auth.planKey} />
-      </div>
+      <InicioLiving
+        greeting={greeting}
+        allowsChat={allowsChat}
+        userId={auth.userId}
+        planLabel={plan?.name ?? (allowsChat ? "Ativo" : null)}
+        journeyTitle={journeyCandidate?.title ?? null}
+        journeySubtitle={journeyCandidate?.subtitle ?? null}
+        journeyHref={journeyCandidate?.href ?? null}
+      />
     );
   }
 
   const { primary, secondary } = returnSelection;
-  const primaryTone =
-    primary.kind === "chat" && resume
-      ? resumeReturnTone(resume.updatedAt)
-      : resumeReturnTone(primary.updatedAt);
-  const returnCopy = resumeReturnCopy(primaryTone);
-  const primaryEyebrow =
-    primary.kind === "journey" ? "Retomar jornada" : returnCopy.eyebrow;
-  const primaryBody =
+  const chatPrimary = primary.kind === "chat" ? primary : secondary?.kind === "chat" ? secondary : null;
+  const journeyPrimary =
     primary.kind === "journey"
-      ? "Sua trilha guiada continua disponível. Retome a etapa atual ou abra uma conversa livre quando quiser."
-      : returnCopy.body;
+      ? primary
+      : secondary?.kind === "journey"
+        ? secondary
+        : journeyCandidate;
 
   return (
-    <div className="space-y-6">
-      <header>
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-          Hoje
-        </p>
-        <h1 className="mt-1 font-display text-2xl text-ink sm:text-3xl">
-          {greeting}
-        </h1>
-        {state === "canceling_at_period_end" ? (
-          <p className="mt-1 text-sm text-ink-soft">
-            Seu acesso continua até o fim do período pago.
-          </p>
-        ) : null}
-      </header>
-
-      <DailyHomeSection userId={auth.userId} allowsChat={allowsChat} />
-
-      <section
-        aria-labelledby="resume-heading"
-        className="rounded-3xl border border-wine/25 bg-gradient-to-br from-wine/[0.09] via-card to-sand-100/80 p-5 sm:p-7"
-      >
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-          {primaryEyebrow}
-        </p>
-        <h2
-          id="resume-heading"
-          className="mt-2 font-display text-2xl text-ink sm:text-3xl"
-        >
-          {primary.title}
-        </h2>
-        <time
-          dateTime={primary.updatedAt}
-          className="mt-1 block text-xs text-ink-soft"
-        >
-          Última atividade · {formatConversationActivity(primary.updatedAt)}
-        </time>
-        {primary.subtitle ? (
-          <p className="mt-3 line-clamp-1 max-w-xl text-sm leading-relaxed text-ink-soft">
-            {primary.subtitle}
-          </p>
-        ) : (
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            {primaryBody}
-          </p>
-        )}
-        <Button asChild className="mt-5 min-h-12 w-full bg-wine hover:bg-wine-soft sm:w-auto">
-          <Link href={primary.href}>{primary.cta}</Link>
-        </Button>
-        {secondary ? (
-          <p className="mt-4 text-sm text-ink-soft">
-            Também em andamento:{" "}
-            <Link
-              href={secondary.href}
-              className="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              {secondary.kind === "journey"
-                ? secondary.title
-                : "Retomar conversa"}
-            </Link>
-          </p>
-        ) : null}
-      </section>
-
-      <PersonalSpaceCard userId={auth.userId} />
-
-      <QuickActions />
-
-      {journeyCandidate && primary.kind !== "journey" ? (
-        <section
-          aria-labelledby="today-journey-heading"
-          className="flex flex-col gap-3 border-t border-border/70 pt-5 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.12em] text-gold">
-              Jornada em andamento
-            </p>
-            <h2 id="today-journey-heading" className="mt-1 font-display text-lg text-ink">
-              {journeyCandidate.title}
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">{journeyCandidate.subtitle}</p>
-          </div>
-          <Button asChild variant="outline" className="min-h-11 shrink-0">
-            <Link href={journeyCandidate.href}>Continuar Jornada</Link>
-          </Button>
-        </section>
-      ) : null}
-    </div>
+    <InicioLiving
+      greeting={greeting}
+      allowsChat={allowsChat}
+      userId={auth.userId}
+      planLabel={plan?.name ?? "Ativo"}
+      journeyTitle={journeyPrimary?.title ?? null}
+      journeySubtitle={journeyPrimary?.subtitle ?? null}
+      journeyHref={journeyPrimary?.href ?? null}
+      chatTitle={chatPrimary?.title ?? resume?.title ?? null}
+      chatHref={chatPrimary?.href ?? (resume ? `/conversar?c=${resume.conversationId}` : null)}
+      chatPreview={
+        chatPrimary?.subtitle ?? resume?.preview ?? null
+      }
+    />
   );
 }

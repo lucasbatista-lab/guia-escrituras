@@ -29,11 +29,12 @@ describe("personal workspace privacy and access", () => {
     );
   });
 
-  it("home exposes Seu espaço without turning inicio into a portal", () => {
+  it("home exposes living memory without turning inicio into a portal", () => {
     const inicio = read("src", "app", "(platform)", "inicio", "page.tsx");
+    expect(inicio).toContain("InicioLiving");
+    // Special states still use PersonalSpaceCard; living home routes memory via Espaço.
     expect(inicio).toContain("PersonalSpaceCard");
     expect(inicio).toContain("DailyHomeSection");
-    expect(inicio.match(/PersonalSpaceCard/g)?.length).toBeGreaterThanOrEqual(4);
   });
 
   it("FREE and paid pages exist for prayers, saved, and journal", () => {
