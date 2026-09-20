@@ -197,26 +197,42 @@
     padding-right: max(0px, var(--safe-right));
   }
 
+  /* Composer sits above floating bottom nav on mobile Conversar */
+  .safe-composer-above-nav {
+    padding-bottom: max(5.75rem, calc(4.75rem + var(--safe-bottom)));
+    padding-left: max(0px, var(--safe-left));
+    padding-right: max(0px, var(--safe-right));
+  }
+
+  @media (min-width: 768px) {
+    .safe-composer-above-nav {
+      padding-bottom: max(1rem, var(--safe-bottom));
+    }
+  }
+
   .min-h-app {
     min-height: 100vh;
     min-height: 100dvh;
   }
 
   .chat-shell-min-h {
-    min-height: calc(100vh - 4.5rem);
-    min-height: calc(100dvh - 4.5rem);
-    height: calc(100vh - 4.5rem);
-    height: calc(100dvh - 4.5rem);
+    min-height: calc(100vh - 1.25rem);
+    min-height: calc(100dvh - 1.25rem);
+    height: calc(100vh - 1.25rem);
+    height: calc(100dvh - 1.25rem);
   }
 
   .platform-main:has(.chat-shell-min-h) {
-    padding-bottom: 0.75rem;
+    padding-bottom: 0.25rem;
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 768px) {
     .chat-shell-min-h {
       min-height: 70vh;
       height: auto;
+    }
+    .platform-main:has(.chat-shell-min-h) {
+      padding-bottom: 0.75rem;
     }
   }
 
@@ -607,6 +623,131 @@
   .amem-splash-fade {
     animation: amem-splash-fade 700ms var(--amem-ease-presence) both;
   }
+
+
+  /* ——— Conversar V17 editorial grammar ——— */
+  .amem-lex-honesty {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--amem-mute);
+  }
+
+  .amem-lex-user {
+    margin-left: auto;
+    max-width: min(100%, 22rem);
+    padding: 10px 13px;
+    border-radius: 18px 18px 6px 18px;
+    background: linear-gradient(180deg, #2A2420, var(--amem-ink));
+    color: #FFFDFC;
+    font-size: 13.5px;
+    line-height: 1.45;
+    box-shadow: 0 6px 16px rgba(25, 22, 19, 0.14);
+  }
+
+  .amem-lex-group {
+    margin-right: 0.5rem;
+    padding: 0 0 0 14px;
+    border-left: 2.5px solid var(--amem-wine);
+    max-width: 40rem;
+  }
+
+  .amem-lex-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amem-plum);
+    padding: 0 2px 8px;
+  }
+
+  .amem-lex-body {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--amem-ink);
+    padding: 0 2px 12px;
+    white-space: pre-wrap;
+  }
+
+  .amem-lex-scripture {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(235, 231, 225, 0.70);
+    box-shadow: inset 0 0 0 1px var(--amem-hairline);
+    border-top: 1px solid rgba(184, 150, 90, 0.28);
+  }
+
+  .amem-lex-scripture-ref {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amem-wine);
+    margin-top: 8px;
+  }
+
+  .amem-lex-next {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0 2px;
+  }
+
+  .amem-lex-chip {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255, 253, 252, 0.85);
+    color: var(--amem-ink-soft);
+    box-shadow: inset 0 0 0 1px var(--amem-hairline-wine);
+  }
+
+  .amem-lex-chip-primary {
+    background: var(--amem-wine-deep);
+    color: #FFFDFC;
+    box-shadow: none;
+  }
+
+  .amem-lex-chip-profundo {
+    background: transparent;
+    color: var(--amem-mute);
+    box-shadow: inset 0 0 0 1px rgba(122, 114, 104, 0.35);
+    font-weight: 500;
+  }
+
+  .amem-lex-composer {
+    border-radius: 18px;
+    background: rgba(255, 253, 252, 0.94);
+    box-shadow: 0 8px 22px var(--amem-shadow), inset 0 0 0 1px var(--amem-hairline);
+  }
+
+  .amem-lex-send {
+    background: var(--amem-wine-deep);
+    color: #FFFDFC;
+  }
+
+  .amem-lex-send:disabled {
+    opacity: 0.45;
+  }
+
+  .amem-badge-essencial {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--amem-wine);
+    background: rgba(90, 34, 50, 0.08);
+    box-shadow: inset 0 0 0 1px var(--amem-hairline-wine);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .amem-splash-sig,
     .amem-splash-fade {

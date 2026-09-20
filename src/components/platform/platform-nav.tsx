@@ -123,7 +123,6 @@ export function PlatformNav({
 
   const bottomTabs = plan ? getBottomNavTabs(plan) : null;
   const showBottomNav = Boolean(bottomTabs);
-  const isChat = pathname === "/conversar" || pathname.startsWith("/conversar/");
   const bottomHrefs = new Set(bottomTabs?.map((tab) => tab.href) ?? []);
   const secondaryItems = items.filter((item) => !bottomHrefs.has(item.href));
   // Paid: keep Espaço reachable from Menu after tab morph.
@@ -139,7 +138,7 @@ export function PlatformNav({
   return (
     <>
       {/* Mobile app shell: no sticky website wordmark when bottom nav is present. */}
-      {showBottomNav && !isChat ? (
+      {showBottomNav ? (
         <div className="pt-safe md:hidden" aria-hidden="true" />
       ) : (
         <header className="sticky top-0 z-30 border-b border-border/60 bg-card/90 pt-safe backdrop-blur-md md:hidden">
@@ -194,7 +193,7 @@ export function PlatformNav({
         </div>
       </aside>
 
-      {showBottomNav && bottomTabs && !isChat ? (
+      {showBottomNav && bottomTabs ? (
         <nav
           className="amem-bottom-nav amem-bottom-nav-float fixed z-40 md:hidden"
           aria-label="Navegação principal"

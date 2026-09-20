@@ -14,6 +14,7 @@ describe("mobile accessibility & resilience polish", () => {
     expect(css).toContain("--safe-bottom");
     expect(css).toContain("safe-area-inset-top");
     expect(css).toContain("safe-composer-pad");
+    expect(css).toContain("safe-composer-above-nav");
     expect(css).toContain("safe-header-pad");
     expect(css).toContain("chat-shell-min-h");
     expect(css).toContain("100dvh");
@@ -54,7 +55,7 @@ describe("mobile accessibility & resilience polish", () => {
     expect(marketing).toContain("Escape");
     expect(marketing).toContain("min-h-11");
     expect(chat).toContain("chat-shell-min-h");
-    expect(chat).toContain("safe-composer-pad");
+    expect(chat).toContain("safe-composer-above-nav");
     expect(chat).toContain("overflow-x-hidden");
     expect(chat).toContain("text-base");
     expect(chat).toContain("max-h-40");

@@ -58,13 +58,15 @@ describe("Wave 3A V17 brand splash share paywall nav", () => {
 describe("Wave 3A.1 mobile shell / icons / share export", () => {
   it("hides sticky mobile wordmark when bottom nav is active", () => {
     const nav = read("src", "components", "platform", "platform-nav.tsx");
-    expect(nav).toContain("showBottomNav && !isChat");
+    expect(nav).toContain("showBottomNav");
     expect(nav).toContain("pt-safe");
     // Desktop sidebar keeps brand wordmark
     expect(nav).toContain("brand.name");
     expect(nav).toContain("md:flex");
-    // Must not always render sticky mobile chrome wordmark link
-    expect(nav).toMatch(/showBottomNav && !isChat \?[\s\S]*pt-safe/);
+    // Conversar keeps floating bottom nav; no sticky Amém Chat header
+    expect(nav).toMatch(/showBottomNav \?[\s\S]*pt-safe/);
+    expect(nav).not.toContain("isChat");
+    expect(nav).toContain("showBottomNav && bottomTabs");
   });
 
   it("uses V15 custom nav icons instead of Lucide Home/Sparkles/Waypoints", () => {

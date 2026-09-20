@@ -535,15 +535,61 @@ export function ChatPanel({
     !canDeepen && !suppressCommercialPrompts && !chatFeatureDisabled;
 
 
+  const lastAssistantIndex = (() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i]?.role === "assistant" && !messages[i]?.meta?.streaming) {
+        return i;
+      }
+    }
+    return -1;
+  })();
+
+  function applyPrayGesture(message: UiMessage) {
+    const follow = message.meta?.followUpQuestion?.trim();
+    const seed =
+      follow ||
+      message.content
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .find((line) => line.length > 12) ||
+      "Senhor, estou aqui.";
+    const clipped = seed.length > 160 ? `${seed.slice(0, 160).trim()}…` : seed;
+    setInput(`Quero orar a partir desta frase: “${clipped}”`);
+    setStickToBottom(true);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
+  function applyShortVerseGesture(message: UiMessage) {
+    const refs = message.meta?.biblicalReferences ?? [];
+    if (refs.length === 0) return;
+    const label = refs
+      .slice(0, 2)
+      .map((ref) => formatBiblicalReference(ref))
+      .join(" · ");
+    setInput(
+      `Pode me dar um versículo curto para guardar hoje, a partir de ${label}?`,
+    );
+    setStickToBottom(true);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
   return (
-    <div className="chat-shell-min-h -mx-4 flex flex-col overflow-x-hidden overflow-y-hidden border-y border-border/80 bg-card/80 shadow-[0_8px_30px_rgba(44,36,28,0.04)] sm:mx-0 sm:rounded-2xl sm:border">
-      <header className="shrink-0 border-b border-border/70 px-4 py-2 sm:px-5 sm:py-3">
-        <div className="flex min-h-11 items-center justify-between gap-3">
+    <div className="chat-shell-min-h -mx-4 flex flex-col overflow-x-hidden overflow-y-hidden sm:mx-0 sm:rounded-2xl sm:border sm:border-border/60 sm:bg-card/40">
+      <header className="shrink-0 px-4 pb-2 pt-1 sm:px-5 sm:pt-3">
+        <div className="flex min-h-11 items-end justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-display text-lg text-ink sm:text-xl">Reflexão</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="font-display text-[26px] leading-none text-ink">
+                Conversar
+              </h1>
+              <span className="amem-badge-essencial">Essencial</span>
+            </div>
             {profileBits ? (
-              <p className="truncate text-xs text-ink-soft">{profileBits}</p>
+              <p className="mt-1 truncate text-xs text-ink-soft">{profileBits}</p>
             ) : null}
+            <p className="amem-lex-honesty mt-1.5">
+              Companheiro editorial · não a voz de Deus
+            </p>
             <p className="sr-only">
               Experiência com inteligência artificial baseada nas Escrituras,
               não voz divina.
@@ -561,7 +607,7 @@ export function ChatPanel({
       <div
         ref={scrollerRef}
         onScroll={onScroll}
-        className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto px-4 py-4 font-chat sm:px-5 sm:py-5"
+        className="min-h-0 flex-1 space-y-3 overflow-x-hidden overflow-y-auto px-4 py-3 font-chat sm:px-5 sm:py-4"
       >
         {historyMayBeTruncated ? (
           <InlineNotice tone="info">
@@ -573,12 +619,12 @@ export function ChatPanel({
         {showEmptyState ? (
           <div className="mx-auto max-w-[40rem] space-y-4 py-2 sm:py-5">
             <h2 className="font-display text-xl text-ink sm:text-2xl">
-              Escreva o que você está vivendo
+              Escreva com honestidade
             </h2>
             <p className="text-sm leading-relaxed text-ink-soft">
               Não precisa organizar tudo antes. Conte a situação com suas
-              próprias palavras, e o Amém Chat ajudará a refletir à luz das
-              Escrituras e a pensar em próximos passos possíveis.
+              próprias palavras — o Amém ajuda a refletir à luz das Escrituras,
+              sem fingir a voz de Deus.
             </p>
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
@@ -589,7 +635,7 @@ export function ChatPanel({
                   <button
                     key={theme.label}
                     type="button"
-                    className="min-h-11 rounded-full border border-border/70 bg-card px-3 text-sm text-ink transition hover:border-wine/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="amem-lex-chip min-h-11"
                     onClick={() => {
                       setInput(theme.prompt);
                       requestAnimationFrame(() => inputRef.current?.focus());
@@ -608,271 +654,316 @@ export function ChatPanel({
             </p>
             {canDeepen && !suppressCommercialPrompts && !deepenFeatureDisabled ? (
               <p className="text-xs leading-relaxed text-ink-soft">
-                Em situações complexas, use “Aprofundar este tema” sob uma
-                resposta — ou a opção secundária no campo de mensagem — antes de enviar.
+                Em situações complexas, use “Aprofundar · Profundo” sob uma
+                resposta — ou a opção secundária no campo — antes de enviar.
               </p>
             ) : null}
           </div>
         ) : null}
 
-        {messages.map((message) => (
-          <article
-            key={message.id}
-            aria-label={
-              message.role === "user" ? "Sua mensagem" : "Resposta do Amém Chat"
-            }
-            className={cn(
-              "max-w-[40rem] rounded-2xl px-4 py-3.5",
-              message.role === "user"
-                ? "ml-auto rounded-br-md bg-ink text-sand-50"
-                : "rounded-bl-md border border-border/70 bg-sand-50/95 text-ink",
-            )}
-          >
-            <p className="whitespace-pre-wrap text-[15px] leading-[1.65]">
-              {message.content}
-            </p>
-            {message.role === "assistant" && message.meta?.deepened ? (
-              <p className="mt-2 text-xs font-medium text-wine">
-                Resposta aprofundada · só nesta mensagem
-              </p>
-            ) : null}
-            {message.role === "assistant" && message.meta?.deepened ? (
-              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                Você pode seguir conversando normalmente. Aprofundar é opcional
-                e vale só para o próximo envio se você marcar de novo.
-              </p>
-            ) : null}
-            {message.meta && !message.meta.streaming ? (
-              <AssistantMetaFooter meta={message.meta} />
-            ) : null}
-            {message.role === "assistant" &&
-            deepenEligible &&
+        {messages.map((message, index) => {
+          const isLastAssistant = index === lastAssistantIndex;
+          if (message.role === "user") {
+            return (
+              <article
+                key={message.id}
+                aria-label="Sua mensagem"
+                className="amem-lex-user"
+              >
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              </article>
+            );
+          }
+
+          const refs = message.meta?.biblicalReferences ?? [];
+          const hasRefs = refs.length > 0 && !message.meta?.streaming;
+          const showGestures =
+            isLastAssistant &&
             !loading &&
             !chatFeatureDisabled &&
             message.content.trim().length > 0 &&
-            message.meta?.safetyMode !== "crisis" &&
-            !message.meta?.deepened ? (
-              <div className="mt-3 border-t border-border/50 pt-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="min-h-11 w-full border-wine/25 text-ink sm:w-auto"
-                  aria-pressed={preferDeep}
-                  onClick={() => activateDeepenFromReply()}
-                >
-                  Aprofundar este tema
-                </Button>
-                <p className="mt-2 text-xs leading-relaxed text-ink-soft">
-                  Não envia sozinho — ativa o modo no campo de mensagem para a
-                  próxima mensagem.
-                </p>
+            message.meta?.safetyMode !== "crisis";
+
+          return (
+            <article
+              key={message.id}
+              aria-label="Resposta do Amém Chat"
+              className="space-y-2"
+            >
+              <div className="amem-lex-group">
+                <div className="amem-lex-label">Resposta</div>
+                <p className="amem-lex-body">{message.content}</p>
+                {message.meta?.deepened ? (
+                  <p className="mb-2 px-0.5 text-xs font-medium text-wine">
+                    Resposta aprofundada · só nesta mensagem
+                  </p>
+                ) : null}
+                {hasRefs ? (
+                  <div className="amem-lex-scripture">
+                    <p className="font-display text-[15px] leading-snug text-ink">
+                      {refs
+                        .slice(0, 3)
+                        .map((ref) => formatBiblicalReference(ref))
+                        .join(" · ")}
+                    </p>
+                    <div className="amem-lex-scripture-ref">
+                      Referência bíblica · não é citação inventada
+                    </div>
+                  </div>
+                ) : null}
+                {message.meta && !message.meta.streaming ? (
+                  <AssistantMetaFooter meta={message.meta} hideRefs />
+                ) : null}
               </div>
-            ) : null}
-          </article>
-        ))}
+
+              {showGestures ? (
+                <div className="amem-lex-next" role="group" aria-label="Próximos gestos">
+                  <button
+                    type="button"
+                    className="amem-lex-chip amem-lex-chip-primary"
+                    onClick={() => applyPrayGesture(message)}
+                  >
+                    Orar essa frase
+                  </button>
+                  {hasRefs ? (
+                    <button
+                      type="button"
+                      className="amem-lex-chip"
+                      onClick={() => applyShortVerseGesture(message)}
+                    >
+                      Versículo curto
+                    </button>
+                  ) : null}
+                  {deepenEligible && !message.meta?.deepened ? (
+                    <button
+                      type="button"
+                      className="amem-lex-chip amem-lex-chip-profundo"
+                      aria-pressed={preferDeep}
+                      onClick={() => activateDeepenFromReply()}
+                    >
+                      Aprofundar · Profundo
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
 
         {showPreparingStatus ? (
-          <p
-            className="animate-soft-pulse text-sm text-ink-soft"
-            role="status"
-            aria-live="polite"
-            aria-busy="true"
-          >
-            {sendingDeep
-              ? "Preparando uma reflexão aprofundada…"
-              : "Preparando uma reflexão…"}
-          </p>
+          <div className="amem-lex-group" role="status" aria-live="polite" aria-busy="true">
+            <div className="amem-lex-label">Resposta</div>
+            <p className="amem-lex-body animate-soft-pulse text-ink-soft">
+              {sendingDeep
+                ? "Preparando uma reflexão aprofundada…"
+                : "Preparando uma reflexão…"}
+            </p>
+          </div>
         ) : null}
         <div ref={bottomRef} />
       </div>
 
-      <div className="safe-composer-pad sticky bottom-0 shrink-0 border-t border-border/70 bg-card/95 p-3 backdrop-blur-sm sm:p-5">
-        {chatFeatureDisabled ? (
-          <InlineNotice tone="info">
-            O chat está temporariamente indisponível por manutenção operacional.
-            Seu histórico e a ajuda continuam acessíveis.
-          </InlineNotice>
-        ) : null}
-        {deepenFeatureDisabled && canDeepen && !chatFeatureDisabled ? (
-          <p className="mb-3 text-xs leading-relaxed text-ink-soft">
-            Aprofundar está temporariamente indisponível. Você pode continuar com
-            respostas padrão.
-          </p>
-        ) : null}
-        {error ? (
-          <div className="mb-3 space-y-2" role="alert" aria-live="assertive">
-            <InlineNotice tone="error">{error}</InlineNotice>
-            {upsellSuggestion ? (
-              <ChatPlanUpsell suggestion={upsellSuggestion} />
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              {errorKind === "auth" ? (
-                <Link
-                  href="/entrar?next=/conversar"
-                  className="inline-flex min-h-11 items-center rounded-md border border-border px-3 text-sm text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  Entrar novamente
-                </Link>
-              ) : errorKind === "not_found" ? (
-                <>
-                  <Button asChild variant="outline" className="min-h-11">
-                    <Link href="/conversas">Ver histórico</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="min-h-11">
-                    <Link href="/conversar">Nova reflexão</Link>
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="min-h-11"
-                  disabled={loading || !input.trim()}
-                  onClick={() => void send()}
-                >
-                  Tentar de novo
-                </Button>
-              )}
-            </div>
-          </div>
-        ) : null}
-
-        {showDeepenControls ? (
-          <div className="mb-3 space-y-2">
-            {deepenActive ? (
-              <div
-                className="space-y-2 rounded-xl border border-wine/40 bg-wine/5 px-3 py-2.5"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-ink">
-                    Aprofundar ativo para a próxima mensagem
-                  </p>
+      <div className="safe-composer-above-nav sticky bottom-0 shrink-0 px-3 pt-2 sm:px-5 sm:pb-3">
+        <div className="amem-lex-composer space-y-2 p-3">
+          {chatFeatureDisabled ? (
+            <InlineNotice tone="info">
+              O chat está temporariamente indisponível por manutenção operacional.
+              Seu histórico e a ajuda continuam acessíveis.
+            </InlineNotice>
+          ) : null}
+          {deepenFeatureDisabled && canDeepen && !chatFeatureDisabled ? (
+            <p className="text-xs leading-relaxed text-ink-soft">
+              Aprofundar está temporariamente indisponível. Você pode continuar com
+              respostas padrão.
+            </p>
+          ) : null}
+          {error ? (
+            <div className="space-y-2" role="alert" aria-live="assertive">
+              <InlineNotice tone="error">{error}</InlineNotice>
+              {upsellSuggestion ? (
+                <ChatPlanUpsell suggestion={upsellSuggestion} />
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                {errorKind === "auth" ? (
+                  <Link
+                    href="/entrar?next=/conversar"
+                    className="inline-flex min-h-11 items-center rounded-md border border-border px-3 text-sm text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    Entrar novamente
+                  </Link>
+                ) : errorKind === "not_found" ? (
+                  <>
+                    <Button asChild variant="outline" className="min-h-11">
+                      <Link href="/conversas">Ver histórico</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="min-h-11">
+                      <Link href="/conversar">Nova reflexão</Link>
+                    </Button>
+                  </>
+                ) : (
                   <Button
                     type="button"
-                    variant="ghost"
-                    className="min-h-11 shrink-0 text-ink-soft"
-                    disabled={loading}
-                    onClick={cancelDeepenMode}
+                    variant="outline"
+                    className="min-h-11"
+                    disabled={loading || !input.trim()}
+                    onClick={() => void send()}
                   >
-                    Cancelar Aprofundar
+                    Tentar de novo
                   </Button>
-                </div>
-                <p className="rounded-lg border border-wine/20 bg-card/80 px-2.5 py-2 text-xs leading-relaxed text-ink">
-                  <span className="font-medium">Será aprofundado:</span>{" "}
-                  {input.trim()
-                    ? input.trim().length > 140
-                      ? `${input.trim().slice(0, 140).trim()}…`
-                      : input.trim()
-                    : "o texto que você escrever abaixo, nesta mensagem."}
-                </p>
+                )}
               </div>
-            ) : null}
-            {/* Secondary entry — primary is “Aprofundar este tema” under replies.
-                Keep checkbox for retries/tests; remove post-launch if unused. */}
-            <details className="rounded-lg border border-border/50 bg-sand-50/40 px-3 py-2">
-              <summary className="cursor-pointer list-none rounded-md text-xs font-medium text-ink-soft marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-                Opção secundária no campo de mensagem
-              </summary>
-              <div className="mt-2 flex items-start gap-3 border-t border-border/40 pt-2">
-                <input
-                  id={deepenId}
-                  type="checkbox"
-                  checked={preferDeep}
-                  onChange={(e) => setPreferDeep(e.target.checked)}
-                  disabled={loading}
-                  aria-describedby={deepenHelpId}
-                  className="mt-2 h-5 w-5 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-                <div className="min-w-0">
-                  <label
-                    htmlFor={deepenId}
-                    className="block min-h-11 cursor-pointer pt-1.5 text-sm font-medium text-ink"
-                  >
-                    Aprofundar esta resposta
-                  </label>
-                  <p
-                    id={deepenHelpId}
-                    className="mt-0.5 text-xs leading-relaxed text-ink-soft"
-                  >
-                    Entrada alternativa ao botão sob a resposta: mais contexto,
-                    conexões bíblicas e próximos passos práticos. Consome mais
-                    do espaço de uso — só nesta resposta, sem alterar seu
-                    perfil.
+            </div>
+          ) : null}
+
+          {showDeepenControls ? (
+            <div className="space-y-2">
+              {deepenActive ? (
+                <div
+                  className="space-y-2 rounded-xl border border-wine/40 bg-wine/5 px-3 py-2.5"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-ink">
+                      Aprofundar ativo para a próxima mensagem
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="min-h-11 shrink-0 text-ink-soft"
+                      disabled={loading}
+                      onClick={cancelDeepenMode}
+                    >
+                      Cancelar Aprofundar
+                    </Button>
+                  </div>
+                  <p className="rounded-lg border border-wine/20 bg-card/80 px-2.5 py-2 text-xs leading-relaxed text-ink">
+                    <span className="font-medium">Será aprofundado:</span>{" "}
+                    {input.trim()
+                      ? input.trim().length > 140
+                        ? `${input.trim().slice(0, 140).trim()}…`
+                        : input.trim()
+                      : "o texto que você escrever abaixo, nesta mensagem."}
                   </p>
                 </div>
-              </div>
-            </details>
-          </div>
-        ) : showDeepUpsellHint ? (
-          <DeepUpsellHint />
-        ) : null}
+              ) : null}
+              <details className="rounded-lg border border-border/50 bg-[color:var(--amem-recess)]/40 px-3 py-2">
+                <summary className="cursor-pointer list-none rounded-md text-xs font-medium text-ink-soft marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                  Opção secundária no campo de mensagem
+                </summary>
+                <div className="mt-2 flex items-start gap-3 border-t border-border/40 pt-2">
+                  <input
+                    id={deepenId}
+                    type="checkbox"
+                    checked={preferDeep}
+                    onChange={(e) => setPreferDeep(e.target.checked)}
+                    disabled={loading}
+                    aria-describedby={deepenHelpId}
+                    className="mt-2 h-5 w-5 shrink-0 rounded border-border text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <div className="min-w-0">
+                    <label
+                      htmlFor={deepenId}
+                      className="block min-h-11 cursor-pointer pt-1.5 text-sm font-medium text-ink"
+                    >
+                      Aprofundar esta resposta
+                    </label>
+                    <p
+                      id={deepenHelpId}
+                      className="mt-0.5 text-xs leading-relaxed text-ink-soft"
+                    >
+                      Entrada alternativa ao gesto sob a resposta: mais contexto,
+                      conexões bíblicas e próximos passos práticos. Consome mais
+                      do espaço de uso — só nesta resposta, sem alterar seu
+                      perfil. Disponível no Profundo.
+                    </p>
+                  </div>
+                </div>
+              </details>
+            </div>
+          ) : showDeepUpsellHint ? (
+            <DeepUpsellHint />
+          ) : null}
 
-        <div className="flex gap-2">
-          <label htmlFor="chat-input" className="sr-only">
-            Conte o que você está vivendo
-          </label>
-          <textarea
-            ref={inputRef}
-            id="chat-input"
-            rows={2}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void send();
+          <div className="flex items-end gap-2">
+            <label htmlFor="chat-input" className="sr-only">
+              Escreva com honestidade
+            </label>
+            <textarea
+              ref={inputRef}
+              id="chat-input"
+              rows={2}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void send();
+                }
+              }}
+              placeholder={
+                deepenActive
+                  ? "O que você gostaria de explorar com mais atenção?"
+                  : "Escreva com honestidade…"
               }
-            }}
-            placeholder={
-              deepenActive
-                ? "O que você gostaria de explorar com mais atenção?"
-                : "Conte o que você está vivendo…"
-            }
-            aria-invalid={Boolean(error)}
-            aria-busy={loading}
-            aria-describedby={
-              error
-                ? "chat-error"
-                : showDeepenControls
-                  ? `${deepenHelpId} chat-composer-hint`
-                  : "chat-composer-hint"
-            }
-            className="min-h-[3.25rem] max-h-40 flex-1 resize-none overflow-y-auto rounded-xl border border-input bg-background px-3 py-2.5 text-base leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            maxLength={4000}
-            disabled={loading}
-          />
-          {loading ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={cancelInFlightSend}
-              className="min-h-[3.25rem] min-w-11 self-end px-4"
-            >
-              Cancelar
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={() => void send()}
-              disabled={!input.trim()}
-              className="min-h-[3.25rem] min-w-11 self-end bg-ink px-4 hover:bg-ink/90"
-            >
-              {deepenActive ? "Aprofundar e enviar" : "Enviar"}
-            </Button>
-          )}
-        </div>
-        <p id="chat-composer-hint" className="mt-2 text-xs text-ink-soft">
-          {loading
-            ? "Você pode cancelar o envio e editar o texto."
-            : "Enter envia · Shift+Enter nova linha"}
-        </p>
-        {error ? (
-          <p id="chat-error" className="sr-only">
-            {error}
+              aria-invalid={Boolean(error)}
+              aria-busy={loading}
+              aria-describedby={
+                error
+                  ? "chat-error"
+                  : showDeepenControls
+                    ? `${deepenHelpId} chat-composer-hint`
+                    : "chat-composer-hint"
+              }
+              className="min-h-[3.25rem] max-h-40 flex-1 resize-none overflow-y-auto rounded-xl border-0 bg-transparent px-2 py-2.5 text-base leading-relaxed text-ink placeholder:text-[color:var(--amem-mute)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              maxLength={4000}
+              disabled={loading || chatFeatureDisabled}
+            />
+            {loading ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={cancelInFlightSend}
+                className="min-h-[3.25rem] min-w-11 self-end px-4"
+              >
+                Cancelar
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={() => void send()}
+                disabled={!input.trim() || chatFeatureDisabled}
+                aria-label={deepenActive ? "Aprofundar e enviar" : "Enviar"}
+                className="amem-lex-send min-h-11 min-w-11 self-end rounded-full px-0 hover:opacity-95"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  aria-hidden
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+                <span className="sr-only">
+                  {deepenActive ? "Aprofundar e enviar" : "Enviar"}
+                </span>
+              </Button>
+            )}
+          </div>
+          <p id="chat-composer-hint" className="text-xs text-ink-soft">
+            {loading
+              ? "Você pode cancelar o envio e editar o texto."
+              : "Enter envia · Shift+Enter nova linha"}
           </p>
-        ) : null}
+          {error ? (
+            <p id="chat-error" className="sr-only">
+              {error}
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -880,11 +971,13 @@ export function ChatPanel({
 
 function AssistantMetaFooter({
   meta,
+  hideRefs = false,
 }: {
   meta: NonNullable<UiMessage["meta"]>;
+  hideRefs?: boolean;
 }) {
   const refs = meta.biblicalReferences ?? [];
-  const hasRefs = refs.length > 0;
+  const hasRefs = !hideRefs && refs.length > 0;
   const hasNotice = hasRenderableInterpretationNotice(meta.interpretationNotice);
   const hasFollowUp = hasRenderableFollowUpQuestion(meta.followUpQuestion);
   if (!hasRefs && !hasNotice && !hasFollowUp) return null;
@@ -893,18 +986,20 @@ function AssistantMetaFooter({
   const followUp = meta.followUpQuestion?.trim() ?? "";
 
   return (
-    <div className="mt-3 space-y-2 border-t border-border/40 pt-3 text-sm text-ink-soft">
+    <div className="space-y-2 pb-2 text-sm text-ink-soft">
       {hasRefs ? (
-        <p className="rounded-lg bg-sand-100/80 px-2.5 py-2 text-[13px] leading-relaxed text-ink">
-          <span className="font-medium">Referências · </span>
-          {refs.map((ref) => formatBiblicalReference(ref)).join(" · ")}
-        </p>
+        <div className="amem-lex-scripture">
+          <p className="text-[13px] leading-relaxed text-ink">
+            {refs.map((ref) => formatBiblicalReference(ref)).join(" · ")}
+          </p>
+          <div className="amem-lex-scripture-ref">Referência bíblica</div>
+        </div>
       ) : null}
       {hasNotice ? (
-        <p className="text-xs leading-relaxed">{notice}</p>
+        <p className="px-0.5 text-xs leading-relaxed">{notice}</p>
       ) : null}
       {hasFollowUp ? (
-        <p className="italic text-ink/90">{followUp}</p>
+        <p className="px-0.5 italic text-ink/90">{followUp}</p>
       ) : null}
     </div>
   );
