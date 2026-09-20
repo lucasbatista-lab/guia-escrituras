@@ -8,7 +8,9 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
     "Uma jornada de sete etapas para quem se sente atrasado, compara a própria história com a dos outros, ou precisa recomeçar depois de um erro — sem promessa de sucesso garantido.",
   objective:
     "Ajudar você a retomar o caminho com responsabilidade, ritmo humano e propósito cotidiano, sem cobrança de transformação milagrosa.",
-  tags: ["recomeço", "propósito", "erro", "paciência", "responsabilidade"],
+intro:
+    "Sete etapas para recomeçar com honestidade: olhar o erro, soltar comparação e dar um passo possível. Sem streak e sem culpa por pausar.",
+    tags: ["recomeço", "propósito", "erro", "paciência", "responsabilidade"],
   steps: [
     {
       id: "recomeco-01",
@@ -26,6 +28,10 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
         "Qual erro ou desvio você precisa nomear com mais clareza para conseguir seguir adiante?",
       practicalAction:
         "Escreva em três linhas: o que aconteceu, o que você sente sobre isso, e o que não quer repetir. Sem ensaios longos — só a verdade essencial.",
+      prayer:
+        "Senhor, à luz do Salmo 51:10-12, cria em mim um coração limpo para olhar o erro sem me destruir. Amém.",
+      closing:
+        "Levo: recomeçar começa com honestidade — não com perfeição.",
       estimatedMinutes: 6,
       tags: ["erro", "honestidade", "arrependimento"],
     },
@@ -47,6 +53,10 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
         "Liste três marcos que você ainda valoriza — e ao lado, uma versão mais humana e possível para os próximos 90 dias, não para a vida inteira.",
       chatSuggestion:
         "Sinto que estou atrasado na vida e quero repensar isso sem me cobrar milagres.",
+      prayer:
+        "Deus do tempo, por Eclesiastes 3:1-8, livra-me da vergonha do “atraso” e ensina o ritmo deste tempo. Amém.",
+      closing:
+        "Levo: há estação para recomeçar sem comparar meu calendário ao de outros.",
       estimatedMinutes: 5,
       tags: ["tempo", "expectativas", "paciência"],
     },
@@ -66,6 +76,10 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
         "Quem ou o que você costuma usar como “régua” injusta contra si mesmo?",
       practicalAction:
         "Por 48 horas, reduza o consumo da fonte que mais dispara comparação (uma rede, um grupo, uma conversa). Note se o corpo e a mente ficam um pouco mais leves.",
+      prayer:
+        "Senhor, por Gálatas 6:4-5, ajuda-me a olhar meu próprio caminho sem paralisar na comparação. Amém.",
+      closing:
+        "Levo: um critério interno de fidelidade — não o espelho da rede social.",
       estimatedMinutes: 5,
       tags: ["comparação", "identidade", "foco"],
     },
@@ -85,6 +99,10 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
         "O que a sua frustração está tentando te dizer — e o que ela está exagerando?",
       practicalAction:
         "Escreva a frustração em cinco minutos sem censura. Depois circule uma frase útil (“preciso de pausa”, “preciso de ajuda”, “preciso mudar o método”) e ignore o resto catastrófico por hoje.",
+      prayer:
+        "Deus da esperança, à luz do Salmo 42:5, sustenta minha alma quando a frustração grita mais alto. Amém.",
+      closing:
+        "Levo: posso nomear a tristeza e ainda assim escolher não desistir hoje.",
       estimatedMinutes: 6,
       tags: ["frustração", "perseverança", "emoções"],
     },
@@ -106,6 +124,10 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
         "Escolha uma ação reparadora ou organizada para as próximas 72 horas (uma conversa, um pagamento, uma tarefa adiada). Faça só essa — e marque como feita.",
       chatSuggestion:
         "Quero transformar intenção de recomeço em uma responsabilidade prática e possível.",
+      prayer:
+        "Senhor, por Tiago 1:22-25, faz-me praticante daquilo que já entendi — um gesto só. Amém.",
+      closing:
+        "Levo: responsabilidade no recomeço é ação pequena, não discurso grande.",
       estimatedMinutes: 7,
       tags: ["responsabilidade", "prática", "integridade"],
     },
@@ -125,6 +147,10 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
         "Qual “pequeno começo” você tem desprezado por achar insuficiente?",
       practicalAction:
         "Defina um hábito mínimo para 14 dias (ex.: 10 minutos de leitura, caminhada curta, oração breve ao acordar). Se falhar um dia, retome no seguinte sem zerar a contagem emocional.",
+      prayer:
+        "Deus fiel, por Zacarias 4:10, não desprezes o dia dos pequenos começos em mim. Amém.",
+      closing:
+        "Levo: progresso gradual conta. Um passo pequeno ainda é caminho.",
       estimatedMinutes: 5,
       tags: ["hábitos", "paciência", "consistência"],
     },
@@ -146,6 +172,10 @@ export const RECOMECO_PROPOSITO_JOURNEY: ReadingJourney = {
         "Escreva uma frase-guia para os próximos sete dias (ex.: “Vou agir com honestidade e paciência no trabalho” ou “Vou cuidar do meu corpo e pedir ajuda quando precisar”). Coloque onde você vê de manhã.",
       chatSuggestion:
         "Quero esclarecer meu propósito sem pressão de sucesso garantido.",
+      prayer:
+        "Senhor, por Miqueias 6:8, ensina-me a agir com justiça, amar a misericórdia e caminhar com humildade — sem promessa de sucesso. Amém.",
+      closing:
+        "Levo: propósito como fidelidade diária, não como garantia de resultado.",
       estimatedMinutes: 6,
       tags: ["propósito", "fidelidade", "próximo passo"],
     },

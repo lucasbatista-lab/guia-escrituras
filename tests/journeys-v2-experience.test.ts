@@ -31,11 +31,21 @@ describe("journeys V2 experience", () => {
   it("presents intro, day label, prayer, closing without rewriting corpus", () => {
     const journey = getAllJourneys()[0]!;
     const step = journey.steps[0]!;
-    expect(journeyIntro(journey)).toContain("sete etapas");
+    expect(journeyIntro(journey).toLowerCase()).toContain("sete etapas");
     expect(journeyDayLabel(3, 7)).toBe("Dia 3 de 7");
+    expect(step.prayer).toBeTruthy();
+    expect(step.closing).toBeTruthy();
     expect(stepPrayer(step)).toContain(step.bibleReference);
+    expect(stepClosing(step).toLowerCase()).toContain("levo");
     expect(stepClosing(step).toLowerCase()).not.toContain("streak");
     expect(stepClosing(step)).not.toMatch(/você ficou \d+ dias/i);
+    for (const j of getAllJourneys()) {
+      expect(j.intro && j.intro.length > 20).toBe(true);
+      for (const s of j.steps) {
+        expect(s.prayer && s.prayer.length > 20, `${j.slug}/${s.slug}`).toBe(true);
+        expect(s.closing && s.closing.toLowerCase().includes("levo"), `${j.slug}/${s.slug}`).toBe(true);
+      }
+    }
   });
 
   it("resume hint uses persisted progress, not sessionStorage", () => {

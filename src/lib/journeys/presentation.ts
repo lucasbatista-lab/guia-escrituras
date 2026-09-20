@@ -11,14 +11,14 @@ export function journeyIntro(journey: ReadingJourney): string {
 export function stepPrayer(step: ReadingJourneyStep): string {
   return (
     step.prayer ??
-    `Senhor, à luz de ${step.bibleReference}, ajuda-me a viver com honestidade o que esta etapa pede. Amém.`
+    `Senhor, à luz de ${step.bibleReference}, ajuda-me a viver com honestidade o centro deste dia. Amém.`
   );
 }
 
 export function stepClosing(step: ReadingJourneyStep): string {
   return (
     step.closing ??
-    `Quando fizer sentido, marque esta etapa. O próximo dia continua no seu ritmo — sem culpa por pausar.`
+    `Levo o essencial deste dia. O próximo continua no seu ritmo — sem culpa se pausar.`
   );
 }
 

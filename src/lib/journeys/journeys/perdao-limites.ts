@@ -8,7 +8,9 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
     "Uma jornada de sete etapas sobre culpa, perdão sem apagar consequências, proteção em contextos de abuso e reconstrução segura de relacionamentos.",
   objective:
     "Ajudar você a caminhar no perdão com clareza ética: sem forçar reconciliação, sem se manter em perigo e sem carregar culpa que não é sua.",
-  tags: ["perdão", "limites", "culpa", "relacionamentos", "segurança"],
+intro:
+    "Sete etapas para caminhar perdão com ética: sem apagar o dano, sem forçar reconciliação e sem permanecer em risco. No seu ritmo — sem culpa se pausar.",
+    tags: ["perdão", "limites", "culpa", "relacionamentos", "segurança"],
   steps: [
     {
       id: "perdao-01",
@@ -26,6 +28,10 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
         "A culpa que você sente agora aponta para algo específico que você pode reparar, ou está mais vaga e destrutiva?",
       practicalAction:
         "Escreva duas listas: “O que é minha responsabilidade” e “O que não é meu”. Seja específico. Não force a segunda lista a ficar vazia.",
+      prayer:
+        "Senhor, à luz do Salmo 32:1-5, ajuda-me a confessar o que é meu e a soltar culpa que só me paralisa. Amém.",
+      closing:
+        "Levo: duas listas claras — o que reparo e o que não é meu para carregar.",
       estimatedMinutes: 6,
       tags: ["culpa", "responsabilidade", "honestidade"],
     },
@@ -47,6 +53,10 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
         "Escreva uma frase: “Posso desejar não viver na amargura e, ainda assim, reconhecer que…”. Complete com a verdade do que aconteceu, sem suavizar.",
       chatSuggestion:
         "Quero pensar em perdão sem minimizar o que me magoou.",
+      prayer:
+        "Deus de misericórdia, por Efésios 4:31-32, ensina-me a soltar amargura sem apagar a verdade do dano. Amém.",
+      closing:
+        "Levo: perdão não é fingir que nada aconteceu; é não viver preso ao ódio.",
       estimatedMinutes: 6,
       tags: ["perdão", "consequências", "verdade"],
     },
@@ -66,6 +76,10 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
         "Há alguém de quem você se sente pressionado a se reaproximar, mesmo sem segurança ou mudança real?",
       practicalAction:
         "Defina por escrito: “Perdoar, para mim, neste caso, significa… e não significa…”. Inclua explicitamente se reconciliação está ou não na mesa agora.",
+      prayer:
+        "Senhor, por Romanos 12:18, mostra-me a paz possível sem forçar reconciliação insegura. Amém.",
+      closing:
+        "Levo: posso perdoar no coração e manter distância quando não há segurança.",
       estimatedMinutes: 5,
       tags: ["reconciliação", "limites", "paz"],
     },
@@ -87,6 +101,10 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
         "Se houver risco, priorize um plano de segurança: contate alguém de confiança, registre evidências se for seguro, e busque orientação especializada na sua região. Não discuta planos de saída com quem te ameaça.",
       safetyNote:
         "Perdão não exige reconciliação nem permanecer em risco. Em situação de abuso ou violência, busque apoio seguro e especializado. Sua proteção vem primeiro.",
+      prayer:
+        "Deus que defende o oprimido, à luz do Salmo 82:3-4, guarda minha vida longe de violência e chantagem espiritual. Amém.",
+      closing:
+        "Levo: proteção não é falta de fé. Sair do risco pode ser obediência ao cuidado.",
       estimatedMinutes: 8,
       tags: ["abuso", "segurança", "proteção"],
     },
@@ -108,6 +126,10 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
         "Escreva uma frase curta de limite (ex.: “Não falo sobre esse assunto por mensagem” ou “Preciso de X dias sem contato”). Se for seguro, pratique dizê-la em voz alta uma vez.",
       chatSuggestion:
         "Preciso de ajuda para formular um limite claro sem agressividade nem culpa.",
+      prayer:
+        "Senhor, por Provérbios 4:23, guarda meu coração com limites claros e respeitosos. Amém.",
+      closing:
+        "Levo: um “não” concreto dito com calma — sem culpa por me proteger.",
       estimatedMinutes: 6,
       tags: ["limites", "comunicação", "cuidado"],
     },
@@ -129,6 +151,10 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
         "Reescreva uma autoacusação em duas partes: “Minha parte real foi…” e “A parte que não era minha foi…”. Leia em voz alta só a segunda, se fizer sentido.",
       safetyNote:
         "Se alguém insiste que tudo é sua culpa enquanto exerce controle ou violência, isso pode ser manipulação. Considere apoio externo de confiança.",
+      prayer:
+        "Deus justo, à luz de Gálatas 6:5, liberta-me de carregar a falha de outro como se fosse minha. Amém.",
+      closing:
+        "Levo: responsabilidade própria sem absorver o que não me cabe.",
       estimatedMinutes: 7,
       tags: ["autoacusação", "clareza", "dignidade"],
     },
@@ -150,6 +176,10 @@ export const PERDAO_LIMITES_JOURNEY: ReadingJourney = {
         "Escolha um gesto de cuidado para esta semana: conversa com alguém seguro, sessão de apoio, tempo sozinho sem culpa, ou um limite que você vai manter. Anote e revise no domingo.",
       chatSuggestion:
         "Quero pensar em um recomeço relacional que preserve meus limites e minha segurança.",
+      prayer:
+        "Senhor, por Isaías 61:1-3, reconstrói em mim dignidade e proximidade no ritmo seguro. Amém.",
+      closing:
+        "Levo: reconstrução com frutos, não com pressa. Sem culpa se pausar.",
       estimatedMinutes: 6,
       tags: ["reconstrução", "cura", "próximo passo"],
     },

@@ -8,7 +8,9 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
     "Uma jornada de sete etapas para nomear a preocupação, praticar confiança sem negar a realidade e dar passos pequenos e concretos no dia a dia.",
   objective:
     "Ajudar você a lidar com a ansiedade com honestidade, fé adulta e apoio humano quando fizer sentido — sem pressa e sem promessas mágicas.",
-  tags: ["ansiedade", "confiança", "preocupação", "descanso", "fé"],
+intro:
+    "Sete etapas para nomear a preocupação, praticar confiança sem negação e escolher passos pequenos. Não é prova de fé: se pausar, retome sem culpa.",
+    tags: ["ansiedade", "confiança", "preocupação", "descanso", "fé"],
   steps: [
     {
       id: "ansiedade-01",
@@ -28,6 +30,10 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
         "Escreva em um papel ou nota três preocupações concretas. Ao lado de cada uma, marque: posso agir, posso pedir ajuda, ou só posso esperar.",
       chatSuggestion:
         "Quero organizar minhas preocupações e entender o que está sob meu controle.",
+      prayer:
+        "Senhor, à luz de Filipenses 4:6-7, ajude-me a nomear o que me aperta sem fingir calma. Guarda minha mente hoje. Amém.",
+      closing:
+        "Levo: uma frase clara do que me preocupa — e a paz de não precisar resolver a década hoje.",
       estimatedMinutes: 5,
       tags: ["preocupação", "clareza", "oração"],
     },
@@ -47,6 +53,10 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
         "Em que situação você tem sentido pressão para “parecer forte” quando na verdade está ansioso?",
       practicalAction:
         "Hoje, diga em voz baixa ou por escrito uma frase verdadeira: “Estou com medo de…, e ainda assim posso…”. Complete com algo concreto e pequeno.",
+      prayer:
+        "Senhor, como no Salmo 56, admito o medo e peço confiança que não apague o que sinto. Amém.",
+      closing:
+        "Levo: posso ter medo e, ainda assim, dar um passo pequeno sem parecer forte demais.",
       estimatedMinutes: 5,
       tags: ["medo", "honestidade", "confiança"],
     },
@@ -68,6 +78,10 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
         "Escolha dez minutos sem tela. Observe cinco coisas que você vê, quatro que toca, três que ouve. Depois, faça só a próxima tarefa pequena da sua lista.",
       chatSuggestion:
         "Minha mente fica no futuro e quero praticar presença sem me cobrar perfeição.",
+      prayer:
+        "Jesus, à luz de Mateus 6:34, ensina-me a carregar só o peso deste dia. Amém.",
+      closing:
+        "Levo: o amanhã não precisa ser vencido agora — só a próxima tarefa pequena.",
       estimatedMinutes: 6,
       tags: ["presente", "atenção", "calma"],
     },
@@ -87,6 +101,10 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
         "O que você está tentando controlar que, na verdade, não está sob o seu domínio?",
       practicalAction:
         "Desenhe duas colunas: “Depende de mim” e “Não depende de mim”. Coloque três itens em cada. Escolha uma ação só da primeira coluna para hoje.",
+      prayer:
+        "Senhor, por Provérbios 3:5-6, solto o que não controlaria mesmo se eu me esforçasse a noite inteira. Amém.",
+      closing:
+        "Levo: uma ação da coluna “depende de mim” — e descanso do resto.",
       estimatedMinutes: 6,
       tags: ["controle", "limites", "sabedoria"],
     },
@@ -110,6 +128,10 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
         "Se a ansiedade ou o desânimo estiverem intensos, persistentes ou atrapalhando o sono, o trabalho ou a segurança, procure apoio humano e profissional de saúde. Você não precisa passar por isso sozinho.",
       chatSuggestion:
         "Estou ansioso e quero pensar em como pedir ajuda sem me sentir fraco.",
+      prayer:
+        "Deus de companhia, à luz de Eclesiastes 4:9-10, dá-me coragem para pedir apoio humano sem vergonha. Amém.",
+      closing:
+        "Levo: confiar em Ti inclui deixar alguém seguro caminhar ao meu lado.",
       estimatedMinutes: 7,
       tags: ["apoio", "comunidade", "saúde mental"],
     },
@@ -129,6 +151,10 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
         "O que normalmente te impede de descansar: culpa, excesso de tarefas, ou medo de “perder tempo”?",
       practicalAction:
         "Bloqueie hoje um intervalo de 20 a 30 minutos sem produtividade. Use para dormir um pouco, caminhar ou ficar em silêncio — sem celular de trabalho.",
+      prayer:
+        "Bom Pastor, como no Salmo 23, conduz-me a um intervalo real de descanso hoje. Amém.",
+      closing:
+        "Levo: pausar não é falha — é parte do cuidado que sustenta a confiança.",
       estimatedMinutes: 5,
       tags: ["descanso", "ritmo", "cuidado"],
     },
@@ -150,6 +176,10 @@ export const ANSIEDADE_CONFIANCA_JOURNEY: ReadingJourney = {
         "Escreva um compromisso de uma frase para a semana (ex.: “Vou caminhar 15 minutos três vezes” ou “Vou conversar com X na terça”). Coloque no lugar onde você vê todo dia.",
       chatSuggestion:
         "Quero definir um passo pequeno e realista para a minha ansiedade nesta semana.",
+      prayer:
+        "Senhor, por Isaías 30:15, fortalece-me na quietude e num único compromisso realista. Amém.",
+      closing:
+        "Levo: um passo pequeno para a semana — firme, sem cobrança de transformação total.",
       estimatedMinutes: 6,
       tags: ["passos", "consistência", "próximo passo"],
     },
