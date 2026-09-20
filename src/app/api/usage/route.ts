@@ -25,7 +25,7 @@ export async function GET() {
         planKey: null,
         level: "normal",
         label: "Sem assinatura",
-        note: "Não há plano gratuito. Assine para conversar.",
+        note: "Conta grátis ativa. Assine para conversar.",
       },
       { headers: PRIVATE_NO_STORE },
     );

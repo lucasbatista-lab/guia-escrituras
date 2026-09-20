@@ -289,7 +289,7 @@ describe("redirects and gates (source contracts)", () => {
     expect(proxy).toContain("getRequiredDestinationForState");
   });
 
-  it("conversar and conversas redirect before ChatPanel", () => {
+  it("conversar and conversas gate before ChatPanel (soft paywall or redirect)", () => {
     const conversar = readSrc(
       "src",
       "app",
@@ -305,11 +305,14 @@ describe("redirects and gates (source contracts)", () => {
       "page.tsx",
     );
     expect(conversar).toContain("journeyAllowsChat");
+    expect(conversar).toContain("SoftPaywallGate");
+    expect(conversar).toContain("journeyShowsSoftPaywall");
     expect(conversar).toContain("getRequiredDestinationForState");
     expect(conversar.indexOf("if (!journeyAllowsChat")).toBeLessThan(
       conversar.indexOf("<ChatPanel"),
     );
     expect(conversas).toContain("journeyAllowsChat");
+    expect(conversas).toContain("SoftPaywallGate");
     expect(conversas).toContain("getRequiredDestinationForState");
   });
 

@@ -24,6 +24,8 @@ import {
   preferredDepthLabelPt,
   traditionLabelPt,
 } from "@/lib/profile/labels-pt";
+import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
+import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
   journeyAllowsChat,
@@ -47,6 +49,9 @@ export default async function ConversarPage({
 
   const journey = await resolveUserJourneyState();
   if (!journeyAllowsChat(journey.state)) {
+    if (journeyShowsSoftPaywall(journey.state)) {
+      return <SoftPaywallGate resource="conversar" />;
+    }
     redirect(getRequiredDestinationForState(journey.state));
   }
 

@@ -19,6 +19,8 @@ import {
 import { sanitizeConversationPreview } from "@/lib/conversations/display";
 import { getRepositories } from "@/lib/database/repositories";
 import { canUseReadingJourneys } from "@/lib/entitlements";
+import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
+import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
   journeyAllowsChat,
@@ -39,6 +41,9 @@ export default async function ConversasPage({
 
   const journey = await resolveUserJourneyState();
   if (!journeyAllowsChat(journey.state)) {
+    if (journeyShowsSoftPaywall(journey.state)) {
+      return <SoftPaywallGate resource="conversar" />;
+    }
     redirect(getRequiredDestinationForState(journey.state));
   }
 

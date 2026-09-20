@@ -15,6 +15,7 @@ import {
   hasSupabasePublicEnv,
 } from "@/lib/supabase/keys";
 import { getAuthCookieOptions } from "@/lib/supabase/auth-cookie-options";
+import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
   resolveUserJourneyStateFromSnapshot,
@@ -375,6 +376,10 @@ export async function updateSession(request: NextRequest) {
         pathname.startsWith("/conversas/")
       ) {
         if (!isLive) {
+          // FREE / lapsed: allow page to render SoftPaywallSheet (no silent /inicio).
+          if (journeyShowsSoftPaywall(state)) {
+            return supabaseResponse;
+          }
           if (matchesPrefix(pathname, PAYWALL_SAFE_PREFIXES)) {
             return supabaseResponse;
           }

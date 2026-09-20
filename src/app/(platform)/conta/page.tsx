@@ -13,6 +13,10 @@ import { brand } from "@/config/brand";
 import { getAuthUserContext } from "@/lib/auth";
 import { getRepositories } from "@/lib/database/repositories";
 import { getPlanByKey, canUseDeepResponseOnDemand, canUseReadingJourneys } from "@/lib/entitlements";
+import {
+  FREE_ACCOUNT_BENEFITS,
+  FREE_ACCOUNT_STATUS_LABEL,
+} from "@/lib/commerce/soft-paywall";
 import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
 import {
   preferredDepthLabelPt,
@@ -378,15 +382,34 @@ export default async function ContaPage() {
             </p>
           </>
         ) : (
-          <div role="status" aria-live="polite">
+          <div role="status" aria-live="polite" className="space-y-4">
+            <PlanStatusBadge
+              label={FREE_ACCOUNT_STATUS_LABEL}
+              tone="active"
+            />
             <p className="text-sm text-ink-soft">
-              Não há plano gratuito.{" "}
+              Sua conta grátis está ativa. Você já pode usar o ritual diário e o
+              Espaço — Conversar e Caminhos pedem um plano pago.
+            </p>
+            <ul className="grid gap-2 text-sm text-ink sm:grid-cols-2">
+              {FREE_ACCOUNT_BENEFITS.map((benefit) => (
+                <li
+                  key={benefit}
+                  className="rounded-xl bg-sand-50/70 px-3 py-2"
+                >
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-ink-soft">
               <Link
                 href="/planos"
                 className="text-ink underline underline-offset-4"
               >
-                Conhecer planos
-              </Link>
+                Ver planos
+              </Link>{" "}
+              para Conversar e Caminhos — sem perder o que a conta grátis já
+              inclui.
             </p>
           </div>
         )}

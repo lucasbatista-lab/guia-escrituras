@@ -13,6 +13,8 @@ import {
   journeyStatusLabel,
 } from "@/lib/journeys/display";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
+import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
+import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
   journeyHasEffectiveAccess,
@@ -33,6 +35,9 @@ export default async function JornadasPage() {
 
   const journey = await resolveUserJourneyState();
   if (!journeyHasEffectiveAccess(journey.state)) {
+    if (journeyShowsSoftPaywall(journey.state)) {
+      return <SoftPaywallGate resource="jornadas" />;
+    }
     redirect(getRequiredDestinationForState(journey.state));
   }
 

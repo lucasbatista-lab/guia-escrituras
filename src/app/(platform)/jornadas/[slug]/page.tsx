@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
+import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
+import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
   journeyHasEffectiveAccess,
@@ -54,6 +56,9 @@ export default async function JornadaDetailPage({
 
   const journeyState = await resolveUserJourneyState();
   if (!journeyHasEffectiveAccess(journeyState.state)) {
+    if (journeyShowsSoftPaywall(journeyState.state)) {
+      return <SoftPaywallGate resource="jornadas" />;
+    }
     redirect(getRequiredDestinationForState(journeyState.state));
   }
 
