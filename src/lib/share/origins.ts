@@ -6,6 +6,7 @@ export const SHARE_UTM_CONTENTS = [
   "home_final_cta",
   "account_share",
   "subscription_success",
+  "daily_share",
 ] as const;
 
 export type ShareUtmContent = (typeof SHARE_UTM_CONTENTS)[number];

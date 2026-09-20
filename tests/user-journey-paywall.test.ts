@@ -148,7 +148,7 @@ describe("resolveUserJourneyStateFromSnapshot", () => {
 describe("getRequiredDestinationForState", () => {
   it("maps destinations per state", () => {
     expect(getRequiredDestinationForState("confirmed_without_plan")).toBe(
-      "/planos",
+      "/inicio",
     );
     expect(getRequiredDestinationForState("payment_pending")).toBe(
       "/assinar/continuar",
@@ -166,7 +166,7 @@ describe("getRequiredDestinationForState", () => {
       }),
     ).toBe("/conversar");
     expect(getRequiredDestinationForState("past_due")).toBe("/conta");
-    expect(getRequiredDestinationForState("ended")).toBe("/planos");
+    expect(getRequiredDestinationForState("ended")).toBe("/inicio");
     expect(getRequiredDestinationForState("canceling_at_period_end")).toBe(
       "/inicio",
     );
@@ -340,7 +340,11 @@ describe("redirects and gates (source contracts)", () => {
     const page = readSrc("src", "app", "(platform)", "inicio", "page.tsx");
     expect(page).toContain("journeyAllowsChat");
     expect(page).toContain("Personalizar minha experiência");
-    expect(page).toContain("Escolher meu plano");
+    expect(page).toContain("DailyHomeSection");
+    expect(page).toContain("veja os planos");
+    const card = readSrc("src", "components", "daily", "hoje-com-deus-card.tsx");
+    expect(card).toContain("Hoje com Deus");
+    expect(card).toContain("Conversar é um recurso dos planos pagos");
     expect(page).toContain("Continuar para pagamento");
   });
 

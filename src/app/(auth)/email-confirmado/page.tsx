@@ -43,7 +43,7 @@ async function resolvePlanFromIntent(intentToken: string | null): Promise<{
 }> {
   let planName: string | null = null;
   let hasPlan = false;
-  let continueHref = "/planos";
+  let continueHref = "/inicio";
 
   if (intentToken && isOpaqueIntentToken(intentToken)) {
     const record = await loadSignupIntentByToken(intentToken).catch(() => null);
@@ -104,7 +104,7 @@ export default async function EmailConfirmadoPage({
 
   if (auth && !auth.demoMode) {
     let planName: string | null = null;
-    let continueHref = "/planos";
+    let continueHref = "/inicio";
     let hasPlan = false;
 
     if (intentToken) {

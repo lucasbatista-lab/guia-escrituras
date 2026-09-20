@@ -98,7 +98,7 @@ export function getRequiredDestinationForState(
     case "awaiting_email_confirmation":
       return "/confira-seu-email";
     case "confirmed_without_plan":
-      return "/planos";
+      return "/inicio";
     case "payment_pending":
       return "/assinar/continuar";
     case "payment_processing":
@@ -111,7 +111,7 @@ export function getRequiredDestinationForState(
     case "past_due":
       return "/conta";
     case "ended":
-      return "/planos";
+      return "/inicio";
     default: {
       const _exhaustive: never = state;
       return _exhaustive;
@@ -156,8 +156,8 @@ export function getPlatformNavItemsForState(
     case "confirmed_without_plan":
     case "ended":
       return [
-        ...base,
-        { href: "/planos", label: "Planos", dominant: true },
+        { href: "/inicio", label: "Início", dominant: true },
+        { href: "/planos", label: "Planos" },
         { href: "/conta", label: "Conta" },
       ];
     case "past_due":

@@ -126,7 +126,7 @@ export async function* runChatTurnStream(input: {
       "subscription_required",
       "subscription_required",
       402,
-      "É necessária uma assinatura ativa para conversar. Não há plano gratuito.",
+      "Conversar é um recurso dos planos pagos. O conteúdo de hoje continua disponível em Início.",
     );
   }
 

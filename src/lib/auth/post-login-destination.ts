@@ -33,6 +33,7 @@ function continuationPath(token: string | null): string {
  * 4. Journey state destination (personalizar, inicio, planos, etc.)
  *
  * Never uses /inicio as a universal fallback.
+ * Free confirmed users (no live subscription) resolve to /inicio on purpose.
  */
 export async function resolvePostLoginDestination(options?: {
   nextParam?: string | null;
@@ -133,6 +134,23 @@ export async function resolvePostLoginDestination(options?: {
   }
 
   const state: UserJourneyState = resolveUserJourneyStateFromSnapshot(snapshot);
+
+  if (state === "confirmed_without_plan" || state === "ended") {
+    const requested = nextRaw ? safeNextPath(nextRaw, "/inicio") : "/inicio";
+    if (
+      requested === "/inicio" ||
+      requested.startsWith("/inicio?") ||
+      requested === "/conta" ||
+      requested.startsWith("/conta?") ||
+      requested.startsWith("/conta/") ||
+      requested === "/personalizar" ||
+      requested.startsWith("/personalizar?") ||
+      requested.startsWith("/personalizar/")
+    ) {
+      return requested;
+    }
+    return "/inicio";
+  }
 
   if (state === "active_ready" || state === "canceling_at_period_end") {
     const safeRequested = nextRaw

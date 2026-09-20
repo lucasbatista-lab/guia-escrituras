@@ -401,7 +401,7 @@ describe("signUpAction", () => {
             privacy_version: expect.any(String),
           }),
           emailRedirectTo:
-            "https://amem-chat.vercel.app/auth/confirm?next=%2Fplanos",
+            "https://amem-chat.vercel.app/auth/confirm?next=%2Femail-confirmado",
         }),
       }),
     );

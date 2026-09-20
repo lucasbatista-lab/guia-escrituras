@@ -57,7 +57,7 @@ export function EmailConfirmedWithoutSessionExperience({
           </p>
         ) : hasPlan ? null : (
           <p className="mt-3 text-sm text-ink-soft">
-            Depois de entrar, você poderá escolher ou retomar seu plano.
+            Depois de entrar, você já pode usar o Início — o espaço diário do Amém.
           </p>
         )}
       </div>

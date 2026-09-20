@@ -19,7 +19,23 @@ export function EmailConfirmedExperience({
 
   useEffect(() => {
     titleRef.current?.focus();
-  }, []);
+    if (hasPlan) return;
+    const eventId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? `freeacct_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`
+        : `freeacct_${Date.now().toString(36)}`;
+    void fetch("/api/product-events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      cache: "no-store",
+      body: JSON.stringify({
+        event: "free_account_created",
+        event_id: eventId,
+        path: "/email-confirmado",
+      }),
+    }).catch(() => undefined);
+  }, [hasPlan]);
 
   return (
     <div className="space-y-7 rounded-3xl border border-border/70 bg-card/90 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] sm:p-8">
@@ -50,7 +66,9 @@ export function EmailConfirmedExperience({
           Seu e-mail foi confirmado
         </h1>
         <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
-          Sua conta está pronta. Agora falta apenas concluir sua assinatura.
+          {hasPlan
+            ? "Sua conta está pronta. Agora falta apenas concluir sua assinatura."
+            : "Sua conta está pronta. Você já pode entrar no seu espaço diário."}
         </p>
         {emailMasked ? (
           <p className="mt-3 text-sm text-ink-soft">
@@ -67,7 +85,7 @@ export function EmailConfirmedExperience({
 
       <Button asChild className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft">
         <Link href={continueHref}>
-          {hasPlan ? "Continuar para pagamento" : "Escolher meu plano"}
+          {hasPlan ? "Continuar para pagamento" : "Ir para o Início"}
         </Link>
       </Button>
 

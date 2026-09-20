@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const intentToken = searchParams.get("intent");
-  const next = safeNextPath(searchParams.get("next"), "/planos");
+  const next = safeNextPath(searchParams.get("next"), "/email-confirmado");
   const requestId = createRequestId();
 
   const ctx = createRouteHandlerSupabaseClient(request);

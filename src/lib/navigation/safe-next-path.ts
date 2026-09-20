@@ -88,6 +88,11 @@ export function buildConversarResumePath(
     qs.set("etapa", etapa);
   }
 
+  const hojeRaw = firstSearchValue(searchParams.hoje)?.trim();
+  if (hojeRaw && /^\d{4}-\d{2}-\d{2}$/.test(hojeRaw)) {
+    qs.set("hoje", hojeRaw);
+  }
+
   const query = qs.toString();
   return query ? `/conversar?${query}` : "/conversar";
 }

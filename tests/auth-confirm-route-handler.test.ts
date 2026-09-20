@@ -249,7 +249,7 @@ describe("auth confirm route HTTP integration", () => {
     );
     const location = response.headers.get("location") ?? "";
     expect(location).not.toContain("evil.example");
-    expect(location).toContain("/planos");
+    expect(location).toContain("/email-confirmado");
   });
 
   it("maps already-used OTP to entrar?error=already without session", async () => {

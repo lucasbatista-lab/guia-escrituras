@@ -75,7 +75,7 @@ export async function resendConfirmationAction(input: {
   try {
     emailRedirectTo = intentToken
       ? getEmailRedirectToWithIntent(intentToken, "/email-confirmado")
-      : getEmailRedirectTo("/planos");
+      : getEmailRedirectTo("/email-confirmado");
   } catch {
     logger.error("resend_confirmation_config_missing", {
       requestId,

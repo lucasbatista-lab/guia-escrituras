@@ -351,7 +351,12 @@ export async function updateSession(request: NextRequest) {
         pathname === "/personalizar" ||
         pathname.startsWith("/personalizar/")
       ) {
-        if (!isLive) {
+        if (
+          !isLive &&
+          state !== "confirmed_without_plan" &&
+          state !== "ended" &&
+          state !== "past_due"
+        ) {
           const url = request.nextUrl.clone();
           const dest = unpaidDestination(snapshot);
           url.pathname = dest.split("?")[0] ?? dest;

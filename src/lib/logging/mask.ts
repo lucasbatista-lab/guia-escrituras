@@ -28,7 +28,7 @@ export function maskToken(token: string | null | undefined): string | undefined 
 }
 
 const SENSITIVE_KEY =
-  /^(message|content|answer|prompt|body|text|password|token|authorization|cookie|email|stripeCustomerId|stripeSubscriptionId|spiritual|conversationMemory|followUpQuestion|crisis|prayer|confession)$/i;
+  /^(message|content|answer|prompt|body|text|password|token|authorization|cookie|email|stripeCustomerId|stripeSubscriptionId|spiritual|conversationMemory|followUpQuestion|crisis|prayer|confession|checkin|journal|diary|gratitude)$/i;
 
 function redactValue(key: string, value: unknown, depth: number): unknown {
   if (SENSITIVE_KEY.test(key)) return "[redacted]";

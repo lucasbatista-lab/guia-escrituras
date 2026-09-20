@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DailyHomeSection } from "@/components/daily/daily-home-section";
 import { JourneysInicioCard } from "@/components/journeys/journeys-inicio-card";
 import { ActivationSessionChecklist } from "@/components/platform/activation-session-checklist";
 import { PrimaryActionCard } from "@/components/platform/primary-action-card";
@@ -184,26 +185,15 @@ export default async function InicioPage() {
     }
   }
 
-  if (
-    state === "confirmed_without_plan" ||
-    state === "ended" ||
-    state === "payment_pending" ||
-    state === "payment_processing"
-  ) {
-    const hasPendingPayment =
-      state === "payment_pending" || state === "payment_processing";
+  if (state === "payment_pending" || state === "payment_processing") {
     return (
       <div className="space-y-8">
         <PlatformPageHeader
           title={greeting}
-          description={
-            hasPendingPayment
-              ? "Falta concluir o pagamento para liberar suas reflexões."
-              : "Falta escolher um plano para começar a conversar."
-          }
+          description="Falta concluir o pagamento para liberar suas reflexões."
         />
 
-        {hasPendingPayment && plan ? (
+        {plan ? (
           <StatusCard
             tone="success"
             title="Plano reservado"
@@ -217,34 +207,21 @@ export default async function InicioPage() {
           steps={[
             { label: "Plano", status: "done" },
             { label: "Conta", status: "done" },
-            {
-              label: "Pagamento",
-              status: hasPendingPayment ? "current" : "upcoming",
-            },
+            { label: "Pagamento", status: "current" },
             { label: "Personalização", status: "upcoming" },
             { label: "Primeira reflexão", status: "upcoming" },
           ]}
         />
 
         <PrimaryActionCard
-          title={hasPendingPayment ? "Concluir assinatura" : "Escolher meu plano"}
-          body={
-            hasPendingPayment
-              ? "Continue de onde parou. Em poucos passos você libera o chat."
-              : "Escolha o plano que combina com o ritmo de reflexão que você deseja."
-          }
+          title="Concluir assinatura"
+          body="Continue de onde parou. Em poucos passos você libera o chat."
           href={
-            hasPendingPayment
-              ? state === "payment_processing"
-                ? "/assinatura/sucesso"
-                : "/assinar/continuar"
-              : "/planos"
+            state === "payment_processing"
+              ? "/assinatura/sucesso"
+              : "/assinar/continuar"
           }
-          cta={
-            hasPendingPayment
-              ? "Continuar para pagamento"
-              : "Escolher meu plano"
-          }
+          cta="Continuar para pagamento"
           tone="emphasis"
         />
       </div>
@@ -281,6 +258,7 @@ export default async function InicioPage() {
           cta="Personalizar minha experiência"
           tone="emphasis"
         />
+        <DailyHomeSection userId={auth.userId} allowsChat={false} />
       </div>
     );
   }
@@ -290,7 +268,7 @@ export default async function InicioPage() {
       <div className="space-y-8">
         <PlatformPageHeader
           title={greeting}
-          description="Há um problema com o pagamento da sua assinatura."
+          description="Há um problema com o pagamento da sua assinatura. O conteúdo de hoje continua aqui."
         />
         <StatusCard
           tone="warning"
@@ -304,11 +282,41 @@ export default async function InicioPage() {
           cta="Ir para minha conta"
           tone="emphasis"
         />
+        <DailyHomeSection userId={auth.userId} allowsChat={false} />
       </div>
     );
   }
 
-  // active_ready | canceling_at_period_end
+  if (state === "confirmed_without_plan" || state === "ended") {
+    return (
+      <div className="space-y-6">
+        <header>
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
+            Hoje
+          </p>
+          <h1 className="mt-1 font-display text-2xl text-ink sm:text-3xl">
+            {greeting}
+          </h1>
+          <p className="mt-1 text-sm text-ink-soft">
+            Um espaço diário de fé, no seu ritmo. Conversar continua sendo um
+            recurso dos planos pagos.
+          </p>
+        </header>
+        <DailyHomeSection userId={auth.userId} allowsChat={false} />
+        <p className="text-sm text-ink-soft">
+          Quando quiser aprofundar em conversa,{" "}
+          <Link
+            href="/planos"
+            className="font-medium text-ink underline-offset-4 hover:underline"
+          >
+            veja os planos
+          </Link>
+          .
+        </p>
+      </div>
+    );
+  }
+
   const chatCandidate: ReturnTargetCandidate | null = resume
     ? {
         kind: "chat",
@@ -342,6 +350,8 @@ export default async function InicioPage() {
             </p>
           ) : null}
         </header>
+
+        <DailyHomeSection userId={auth.userId} allowsChat={allowsChat} />
 
         <section
           aria-labelledby="first-reflection-heading"
@@ -397,6 +407,8 @@ export default async function InicioPage() {
           </p>
         ) : null}
       </header>
+
+      <DailyHomeSection userId={auth.userId} allowsChat={allowsChat} />
 
       <section
         aria-labelledby="resume-heading"

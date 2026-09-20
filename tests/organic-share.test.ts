@@ -18,11 +18,12 @@ import {
 import { assertNotSelfReferral } from "@/lib/referrals";
 
 describe("share UTM origins", () => {
-  it("allows only the three CTA origins", () => {
+  it("allows only the listed CTA origins", () => {
     expect(SHARE_UTM_CONTENTS).toEqual([
       "home_final_cta",
       "account_share",
       "subscription_success",
+      "daily_share",
     ]);
     expect(isShareUtmContent("home_final_cta")).toBe(true);
     expect(isShareUtmContent("arbitrary")).toBe(false);

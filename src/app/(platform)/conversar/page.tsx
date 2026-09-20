@@ -29,6 +29,7 @@ import {
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
+import { buildDailyChatPrefill } from "@/lib/daily/chat-prefill";
 import { sanitizeThemeDraft } from "@/lib/journey/theme-shortcuts";
 import { buildJourneyStepChatPrefill } from "@/lib/journeys/chat-prefill";
 import { logJourneyOperationalEvent } from "@/lib/journeys/events";
@@ -57,8 +58,12 @@ export default async function ConversarPage({
   const etapaRaw = params.etapa;
   const jornadaParam = Array.isArray(jornadaRaw) ? jornadaRaw[0] : jornadaRaw;
   const etapaParam = Array.isArray(etapaRaw) ? etapaRaw[0] : etapaRaw;
+  const hojeRaw = params.hoje;
+  const hojeParam = Array.isArray(hojeRaw) ? hojeRaw[0] : hojeRaw;
   const journeyPrefill = buildJourneyStepChatPrefill(jornadaParam, etapaParam);
-  const initialDraft = journeyPrefill ?? sanitizeThemeDraft(temaParam);
+  const dailyPrefill = buildDailyChatPrefill(hojeParam);
+  const initialDraft =
+    journeyPrefill ?? dailyPrefill ?? sanitizeThemeDraft(temaParam);
 
   if (journeyPrefill && jornadaParam && etapaParam) {
     logJourneyOperationalEvent({

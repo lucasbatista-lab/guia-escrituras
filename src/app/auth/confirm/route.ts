@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
   const intentToken = searchParams.get("intent");
   const next = safeNextPath(
     searchParams.get("next"),
-    intentToken ? "/email-confirmado" : "/planos",
+    intentToken ? "/email-confirmado" : "/email-confirmado",
   );
   const requestId = createRequestId();
 

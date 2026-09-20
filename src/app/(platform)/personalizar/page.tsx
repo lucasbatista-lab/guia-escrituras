@@ -3,9 +3,9 @@ import { PersonalizationForm } from "@/components/auth/onboarding-form";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { getAuthUserContext } from "@/lib/auth";
 import { safeNextPath } from "@/lib/navigation/safe-next-path";
+import { journeyCanPersonalize } from "@/lib/daily/access";
 import {
   getRequiredDestinationForState,
-  journeyHasEffectiveAccess,
   resolveUserJourneyState,
 } from "@/lib/journey";
 
@@ -21,14 +21,14 @@ export default async function PersonalizarPage({
 
   const { state } = await resolveUserJourneyState();
 
-  if (!journeyHasEffectiveAccess(state)) {
+  if (!journeyCanPersonalize(state)) {
     redirect(getRequiredDestinationForState(state));
   }
   const params = await searchParams;
   const rawNext = params.next;
   const completionHref = safeNextPath(
     Array.isArray(rawNext) ? rawNext[0] : rawNext,
-    "/conversar",
+    "/inicio",
   );
 
   return (

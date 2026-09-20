@@ -115,11 +115,11 @@ export function getAppUrl(): string {
  * Supabase template must append: &token_hash={{ .TokenHash }}&type=email
  *
  * With plan: next continues subscription (/email-confirmado).
- * Without plan: next is /planos.
+ * Without plan: next is /email-confirmado (free home after confirm).
  */
-export function getEmailRedirectTo(nextPath = "/planos"): string {
+export function getEmailRedirectTo(nextPath = "/email-confirmado"): string {
   const origin = getAppUrl() || getCanonicalSiteUrl();
-  const next = nextPath.startsWith("/") ? nextPath : "/planos";
+  const next = nextPath.startsWith("/") ? nextPath : "/email-confirmado";
   if (!origin) {
     throw new Error("APP_URL_or_NEXT_PUBLIC_APP_URL_missing");
   }

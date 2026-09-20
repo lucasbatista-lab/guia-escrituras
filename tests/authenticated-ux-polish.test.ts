@@ -29,7 +29,10 @@ describe("authenticated UX polish", () => {
   it("inicio covers journey CTAs and progress without chat cards when unpaid", () => {
     const page = read("src", "app", "(platform)", "inicio", "page.tsx");
     expect(page).toContain("Continuar para pagamento");
-    expect(page).toContain("Escolher meu plano");
+    expect(page).toContain("DailyHomeSection");
+    expect(page).toContain("veja os planos");
+    const card = read("src", "components", "daily", "hoje-com-deus-card.tsx");
+    expect(card).toContain("Hoje com Deus");
     expect(page).toContain("Personalizar minha experiência");
     expect(page).toContain("Seu plano está ativo");
     expect(page).toContain("Nova reflexão");

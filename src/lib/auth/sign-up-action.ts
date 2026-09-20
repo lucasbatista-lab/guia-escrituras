@@ -344,7 +344,7 @@ export async function signUpAction(input: {
   try {
     emailRedirectTo = intentToken
       ? getEmailRedirectToWithIntent(intentToken, "/email-confirmado")
-      : getEmailRedirectTo("/planos");
+      : getEmailRedirectTo("/email-confirmado");
   } catch {
     logger.error("sign_up_config_missing", {
       requestId,
