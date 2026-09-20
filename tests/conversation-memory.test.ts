@@ -159,19 +159,19 @@ describe("depth calibration", () => {
   it("brief/balanced/deep use required word and reference bands", () => {
     expect(resolveChatResponseDepth({ preferredDepth: "brief" })).toBe("brief");
     expect(getResponseDepthGuidance("brief").wordRange).toEqual({
-      min: 150,
-      max: 300,
+      min: 70,
+      max: 180,
     });
     expect(getResponseDepthGuidance("balanced").wordRange).toEqual({
-      min: 180,
-      max: 350,
+      min: 100,
+      max: 260,
     });
     expect(getResponseDepthGuidance("deep").wordRange).toEqual({
-      min: 600,
-      max: 1000,
+      min: 400,
+      max: 900,
     });
     expect(getResponseDepthGuidance("brief").referenceCount.max).toBe(2);
-    expect(getResponseDepthGuidance("balanced").referenceCount.max).toBe(4);
+    expect(getResponseDepthGuidance("balanced").referenceCount.max).toBe(3);
     expect(getResponseDepthGuidance("deep").referenceCount.max).toBe(5);
   });
 

@@ -623,13 +623,13 @@ describe("runChatTurnStream persistence and crisis", () => {
 });
 
 describe("initial concise depth vs deepen", () => {
-  it("keeps balanced in the 180–350 band and deepen on the deep band", () => {
+  it("keeps balanced concise and deepen on the deep band", () => {
     const balanced = getResponseDepthGuidance("balanced");
     const deep = getResponseDepthGuidance("deep");
-    expect(balanced.wordRange).toEqual({ min: 180, max: 350 });
-    expect(deep.wordRange).toEqual({ min: 600, max: 1000 });
-    expect(balanced.promptLines.join("\n")).toContain("180–350");
-    expect(deep.promptLines.join("\n")).toContain("600–1000");
+    expect(balanced.wordRange).toEqual({ min: 100, max: 260 });
+    expect(deep.wordRange).toEqual({ min: 400, max: 900 });
+    expect(balanced.promptLines.join("\n")).toContain("100–260");
+    expect(deep.promptLines.join("\n")).toContain("400–900");
     expect(getMaxOutputTokensForDepth("balanced")).toBe(1800);
     expect(getMaxOutputTokensForDepth("deep")).toBe(6000);
     expect(getMaxOutputTokensForDepth("deep")).toBeGreaterThan(

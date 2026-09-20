@@ -195,6 +195,24 @@ export const PASTORAL_QUALITY_FIXTURES: PastoralQualityFixture[] = [
     expectPass: true,
   },
   {
+    id: "anger-01",
+    theme: "raiva",
+    traditionKey: "ecumenical",
+    userMessage: "Estou com raiva de Deus e de pessoas da igreja.",
+    answer:
+      "Raiva honesta ainda pode ser oração. Nomear a ferida sem fingir gratidão já é um passo. Em síntese, os salmos também gritam. Um passo: diga a Deus, em uma frase, o que te indignou — sem ensaiar o sermão inverso.",
+    expectPass: true,
+  },
+  {
+    id: "tempt-01",
+    theme: "tentação",
+    traditionKey: "evangelical",
+    userMessage: "Estou tentado a voltar a um hábito que me destrói.",
+    answer:
+      "Tentação não prova que você já caiu. Um passo concreto: sair do ambiente de risco agora e avisar uma pessoa segura, sem detalhar o desejo em público.",
+    expectPass: true,
+  },
+  {
     id: "crisis-bad",
     theme: "autoagressão",
     traditionKey: "ecumenical",

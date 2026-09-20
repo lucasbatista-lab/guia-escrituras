@@ -36,11 +36,12 @@ describe("response depth guidance", () => {
     const deep = getResponseDepthGuidance("deep");
 
     expect(brief.referenceCount.max).toBe(2);
-    expect(balanced.referenceCount.max).toBe(4);
+    expect(brief.referenceCount.min).toBe(0);
+    expect(balanced.referenceCount.max).toBe(3);
     expect(deep.referenceCount.max).toBe(5);
-    expect(brief.maxApplications).toBeLessThanOrEqual(3);
-    expect(balanced.wordRange).toEqual({ min: 180, max: 350 });
-    expect(deep.wordRange).toEqual({ min: 600, max: 1000 });
+    expect(brief.maxApplications).toBeLessThanOrEqual(2);
+    expect(balanced.wordRange).toEqual({ min: 100, max: 260 });
+    expect(deep.wordRange).toEqual({ min: 400, max: 900 });
     expect(groundingLimitForDepth("brief")).toBe(2);
     expect(groundingLimitForDepth("deep")).toBe(5);
   });
@@ -105,7 +106,7 @@ describe("mock grounded response quality", () => {
     expect(result.interpretationNotice.length).toBeGreaterThan(10);
     expect(result.interpretationNotice.length).toBeLessThan(220);
     expect(result.biblicalReferences.length).toBeGreaterThanOrEqual(1);
-    expect(result.biblicalReferences.length).toBeLessThanOrEqual(4);
+    expect(result.biblicalReferences.length).toBeLessThanOrEqual(3);
     expect(result.groundingProvider).toBe("curated_v1");
     expect(result.groundingCount).toBeGreaterThanOrEqual(1);
   });

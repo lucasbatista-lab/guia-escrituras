@@ -37,6 +37,8 @@ describe("pastoral quality offline scorecard", () => {
       "usuário querendo conversar",
       "usuário retornando após dias",
       "assunto repetido",
+      "raiva",
+      "tentação",
       "católico",
       "evangélico/protestante",
       "não denominacional",
@@ -90,6 +92,12 @@ describe("chat quality prompt and daily link", () => {
     );
     expect(policy.composedSystemPromptSections.join("\n")).toContain(
       "Não faça mais de uma pergunta por turno",
+    );
+    expect(policy.composedSystemPromptSections.join("\n")).toContain(
+      "Bíblia entra com naturalidade",
+    );
+    expect(policy.composedSystemPromptSections.join("\n")).toContain(
+      "não é Deus, Jesus, pastor ordenado nem terapeuta",
     );
     expect(policy.generalRules.some((r) => r.includes("Não afirme ser Jesus"))).toBe(
       true,

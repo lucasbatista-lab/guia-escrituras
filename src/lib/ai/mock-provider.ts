@@ -16,48 +16,32 @@ export class MockAiProvider implements AiProvider {
     const guidance = getResponseDepthGuidance(depth);
     const topRefs = input.grounding.retrieved.slice(
       0,
-      guidance.referenceCount.max,
+      Math.max(1, Math.min(guidance.referenceCount.max, 2)),
     );
 
-    const refReflection = topRefs
-      .map((item) => {
-        const { entry } = item;
-        return `À luz de ${entry.formattedReference}, ${entry.editorialSummary.replace(/^Em síntese,\s*/i, "").replace(/^A passagem ensina\s*/i, "").replace(/^À luz desse texto,\s*/i, "")}`;
-      })
-      .join(" ");
+    const primaryRef = topRefs[0];
+    const refLine = primaryRef
+      ? `À luz de ${primaryRef.entry.formattedReference}, ${primaryRef.entry.editorialSummary
+          .replace(/^Em síntese,\s*/i, "")
+          .replace(/^A passagem ensina\s*/i, "")
+          .replace(/^À luz desse texto,\s*/i, "")}`
+      : null;
 
-    const steps =
-      depth === "brief"
-        ? [
-            "1. Faça uma pausa breve e leve a preocupação a Deus em oração simples.",
-            "2. Escolha um próximo passo concreto e pequeno para hoje.",
-            "3. Se a angústia for intensa, peça apoio a alguém de confiança.",
-          ]
-        : depth === "deep"
-          ? [
-              "1. Nomeie com honestidade o que mais pesa agora.",
-              "2. Leve isso a Deus em oração sem pressa de “resolver tudo”.",
-              "3. Escolha um cuidado prático concreto para as próximas 24 horas.",
-              "4. Compartilhe com alguém seguro, se fizer sentido.",
-              "5. Volte amanhã a uma passagem que tocou você e note um detalhe novo.",
-            ]
-          : [
-              "1. Respire e diga a Deus, em poucas palavras, o que está sentindo.",
-              "2. Escolha um gesto concreto de cuidado para este dia.",
-              "3. Se precisar, peça ajuda humana adequada além da reflexão espiritual.",
-              "4. Relacionar a passagem ao próximo passo, sem cobrança.",
-            ];
+    const step =
+      depth === "deep"
+        ? "Um passo possível: nomeie o que mais pesa, ore sem pressa de resolver tudo, e escolha um cuidado concreto para as próximas 24 horas."
+        : "Um passo possível hoje: diga a Deus, em poucas palavras, o que está sentindo — e escolha um gesto pequeno e concreto.";
 
     const answer = [
       currentUser
-        ? `Obrigado por trazer isso com honestidade. Ouço o peso em: “${currentUser.slice(0, 120)}${currentUser.length > 120 ? "…" : ""}”.`
-        : "Obrigado por trazer sua situação com honestidade.",
+        ? `Obrigado por trazer isso. Ouço o peso em: “${currentUser.slice(0, 100)}${currentUser.length > 100 ? "…" : ""}”.`
+        : "Obrigado por trazer sua situação.",
       "",
-      refReflection ||
-        "Com base nas Escrituras recuperadas, há convite à confiança serena e ao cuidado concreto.",
+      "Vamos organizar o que você trouxe sem forçar um sermão.",
+      refLine ??
+        "Quando a Escritura ajudar, usamos a passagem recuperada; se não couber agora, seguimos no que é concreto.",
       "",
-      "Para este momento:",
-      ...steps.slice(0, guidance.maxApplications),
+      step,
     ].join("\n");
 
     if (answerLooksLikeLiteralUnlicensedQuote(answer)) {
@@ -89,12 +73,18 @@ export class MockAiProvider implements AiProvider {
     input.onAnswerSnapshot?.(answer.slice(0, Math.min(48, answer.length)));
     input.onAnswerSnapshot?.(answer);
 
+    const needsFollowUp =
+      currentUser.length > 0 &&
+      currentUser.length < 40 &&
+      !/[.!?]$/.test(currentUser);
+
     return {
       answer,
       biblicalReferences: accepted.slice(0, guidance.referenceCount.max),
       interpretationNotice: SHORT_INTERPRETATION_NOTICE,
-      followUpQuestion:
-        "Há algum detalhe dessa situação que você gostaria de trazer com mais calma?",
+      followUpQuestion: needsFollowUp
+        ? "Há algum detalhe concreto dessa situação que queira trazer?"
+        : "",
       conversationMemory: [
         input.conversationSummary
           ? `Continuidade: ${input.conversationSummary.slice(0, 280)}`
