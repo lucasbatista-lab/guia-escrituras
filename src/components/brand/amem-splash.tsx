@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "amem.splash.seen";
@@ -8,6 +8,23 @@ const STORAGE_KEY = "amem.splash.seen";
 const HONESTY_A =
   "Não é Jesus, pastor, terapeuta nem a voz de Deus";
 const HONESTY_B = "Presença com limites honestos";
+
+function readHonesty(force?: "A" | "B"): "A" | "B" {
+  if (force) return force;
+  if (typeof window === "undefined") return "A";
+  try {
+    const seen = window.localStorage.getItem(STORAGE_KEY);
+    if (seen === "1") return "B";
+    window.localStorage.setItem(STORAGE_KEY, "1");
+    return "A";
+  } catch {
+    return "A";
+  }
+}
+
+function subscribeNoop() {
+  return () => undefined;
+}
 
 /**
  * Web/PWA splash — V17 motion 0→180→380→700ms.
@@ -26,25 +43,11 @@ export function AmemSplash({
   autoHideMs?: number;
 }) {
   const [visible, setVisible] = useState(true);
-  const [honesty, setHonesty] = useState<"A" | "B">(forceHonesty ?? "A");
-
-  useEffect(() => {
-    if (forceHonesty) {
-      setHonesty(forceHonesty);
-      return;
-    }
-    try {
-      const seen = window.localStorage.getItem(STORAGE_KEY);
-      if (seen === "1") {
-        setHonesty("B");
-      } else {
-        setHonesty("A");
-        window.localStorage.setItem(STORAGE_KEY, "1");
-      }
-    } catch {
-      setHonesty("A");
-    }
-  }, [forceHonesty]);
+  const honesty = useSyncExternalStore(
+    subscribeNoop,
+    () => readHonesty(forceHonesty),
+    () => forceHonesty ?? "A",
+  );
 
   useEffect(() => {
     const reduce =
