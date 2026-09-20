@@ -212,8 +212,8 @@ export function PlatformNav({
                   className={cn(
                     "relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                     current
-                      ? "text-wine"
-                      : "text-[color:var(--amem-nav-inactive,#8A8278)]",
+                      ? "font-semibold text-wine"
+                      : "font-normal text-[color:var(--amem-nav-inactive,#8A8278)]",
                   )}
                 >
                   <span

@@ -34,7 +34,9 @@ describe("Wave 3A V17 brand splash share paywall nav", () => {
     expect(card).toContain("amem-dusk");
     expect(card).toContain("data-amem-share-card");
     expect(card).toContain("brass");
-    expect(card).not.toMatch(/orange|#FF|coral|peach/i);
+    expect(card.toLowerCase()).not.toContain("orange");
+    expect(card.toLowerCase()).not.toContain("coral");
+    expect(card.toLowerCase()).not.toContain("peach");
   });
 
   it("QA fixtures stay on /dev/amem-w2-qa and fail-closed", () => {

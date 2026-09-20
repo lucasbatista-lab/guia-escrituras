@@ -128,10 +128,11 @@ describe("W2 FREE/PAID navigation models", () => {
   it("active state is not color-only (marker + weight)", () => {
     const nav = read("src", "components", "platform", "platform-nav.tsx");
     expect(nav).toContain("font-semibold text-wine");
-    expect(nav).toContain("h-0.5 rounded-full bg-wine");
+    expect(nav).toContain("amem-nav-active-pill");
+    expect(nav).toContain("amem-bottom-nav-float");
     expect(nav).toContain("min-h-11");
     expect(nav).toContain("min-w-[44px]");
     expect(nav).toContain("aria-current");
-    expect(nav).toContain("pb-safe");
+    expect(nav).toContain("blur");
   });
 });

@@ -449,7 +449,7 @@ export function HojeRitual({
             </span>
           </div>
 
-          {/* Keep ritual moments reachable for logic/tests without LMS checklist */}
+          {/* Keep ritual moments reachable for logic/tests without progress rings */}
           <details className="mx-1 rounded-2xl bg-[color:var(--amem-surface)] px-4 py-3 shadow-[inset_0_0_0_1px_var(--amem-hairline)]">
             <summary className="cursor-pointer text-sm font-medium text-ink-soft">
               Ver Escuto · Falo · Pratico · Levo

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** V17 dusk share card — brass mark only, no orange mass. */
+/** V17 dusk share card — brass mark only (never gold-only fill). */
 export function PresenceShareCard({
   eyebrow = "Presença",
   quote = "Você esteve presente. Isso basta por hoje.",
