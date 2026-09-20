@@ -25,6 +25,9 @@ import {
 
 import { logger } from "@/lib/logging/logger";
 import { AppError } from "@/lib/safety";
+import { persistProductEvent } from "@/lib/product-events";
+import { getDailyContentForDate, isIsoCalendarDate } from "@/lib/daily";
+import { buildTrustedDailyContextBlock } from "@/lib/ai/pastoral-voice";
 import {
   buildCrisisAnswer,
   CRISIS_INTERPRETATION_NOTICE,
@@ -516,12 +519,24 @@ export async function* runChatTurnStream(input: {
     );
   }
 
+  const isNewConversation = !conversation;
+  const priorConversations = isNewConversation
+    ? await repos.conversations.listForUser(auth.userId, 2)
+    : [];
+  const isFirstChatEver = isNewConversation && priorConversations.length === 0;
+
   if (!conversation) {
     conversation = await repos.conversations.create({
       userId: auth.userId,
       personaKey,
       title: body.message.slice(0, 80),
     });
+    void persistProductEvent({
+      userId: auth.userId,
+      event: "chat_started",
+      eventId: `${requestId.replace(/-/g, "").slice(0, 20)}_chatst`,
+      path: "/conversar",
+    }).catch(() => undefined);
   }
 
   yield {
@@ -652,6 +667,15 @@ export async function* runChatTurnStream(input: {
       grounding,
       responseDepth,
       abortSignal: input.abortSignal,
+      trustedEditorialContext:
+        body.dailyDate && isIsoCalendarDate(body.dailyDate)
+          ? buildTrustedDailyContextBlock({
+              date: body.dailyDate,
+              title: getDailyContentForDate(body.dailyDate).title,
+              scriptureReference:
+                getDailyContentForDate(body.dailyDate).scriptureReference,
+            })
+          : null,
       onAnswerSnapshot: (answer) => {
         enqueue({ kind: "snapshot", answer });
       },
@@ -807,6 +831,14 @@ export async function* runChatTurnStream(input: {
   }
 
   if (assistantPersisted) {
+    if (isFirstChatEver) {
+      void persistProductEvent({
+        userId: auth.userId,
+        event: "first_chat_completed",
+        eventId: `${requestId.replace(/-/g, "").slice(0, 20)}_first`,
+        path: "/conversar",
+      }).catch(() => undefined);
+    }
     const memory = sanitizeConversationMemory(result.conversationMemory ?? "");
     if (memory) {
       try {

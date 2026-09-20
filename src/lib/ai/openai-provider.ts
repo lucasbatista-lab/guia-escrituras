@@ -96,6 +96,9 @@ export class OpenAiResponsesProvider implements AiProvider {
       ...buildConversationMemoryPromptGuidance(),
       "",
       ...buildGroundingPromptSection(input.grounding),
+      input.trustedEditorialContext?.trim()
+        ? `\n${input.trustedEditorialContext.trim()}\n`
+        : "",
       "Responda em português do Brasil.",
       "Utilize somente referências presentes no contexto recuperado.",
       "Não invente versículos.",
@@ -108,7 +111,8 @@ export class OpenAiResponsesProvider implements AiProvider {
       "No campo answer: NÃO repita interpretationNotice, followUpQuestion nem uma lista final de biblicalReferences — a interface já renderiza esses campos.",
       "No JSON de saída, escreva o campo answer primeiro (antes de biblicalReferences e demais campos) para o texto útil aparecer cedo no stream.",
       "interpretationNotice: uma frase curta sobre referência/síntese (não um essay).",
-      "Finalize com no máximo uma pergunta de continuidade (followUpQuestion), apenas no campo dedicado.",
+      "Finalize com no máximo uma pergunta de continuidade (followUpQuestion), apenas no campo dedicado — e só se ainda faltar um dado essencial. Se a situação já está clara, deixe followUpQuestion vazio e ofereça um passo prático.",
+      "Não empilhe perguntas no campo answer.",
     ].join("\n");
 
     const recentBlock = input.messages

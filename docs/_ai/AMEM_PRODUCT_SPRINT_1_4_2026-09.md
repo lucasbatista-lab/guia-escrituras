@@ -34,7 +34,11 @@ Não repetir auditorias de `AMEM_PRODUCT_APPSTORE_AUDIT_2026-09.md` / `AMEM_PROD
 
 ## Lote 2
 
-Pendente.
+- Regras de voz pastoral no system prompt (menos perguntas, menos clichê, continuidade).
+- Scorecard offline cobrindo os temas do lote; live harness 36 casos intacto (opt-in).
+- `dailyDate` trusted no chat (registry only); prefill editorial sem check-in.
+- Eventos `chat_started` / `first_chat_completed` sem conteúdo de mensagem.
+- Safety/crisis/teologia preservados.
 
 ## Lote 3
 

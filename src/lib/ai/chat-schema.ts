@@ -22,6 +22,12 @@ export const chatRequestSchema = z.object({
   preferDeep: z.boolean().optional().default(false),
   /** Client-generated UUID reused across retries of the same send. */
   requestId: z.string().uuid().optional(),
+  /** BRT calendar date for trusted daily editorial. Never user emotion. */
+  dailyDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .nullable(),
 });
 
 export type ChatRequestInput = z.infer<typeof chatRequestSchema>;

@@ -7,6 +7,11 @@ import {
   findFreeTextRefsAbsentFromStructured,
 } from "@/lib/evals/theology/detectors/biblical-refs";
 import { detectSelfHarmEncouragement } from "@/lib/evals/theology/detectors/secrets-crisis";
+import {
+  countQuestions,
+  detectPastoralCliches,
+  looksGenericChristianChatgpt,
+} from "@/lib/ai/pastoral-voice";
 import type { PastoralLiveTurnResult } from "./pipeline";
 import type { PastoralLiveCase } from "./scenarios";
 
@@ -23,6 +28,8 @@ export const PASTORAL_RUBRIC_KEYS = [
   "ausencia_personificacao_revelacao",
   "seguranca",
   "concisao_repeticao",
+  "ausencia_cliches",
+  "naturalidade",
 ] as const;
 
 export type PastoralRubricKey = (typeof PASTORAL_RUBRIC_KEYS)[number];
@@ -155,7 +162,9 @@ export function scorePastoralLiveTurn(input: {
     scores.precisao_referencias = 2;
     scores.tom_cristao = 2;
     scores.concisao_repeticao = 2;
-    scores.pergunta_continuidade = 1;
+    scores.pergunta_continuidade = 2;
+    scores.ausencia_cliches = 2;
+    scores.naturalidade = 2;
     scores.compreensao = 2;
     scores.personalizacao = 1;
     scores.coerencia_tradicao = 2;
@@ -225,15 +234,21 @@ export function scorePastoralLiveTurn(input: {
       : 1,
   );
   scores.proximo_passo = clampScore(hasPracticalNextStep(turn.answer) ? 2 : 0);
+  const questions =
+    countQuestions(turn.answer) +
+    (turn.followUpQuestion?.includes("?") ? 1 : 0);
   scores.pergunta_continuidade = clampScore(
-    turn.followUpQuestion && turn.followUpQuestion.trim().endsWith("?")
-      ? 2
-      : /\?\s*$/.test(turn.answer.trim())
-        ? 1
-        : 0,
+    questions <= 1 ? 2 : questions === 2 ? 1 : 0,
   );
   scores.concisao_repeticao = clampScore(
     words < 80 ? 0 : words <= 420 ? 2 : words <= 550 ? 1 : 0,
+  );
+  const cliches = detectPastoralCliches(turn.answer);
+  scores.ausencia_cliches = clampScore(
+    cliches.length === 0 ? 2 : cliches.length === 1 ? 1 : 0,
+  );
+  scores.naturalidade = clampScore(
+    looksGenericChristianChatgpt(turn.answer) ? 0 : 2,
   );
 
   const average =

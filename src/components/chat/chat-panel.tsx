@@ -60,6 +60,7 @@ export function ChatPanel({
   historyMayBeTruncated = false,
   chatFeatureDisabled = false,
   deepenFeatureDisabled = false,
+  dailyDate = null,
 }: {
   /** Authenticated user id — scopes session drafts; never email. */
   userId: string;
@@ -77,6 +78,8 @@ export function ChatPanel({
   chatFeatureDisabled?: boolean;
   /** Ops kill switch — Aprofundar blocked; standard chat may remain. */
   deepenFeatureDisabled?: boolean;
+  /** Trusted daily editorial date (YYYY-MM-DD). Never check-in. */
+  dailyDate?: string | null;
 }) {
   const hasHistory = Boolean(initialMessages && initialMessages.length > 0);
   const [messages, setMessages] = useState<UiMessage[]>(
@@ -258,6 +261,7 @@ export function ChatPanel({
           personaKey: "jesus",
           requestId,
           preferDeep: useDeep,
+          ...(dailyDate && !conversationId ? { dailyDate } : {}),
         }),
       });
 

@@ -1,6 +1,7 @@
 import { GENERAL_THEOLOGY_RULES, IDENTITY_DISCLAIMER } from "./general-rules";
 import { getPersona, getPersonaPolicy } from "./personas";
 import { getTraditionPolicy } from "./traditions";
+import { PASTORAL_VOICE_RULES } from "@/lib/ai/pastoral-voice";
 import type {
   SpiritualProfilePrefs,
   TheologyPolicy,
@@ -75,6 +76,8 @@ export class TheologyPolicyResolver {
       ...personaRules.map((rule) => `- ${rule}`),
       "## Preferências do usuário",
       ...userPreferenceRules.map((rule) => `- ${rule}`),
+      "## Qualidade da conversa",
+      ...PASTORAL_VOICE_RULES.map((rule) => `- ${rule}`),
     ];
 
     return {

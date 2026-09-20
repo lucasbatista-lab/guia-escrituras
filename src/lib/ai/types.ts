@@ -26,6 +26,8 @@ export interface AiGenerateInput {
     openaiStreamStartedAt?: number;
     openaiFirstDeltaAt?: number;
   }) => void;
+  /** Registry-only daily editorial. Never user check-in or free text. */
+  trustedEditorialContext?: string | null;
 }
 
 export interface AiGenerateResult {

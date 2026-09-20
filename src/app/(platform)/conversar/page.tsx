@@ -93,6 +93,7 @@ export default async function ConversarPage({
     currentPlanKey: auth.planKey,
     chatFeatureDisabled: isFeatureDisabled("chat"),
     deepenFeatureDisabled: isFeatureDisabled("deepen"),
+    dailyDate: dailyPrefill && hojeParam ? hojeParam : null,
   };
 
   if (!conversationParam?.trim()) {
