@@ -1,3 +1,4 @@
+import importedCatalog from "./editorial/imported.json";
 import { calendarDayIndex, isIsoCalendarDate } from "./timezone";
 import type { DailyContent } from "./types";
 
@@ -162,12 +163,17 @@ export const DAILY_CONTENT_SEED: readonly DailyContent[] = [
   },
 ] as const;
 
+const IMPORTED_CATALOG = importedCatalog as DailyContent[];
+
 const BY_DATE = new Map(
   DAILY_CONTENT_SEED.filter((item) => item.publishDate).map((item) => [
     item.publishDate as string,
     item,
   ]),
 );
+for (const item of IMPORTED_CATALOG) {
+  if (item.publishDate) BY_DATE.set(item.publishDate, item);
+}
 
 export function getDailyContentForDate(isoDate: string): DailyContent {
   const date = isIsoCalendarDate(isoDate) ? isoDate : DAILY_CONTENT_SEED[0]!.publishDate!;
@@ -179,11 +185,21 @@ export function getDailyContentForDate(isoDate: string): DailyContent {
 }
 
 export function getDailyContentById(id: string): DailyContent | null {
-  return DAILY_CONTENT_SEED.find((item) => item.id === id) ?? null;
+  return (
+    IMPORTED_CATALOG.find((item) => item.id === id) ??
+    DAILY_CONTENT_SEED.find((item) => item.id === id) ??
+    null
+  );
 }
 
 export function listPublishedDailyContent(): DailyContent[] {
-  return DAILY_CONTENT_SEED.filter((item) => item.status === "published").map(
-    (item) => item,
-  );
+  const fromSeed = DAILY_CONTENT_SEED.filter((item) => item.status === "published");
+  const fromImport = IMPORTED_CATALOG.filter((item) => item.status === "published");
+  const byId = new Map<string, DailyContent>();
+  for (const item of [...fromSeed, ...fromImport]) byId.set(item.id, item);
+  return [...byId.values()];
+}
+
+export function listDatedPublishedDailyContent(): DailyContent[] {
+  return [...BY_DATE.values()].filter((item) => item.status === "published");
 }

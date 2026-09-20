@@ -18,6 +18,7 @@ export {
   getDailyContentForDate,
   getDailyContentById,
   listPublishedDailyContent,
+  listDatedPublishedDailyContent,
 } from "./content";
 export {
   buildDailyShareText,
