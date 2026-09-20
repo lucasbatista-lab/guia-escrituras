@@ -8,7 +8,7 @@ function read(...parts: string[]) {
   return readFileSync(join(root, ...parts), "utf8");
 }
 
-describe("W3 living /inicio", () => {
+describe("W3 / Wave 3A living /inicio V17", () => {
   it("free and paid composition use InicioLiving (not card soup)", () => {
     const page = read("src", "app", "(platform)", "inicio", "page.tsx");
     expect(page).toContain("InicioLiving");
@@ -16,16 +16,16 @@ describe("W3 living /inicio", () => {
     expect(page).toMatch(/allowsChat=\{allowsChat\}[\s\S]*InicioLiving|InicioLiving[\s\S]*allowsChat=\{allowsChat\}/);
   });
 
-  it("living home is scene-first with memory strip and no entitlement leak", () => {
+  it("living home is dusk-first with Espaço/Caminhos teasers and no entitlement leak", () => {
     const living = read("src", "components", "inicio", "inicio-living.tsx");
-    expect(living).toContain("SurfaceScene");
+    expect(living).toContain("amem-surface-dusk");
+    expect(living).toContain("amem-surface-poco");
     expect(living).toContain("MemoryStrip");
     expect(living).toContain('href="/hoje"');
+    expect(living).toContain("Entrar no Hoje");
     expect(living).toContain("Caminhos");
-    expect(living).toContain("LockPill");
-    // FREE keeps ritual; Conversar is contextual door not a free LLM claim
-    expect(living).toContain("Conta");
-    expect(living).toContain("grátis");
+    expect(living).toContain("PlanChip");
+    expect(living).toContain("Grátis");
     expect(living).not.toMatch(/streak|confetti|dias seguidos/i);
   });
 
