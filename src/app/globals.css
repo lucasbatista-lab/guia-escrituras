@@ -561,6 +561,13 @@
   }
 
   /* Floating bottom nav shell */
+  
+  /* Soft paywall: inert bottom nav while sheet open (W0 a11y + Wave 3A.1) */
+  body[data-amem-sheet="open"] .amem-bottom-nav,
+  body[data-amem-sheet="open"] .amem-bottom-nav-float {
+    pointer-events: none;
+  }
+
   .amem-bottom-nav-float {
     left: 14px;
     right: 14px;

@@ -38,6 +38,7 @@ type ScrollLockSnapshot = {
  * Soft paywall action sheet — dismissible without losing free-account value.
  * Does not claim free plan is absent. Gold CTA only at the plans door.
  */
+
 export function SoftPaywallSheet({
   copy,
   defaultOpen = true,
@@ -50,7 +51,6 @@ export function SoftPaywallSheet({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const wasOpen = useRef(false);
-
   const dismiss = useCallback(() => {
     setOpen(false);
   }, []);
@@ -102,6 +102,7 @@ export function SoftPaywallSheet({
       scrollY,
     };
 
+    document.body.dataset.amemSheet = "open";
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     document.body.style.position = "fixed";
@@ -145,6 +146,7 @@ export function SoftPaywallSheet({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
+      delete document.body.dataset.amemSheet;
       document.documentElement.style.overflow = snapshot.htmlOverflow;
       document.body.style.overflow = snapshot.bodyOverflow;
       document.body.style.position = snapshot.bodyPosition;
@@ -197,7 +199,7 @@ export function SoftPaywallSheet({
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 cursor-default border-0 p-0 backdrop-blur-[6px]"
+            className="fixed inset-0 z-[100] cursor-default border-0 p-0 backdrop-blur-[6px]"
             style={{ background: "rgba(247,245,241,0.42)" }}
             aria-label="Fechar painel"
             tabIndex={-1}
@@ -210,7 +212,7 @@ export function SoftPaywallSheet({
             aria-labelledby={titleId}
             aria-describedby={descriptionId}
             tabIndex={-1}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg outline-none"
+            className="fixed inset-x-0 bottom-0 z-[110] mx-auto max-w-lg outline-none"
           >
             <div
               className="rounded-t-[28px] bg-[color:var(--amem-surface,#FFFDFC)] px-[22px] pb-[max(2.5rem,var(--safe-bottom))] pt-7 shadow-[0_-18px_48px_rgba(25,22,19,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"

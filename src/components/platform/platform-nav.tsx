@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { X } from "lucide-react";
 import {
-  Home,
-  Menu,
-  MessageCircle,
-  Sparkles,
-  Layers,
-  Waypoints,
-  X,
-} from "lucide-react";
+  NavIconCaminhos,
+  NavIconConversar,
+  NavIconEspaco,
+  NavIconHoje,
+  NavIconInicio,
+  NavIconMenu,
+} from "@/components/platform/nav-icons";
 import { brand } from "@/config/brand";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import type { PlatformNavItem } from "@/lib/journey/journey-state";
@@ -28,10 +28,10 @@ const DEFAULT_NAV: PlatformNavItem[] = [
 ];
 
 function iconForTab(tab: BottomNavTab) {
-  if (tab.id === "inicio") return Home;
-  if (tab.id === "hoje") return Sparkles;
-  if (tab.id === "caminhos") return Waypoints;
-  return tab.href === "/conversar" ? MessageCircle : Layers;
+  if (tab.id === "inicio") return NavIconInicio;
+  if (tab.id === "hoje") return NavIconHoje;
+  if (tab.id === "caminhos") return NavIconCaminhos;
+  return tab.href === "/conversar" ? NavIconConversar : NavIconEspaco;
 }
 
 export function PlatformNav({
@@ -138,15 +138,12 @@ export function PlatformNav({
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-card/90 pt-safe backdrop-blur-md md:hidden">
-        <div className="flex h-14 items-center justify-between px-4">
-          <Link
-            href="/inicio"
-            className="inline-flex min-h-11 items-center font-display text-base tracking-tight text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {brand.name}
-          </Link>
-          {(!showBottomNav || isChat) && (
+      {/* Mobile app shell: no sticky website wordmark when bottom nav is present. */}
+      {showBottomNav && !isChat ? (
+        <div className="pt-safe md:hidden" aria-hidden="true" />
+      ) : (
+        <header className="sticky top-0 z-30 border-b border-border/60 bg-card/90 pt-safe backdrop-blur-md md:hidden">
+          <div className="flex h-14 items-center justify-end px-4">
             <button
               ref={menuButtonRef}
               type="button"
@@ -156,11 +153,15 @@ export function PlatformNav({
               aria-label={open ? "Fechar menu" : "Abrir menu"}
               onClick={() => setOpen((value) => !value)}
             >
-              {open ? <X aria-hidden className="size-5" /> : <Menu aria-hidden className="size-5" />}
+              {open ? (
+                <X aria-hidden className="size-5" />
+              ) : (
+                <NavIconMenu aria-hidden className="size-5" />
+              )}
             </button>
-          )}
-        </div>
-      </header>
+          </div>
+        </header>
+      )}
 
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border/60 bg-card/85 px-4 py-6 backdrop-blur-md md:flex">
         <Link
@@ -247,7 +248,7 @@ export function PlatformNav({
                 aria-hidden
                 className="flex h-[30px] w-11 items-center justify-center rounded-[14px]"
               >
-                <Menu className="size-[22px] stroke-[1.65]" />
+                <NavIconMenu className="size-[22px]" />
               </span>
               <span>Menu</span>
             </button>
