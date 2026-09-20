@@ -4,67 +4,103 @@
 
 @layer base {
   :root {
-    --background: 36 33% 91%;
-    --foreground: 28 22% 14%;
-    --card: 40 60% 98%;
+    --background: 40 20% 96%;
+    --foreground: 30 12% 9%;
+    --card: 30 50% 99%;
     --card-foreground: 28 22% 14%;
     --popover: 40 60% 98%;
     --popover-foreground: 28 22% 14%;
-    --primary: 345 40% 30%;
+    --primary: 345 45% 24%;
     --primary-foreground: 36 40% 97%;
     --secondary: 34 28% 92%;
     --secondary-foreground: 28 22% 18%;
     --muted: 34 22% 93%;
     --muted-foreground: 28 12% 40%;
-    --accent: 40 45% 55%;
+    --accent: 40 35% 54%;
     --accent-foreground: 28 22% 14%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 98%;
     --border: 34 20% 86%;
     --input: 34 20% 86%;
-    --ring: 40 35% 47%;
+    --ring: 345 40% 30%;
     --radius: 1rem;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
 
-    /* ——— Amém V13 editorial presence tokens ——— */
-    --amem-canvas: #F3EBE0;
-    --amem-canvas-deep: #E9DFD0;
-    --amem-cream-50: #FBF7F0;
-    --amem-cream-100: #F4EDE3;
-    --amem-cream-200: #E4D7C4;
+    /* ——— Amém V17 Porcelain/Ivory (LOCKED) ——— */
+    --amem-canvas: #F7F5F1;
+    --amem-canvas-deep: #F0EDE7;
+    --amem-surface: #FFFDFC;
+    --amem-recess: #EBE7E1;
 
-    --amem-ink-950: #1F1914;
-    --amem-ink-900: #2C241C;
-    --amem-ink-700: #5A4E44;
-    --amem-ink-500: #8A7B6C;
-    --amem-ink-300: #B8AA9A;
+    --amem-ink: #191613;
+    --amem-ink-soft: #4A453F;
+    --amem-mute: #7A7268;
 
+    --amem-wine: #5A2232;
+    --amem-wine-deep: #3A1520;
+    --amem-plum: #6B3A4A;
+
+    --amem-brass: #B8965A;
+    --amem-brass-on-dusk: #D4C09A;
+
+    --amem-hairline: rgba(25, 22, 19, 0.08);
+    --amem-hairline-wine: rgba(90, 34, 50, 0.14);
+    --amem-shadow: rgba(25, 22, 19, 0.07);
+    --amem-shadow-deep: rgba(58, 21, 32, 0.20);
+
+    --amem-cta-ritual: linear-gradient(180deg, #5A2232 0%, #3A1520 100%);
+    --amem-cta-neutral: linear-gradient(180deg, #2A2420 0%, #191613 100%);
+    --amem-dusk: linear-gradient(155deg, #3A1520 0%, #5A2232 45%, #6B3A4A 78%, #7A4A52 100%);
+    --amem-trilho: linear-gradient(90deg, #3A1520 0%, #5A2232 55%, #6B3A4A 100%);
+    --amem-ambient: radial-gradient(circle, rgba(90, 34, 50, 0.055) 0%, rgba(184, 150, 90, 0.04) 38%, transparent 68%);
+
+    --amem-cta-primary: var(--amem-cta-ritual);
+    --amem-cta-primary-exceptional: var(--amem-cta-neutral);
+    --amem-cta-secondary-bg: rgba(255, 253, 252, 0.72);
+    --amem-cta-secondary-ink: var(--amem-ink);
+    --amem-cta-premium: var(--amem-cta-ritual);
+
+    --amem-nav-bg: rgba(255, 253, 252, 0.88);
+    --amem-nav-inactive: #8A8278;
+    --amem-nav-active-pill: var(--amem-cta-ritual);
+    --amem-nav-active-icon: var(--amem-brass);
+
+    --amem-trilho-track: rgba(90, 34, 50, 0.09);
+    --amem-trilho-thickness: 3.5px;
+    --amem-trilho-now: 10px;
+    --amem-trilho-done: 5.5px;
+    --amem-trilho-next-opacity: 0.50;
+
+    /* Legacy aliases → V17 (keep W0–W5 class contracts) */
+    --amem-cream-50: #FFFDFC;
+    --amem-cream-100: #F7F5F1;
+    --amem-cream-200: #EBE7E1;
+    --amem-ink-950: #191613;
+    --amem-ink-900: #191613;
+    --amem-ink-700: #4A453F;
+    --amem-ink-500: #7A7268;
+    --amem-ink-300: #8A8278;
     --amem-wine-900: #3A1520;
-    --amem-wine-800: #4A1C2A;
-    --amem-wine-700: #6B2E3A;
-    --amem-wine-500: #8A4452;
-    --amem-wine-100: rgba(107, 46, 58, 0.10);
-    --amem-wine-060: rgba(107, 46, 58, 0.06);
-
-    /* Gold = editorial/spiritual accent (NOT premium-only) */
-    --amem-gold-600: #A8843E;
-    --amem-gold-500: #C6A05A;
-    --amem-gold-300: #E0C48A;
-    --amem-gold-120: rgba(198, 160, 90, 0.18);
-    --amem-gold-080: rgba(198, 160, 90, 0.10);
-
-    --amem-surface: #FFFCF7;
+    --amem-wine-800: #3A1520;
+    --amem-wine-700: #5A2232;
+    --amem-wine-500: #6B3A4A;
+    --amem-wine-100: rgba(90, 34, 50, 0.10);
+    --amem-wine-060: rgba(90, 34, 50, 0.06);
+    --amem-gold-600: #B8965A;
+    --amem-gold-500: #B8965A;
+    --amem-gold-300: #D4C09A;
+    --amem-gold-120: rgba(184, 150, 90, 0.18);
+    --amem-gold-080: rgba(184, 150, 90, 0.10);
     --amem-surface-elev: #FFFEFB;
-    --amem-field: #F7F1E8;
-    --amem-ink-wash: #2A221C;
-    --amem-ink-wash-soft: #3A322A;
-
-    --amem-premium-badge-bg: #2C241C;
-    --amem-premium-badge-fg: #E0C48A;
-    --amem-lock-scrim: rgba(44, 36, 28, 0.45);
+    --amem-field: #F0EDE7;
+    --amem-ink-wash: #2A2420;
+    --amem-ink-wash-soft: #191613;
+    --amem-premium-badge-bg: #3A1520;
+    --amem-premium-badge-fg: #F5EBD4;
+    --amem-lock-scrim: rgba(247, 245, 241, 0.42);
 
     --amem-serif: var(--font-display), "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     --amem-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -93,9 +129,9 @@
     --amem-s6: 32px;
     --amem-s7: 48px;
 
-    --amem-sh-soft: 0 10px 36px rgba(44, 36, 28, 0.10);
-    --amem-sh-float: 0 14px 40px rgba(44, 36, 28, 0.14);
-    --amem-sh-inset: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    --amem-sh-soft: 0 10px 36px rgba(25, 22, 19, 0.07);
+    --amem-sh-float: 0 14px 40px rgba(25, 22, 19, 0.13);
+    --amem-sh-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 
     --amem-ease-presence: cubic-bezier(0.22, 0.61, 0.36, 1);
     --amem-dur-instant: 80ms;
@@ -122,9 +158,9 @@
     line-height: var(--amem-leading-body);
     background-color: var(--amem-canvas);
     background-image:
-      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(198, 160, 90, 0.14), transparent 50%),
-      radial-gradient(ellipse 60% 40% at 90% 0%, rgba(107, 46, 58, 0.05), transparent 45%),
-      linear-gradient(180deg, var(--amem-cream-50) 0%, var(--amem-canvas) 48%, var(--amem-cream-100) 100%);
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(90, 34, 50, 0.055), transparent 55%),
+      radial-gradient(ellipse 50% 40% at 90% 0%, rgba(184, 150, 90, 0.04), transparent 50%),
+      linear-gradient(180deg, var(--amem-surface) 0%, var(--amem-canvas) 55%, var(--amem-canvas-deep) 100%);
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: clip;
@@ -240,31 +276,27 @@
   .amem-presence-light {
     pointer-events: none;
     position: absolute;
-    top: -40px;
-    left: -30px;
+    top: -120px;
+    left: 50%;
     z-index: 0;
-    width: 280px;
-    height: 280px;
+    width: 420px;
+    height: 340px;
     border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      rgba(198, 160, 90, 0.32) 0%,
-      rgba(198, 160, 90, 0.08) 42%,
-      transparent 70%
-    );
+    transform: translateX(-50%);
+    background: var(--amem-ambient);
   }
 
   .amem-presence-light-center {
-    left: 50%;
     top: 80px;
+    left: 50%;
     width: 320px;
     height: 320px;
     transform: translateX(-50%);
     background: radial-gradient(
       circle,
-      rgba(198, 160, 90, 0.38) 0%,
-      rgba(198, 160, 90, 0.10) 45%,
-      transparent 72%
+      rgba(90, 34, 50, 0.10) 0%,
+      rgba(184, 150, 90, 0.05) 42%,
+      transparent 70%
     );
   }
 
@@ -273,9 +305,9 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    opacity: 0.045;
+    opacity: 0.028;
     mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .amem-ritual-marker {
@@ -318,9 +350,63 @@
     overflow: hidden;
     border-radius: var(--amem-r-lg);
     background:
-      linear-gradient(165deg, rgba(255, 252, 247, 0.72), rgba(243, 235, 224, 0.92)),
-      radial-gradient(ellipse at 20% 0%, rgba(198, 160, 90, 0.18), transparent 55%);
-    box-shadow: var(--amem-sh-inset);
+      linear-gradient(165deg, #FFFDFC 0%, #F5F1EB 55%, #EFEBE4 100%);
+    box-shadow: 0 12px 32px var(--amem-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+  }
+
+  .amem-surface-scene::before {
+    content: "";
+    position: absolute;
+    top: -35%;
+    right: -18%;
+    width: 60%;
+    height: 80%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184, 150, 90, 0.12), transparent 65%);
+    pointer-events: none;
+  }
+
+  .amem-surface-dusk {
+    position: relative;
+    overflow: hidden;
+    border-radius: 26px;
+    color: #FFFDFC;
+    background: var(--amem-dusk);
+    box-shadow: 0 16px 40px var(--amem-shadow-deep);
+  }
+
+  .amem-surface-poco {
+    position: relative;
+    border-radius: 18px;
+    background: rgba(235, 231, 225, 0.72);
+    box-shadow: inset 0 0 0 1px var(--amem-hairline);
+    padding: 16px 16px 16px 18px;
+  }
+
+  .amem-surface-poco::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 2.5px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--amem-wine-deep), var(--amem-plum));
+    opacity: 0.55;
+  }
+
+  .amem-ink-sig {
+    width: 56px;
+    height: 5px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--amem-wine-deep), var(--amem-wine) 50%, var(--amem-brass));
+    box-shadow: 0 6px 16px rgba(90, 34, 50, 0.18);
+  }
+
+  .amem-folha {
+    border-radius: 22px;
+    background: var(--amem-surface);
+    box-shadow: 0 1px 0 var(--amem-hairline), 0 8px 24px var(--amem-shadow);
   }
 
   .amem-surface-editorial {
@@ -381,3 +467,140 @@
     animation: none !important;
   }
 }
+
+
+@layer utilities {
+  .amem-btn-ritual {
+    background-image: var(--amem-cta-ritual);
+    color: #FFFDFC;
+    box-shadow: 0 10px 24px rgba(58, 21, 32, 0.28);
+  }
+  .amem-btn-premium {
+    background-image: var(--amem-cta-ritual);
+    color: #FFFDFC;
+    box-shadow: 0 10px 24px rgba(58, 21, 32, 0.26), inset 0 0 0 1px rgba(184, 150, 90, 0.45);
+  }
+  .amem-btn-neutral {
+    background-image: var(--amem-cta-neutral);
+    color: #FFFDFC;
+    box-shadow: 0 10px 24px rgba(25, 22, 19, 0.20);
+  }
+  .amem-btn-ghost-porcelain {
+    background: var(--amem-cta-secondary-bg);
+    color: var(--amem-ink);
+    box-shadow: inset 0 0 0 1.5px rgba(25, 22, 19, 0.12);
+  }
+
+  /* V17 Ink Trail (Trilho de Tinta) — never LMS rings */
+  .amem-ink-trail {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 4px 0 16px;
+  }
+  .amem-ink-trail-track {
+    flex: 1;
+    height: var(--amem-trilho-thickness);
+    border-radius: 4px;
+    background: var(--amem-trilho-track);
+    overflow: hidden;
+  }
+  .amem-ink-trail-fill {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--amem-trilho);
+    box-shadow: 0 0 8px rgba(90, 34, 50, 0.18);
+  }
+  .amem-ink-trail-nodes {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  .amem-ink-trail-node {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    opacity: 0;
+    background: transparent;
+  }
+  .amem-ink-trail-node[data-state="done"] {
+    opacity: 1;
+    width: var(--amem-trilho-done);
+    height: var(--amem-trilho-done);
+    background: var(--amem-brass);
+    box-shadow: 0 0 0 1.5px var(--amem-wine-deep);
+  }
+  .amem-ink-trail-node[data-state="now"] {
+    opacity: 1;
+    width: var(--amem-trilho-now);
+    height: var(--amem-trilho-now);
+    background: var(--amem-wine);
+    box-shadow: 0 0 0 4px rgba(90, 34, 50, 0.14), 0 2px 8px rgba(58, 21, 32, 0.22);
+  }
+  .amem-ink-trail-node[data-state="next"] {
+    opacity: var(--amem-trilho-next-opacity);
+    width: 6px;
+    height: 6px;
+    background: var(--amem-canvas);
+    box-shadow: 0 0 0 1.5px rgba(90, 34, 50, 0.20);
+  }
+  .amem-ink-trail-node[data-state="future"] {
+    opacity: 0;
+  }
+
+  /* Floating bottom nav shell */
+  .amem-bottom-nav-float {
+    left: 14px;
+    right: 14px;
+    bottom: max(14px, var(--safe-bottom));
+    height: 64px;
+    padding-bottom: 0;
+    border: none;
+    border-radius: 22px;
+    background: var(--amem-nav-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow:
+      0 14px 40px rgba(25, 22, 19, 0.13),
+      0 2px 0 rgba(255, 255, 255, 0.7) inset,
+      inset 0 0 0 1px var(--amem-hairline);
+  }
+
+  /* Splash keyframes 0·180·380·700 */
+  @keyframes amem-splash-sig {
+    0% { width: 6px; opacity: 0.28; }
+    25.7% { width: 28px; opacity: 0.70; }
+    54.3% { width: 48px; opacity: 0.92; }
+    100% { width: 64px; opacity: 1; }
+  }
+  @keyframes amem-splash-fade {
+    0% { opacity: 0; }
+    25.7% { opacity: 0.22; }
+    54.3% { opacity: 0.70; }
+    100% { opacity: 1; }
+  }
+  .amem-splash-sig {
+    height: 7px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--amem-wine-deep), var(--amem-wine) 50%, var(--amem-brass));
+    animation: amem-splash-sig 700ms var(--amem-ease-presence) both;
+  }
+  .amem-splash-fade {
+    animation: amem-splash-fade 700ms var(--amem-ease-presence) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .amem-splash-sig,
+    .amem-splash-fade {
+      animation: none !important;
+      opacity: 1 !important;
+      width: 64px !important;
+    }
+  }
+}
+

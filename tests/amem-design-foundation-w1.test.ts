@@ -7,17 +7,20 @@ function read(...parts: string[]) {
   return readFileSync(join(root, ...parts), "utf8");
 }
 
-describe("W1 editorial presence design foundation", () => {
-  it("globals expose V13 canvas/cream/wine/gold/ink tokens", () => {
+describe("W1 / Wave 3A V17 porcelain visual system", () => {
+  it("globals expose V17 canvas/surface/ink/wine/brass tokens", () => {
     const css = read("src", "app", "globals.css");
     for (const token of [
-      "--amem-canvas",
-      "--amem-cream-50",
-      "--amem-wine-700",
-      "--amem-gold-500",
-      "--amem-ink-900",
-      "--amem-premium-badge-bg",
-      "--amem-lock-scrim",
+      "--amem-canvas: #F7F5F1",
+      "--amem-surface: #FFFDFC",
+      "--amem-ink: #191613",
+      "--amem-wine: #5A2232",
+      "--amem-wine-deep: #3A1520",
+      "--amem-plum: #6B3A4A",
+      "--amem-brass: #B8965A",
+      "--amem-cta-ritual",
+      "--amem-trilho-thickness: 3.5px",
+      "--amem-nav-bg",
       "--amem-text-body",
       "--amem-dur-ritual",
       "--amem-ease-presence",
@@ -25,14 +28,16 @@ describe("W1 editorial presence design foundation", () => {
       expect(css).toContain(token);
     }
     expect(css).toContain("font-size: var(--amem-text-body)");
-    expect(css).toContain("Gold = editorial/spiritual accent (NOT premium-only)");
+    // No peach/coral wash as default ambient
+    expect(css).not.toMatch(/peach|coral|#F3EBE0/);
   });
 
-  it("reduced motion collapses amem durations", () => {
+  it("reduced motion collapses amem durations and splash", () => {
     const css = read("src", "app", "globals.css");
     expect(css).toMatch(
       /prefers-reduced-motion:\s*reduce[\s\S]*--amem-dur-ritual:\s*1ms/,
     );
+    expect(css).toContain("amem-splash-sig");
   });
 
   it("brand primitives exist without PNG imports", () => {
@@ -54,18 +59,14 @@ describe("W1 editorial presence design foundation", () => {
     }
   });
 
-  it("button exposes soft and gold variants (gold = plan door, not premium-only semantics)", () => {
+  it("button exposes ritual/premium/ghost + gold alias (not pure-black default)", () => {
     const button = read("src", "components", "ui", "button.tsx");
+    expect(button).toContain("ritual:");
+    expect(button).toContain("premium:");
     expect(button).toContain("soft:");
     expect(button).toContain("gold:");
-    expect(button).toContain("--amem-gold-500");
-  });
-
-  it("does not redesign inicio/hoje/espaco/chat/jornada page compositions in W1", () => {
-    // Foundation-only commit should not rewrite living screens.
-    // Soft paywall gate lines are W0; W1 should not replace inicio composition.
-    const inicio = read("src", "app", "(platform)", "inicio", "page.tsx");
-    expect(inicio).toContain("DailyHomeSection");
-    expect(inicio).not.toContain("SurfaceScene");
+    expect(button).toContain("amem-btn-ritual");
+    expect(button).toContain("amem-btn-premium");
+    expect(button).not.toMatch(/default:[\s\S]*bg-black/);
   });
 });
