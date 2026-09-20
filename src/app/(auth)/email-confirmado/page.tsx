@@ -84,7 +84,11 @@ export default async function EmailConfirmadoPage({
   const auth = await getAuthUserContext();
   const flashConfirmed = await consumeEmailConfirmFlash();
 
-  const shell = (children: React.ReactNode, step: "conta" | "pagamento" = "conta") => (
+  const shell = (
+    children: React.ReactNode,
+    step: "conta" | "pagamento" | "reflexao" = "conta",
+    variant: "full" | "paid" | "free" = "full",
+  ) => (
     <div className="min-h-screen bg-[radial-gradient(circle_at_12%_5%,rgba(198,160,90,0.18),transparent_32%),radial-gradient(circle_at_95%_85%,rgba(107,46,58,0.08),transparent_34%)]">
       <header className="safe-header-pad mx-auto flex w-full max-w-lg items-center px-4 pt-6 sm:pt-8">
         <Link href="/" className="font-display text-xl text-ink">
@@ -96,7 +100,7 @@ export default async function EmailConfirmadoPage({
         tabIndex={-1}
         className="mx-auto max-w-lg px-4 py-8 outline-none sm:py-12"
       >
-        <PurchaseJourneySteps current={step} className="mb-8" />
+        <PurchaseJourneySteps current={step} variant={variant} className="mb-8" />
         {children}
       </main>
     </div>
@@ -143,7 +147,8 @@ export default async function EmailConfirmadoPage({
         hasPlan={hasPlan}
         emailMasked={emailMasked}
       />,
-      hasPlan ? "pagamento" : "conta",
+      hasPlan ? "pagamento" : "reflexao",
+      hasPlan ? "paid" : "free",
     );
   }
 
@@ -157,12 +162,14 @@ export default async function EmailConfirmadoPage({
         loginHref={loginHref}
         hasPlan={hasPlan}
       />,
-      hasPlan ? "pagamento" : "conta",
+      hasPlan ? "pagamento" : "reflexao",
+      hasPlan ? "paid" : "free",
     );
   }
 
   return shell(
     <EmailConfirmNeutralExperience supportEmail={brand.supportEmail} />,
     "conta",
+    "free",
   );
 }

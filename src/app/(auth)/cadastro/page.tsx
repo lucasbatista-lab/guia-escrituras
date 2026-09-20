@@ -73,11 +73,11 @@ export default async function CadastroPage({
         />
         <section className="rounded-3xl border border-border/70 bg-card/85 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] backdrop-blur-sm sm:p-8">
           <p className="mb-4 text-xs font-medium text-ink-soft sm:hidden">
-            {plan ? "Plano · Conta" : "Conta · depois: confirmar e-mail"}
+            {plan ? "Plano · Conta" : "Conta · confirmar e-mail · Hoje com Deus"}
           </p>
           <PurchaseJourneySteps
             current="conta"
-            variant={plan ? "paid" : "full"}
+            variant={plan ? "paid" : "free"}
             className="mb-6 hidden sm:block"
           />
           {plan ? (
@@ -102,7 +102,7 @@ export default async function CadastroPage({
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
             {plan
               ? `Você escolheu o plano ${plan.name}. Informe seus dados uma única vez e siga para o pagamento seguro.`
-              : "Crie sua conta para começar. Depois você escolhe o plano e confirma o pagamento com segurança."}
+              : "Crie uma conta grátis. Sem cartão. Depois da confirmação do e-mail você entra em Hoje com Deus, orações e diário."}
           </p>
           <div className="mt-5 sm:mt-7">
             <SignUpForm
@@ -165,25 +165,25 @@ function NoPlanSupportCard() {
   return (
     <div className="rounded-2xl border border-border/70 bg-card/60 p-6">
       <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">
-        Próximo passo
+        Conta grátis
       </p>
       <h2 className="mt-2 font-display text-2xl text-ink">
-        Plano depois do cadastro
+        Sem cartão para começar
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-        Nenhum plano foi selecionado ainda. Depois de criar a conta e confirmar
-        o e-mail, você escolhe o plano e conclui o pagamento.
+        Confirme o e-mail e use Hoje com Deus, orações, salvos e diário. Conversar
+        com Amém, memória e Jornadas continuam nos planos pagos.
       </p>
       <ul className="mt-5 space-y-2 text-sm text-ink-soft">
-        <li>· Checkout seguro pela Stripe</li>
-        <li>· Renovação cancelável na conta</li>
-        <li>· Sem cobrança antes da confirmação do e-mail</li>
+        <li>· Sem cobrança nesta conta</li>
+        <li>· Plano só se você quiser conversar</li>
+        <li>· Privado por padrão</li>
       </ul>
       <TrackingLink
         href="/planos"
-        className="mt-6 inline-flex rounded-md bg-ink px-4 py-2 text-sm text-sand-50"
+        className="mt-6 inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
       >
-        Ver planos
+        Ver o que é premium
       </TrackingLink>
     </div>
   );

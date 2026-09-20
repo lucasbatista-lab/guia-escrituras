@@ -33,6 +33,20 @@ const PAID_LABELS: Record<PurchaseJourneyStepKey, string> = {
   reflexao: "Primeira reflexão",
 };
 
+const FREE_ORDER: PurchaseJourneyStepKey[] = [
+  "conta",
+  "personalizacao",
+  "reflexao",
+];
+
+const FREE_LABELS: Record<PurchaseJourneyStepKey, string> = {
+  plano: "Plano",
+  conta: "Conta",
+  pagamento: "Pagamento",
+  personalizacao: "Confirmar e-mail",
+  reflexao: "Hoje com Deus",
+};
+
 export function PurchaseJourneySteps({
   current,
   className,
@@ -40,11 +54,21 @@ export function PurchaseJourneySteps({
 }: {
   current: PurchaseJourneyStepKey;
   className?: string;
-  /** Paid funnel: Plano → Conta → Pagamento (3 steps). */
-  variant?: "full" | "paid";
+  /** Paid: Plano → Conta → Pagamento. Free: Conta → Confirmar e-mail → Hoje. */
+  variant?: "full" | "paid" | "free";
 }) {
-  const order = variant === "paid" ? PAID_ORDER : FULL_ORDER;
-  const labels = variant === "paid" ? PAID_LABELS : FULL_LABELS;
+  const order =
+    variant === "paid"
+      ? PAID_ORDER
+      : variant === "free"
+        ? FREE_ORDER
+        : FULL_ORDER;
+  const labels =
+    variant === "paid"
+      ? PAID_LABELS
+      : variant === "free"
+        ? FREE_LABELS
+        : FULL_LABELS;
   const currentIdx = order.indexOf(current);
   const steps = order.map((key, index) => ({
     label: labels[key],

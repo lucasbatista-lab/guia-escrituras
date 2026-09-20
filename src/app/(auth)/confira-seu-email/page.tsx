@@ -65,7 +65,11 @@ export default async function ConfiraSeuEmailPage({
         className="mx-auto max-w-lg px-4 py-8 outline-none sm:py-12"
       >
         {mode === "signup" ? (
-          <PurchaseJourneySteps current="conta" className="mb-8" />
+          <PurchaseJourneySteps
+            current={planKey ? "conta" : "personalizacao"}
+            variant={planKey ? "paid" : "free"}
+            className="mb-8"
+          />
         ) : null}
         <CheckEmailExperience
           emailHint={emailHint?.trim() || null}

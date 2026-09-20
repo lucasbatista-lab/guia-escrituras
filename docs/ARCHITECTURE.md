@@ -2,8 +2,8 @@
 
 ## Visão geral
 
-Produto público: **Amém Chat** — *Como Jesus responderia à sua situação?*  
-Descrição: *Seu guIA cristão, baseado nas Escrituras.*  
+Produto público: **Amém Chat** — *Clareza à luz das Escrituras para o que você está vivendo.*  
+Descrição: *Reflexões cristãs para situações reais, com inteligência artificial e limites honestos.*  
 Repositório interno: `guia-escrituras`.
 
 Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgres (`@supabase/ssr`), OpenAI Responses API (gateway), Stripe (checkout/webhooks), Zod, Vitest.
@@ -20,7 +20,7 @@ Stack: Next.js App Router, TypeScript estrito, Tailwind, Supabase Auth + Postgre
 
 1. Autenticar  
 2. Validar onboarding  
-3. Validar assinatura ativa + entitlements (**sem plano gratuito**)  
+3. Validar assinatura ativa + entitlements para **chat** (conta FREE existe: confirmed without live subscription; não usa LLM)  
 4. Validar orçamento mensal, burst diário e rate limit técnico curto  
 5. Criar/localizar conversation (histórico reabrível)  
 6. Salvar mensagem do usuário (`role=user`)  

@@ -2,8 +2,7 @@
 
 Repositório interno: **guia-escrituras**.
 
-> **Como Jesus responderia à sua situação?**  
-> Seu guIA cristão, baseado nas Escrituras.
+> **Clareza à luz das Escrituras para o que você está vivendo.**
 
 Experiência de inteligência artificial — não afirma ser Jesus, Deus ou revelação sobrenatural.
 
