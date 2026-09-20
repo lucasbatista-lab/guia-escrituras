@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { PresenceLight } from "@/components/brand/presence-light";
 import { PaperGrain } from "@/components/brand/paper-grain";
+import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
 import { InkTrail } from "@/components/daily/ink-trail";
 import { Button } from "@/components/ui/button";
+import { getSoftPaywallCopy } from "@/lib/commerce/soft-paywall";
 import {
   DAILY_CHECKIN_LABELS,
   DAILY_CHECKIN_VALUES,
@@ -65,12 +67,14 @@ export function HojeRitual({
   dateLabel,
   content,
   initialInteraction,
+  allowsChat,
   shareUrl,
 }: {
   date: string;
   dateLabel: string;
   content: DailyContent;
   initialInteraction: UserDailyInteraction | null;
+  allowsChat: boolean;
   shareUrl: string;
 }) {
   const alreadyDone = Boolean(initialInteraction?.completedAt);
@@ -81,8 +85,10 @@ export function HojeRitual({
   const [saved, setSaved] = useState(Boolean(initialInteraction?.savedAt));
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const viewedRef = useRef(false);
   const midRef = useRef<HTMLElement | null>(null);
+  const conversarHref = `/conversar?hoje=${encodeURIComponent(date)}`;
 
   useEffect(() => {
     if (viewedRef.current) return;
@@ -170,6 +176,12 @@ export function HojeRitual({
     } finally {
       setBusy(false);
     }
+  }
+
+  function onTalkClick() {
+    if (allowsChat) return;
+    setPaywallOpen(true);
+    void postProductEvent("premium_prompt_viewed", "/hoje");
   }
 
   async function shareDay() {
@@ -291,6 +303,23 @@ export function HojeRitual({
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
+            <p className="px-1 text-center text-sm leading-relaxed text-ink-soft">
+              Quer continuar esta reflexão em Conversar?
+            </p>
+            {allowsChat ? (
+              <Button asChild variant="soft" className="min-h-11 w-full">
+                <Link href={conversarHref}>Conversar sobre isso</Link>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="soft"
+                className="min-h-11 w-full"
+                onClick={onTalkClick}
+              >
+                Conversar sobre isso
+              </Button>
+            )}
             <Button asChild variant="ritual" className="min-h-[52px] w-full text-[15px] font-bold">
               <Link href="/inicio">Voltar ao Início</Link>
             </Button>
@@ -319,6 +348,13 @@ export function HojeRitual({
             <p className="mt-3 text-center text-sm text-ink-soft" aria-live="polite">
               {status}
             </p>
+          ) : null}
+          {paywallOpen ? (
+            <SoftPaywallSheet
+              copy={getSoftPaywallCopy("conversar")}
+              defaultOpen
+              onDismiss={() => setPaywallOpen(false)}
+            />
           ) : null}
         </div>
       </section>

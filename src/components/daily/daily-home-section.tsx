@@ -12,7 +12,7 @@ import { loadDailyInteraction, loadDailyInteractionsForDates } from "@/lib/daily
 
 export async function DailyHomeSection({
   userId,
-  allowsChat: _allowsChat,
+  allowsChat,
 }: {
   userId: string;
   allowsChat: boolean;
@@ -32,6 +32,7 @@ export async function DailyHomeSection({
         dateLabel={formatBrtLongDate(today)}
         content={content}
         initialInteraction={interaction}
+        allowsChat={allowsChat}
         shareUrl={shareUrl}
       />
       <DailyHistoryStrip

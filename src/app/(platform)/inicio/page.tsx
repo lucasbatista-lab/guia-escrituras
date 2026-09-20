@@ -2,15 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DailyHomeSection } from "@/components/daily/daily-home-section";
 import { InicioLiving } from "@/components/inicio/inicio-living";
-import { JourneysInicioCard } from "@/components/journeys/journeys-inicio-card";
 import { PersonalSpaceCard } from "@/components/workspace/personal-space-card";
-import { ActivationSessionChecklist } from "@/components/platform/activation-session-checklist";
 import { PrimaryActionCard } from "@/components/platform/primary-action-card";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
 import { ProgressSteps } from "@/components/platform/progress-steps";
 import { StatusCard } from "@/components/platform/status-card";
-import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
 import {
   pickMostRecentInProgressJourney,
@@ -18,7 +15,6 @@ import {
   type ReturnTargetCandidate,
 } from "@/lib/conversations/return-priority";
 import {
-  formatConversationActivity,
   loadLatestResumePreview,
   resumeReturnCopy,
   resumeReturnTone,

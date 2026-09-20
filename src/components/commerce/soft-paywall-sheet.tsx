@@ -12,6 +12,8 @@ type SoftPaywallSheetProps = {
   copy: SoftPaywallCopy;
   /** When true, sheet opens on mount (FREE gate). */
   defaultOpen?: boolean;
+  /** Parent-owned trigger: closed state renders nothing (no teaser card). */
+  onDismiss?: () => void;
   className?: string;
 };
 
@@ -42,6 +44,7 @@ type ScrollLockSnapshot = {
 export function SoftPaywallSheet({
   copy,
   defaultOpen = true,
+  onDismiss,
   className,
 }: SoftPaywallSheetProps) {
   const [open, setOpen] = useState(defaultOpen);
@@ -53,7 +56,8 @@ export function SoftPaywallSheet({
   const wasOpen = useRef(false);
   const dismiss = useCallback(() => {
     setOpen(false);
-  }, []);
+    onDismiss?.();
+  }, [onDismiss]);
 
   const openSheet = useCallback(() => {
     restoreFocusRef.current =
@@ -156,12 +160,18 @@ export function SoftPaywallSheet({
     };
   }, [open, dismiss]);
 
+  // Overlay-only mode: parent owns the CTA; avoid closed teaser after dismiss.
+  if (!open && onDismiss) {
+    return null;
+  }
+
   return (
     <div className={cn("relative", className)}>
       <div
         className={cn(
           "rounded-2xl border border-border/70 bg-card/70 p-5",
           open && "pointer-events-none select-none opacity-55 blur-[2px]",
+          onDismiss && "sr-only",
         )}
         aria-hidden={open}
       >

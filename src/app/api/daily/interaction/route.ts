@@ -78,35 +78,35 @@ export async function POST(request: Request) {
         userId: auth.userId,
         event: "daily_completed",
         eventId: `${eventId}_completed`.slice(0, 64),
-        path: "/inicio",
+        path: "/hoje",
       });
     } else if (body.saved) {
       await persistProductEvent({
         userId: auth.userId,
         event: "daily_saved",
         eventId: `${eventId}_saved`.slice(0, 64),
-        path: "/inicio",
+        path: "/hoje",
       });
     } else if (body.shared) {
       await persistProductEvent({
         userId: auth.userId,
         event: "daily_shared",
         eventId: `${eventId}_shared`.slice(0, 64),
-        path: "/inicio",
+        path: "/hoje",
       });
     } else if (body.checkin) {
       await persistProductEvent({
         userId: auth.userId,
         event: "checkin_completed",
         eventId: `${eventId}_checkin`.slice(0, 64),
-        path: "/inicio",
+        path: "/hoje",
       });
     } else if (body.viewed) {
       await persistProductEvent({
         userId: auth.userId,
         event: "daily_content_viewed",
         eventId: `${eventId}_viewed`.slice(0, 64),
-        path: "/inicio",
+        path: "/hoje",
       });
     }
 

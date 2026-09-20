@@ -33,7 +33,11 @@ describe("W4 / Wave 3A Hoje presence ritual V17", () => {
     expect(ritual).toContain("saved: true");
     expect(ritual).toContain("shared: true");
     expect(ritual).toContain("completed: true");
-    expect(ritual).not.toContain("SoftPaywall");
+    // SoftPaywall is only for the Conversar bridge (FREE), never for ritual APIs.
+    expect(ritual).toContain("SoftPaywallSheet");
+    expect(ritual).toContain("getSoftPaywallCopy(\"conversar\")");
+    expect(ritual).toContain("allowsChat");
+    expect(ritual).toContain("/conversar?hoje=");
     expect(ritual).not.toContain("openai");
     expect(ritual).not.toContain("/api/chat");
   });
@@ -41,6 +45,7 @@ describe("W4 / Wave 3A Hoje presence ritual V17", () => {
   it("wires HojeRitual into DailyHomeSection for /hoje", () => {
     const section = read("src", "components", "daily", "daily-home-section.tsx");
     expect(section).toContain("HojeRitual");
+    expect(section).toContain("allowsChat={allowsChat}");
     expect(section).not.toContain("HojeComDeusCard");
     const page = read("src", "app", "(platform)", "hoje", "page.tsx");
     expect(page).toContain("DailyHomeSection");

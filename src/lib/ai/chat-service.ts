@@ -129,7 +129,7 @@ export async function* runChatTurnStream(input: {
       "subscription_required",
       "subscription_required",
       402,
-      "Conversar é um recurso dos planos pagos. O conteúdo de hoje continua disponível em Início.",
+      "Conversar é um recurso dos planos pagos. O conteúdo de hoje continua disponível em Hoje.",
     );
   }
 
