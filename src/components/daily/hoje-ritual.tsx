@@ -4,12 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { PresenceLight } from "@/components/brand/presence-light";
 import { PaperGrain } from "@/components/brand/paper-grain";
-import { RitualMarker } from "@/components/brand/ritual-marker";
-import { PresencePulse } from "@/components/brand/presence-pulse";
-import { ScriptureRef } from "@/components/content/scripture-ref";
-import { SurfaceScene } from "@/components/surfaces/scene";
-import { SurfaceEditorial } from "@/components/surfaces/editorial";
-import { SurfaceField } from "@/components/surfaces/field";
+import { InkTrail } from "@/components/daily/ink-trail";
 import { Button } from "@/components/ui/button";
 import {
   DAILY_CHECKIN_LABELS,
@@ -22,6 +17,15 @@ import {
 import { copyTextToClipboard, isUserShareCancellation } from "@/lib/share";
 
 type Phase = "start" | "mid" | "complete";
+
+const RITUAL_STEPS = [
+  "Chego",
+  "Escuto",
+  "Olho",
+  "Falo",
+  "Pratico",
+  "Levo",
+] as const;
 
 function newEventId(prefix: string): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -128,6 +132,19 @@ export function HojeRitual({
       });
       setPhase("complete");
       void postProductEvent("daily_completed", "/hoje");
+      // Auto-save to Espaço (visual claim on complete card)
+      if (!saved) {
+        try {
+          await postInteraction({
+            date,
+            saved: true,
+            eventId: newEventId("autosave"),
+          });
+          setSaved(true);
+        } catch {
+          /* fail soft — user can still save manually */
+        }
+      }
     } catch {
       setStatus("Não foi possível concluir agora.");
     } finally {
@@ -203,55 +220,86 @@ export function HojeRitual({
     return (
       <section
         aria-labelledby="hoje-complete-heading"
-        className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-2 py-10 text-center"
+        className="relative overflow-hidden px-1 py-4"
         data-hoje-phase="complete"
       >
         <PresenceLight size="md" centered />
         <PaperGrain />
-        <div className="relative z-10 flex max-w-sm flex-col items-center">
-          <PresencePulse />
-          <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[color:var(--amem-gold-600,#A8843E)]">
-            Presença
-          </p>
-          <h2
-            id="hoje-complete-heading"
-            className="mt-3 font-display text-3xl text-ink"
-          >
-            Você chegou.
-          </h2>
-          <p className="mt-3 text-base leading-relaxed text-ink-soft">
-            Isso basta por hoje. A paz não pediu perfeição.
-          </p>
-          <p className="mt-5 font-display text-2xl text-[color:var(--amem-gold-600,#A8843E)]">
-            Amém.
-          </p>
-          <div className="mt-5">
-            <ScriptureRef>{content.scriptureReference}</ScriptureRef>
+        <div className="relative z-10">
+          <header className="flex items-end justify-between gap-3 px-1">
+            <h1 className="font-display text-xl font-semibold text-[color:var(--amem-wine-deep)]">
+              Presença
+            </h1>
+            <p className="text-sm text-[color:var(--amem-mute)]">Levo</p>
+          </header>
+          <InkTrail total={6} currentIndex={5} complete className="mt-3" />
+
+          <div className="mt-4 flex flex-col items-center px-3 text-center">
+            <div
+              className="flex h-[88px] w-[88px] items-center justify-center rounded-full shadow-[0_12px_28px_var(--amem-shadow)]"
+              style={{
+                background:
+                  "radial-gradient(circle at 40% 35%, #FFFDFC, #E8E2D8)",
+                boxShadow:
+                  "0 12px 28px var(--amem-shadow), inset 0 0 0 1px rgba(255,255,255,0.9)",
+              }}
+              aria-hidden
+            >
+              <span className="amem-ink-sig w-10" />
+            </div>
+            <h2
+              id="hoje-complete-heading"
+              className="mt-5 font-display text-[26px] font-semibold leading-tight text-ink"
+            >
+              Você esteve presente.
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+              Leve isto: {content.title.toLowerCase()}.
+            </p>
+            <p className="sr-only">Amém.</p>
           </div>
-          <div className="mt-8 flex w-full flex-col gap-2">
+
+          <div className="amem-folha mt-5 px-[18px] py-5 text-left">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
+              Para o Espaço
+            </p>
+            <p className="mt-2 font-display text-base italic leading-snug text-ink">
+              “{content.prayer.replace(/^"|"$/g, "")}”
+            </p>
+            <p className="mt-2 text-xs text-[color:var(--amem-mute)]">
+              {saved
+                ? "Salvo automaticamente · sem cartão"
+                : "Pronto para guardar · sem cartão"}
+            </p>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-2">
+            <Button asChild variant="ritual" className="min-h-[52px] w-full text-[15px] font-bold">
+              <Link href="/inicio">Voltar ao Início</Link>
+            </Button>
             <Button
               type="button"
-              className="min-h-12 w-full"
+              variant="ghost"
+              className="min-h-11 w-full"
               disabled={busy}
               onClick={() => void shareDay()}
             >
               Compartilhar
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11 w-full"
-              disabled={busy || saved}
-              onClick={() => void saveDay()}
-            >
-              {saved ? "Guardado no Espaço" : "Salvar no Espaço"}
-            </Button>
-            <Button asChild variant="ghost" className="min-h-11 w-full">
-              <Link href="/inicio">Voltar ao Início</Link>
-            </Button>
+            {!saved ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11 w-full"
+                disabled={busy}
+                onClick={() => void saveDay()}
+              >
+                Salvar no Espaço
+              </Button>
+            ) : null}
           </div>
           {status ? (
-            <p className="mt-3 text-sm text-ink-soft" aria-live="polite">
+            <p className="mt-3 text-center text-sm text-ink-soft" aria-live="polite">
               {status}
             </p>
           ) : null}
@@ -261,7 +309,7 @@ export function HojeRitual({
   }
 
   return (
-    <div className="relative space-y-6 overflow-hidden">
+    <div className="relative space-y-5 overflow-hidden">
       <PresenceLight size="sm" />
       <PaperGrain />
 
@@ -270,56 +318,68 @@ export function HojeRitual({
         className="relative z-10 space-y-4"
         data-hoje-phase="start"
       >
-        <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-wine">
-          <RitualMarker />
-          Chego
-        </p>
-        <h1
-          id="hoje-start-heading"
-          className="font-display text-2xl text-ink sm:text-3xl"
-        >
-          {phase === "start" ? "Como você chega agora?" : "Hoje"}
-        </h1>
-        <p className="text-base leading-relaxed text-ink-soft">
-          Nomear já é presença. Sem julgamento. · {dateLabel}
-        </p>
-        <p className="text-sm text-ink-soft">Cerca de 3–5 minutos.</p>
-
-        <fieldset>
-          <legend className="sr-only">Check-in opcional</legend>
-          <ul className="mt-2 grid grid-cols-2 gap-2">
-            {DAILY_CHECKIN_VALUES.map((value) => {
-              const selected = checkin === value;
-              return (
-                <li key={value}>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    aria-pressed={selected}
-                    onClick={() => void selectCheckin(value)}
-                    className={`flex min-h-11 w-full items-center justify-center rounded-full border px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                      selected
-                        ? "border-wine/40 bg-wine/10 font-medium text-ink"
-                        : "border-border/70 bg-card/80 text-ink-soft hover:border-wine/25"
-                    }`}
-                  >
-                    {DAILY_CHECKIN_LABELS[value]}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </fieldset>
+        <header className="flex items-end justify-between gap-3">
+          <h1
+            id="hoje-start-heading"
+            className="font-display text-xl font-semibold text-[color:var(--amem-wine-deep)]"
+          >
+            Presença
+          </h1>
+          <p className="text-sm text-[color:var(--amem-mute)]">
+            {phase === "start" ? "Chego · 1 de 6" : "Olho · 3 de 6"}
+          </p>
+        </header>
 
         {phase === "start" ? (
           <>
-            <SurfaceScene>
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[color:var(--amem-gold-600,#A8843E)]">
-                Depois · Escuto
-              </p>
-              <p className="mt-3 font-display text-xl text-ink">{content.title}</p>
-            </SurfaceScene>
-            <Button type="button" className="min-h-12 w-full" onClick={enterMid}>
+            <InkTrail total={6} currentIndex={0} />
+            <p className="text-base leading-relaxed text-ink-soft">
+              Como você chega agora? Nomear já é presença. · {dateLabel}
+            </p>
+            <p className="text-sm text-[color:var(--amem-mute)]">
+              Cerca de 3–5 minutos.
+            </p>
+
+            <fieldset>
+              <legend className="sr-only">Check-in opcional</legend>
+              <ul className="mt-1 grid grid-cols-2 gap-2">
+                {DAILY_CHECKIN_VALUES.map((value) => {
+                  const selected = checkin === value;
+                  return (
+                    <li key={value}>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-pressed={selected}
+                        onClick={() => void selectCheckin(value)}
+                        className={`flex min-h-11 w-full items-center justify-center rounded-full border px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          selected
+                            ? "border-wine/40 bg-wine/10 font-medium text-ink"
+                            : "border-border/70 bg-[color:var(--amem-surface)] text-ink-soft hover:border-wine/25"
+                        }`}
+                      >
+                        {DAILY_CHECKIN_LABELS[value]}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </fieldset>
+
+            <div className="amem-surface-scene p-5">
+              <div className="relative z-10">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[color:var(--amem-plum)]">
+                  Depois · Escuto
+                </p>
+                <p className="mt-3 font-display text-xl text-ink">{content.title}</p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="ritual"
+              className="min-h-[52px] w-full text-[15px] font-bold"
+              onClick={enterMid}
+            >
               Continuar
             </Button>
           </>
@@ -330,95 +390,133 @@ export function HojeRitual({
         <section
           ref={midRef}
           aria-label="Ritual de presença"
-          className="relative z-10 space-y-5"
+          className="relative z-10 space-y-3"
           data-hoje-phase="mid"
         >
-          {checkin ? (
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-soft">
-                Chego
-              </p>
-              <span className="inline-flex min-h-9 items-center rounded-full border border-wine/30 bg-wine/10 px-3 text-sm font-medium text-ink">
-                {DAILY_CHECKIN_LABELS[checkin]}
-              </span>
-            </div>
-          ) : null}
+          <InkTrail total={6} currentIndex={2} />
 
-          <SurfaceScene>
-            <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[color:var(--amem-gold-600,#A8843E)]">
-              <RitualMarker />
-              Escuto
+          <div
+            className="mx-1 rounded-[14px] border-l-2 px-3.5 py-2.5 opacity-72"
+            style={{
+              background: "rgba(255,253,252,0.50)",
+              borderColor: "rgba(90,34,50,0.14)",
+            }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[color:var(--amem-mute)]">
+              Já passou · {RITUAL_STEPS[1]}
             </p>
-            <p className="mt-3 font-display text-xl leading-snug text-ink">
+            <p className="mt-1 text-[13px] leading-snug text-ink-soft">
               {content.paraphrase}
             </p>
-            <div className="mt-4">
-              <ScriptureRef>{content.scriptureReference}</ScriptureRef>
+          </div>
+
+          <div className="amem-surface-scene px-5 py-6">
+            <div className="relative z-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[color:var(--amem-plum)]">
+                Agora · {RITUAL_STEPS[2]}
+              </p>
+              <p className="mt-3 font-display text-[22px] font-semibold leading-snug text-ink">
+                {content.reflection}
+              </p>
+              <p className="mt-3.5 text-xs leading-relaxed text-[color:var(--amem-mute)]">
+                Não precisa responder com perfeição. Só com honestidade.
+              </p>
+              <p className="sr-only">
+                Escuto · {content.paraphrase}. Falo · {content.prayer}. Pratico ·{" "}
+                {content.action}. Levo.
+              </p>
             </div>
-          </SurfaceScene>
+          </div>
 
-          <SurfaceEditorial>
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-soft">
-              Olho
-            </p>
-            <p className="mt-2 text-base leading-relaxed text-ink">
-              {content.reflection}
-            </p>
-          </SurfaceEditorial>
+          <div
+            className="mx-1 flex items-center justify-between gap-3 rounded-2xl px-4 py-3.5"
+            style={{ boxShadow: "inset 0 0 0 1px var(--amem-hairline-wine)" }}
+          >
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[color:var(--amem-plum)]">
+                Em seguida · {RITUAL_STEPS[3]}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-ink">
+                Uma frase verdadeira
+              </p>
+            </div>
+            <span
+              aria-hidden
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#FFFDFC] shadow-[0_6px_14px_rgba(90,34,50,0.22)]"
+              style={{ background: "var(--amem-wine-deep)" }}
+            >
+              →
+            </span>
+          </div>
 
-          <SurfaceEditorial rule="gold">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-soft">
-              Falo
-            </p>
-            <p className="mt-2 font-display text-lg italic leading-relaxed text-ink">
-              {content.prayer}
-            </p>
-          </SurfaceEditorial>
+          {/* Keep ritual moments reachable for logic/tests without LMS checklist */}
+          <details className="mx-1 rounded-2xl bg-[color:var(--amem-surface)] px-4 py-3 shadow-[inset_0_0_0_1px_var(--amem-hairline)]">
+            <summary className="cursor-pointer text-sm font-medium text-ink-soft">
+              Ver Escuto · Falo · Pratico · Levo
+            </summary>
+            <div className="mt-3 space-y-3 text-[15px] leading-relaxed text-ink">
+              <p>
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+                  Escuto
+                </span>
+                <br />
+                {content.paraphrase}
+              </p>
+              <p>
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+                  Falo
+                </span>
+                <br />
+                <span className="font-display italic">{content.prayer}</span>
+              </p>
+              <p>
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+                  Pratico
+                </span>
+                <br />
+                {content.action}
+              </p>
+              <p>
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+                  Levo
+                </span>
+                <br />
+                A presença caminha comigo.
+              </p>
+              <Button asChild variant="soft" className="min-h-11 w-full">
+                <Link href="/espaco/diario">Abrir no Diário</Link>
+              </Button>
+            </div>
+          </details>
 
-          <SurfaceField>
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-soft">
-              Pratico
-            </p>
-            <p className="mt-2 text-[15px] leading-relaxed text-ink">
-              {content.action}
-            </p>
-            <Button asChild variant="soft" className="mt-3 min-h-11 w-full">
-              <Link href="/espaco/diario">Abrir no Diário</Link>
-            </Button>
-          </SurfaceField>
-
-          <div className="space-y-2 pt-2">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-soft">
-              Levo
-            </p>
+          <Button
+            type="button"
+            variant="ritual"
+            className="min-h-[52px] w-full text-[15px] font-bold"
+            disabled={busy}
+            onClick={() => void completeRitual()}
+          >
+            Continuar
+          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               type="button"
-              className="min-h-12 w-full"
-              disabled={busy}
-              onClick={() => void completeRitual()}
+              variant="outline"
+              className="min-h-11 flex-1"
+              disabled={busy || saved}
+              onClick={() => void saveDay()}
             >
-              Concluir presença
+              {saved ? "Dia salvo" : "Salvar"}
             </Button>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                className="min-h-11 flex-1"
-                disabled={busy || saved}
-                onClick={() => void saveDay()}
-              >
-                {saved ? "Dia salvo" : "Salvar"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="min-h-11 flex-1"
-                disabled={busy}
-                onClick={() => void shareDay()}
-              >
-                Compartilhar
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 flex-1"
+              disabled={busy}
+              onClick={() => void shareDay()}
+            >
+              Compartilhar
+            </Button>
           </div>
         </section>
       ) : null}
