@@ -81,7 +81,7 @@ describe("reading journeys chat prefill", () => {
     const journey = getAllJourneys()[0]!;
     const step = journey.steps[0]!;
     const prefill = buildJourneyStepChatPrefill(journey.slug, step.slug);
-    expect(prefill).toMatch(/Quero refletir sobre a etapa/);
+    expect(prefill).toMatch(/Quero conversar sobre a reflexão do dia/);
     expect(prefill).toMatch(step.title);
     expect(buildJourneyStepChatPrefill("evil", "inject")).toBeUndefined();
     expect(buildJourneyStepChatPrefill(journey.slug, "evil")).toBeUndefined();

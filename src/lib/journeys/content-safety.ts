@@ -29,6 +29,8 @@ function stepText(step: ReadingJourneyStep): string {
     step.practicalAction,
     step.safetyNote ?? "",
     step.chatSuggestion ?? "",
+    step.prayer ?? "",
+    step.closing ?? "",
   ].join("\n");
 }
 

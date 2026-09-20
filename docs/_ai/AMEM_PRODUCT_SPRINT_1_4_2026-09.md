@@ -42,7 +42,10 @@ Não repetir auditorias de `AMEM_PRODUCT_APPSTORE_AUDIT_2026-09.md` / `AMEM_PROD
 
 ## Lote 3
 
-Pendente.
+- Entitlement Caminho+ inalterado.
+- Experiência de programa: intro, Dia N de 7, oração, conclusão, progresso persistido.
+- Prefill de chat com jornada/dia/referência; sem nota pessoal automática.
+- Sem streak; progresso `X de 7` via `journey_progress` existente.
 
 ## Lote 4
 

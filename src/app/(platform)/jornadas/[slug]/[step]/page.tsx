@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { JourneyStepCompleteButton } from "@/components/journeys/journey-step-complete-button";
+import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { Button } from "@/components/ui/button";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
@@ -20,6 +21,11 @@ import {
   getNextStepSlug,
   getPreviousStepSlug,
 } from "@/lib/journeys/registry";
+import {
+  journeyDayLabel,
+  stepClosing,
+  stepPrayer,
+} from "@/lib/journeys/presentation";
 import {
   buildJourneyResumePath,
   buildLoginHref,
@@ -66,6 +72,7 @@ export default async function JornadaStepPage({
   const chatHref = `/conversar?jornada=${encodeURIComponent(journey.slug)}&etapa=${encodeURIComponent(step.slug)}`;
   const isLastStep = !nextSlug;
   const totalSteps = journey.steps.length;
+  const doneCount = progress.completedStepIds.length;
 
   return (
     <article className="space-y-8 pb-32">
@@ -84,16 +91,27 @@ export default async function JornadaStepPage({
 
       <PlatformPageHeader
         title={step.title}
-        description={`Etapa ${step.number} de ${totalSteps} · ~${step.estimatedMinutes} min nesta etapa${
+        description={`${journeyDayLabel(step.number, totalSteps)} · Etapa ${step.number} de ${totalSteps} · ~${step.estimatedMinutes} min nesta etapa${
           stepCompleted ? " · concluída" : ""
         }`}
       />
 
+      <JourneyProgressBar
+        progress={progress}
+        totalSteps={totalSteps}
+        journeySlug={journey.slug}
+        labelId="journey-step-progress"
+      />
+
       <p className="text-sm text-ink-soft">
         O progresso fica salvo — você pode pausar e retomar quando quiser.
+        {nextStep
+          ? ` Depois desta etapa: ${nextStep.title}.`
+          : doneCount >= totalSteps - 1
+            ? " Esta é a última etapa da jornada."
+            : ""}
       </p>
 
-      {/* 1. Passagem / referência */}
       <section
         aria-labelledby="step-escritura-heading"
         className="border-l-2 border-wine/30 pl-4"
@@ -112,7 +130,6 @@ export default async function JornadaStepPage({
         </p>
       </section>
 
-      {/* 2. Reflexão */}
       <section aria-labelledby="step-reflexao-heading">
         <h2
           id="step-reflexao-heading"
@@ -125,7 +142,18 @@ export default async function JornadaStepPage({
         </p>
       </section>
 
-      {/* 3. Aplicação prática */}
+      <section aria-labelledby="step-pergunta-heading">
+        <h2
+          id="step-pergunta-heading"
+          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+        >
+          Pergunta
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          {step.personalQuestion}
+        </p>
+      </section>
+
       <section
         aria-labelledby="step-acao-heading"
         className="rounded-xl border border-gold/25 bg-sand-100/40 px-4 py-4"
@@ -141,20 +169,32 @@ export default async function JornadaStepPage({
         </p>
       </section>
 
-      {/* 4. Pergunta para conversar */}
-      <section aria-labelledby="step-pergunta-heading">
+      <section aria-labelledby="step-oracao-heading">
         <h2
-          id="step-pergunta-heading"
+          id="step-oracao-heading"
+          className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
+        >
+          Oração
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          {stepPrayer(step)}
+        </p>
+      </section>
+
+      <section aria-labelledby="step-conversar-heading">
+        <h2
+          id="step-conversar-heading"
           className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft"
         >
           Para conversar
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          {step.personalQuestion}
+          Se quiser aprofundar, o chat recebe só o contexto editorial desta
+          etapa — não envia anotações pessoais.
         </p>
         <div className="mt-4">
           <Button asChild variant="outline" className="min-h-11">
-            <Link href={chatHref}>Conversar sobre esta etapa</Link>
+            <Link href={chatHref}>Conversar sobre esta reflexão</Link>
           </Button>
         </div>
       </section>
@@ -170,7 +210,6 @@ export default async function JornadaStepPage({
         </div>
       ) : null}
 
-      {/* 5. Conclusão da etapa */}
       <section
         aria-labelledby="step-conclusao-heading"
         className="space-y-3 border-t border-border/60 pt-6"
@@ -181,6 +220,7 @@ export default async function JornadaStepPage({
         >
           Conclusão da etapa
         </h2>
+        <p className="text-sm leading-relaxed text-ink-soft">{stepClosing(step)}</p>
         <JourneyStepCompleteButton
           journeySlug={journey.slug}
           stepId={step.id}

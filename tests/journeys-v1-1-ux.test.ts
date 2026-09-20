@@ -24,7 +24,7 @@ describe("journeys V1.1 step completion UX", () => {
     expect(page).toContain("nextStepHref");
     expect(page).toContain("isLastStep");
     expect(page).toContain("Voltar ao início");
-    expect(page).toContain("Conversar sobre esta etapa");
+    expect(page).toContain("Conversar sobre esta reflexão");
   });
 
   it("complete button shows concluded state with next action and a11y live", () => {

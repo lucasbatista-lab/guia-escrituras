@@ -15,6 +15,8 @@ export interface ReadingJourneyStep {
   practicalAction: string;
   safetyNote?: string;
   chatSuggestion?: string;
+  prayer?: string;
+  closing?: string;
   estimatedMinutes: number;
   tags: string[];
 }
@@ -27,6 +29,7 @@ export interface ReadingJourney {
   objective: string;
   tags: string[];
   steps: ReadingJourneyStep[];
+  intro?: string;
 }
 
 export type JourneySlug =

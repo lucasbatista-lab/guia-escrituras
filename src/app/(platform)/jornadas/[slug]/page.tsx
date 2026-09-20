@@ -19,6 +19,10 @@ import {
   journeyDurationLabel,
 } from "@/lib/journeys/display";
 import {
+  journeyIntro,
+  journeyResumeHint,
+} from "@/lib/journeys/presentation";
+import {
   ensureJourneyStarted,
 } from "@/lib/journeys/server";
 import {
@@ -96,6 +100,10 @@ export default async function JornadaDetailPage({
         />
       </div>
 
+      <p className="text-sm leading-relaxed text-ink-soft">
+        {journeyIntro(journey)}
+      </p>
+
       <p className="text-sm text-ink-soft">
         <span className="font-medium text-ink">Objetivo:</span>{" "}
         {journey.objective}
@@ -119,6 +127,10 @@ export default async function JornadaDetailPage({
         journeySlug={journey.slug}
         labelId="journey-detail-progress"
       />
+
+      <p className="text-sm text-ink">
+        {journeyResumeHint(progress, journey.steps)}
+      </p>
 
       <p className="text-sm text-ink-soft">
         Retome quando puder — o progresso fica salvo na sua conta.
@@ -174,6 +186,12 @@ export default async function JornadaDetailPage({
                   </span>
                   <span className="flex-1 text-ink">{step.title}</span>
                   <span className="text-xs text-ink-soft">
+                    {done
+                      ? "Concluída"
+                      : isCurrent
+                        ? "Agora"
+                        : `Dia ${step.number}`}
+                    {" · "}
                     {step.estimatedMinutes} min
                   </span>
                 </Link>

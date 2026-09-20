@@ -16,6 +16,6 @@ export function buildJourneyStepChatPrefill(
   if (!step) return undefined;
 
   const ref = step.bibleReference.trim();
-  const text = `Quero refletir sobre a etapa "${step.title}" da jornada ${journey.title}, relacionada a ${ref}.`;
+  const text = `Quero conversar sobre a reflexão do dia ${step.number} da jornada "${journey.title}" (${ref}): ${step.title}.`;
   return sanitizeThemeDraft(text);
 }
