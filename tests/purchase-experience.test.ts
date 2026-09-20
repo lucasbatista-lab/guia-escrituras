@@ -44,7 +44,7 @@ describe("purchase experience — home copy & flow order", () => {
       "Comparar todos os planos",
       "<TrustPrinciples",
       "Perguntas frequentes",
-      "Pronto para escolher um plano?",
+      "Pronto para começar de graça?",
     ];
     let last = -1;
     for (const marker of markers) {
@@ -57,8 +57,9 @@ describe("purchase experience — home copy & flow order", () => {
   it("keeps CTAs and short hero transparency without defensive spam", () => {
     expect(home).toContain("Ver planos");
     expect(home).toContain("Conhecer o Amém Chat");
+    expect(home).toContain("Criar conta grátis");
     expect(home).toContain("#demonstracao");
-    expect(home).toContain("Planos a partir de");
+    expect(home).toMatch(/planos a partir de/i);
     expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Renovação cancelável");
     expect(ecosystem).toContain("tradição ecumênica, evangélica ou católica");
@@ -73,11 +74,11 @@ describe("purchase experience — home copy & flow order", () => {
     expect(home).toContain("voz divina");
   });
 
-  it("how-to page describes plan → account → pay → confirm → personalize", () => {
-    expect(howItWorks).toContain("Escolha seu plano");
-    expect(howItWorks).toContain("Crie sua conta");
-    expect(howItWorks).toContain("Conclua o pagamento com segurança");
-    expect(howItWorks).toContain("Confirme o e-mail e personalize");
+  it("how-to page describes free account then optional paid chat", () => {
+    expect(howItWorks).toContain("Crie uma conta grátis");
+    expect(howItWorks).toContain("Converse quando quiser ir além");
+    expect(howItWorks).toContain("Pagamento só no plano");
+    expect(howItWorks).toContain("Personalize se assinar");
     expect(howItWorks).not.toContain(
       "Você só segue para o pagamento depois da confirmação",
     );

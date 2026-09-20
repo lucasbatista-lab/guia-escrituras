@@ -49,6 +49,10 @@ const ESSENCIAL_PRICE_LABEL = "R$ 38";
 
 const faq = [
   {
+    q: "Preciso pagar para usar?",
+    a: "Não. A conta grátis inclui Hoje com Deus, check-in, salvos, orações e diário — sem IA. Conversar com Amém, memória, Jornadas e Aprofundar são dos planos pagos.",
+  },
+  {
     q: "O Amém Chat diz falar em nome de Jesus?",
     a: "Não. É inteligência artificial baseada nas Escrituras — nunca apresentada como voz divina ou revelação. Detalhes em Transparência sobre IA.",
   },
@@ -115,24 +119,30 @@ export default function HomePage() {
               <h1 className="text-balance font-display text-[1.85rem] leading-[1.08] text-ink sm:text-4xl lg:text-[3.25rem]">
                 Quando algo estiver pesando, encontre clareza à luz das Escrituras.
               </h1>
-              <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-ink-soft sm:mt-5 sm:text-lg">
-                Conte o que está vivendo e receba referências bíblicas, aplicação
-                prática e próximos passos — com IA e limites honestos.
+              <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-ink sm:mt-5 sm:text-lg">
+                Comece grátis com Hoje com Deus. Quando quiser conversar, há
+                referências bíblicas, aplicação prática e próximos passos — com
+                IA e limites honestos.
               </p>
               <div className="mt-4 flex gap-2 sm:mt-7 sm:flex-wrap sm:gap-3">
                 <Button asChild size="lg" className="min-h-12 flex-1 bg-wine px-5 hover:bg-wine-soft sm:flex-none">
-                  <a href="#demonstracao">Conhecer o Amém Chat</a>
+                  <TrackingLink href="/cadastro">Criar conta grátis</TrackingLink>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="min-h-12 border-ink/20 px-5">
-                  <TrackingLink href="/planos" conversionEvent="plans_cta_clicked">
-                    Ver planos
-                  </TrackingLink>
+                  <a href="#demonstracao">Conhecer o Amém Chat</a>
                 </Button>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-soft sm:mt-4 sm:text-sm">
-                <span>Conversa privada</span>
-                <span aria-hidden>·</span>
-                <span>Celular e computador</span>
+              <p className="mt-3">
+                <TrackingLink
+                  href="/planos"
+                  conversionEvent="plans_cta_clicked"
+                  className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
+                >
+                  Ver planos
+                </TrackingLink>
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink sm:mt-4 sm:text-sm">
+                <span>Conta grátis, sem cartão</span>
                 <span aria-hidden>·</span>
                 <span>Planos a partir de {ESSENCIAL_PRICE_LABEL}/mês</span>
               </div>
@@ -256,13 +266,12 @@ export default function HomePage() {
         <section className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6">
           <div className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-10 text-center sm:px-10">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Pronto para escolher um plano?
+              Pronto para começar de graça?
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-              Compare Essencial, Caminho e Profundo, crie sua conta e comece a
-              conversar com a tradição que faz sentido para você — a partir de{" "}
-              {ESSENCIAL_PRICE_LABEL}/mês. O produto evolui com honestidade: o
-              que você contrata hoje está claro nos planos.
+            <p className="mx-auto mt-4 max-w-xl text-ink">
+              Crie uma conta sem cartão para Hoje com Deus, orações e diário.
+              Conversar com memória e Jornadas continua nos planos — a partir de{" "}
+              {ESSENCIAL_PRICE_LABEL}/mês.
             </p>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               <Button
@@ -270,9 +279,7 @@ export default function HomePage() {
                 size="lg"
                 className="min-h-11 w-full bg-wine hover:bg-wine-soft sm:w-auto"
               >
-                <TrackingLink href="/planos" conversionEvent="plans_cta_clicked">
-                  Ver planos
-                </TrackingLink>
+                <TrackingLink href="/cadastro">Criar conta grátis</TrackingLink>
               </Button>
               <Button
                 asChild
@@ -280,7 +287,9 @@ export default function HomePage() {
                 variant="outline"
                 className="min-h-11 w-full sm:w-auto"
               >
-                <a href="#demonstracao">Ver um exemplo</a>
+                <TrackingLink href="/planos" conversionEvent="plans_cta_clicked">
+                  Ver planos
+                </TrackingLink>
               </Button>
             </div>
             <div className="mx-auto mt-10 max-w-md border-t border-wine/15 pt-8 text-left">

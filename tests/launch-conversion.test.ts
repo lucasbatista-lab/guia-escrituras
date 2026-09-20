@@ -130,7 +130,7 @@ describe("launch conversion cadastro", () => {
     expect(page).toContain("PlanSupportCard");
     expect(page).toContain("NoPlanSupportCard");
     expect(page).toContain("Pagamento seguro processado pela Stripe");
-    expect(page).toContain("Plano depois do cadastro");
+    expect(page).toContain("Sem cartão para começar");
     expect(page).toContain("Renovação");
     expect(page).toContain("Cancelamento");
     expect(page).toContain("Stripe");

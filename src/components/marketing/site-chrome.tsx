@@ -63,7 +63,7 @@ export function SiteHeader({ className }: { className?: string }) {
             href="/cadastro"
             className="inline-flex min-h-11 items-center rounded-md bg-ink px-3.5 py-2 text-sm font-medium text-sand-50 transition hover:bg-ink/90"
           >
-            Criar conta
+            Criar conta grátis
           </TrackingLink>
           <button
             type="button"

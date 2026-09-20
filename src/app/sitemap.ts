@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getCanonicalSiteUrl } from "@/lib/auth/app-url";
 
-/** Public URLs only — no private/platform/admin/API routes. */
+/** Public URLs only — no private/platform/admin/API routes.
+ * `/comece` stays out: paid campaign landing (noindex), not organic catalog.
+ */
 const PUBLIC_PATHS = [
   "/",
   "/planos",

@@ -9,26 +9,26 @@ import { buildPublicPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPublicPageMetadata({
   title: "Como funciona",
   description:
-    "Entenda como o Amém Chat funciona: escolha o plano, crie a conta, pague com segurança, confirme o e-mail e personalize a experiência.",
+    "Crie uma conta grátis para Hoje com Deus. Para conversar: escolha o plano, pague com segurança, confirme o e-mail e personalize a experiência.",
   path: "/como-funciona",
 });
 
 const steps = [
   {
-    title: "Escolha seu plano",
-    body: "Essencial, Caminho ou Profundo — com o que já está disponível hoje.",
+    title: "Crie uma conta grátis",
+    body: "Sem cartão. Confirme o e-mail e use Hoje com Deus, orações, salvos e diário.",
   },
   {
-    title: "Crie sua conta",
-    body: "Informe nome, e-mail e senha uma única vez. Com plano escolhido, o pagamento segue em seguida.",
+    title: "Converse quando quiser ir além",
+    body: "Os planos pagos abrem o chat com memória, Jornadas (Caminho+) e Aprofundar (Profundo).",
   },
   {
-    title: "Conclua o pagamento com segurança",
-    body: "Checkout pela Stripe. Renovação mensal, cancelável na sua conta.",
+    title: "Pagamento só no plano",
+    body: "Checkout pela Stripe. Renovação mensal, cancelável na sua conta. Não é teste grátis: a conta gratuita já é o produto diário.",
   },
   {
-    title: "Confirme o e-mail e personalize",
-    body: "A confirmação libera o acesso. Escolha tradição e profundidade; depois traga sua situação com referências bíblicas e um próximo passo possível.",
+    title: "Personalize se assinar",
+    body: "Tradição e profundidade moldam o chat. O espaço gratuito continua disponível na mesma conta.",
   },
 ];
 
@@ -44,7 +44,7 @@ export default function ComoFuncionaPage() {
         <div className="grid items-center gap-7 lg:grid-cols-[1fr_0.85fr] lg:gap-12">
           <header>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-              Da escolha à primeira reflexão
+              Da conta grátis à conversa
             </p>
             <h1 className="mt-2 font-display text-4xl text-ink">Como funciona</h1>
             <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
@@ -52,7 +52,7 @@ export default function ComoFuncionaPage() {
               baseada nas Escrituras, com limites honestos.
             </p>
             <Button asChild className="mt-5 min-h-11 bg-ink hover:bg-ink/90">
-              <TrackingLink href="/planos">Escolher meu plano</TrackingLink>
+              <TrackingLink href="/cadastro">Criar conta grátis</TrackingLink>
             </Button>
           </header>
           <ProductHeroPreview />

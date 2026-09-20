@@ -56,12 +56,13 @@ export default async function PlanosPage() {
               <h1 className="mt-2 text-balance font-display text-3xl leading-tight text-ink sm:text-5xl">
                 Escolha quanto espaço você quer para voltar
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-lg">
-                Todos incluem conversa personalizada e histórico. O que muda é a
-                frequência, o acesso às Jornadas e a possibilidade de Aprofundar.
+              <p className="mt-3 text-sm leading-relaxed text-ink sm:text-lg">
+                A conta grátis cobre o dia a dia: Hoje com Deus, orações e diário.
+                Os planos abrem conversa personalizada, histórico, Jornadas e
+                Aprofundar.
               </p>
               <div className="mt-5 flex flex-wrap gap-2 text-xs text-ink-soft">
-                {["A partir de R$ 38/mês", "Celular e computador", "Sem teste gratuito", "Renovação cancelável"].map(
+          {["Conta grátis sem cartão", "A partir de R$ 38/mês para conversar", "Celular e computador", "Renovação cancelável"].map(
                   (item) => (
                     <span
                       key={item}

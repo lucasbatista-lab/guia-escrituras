@@ -81,12 +81,12 @@ export function ConsentBanner() {
       >
         {preferencesOpen ? (
           <ConsentPreferencesPanel titleId={titleId} />
-        ) : campaignCompact ? (
+        ) : (
           <>
             <h2 id={titleId} className="sr-only">
               Cookies e publicidade
             </h2>
-            <p className="text-[12px] leading-snug text-ink-soft">
+            <p className="text-[12px] leading-snug text-ink sm:text-sm sm:leading-relaxed">
               {CAMPAIGN_BANNER_COPY}{" "}
               <Link
                 href="/cookies"
@@ -96,7 +96,7 @@ export function ConsentBanner() {
               </Link>
               .
             </p>
-            <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+            <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-3">
               <button
                 type="button"
                 className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-2 text-sm font-medium text-ink transition hover:bg-sand-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -113,51 +113,7 @@ export function ConsentBanner() {
               </button>
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-md px-2 text-sm font-medium text-ink-soft underline-offset-4 transition hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                onClick={openPreferences}
-              >
-                {CONSENT_COPY.configure}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex items-start justify-between gap-3">
-              <h2
-                id={titleId}
-                className="font-display text-[0.9rem] leading-tight text-ink sm:text-lg"
-              >
-                Cookies e publicidade
-              </h2>
-            </div>
-            <p className="mt-1 text-[12px] leading-snug text-ink-soft sm:mt-2 sm:text-sm sm:leading-relaxed">
-              {CONSENT_COPY.banner}{" "}
-              <Link
-                href="/cookies"
-                className="text-ink underline underline-offset-4"
-              >
-                Saiba mais
-              </Link>
-              .
-            </p>
-            <div className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-4 sm:flex sm:flex-row sm:flex-wrap sm:gap-2">
-              <button
-                type="button"
-                className="col-span-1 inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-3 text-sm font-medium text-sand-50 transition hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-4"
-                onClick={acceptAdvertising}
-              >
-                {CONSENT_COPY.accept}
-              </button>
-              <button
-                type="button"
-                className="col-span-1 inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-ink transition hover:bg-sand-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:px-4"
-                onClick={refuseAdvertising}
-              >
-                {CONSENT_COPY.refuse}
-              </button>
-              <button
-                type="button"
-                className="col-span-2 inline-flex min-h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-ink-soft underline-offset-4 transition hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:min-h-11 sm:justify-start sm:px-4"
+                className="inline-flex min-h-11 items-center justify-center rounded-md px-2 text-sm font-medium text-ink underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 onClick={openPreferences}
               >
                 {CONSENT_COPY.configure}
