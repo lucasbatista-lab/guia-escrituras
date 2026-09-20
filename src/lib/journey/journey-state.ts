@@ -157,33 +157,40 @@ export function getPlatformNavItemsForState(
     case "ended":
       return [
         { href: "/inicio", label: "Início", dominant: true },
+        { href: "/hoje", label: "Hoje" },
         { href: "/espaco", label: "Espaço" },
+        { href: "/jornadas", label: "Caminhos" },
         { href: "/planos", label: "Planos" },
         { href: "/conta", label: "Conta" },
       ];
     case "past_due":
       return [
         ...base,
+        { href: "/hoje", label: "Hoje" },
         { href: "/espaco", label: "Espaço" },
+        { href: "/jornadas", label: "Caminhos" },
         { href: "/conta", label: "Conta", dominant: true },
       ];
     case "active_needs_personalization":
       return [
         ...base,
+        { href: "/hoje", label: "Hoje" },
         {
           href: "/personalizar",
           label: "Personalizar",
           dominant: true,
         },
         { href: "/espaco", label: "Espaço" },
+        { href: "/jornadas", label: "Caminhos" },
         { href: "/conta", label: "Conta" },
       ];
     case "active_ready":
     case "canceling_at_period_end":
       return [
         ...base,
+        { href: "/hoje", label: "Hoje" },
         { href: "/conversar", label: "Conversar" },
-        { href: "/jornadas", label: "Jornadas" },
+        { href: "/jornadas", label: "Caminhos" },
         { href: "/espaco", label: "Espaço" },
         { href: "/conversas", label: "Conversas" },
         { href: "/conta", label: "Conta" },

@@ -24,3 +24,13 @@ export {
   PERSONALIZATION_DEPTHS,
   PERSONALIZATION_DEPTH_NOTE,
 } from "./personalization-labels";
+
+export type { BottomNavPlan, BottomNavTab, BottomNavTabId } from "./bottom-nav";
+export {
+  BOTTOM_NAV_FREE,
+  BOTTOM_NAV_PAID,
+  getBottomNavPlan,
+  getBottomNavTabs,
+  isBottomNavTabActive,
+} from "./bottom-nav";
+

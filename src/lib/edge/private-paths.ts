@@ -5,6 +5,7 @@
 
 export const PRIVATE_PLATFORM_PREFIXES = [
   "/inicio",
+  "/hoje",
   "/conversar",
   "/conversas",
   "/jornada",

@@ -4,34 +4,43 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import {
-  BookOpenText,
-  CircleUserRound,
-  History,
   Home,
   Menu,
   MessageCircle,
+  Sparkles,
+  Layers,
+  Waypoints,
   X,
 } from "lucide-react";
 import { brand } from "@/config/brand";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import type { PlatformNavItem } from "@/lib/journey/journey-state";
+import {
+  getBottomNavTabs,
+  isBottomNavTabActive,
+  type BottomNavPlan,
+  type BottomNavTab,
+} from "@/lib/journey/bottom-nav";
 
 const DEFAULT_NAV: PlatformNavItem[] = [
   { href: "/inicio", label: "Início" },
   { href: "/conta", label: "Conta" },
 ];
 
-const PRIMARY_DESTINATIONS = [
-  { href: "/inicio", label: "Hoje", icon: Home },
-  { href: "/conversar", label: "Conversar", icon: MessageCircle },
-  { href: "/jornadas", label: "Jornadas", icon: BookOpenText },
-  { href: "/conversas", label: "Histórico", icon: History },
-] as const;
+function iconForTab(tab: BottomNavTab) {
+  if (tab.id === "inicio") return Home;
+  if (tab.id === "hoje") return Sparkles;
+  if (tab.id === "caminhos") return Waypoints;
+  return tab.href === "/conversar" ? MessageCircle : Layers;
+}
 
 export function PlatformNav({
   items = DEFAULT_NAV,
+  plan = null,
 }: {
   items?: PlatformNavItem[];
+  /** V11 morph-ready bottom tabs. null = compact shells (payment/pending). */
+  plan?: BottomNavPlan | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -112,15 +121,20 @@ export function PlatformNav({
           : "text-ink-soft hover:bg-sand-100/80 hover:text-ink",
     );
 
-  const availableHrefs = new Set(items.map((item) => item.href));
-  const hasFullAppNav = availableHrefs.has("/conversar");
+  const bottomTabs = plan ? getBottomNavTabs(plan) : null;
+  const showBottomNav = Boolean(bottomTabs);
   const isChat = pathname === "/conversar" || pathname.startsWith("/conversar/");
-  const primaryDestinations = PRIMARY_DESTINATIONS.filter((item) =>
-    availableHrefs.has(item.href),
-  );
-  const secondaryItems = items.filter(
-    (item) => !PRIMARY_DESTINATIONS.some((primary) => primary.href === item.href),
-  );
+  const bottomHrefs = new Set(bottomTabs?.map((tab) => tab.href) ?? []);
+  const secondaryItems = items.filter((item) => !bottomHrefs.has(item.href));
+  // Paid: keep Espaço reachable from Menu after tab morph.
+  if (
+    plan === "paid" &&
+    !secondaryItems.some((item) => item.href === "/espaco") &&
+    items.some((item) => item.href === "/espaco")
+  ) {
+    const espaco = items.find((item) => item.href === "/espaco");
+    if (espaco) secondaryItems.unshift(espaco);
+  }
 
   return (
     <>
@@ -132,7 +146,7 @@ export function PlatformNav({
           >
             {brand.name}
           </Link>
-          {(!hasFullAppNav || isChat) && (
+          {(!showBottomNav || isChat) && (
             <button
               ref={menuButtonRef}
               type="button"
@@ -179,28 +193,40 @@ export function PlatformNav({
         </div>
       </aside>
 
-      {hasFullAppNav && !isChat ? (
+      {showBottomNav && bottomTabs && !isChat ? (
         <nav
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/95 pb-safe backdrop-blur-lg md:hidden"
+          className="amem-bottom-nav fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/95 pb-safe backdrop-blur-lg md:hidden"
           aria-label="Navegação principal"
+          data-nav-plan={plan ?? undefined}
         >
           <div className="grid h-16 grid-cols-5 px-safe">
-            {primaryDestinations.map((item) => {
-              const Icon = item.icon;
-              const current =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
+            {bottomTabs.map((tab) => {
+              const Icon = iconForTab(tab);
+              const current = isBottomNavTabActive(pathname, tab.href);
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={tab.id}
+                  href={tab.href}
                   aria-current={current ? "page" : undefined}
+                  aria-label={tab.label}
                   className={cn(
-                    "flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-                    current ? "font-medium text-wine" : "text-ink-soft",
+                    "relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                    current
+                      ? "font-semibold text-wine"
+                      : "font-normal text-ink-soft",
                   )}
                 >
-                  <Icon aria-hidden className="size-5" />
-                  <span>{item.label}</span>
+                  {current ? (
+                    <span
+                      aria-hidden
+                      className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-wine"
+                    />
+                  ) : null}
+                  <Icon
+                    aria-hidden
+                    className={cn("size-5", current && "stroke-[2.25]")}
+                  />
+                  <span>{tab.label}</span>
                 </Link>
               );
             })}
@@ -209,10 +235,11 @@ export function PlatformNav({
               type="button"
               aria-expanded={open}
               aria-controls={menuId}
-              className="flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 text-[11px] text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              aria-label="Abrir menu"
+              className="flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-[11px] text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               onClick={() => setOpen(true)}
             >
-              <CircleUserRound aria-hidden className="size-5" />
+              <Menu aria-hidden className="size-5" />
               <span>Menu</span>
             </button>
           </div>
@@ -238,9 +265,9 @@ export function PlatformNav({
             <div className="flex items-center justify-between">
               <div>
                 <p id={`${menuId}-title`} className="font-display text-xl text-ink">
-                  Seu espaço
+                  Menu
                 </p>
-                <p className="text-xs text-ink-soft">Conta, privacidade e ajuda</p>
+                <p className="text-xs text-ink-soft">Conta, memória e ajuda</p>
               </div>
               <button
                 type="button"
@@ -262,11 +289,14 @@ export function PlatformNav({
                   {item.label}
                 </Link>
               ))}
-              {hasFullAppNav ? (
+              {plan === "paid" ? (
                 <Link href="/personalizar" className={linkClass({ href: "/personalizar", label: "Personalizar" })} onClick={() => setOpen(false)}>
                   Personalizar experiência
                 </Link>
               ) : null}
+              <span className="flex min-h-11 items-center rounded-xl px-3 text-sm text-ink-soft/80">
+                Bíblia · Em breve
+              </span>
               <Link href="/ajuda" className={linkClass({ href: "/ajuda", label: "Ajuda" })} onClick={() => setOpen(false)}>
                 Ajuda e suporte
               </Link>

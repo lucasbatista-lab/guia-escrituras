@@ -36,6 +36,19 @@ export function ConsentBanner() {
     pathname === "/email-confirmado" ||
     pathname === "/recuperar-senha" ||
     pathname === "/redefinir-senha";
+  const platformBottomNav =
+    pathname === "/inicio" ||
+    pathname === "/hoje" ||
+    pathname === "/espaco" ||
+    pathname.startsWith("/espaco/") ||
+    pathname === "/conversar" ||
+    pathname.startsWith("/conversar/") ||
+    pathname === "/jornadas" ||
+    pathname.startsWith("/jornadas/") ||
+    pathname === "/conversas" ||
+    pathname.startsWith("/conversas/") ||
+    pathname === "/conta" ||
+    pathname === "/personalizar";
   const campaignCompact =
     pathname === "/comece" ||
     pathname === "/comece-v2" ||
@@ -68,6 +81,8 @@ export function ConsentBanner() {
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.25rem,var(--safe-bottom))] pt-0.5 sm:px-4 sm:pb-[max(0.75rem,var(--safe-bottom))] sm:pt-2",
         campaignCompact && "sm:px-3 sm:pb-[max(0.5rem,var(--safe-bottom))] sm:pt-1",
+        // Keep banner from covering FREE/PAID bottom tabs (W2). Debt: full consent redesign later.
+        platformBottomNav && "md:bottom-0 bottom-16",
       )}
       role="region"
       aria-labelledby={titleId}

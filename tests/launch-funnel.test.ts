@@ -161,7 +161,7 @@ describe("production copy and jargon", () => {
   it("includes jornadas in platform navigation when active", () => {
     const nav = readSrc("src", "lib", "journey", "journey-state.ts");
     expect(nav).toContain('href: "/jornadas"');
-    expect(nav).toContain("Jornadas");
+    expect(nav).toContain("Caminhos");
   });
 
   it("maps profile labels to Portuguese", () => {

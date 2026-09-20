@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MAIN_CONTENT_ID } from "@/components/a11y/main-content-id";
 import { PlatformNav } from "@/components/platform/platform-nav";
 import {
+  getBottomNavPlan,
   getPlatformNavItemsForState,
   resolveUserJourneyState,
 } from "@/lib/journey";
@@ -21,10 +22,11 @@ export default async function PlatformLayout({
 }) {
   const journey = await resolveUserJourneyState();
   const navItems = getPlatformNavItemsForState(journey.state);
+  const navPlan = getBottomNavPlan(journey.state);
 
   return (
     <div className="min-h-app">
-      <PlatformNav items={navItems} />
+      <PlatformNav items={navItems} plan={navPlan} />
       <main
         id={MAIN_CONTENT_ID}
         tabIndex={-1}
