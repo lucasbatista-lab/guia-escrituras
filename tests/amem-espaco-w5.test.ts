@@ -7,18 +7,25 @@ function read(...parts: string[]) {
   return readFileSync(join(root, ...parts), "utf8");
 }
 
-describe("W5 Espaço living memory", () => {
-  it("hub is memory-first with recent scene and editorial rows", () => {
+describe("W5 / Wave 3A Espaço living archive V17", () => {
+  it("hub is memory-first with pile + Linha viva (not admin dashboard)", () => {
     const hub = read("src", "app", "(platform)", "espaco", "page.tsx");
+    expect(hub).toContain("Linha viva");
     expect(hub).toContain("Memória viva");
-    expect(hub).toContain("SurfaceScene");
-    expect(hub).toContain("ListRow");
     expect(hub).toContain("/espaco/oracoes");
     expect(hub).toContain("/espaco/diario");
     expect(hub).toContain("/espaco/salvos");
-    expect(hub).toContain("Abrir Hoje");
+    expect(hub).toContain("data-espaco-state");
     expect(hub).not.toMatch(/grid-cols-3/);
     expect(hub).not.toMatch(/emoji|🙏|📝|⭐/);
+  });
+
+  it("empty state uses V17 job copy and CTAs", () => {
+    const hub = read("src", "app", "(platform)", "espaco", "page.tsx");
+    expect(hub).toContain("Este lugar vai guardar o que importa para você.");
+    expect(hub).toContain("Primeira oração");
+    expect(hub).toContain("Começar pelo Hoje");
+    expect(hub).toContain("Abrir Hoje");
   });
 
   it("preserves prayer CRUD affordances", () => {
