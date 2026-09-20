@@ -2,13 +2,20 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { JourneyResetButton } from "@/components/journeys/journey-reset-button";
+import { LockPill } from "@/components/commerce/lock-pill";
+import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { Button } from "@/components/ui/button";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
-import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
-import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
-import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
+import {
+  canAccessJourneyStep,
+  canUseReadingJourneys,
+} from "@/lib/journeys/entitlement";
+import {
+  getSoftPaywallCopy,
+  journeyShowsSoftPaywall,
+} from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
   journeyHasEffectiveAccess,
@@ -26,6 +33,7 @@ import {
 } from "@/lib/journeys/presentation";
 import {
   ensureJourneyStarted,
+  loadJourneyProgress,
 } from "@/lib/journeys/server";
 import {
   getJourneyBySlug,
@@ -55,21 +63,18 @@ export default async function JornadaDetailPage({
   }
 
   const journeyState = await resolveUserJourneyState();
-  if (!journeyHasEffectiveAccess(journeyState.state)) {
-    if (journeyShowsSoftPaywall(journeyState.state)) {
-      return <SoftPaywallGate resource="jornadas" />;
-    }
+  const softFree = journeyShowsSoftPaywall(journeyState.state);
+  if (!journeyHasEffectiveAccess(journeyState.state) && !softFree) {
     redirect(getRequiredDestinationForState(journeyState.state));
   }
 
   const journey = getJourneyBySlug(slug);
   if (!journey) notFound();
 
-  if (!canUseReadingJourneys(auth.planKey)) {
-    return <SoftPaywallGate resource="jornadas" />;
-  }
-
-  const progress = await ensureJourneyStarted(auth.userId, journey.slug);
+  const entitled = canUseReadingJourneys(auth.planKey);
+  const progress = entitled
+    ? await ensureJourneyStarted(auth.userId, journey.slug)
+    : await loadJourneyProgress(auth.userId, journey.slug);
   const estimatedMinutes = getJourneyEstimatedMinutes(journey);
   const minutesPerStep =
     journey.steps.length > 0
@@ -78,12 +83,22 @@ export default async function JornadaDetailPage({
   const visual = getJourneyVisual(journey.slug);
   const stepNumber = journeyCurrentStepNumber(progress, journey.steps);
   const currentStep = journey.steps.find((s) => s.id === progress.currentStepId);
-  const nextHref = currentStep
-    ? `/jornadas/${journey.slug}/${currentStep.slug}`
-    : `/jornadas/${journey.slug}/${journey.steps[0]!.slug}`;
-  const cta = journeyCtaLabel(progress, { currentStepNumber: stepNumber });
+  const firstStep = journey.steps[0];
+  const nextHref = entitled
+    ? currentStep
+      ? `/jornadas/${journey.slug}/${currentStep.slug}`
+      : `/jornadas/${journey.slug}/${firstStep!.slug}`
+    : firstStep
+      ? `/jornadas/${journey.slug}/${firstStep.slug}`
+      : `/jornadas/${journey.slug}`;
+  const cta = entitled
+    ? journeyCtaLabel(progress, { currentStepNumber: stepNumber })
+    : progress.completedStepIds.includes(firstStep?.id ?? "")
+      ? "Rever Dia 1"
+      : "Abrir Dia 1";
   const doneCount = progress.completedStepIds.length;
   const reallyCompleted = Boolean(progress.completedAt && progress.isCompleted);
+  const paywallCopy = getSoftPaywallCopy("jornadas");
 
   return (
     <div className="space-y-8">
@@ -119,27 +134,42 @@ export default async function JornadaDetailPage({
           stepCount: journey.steps.length,
           minutesPerStep,
         })}
-        {stepNumber
+        {entitled && stepNumber
           ? ` · etapa ${stepNumber} de ${journey.steps.length}`
-          : reallyCompleted
+          : entitled && reallyCompleted
             ? ` · ${doneCount} de ${journey.steps.length} concluídas`
-            : null}
+            : !entitled
+              ? " · prévia: Dia 1 aberto"
+              : null}
       </p>
 
-      <JourneyProgressBar
-        progress={progress}
-        totalSteps={journey.steps.length}
-        journeySlug={journey.slug}
-        labelId="journey-detail-progress"
-      />
+      {entitled ? (
+        <JourneyProgressBar
+          progress={progress}
+          totalSteps={journey.steps.length}
+          journeySlug={journey.slug}
+          labelId="journey-detail-progress"
+        />
+      ) : null}
 
-      <p className="text-sm text-ink">
-        {journeyResumeHint(progress, journey.steps)}
-      </p>
+      {entitled ? (
+        <p className="text-sm text-ink">
+          {journeyResumeHint(progress, journey.steps)}
+        </p>
+      ) : (
+        <p className="text-sm text-ink-soft">
+          Viva o Dia 1 agora. Os dias seguintes pedem o plano Caminho — Essencial
+          não inclui jornadas completas.
+        </p>
+      )}
 
-      <p className="text-sm text-ink-soft">
-        Retome quando puder — o progresso fica salvo na sua conta.
-      </p>
+      {entitled ? (
+        <p className="text-sm text-ink-soft">
+          Retome quando puder — o progresso fica salvo na sua conta.
+        </p>
+      ) : (
+        <SoftPaywallSheet copy={paywallCopy} defaultOpen={false} />
+      )}
 
       {reallyCompleted ? (
         <div
@@ -153,7 +183,7 @@ export default async function JornadaDetailPage({
         </div>
       ) : null}
 
-      {currentStep && !reallyCompleted ? (
+      {entitled && currentStep && !reallyCompleted ? (
         <p className="text-sm text-ink">
           <span className="font-medium">Etapa atual:</span> {currentStep.number}
           . {currentStep.title}
@@ -168,6 +198,26 @@ export default async function JornadaDetailPage({
           {journey.steps.map((step) => {
             const done = progress.completedStepIds.includes(step.id);
             const isCurrent = progress.currentStepId === step.id;
+            const unlocked = canAccessJourneyStep(auth.planKey, step.number);
+            if (!unlocked) {
+              return (
+                <li key={step.id}>
+                  <div
+                    className="flex min-h-11 items-center gap-3 rounded-xl border border-border/60 bg-background/50 px-4 py-3 text-sm"
+                    aria-disabled="true"
+                  >
+                    <span
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-border/50 text-xs font-medium text-ink-soft"
+                      aria-hidden
+                    >
+                      {step.number}
+                    </span>
+                    <span className="flex-1 text-ink-soft">{step.title}</span>
+                    <LockPill label="Caminho" />
+                  </div>
+                </li>
+              );
+            }
             return (
               <li key={step.id}>
                 <Link
@@ -209,7 +259,7 @@ export default async function JornadaDetailPage({
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Button asChild variant="ritual" className="min-h-11">
           <Link href={nextHref}>
-            {reallyCompleted ? "Rever Jornada" : cta}
+            {entitled && reallyCompleted ? "Rever Jornada" : cta}
           </Link>
         </Button>
         {reallyCompleted ? (
@@ -219,12 +269,14 @@ export default async function JornadaDetailPage({
         ) : null}
       </div>
 
-      <div className="border-t border-border/50 pt-6">
-        <p className="mb-3 text-xs text-ink-soft">
-          Precisa recomeçar do zero? O reset apaga o progresso desta jornada.
-        </p>
-        <JourneyResetButton journeySlug={journey.slug} />
-      </div>
+      {entitled ? (
+        <div className="border-t border-border/50 pt-6">
+          <p className="mb-3 text-xs text-ink-soft">
+            Precisa recomeçar do zero? O reset apaga o progresso desta jornada.
+          </p>
+          <JourneyResetButton journeySlug={journey.slug} />
+        </div>
+      ) : null}
     </div>
   );
 }

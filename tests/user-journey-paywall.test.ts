@@ -341,13 +341,22 @@ describe("redirects and gates (source contracts)", () => {
 
   it("inicio has no chat card without access", () => {
     const page = readSrc("src", "app", "(platform)", "inicio", "page.tsx");
+    const living = readSrc("src", "components", "inicio", "inicio-living.tsx");
     expect(page).toContain("journeyAllowsChat");
     expect(page).toContain("Personalizar minha experiência");
     expect(page).toContain("DailyHomeSection");
-    expect(page).toContain("veja os planos");
+    expect(page).toContain("InicioLiving");
+    expect(page).toMatch(/confirmed_without_plan[\s\S]*InicioLiving/);
+    expect(page).toContain("allowsChat={false}");
+    expect(page).not.toMatch(/confirmed_without_plan[\s\S]{0,200}redirect\(/);
+    expect(living).toContain('journeyHref ?? "/jornadas"');
+    expect(living).toContain("Prévia · plano Caminho");
+    expect(living).toContain("Conversar · Essencial");
+    expect(living).toContain("allowsChat");
     const card = readSrc("src", "components", "daily", "hoje-com-deus-card.tsx");
     expect(card).toContain("Hoje com Deus");
     expect(card).toContain("Conversar é um recurso dos planos pagos");
+    expect(card).toContain("Ver planos");
     expect(page).toContain("Continuar para pagamento");
   });
 

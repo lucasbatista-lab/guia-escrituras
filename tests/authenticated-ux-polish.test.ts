@@ -28,18 +28,20 @@ function publicCopy(source: string) {
 describe("authenticated UX polish", () => {
   it("inicio covers journey CTAs and progress without chat cards when unpaid", () => {
     const page = read("src", "app", "(platform)", "inicio", "page.tsx");
+    const living = read("src", "components", "inicio", "inicio-living.tsx");
     expect(page).toContain("Continuar para pagamento");
     expect(page).toContain("DailyHomeSection");
-    expect(page).toContain("veja os planos");
+    expect(page).toContain("InicioLiving");
+    expect(page).toMatch(/confirmed_without_plan[\s\S]*InicioLiving/);
+    expect(page).toContain("allowsChat={false}");
     const card = read("src", "components", "daily", "hoje-com-deus-card.tsx");
     expect(card).toContain("Hoje com Deus");
+    expect(card).toContain("Ver planos");
     expect(page).toContain("Personalizar minha experiência");
     expect(page).toContain("Seu plano está ativo");
     expect(page).toContain("Nova reflexão");
-    expect(page).toContain("O que está pesando hoje?");
-    expect(page).toContain("Começar uma reflexão");
     expect(page).toContain("Acesso rápido");
-    expect(page).toContain("Hoje");
+    expect(living).toContain("Hoje");
     expect(page).toContain("ProgressSteps");
     expect(page).toContain("Plano");
     expect(page).toContain("Conta");
@@ -48,19 +50,17 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Primeira reflexão");
     expect(page).toContain("Continue de onde parou");
     expect(page).toContain("resumeReturnCopy");
-    expect(page).toContain("primary.cta");
     expect(page).toContain("pickPrimaryReturnTarget");
     expect(page).toContain("THEME_SHORTCUTS");
     expect(page).toContain("journeyAllowsChat");
+    expect(living).toContain("Prévia · plano Caminho");
+    expect(living).toContain('journeyHref ?? "/jornadas"');
     expect(page).not.toMatch(JARGON);
     expect(publicCopy(page)).not.toMatch(/\bentitlements\b/i);
     expect(page).not.toContain("acesso limitado");
     expect(page).not.toContain("Stripe");
-    // Chat shortcuts only after allowsChat gate
-    const readyIdx = page.indexOf("O que está pesando hoje?");
     const gateIdx = page.indexOf("allowsChat");
     expect(gateIdx).toBeGreaterThan(-1);
-    expect(readyIdx).toBeGreaterThan(-1);
     const themes = read("src", "lib", "journey", "theme-shortcuts.ts");
     expect(themes).toContain("Ansiedade e decisões");
     expect(themes).toContain("Perdão e família");

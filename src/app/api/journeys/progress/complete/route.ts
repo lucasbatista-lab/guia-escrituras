@@ -9,7 +9,7 @@ import {
   getJourneyStepIds,
   getNextStepId,
 } from "@/lib/journeys/registry";
-import { requireJourneyEntitlement } from "@/lib/journeys/api-auth";
+import { requireJourneyEntitlementOrPreviewStep } from "@/lib/journeys/api-auth";
 import { logJourneyOperationalEvent } from "@/lib/journeys/events";
 import { toClientError } from "@/lib/safety";
 import { createRequestId } from "@/lib/utils";
@@ -21,7 +21,6 @@ const NO_STORE = { "Cache-Control": "no-store" } as const;
 export async function POST(request: Request) {
   const requestId = createRequestId();
   try {
-    const auth = await requireJourneyEntitlement();
     const body = (await request.json()) as {
       journeySlug?: string;
       stepId?: string;
@@ -48,6 +47,10 @@ export async function POST(request: Request) {
         { status: 404, headers: NO_STORE },
       );
     }
+    const auth = await requireJourneyEntitlementOrPreviewStep({
+      journeySlug,
+      stepId,
+    });
 
     const totalStepIds = getJourneyStepIds(journeySlug);
     const nextStepId = getNextStepId(journeySlug, stepId);

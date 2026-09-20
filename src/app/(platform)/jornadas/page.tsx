@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { JourneyCatalogBeacon } from "@/components/journeys/journey-catalog-beacon";
 import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { LockPill } from "@/components/commerce/lock-pill";
-import { SoftPaywallGate } from "@/components/commerce/soft-paywall-gate";
 import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
 import { Button } from "@/components/ui/button";
 import { InlineNotice } from "@/components/platform/inline-notice";
@@ -39,17 +38,15 @@ export default async function JornadasPage() {
   }
 
   const journey = await resolveUserJourneyState();
-  if (!journeyHasEffectiveAccess(journey.state)) {
-    if (journeyShowsSoftPaywall(journey.state)) {
-      return <SoftPaywallGate resource="jornadas" />;
-    }
+  const softFree = journeyShowsSoftPaywall(journey.state);
+  if (!journeyHasEffectiveAccess(journey.state) && !softFree) {
     redirect(getRequiredDestinationForState(journey.state));
   }
 
   const journeysDisabled = isFeatureDisabled("journeys");
   const entitled = canUseReadingJourneys(auth.planKey);
   const progressMap =
-    entitled && !journeysDisabled
+    !journeysDisabled
       ? await loadJourneyProgressMap(auth.userId)
       : new Map();
   const items = buildCatalogItems(progressMap);
@@ -94,24 +91,69 @@ export default async function JornadasPage() {
       {!entitled && !journeysDisabled ? (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-ink-soft">
-            Prévia aberta: veja o tema. O caminho completo — sete dias com
-            progresso salvo — pede o plano Caminho. Essencial continua com
-            Conversar; a conta grátis mantém Hoje e Espaço.
+            Prévia aberta: viva o Dia 1 completo. Os dias seguintes — com
+            progresso salvo no caminho inteiro — pedem o plano Caminho. Essencial
+            continua com Conversar; a conta grátis mantém Hoje e Espaço.
           </p>
           <SoftPaywallSheet copy={paywallCopy} defaultOpen={false} />
-          <ul className="space-y-2">
-            {items.map(({ journey: j }) => (
-              <li
-                key={j.slug}
-                className="flex min-h-11 items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/50 px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">{j.title}</p>
-                  <p className="text-xs text-ink-soft">7 dias · bloqueado</p>
-                </div>
-                <LockPill label="Caminho" />
-              </li>
-            ))}
+          <ul className="space-y-3">
+            {items.map(({ journey: j, progress }) => {
+              const visual = getJourneyVisual(j.slug);
+              const firstStep = j.steps[0];
+              const dayOneDone = Boolean(
+                firstStep && progress?.completedStepIds.includes(firstStep.id),
+              );
+              const previewHref = firstStep
+                ? `/jornadas/${j.slug}/${firstStep.slug}`
+                : `/jornadas/${j.slug}`;
+              return (
+                <li
+                  key={j.slug}
+                  className={cn(
+                    "relative flex min-w-0 flex-col overflow-hidden rounded-[22px] border bg-[color:var(--amem-surface)]/90 p-5",
+                    visual.borderClass,
+                  )}
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg",
+                        visual.markBgClass,
+                        visual.markTextClass,
+                      )}
+                      aria-hidden
+                    >
+                      {visual.mark}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="break-words font-display text-xl text-ink">
+                        {j.title}
+                      </h2>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-ink-soft">
+                        <span>
+                          Prévia · Dia 1
+                          {dayOneDone ? " · concluído" : ""}
+                        </span>
+                        <LockPill label="Caminho" />
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                        {j.objective}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <Button asChild variant="ritual" className="min-h-11">
+                      <Link href={previewHref}>
+                        {dayOneDone ? "Rever Dia 1" : "Abrir Dia 1"}
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="min-h-11">
+                      <Link href={`/jornadas/${j.slug}`}>Ver caminho</Link>
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ) : null}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  canAccessJourneyStep,
   canUseReadingJourneys,
   resolveEntitlements,
 } from "@/lib/entitlements";
@@ -100,23 +101,29 @@ describe("Wave 3B Caminhos / Jornadas V17", () => {
     );
   });
 
-  it("FREE soft-paywall + Essencial preview lock; paid catalog shows active resume", () => {
+  it("FREE/Essencial Day 1 preview + SoftPaywallSheet; paid catalog shows active resume", () => {
     const catalog = read("src", "app", "(platform)", "jornadas", "page.tsx");
-    expect(catalog).toContain("SoftPaywallGate");
-    expect(catalog).toContain('resource="jornadas"');
     expect(catalog).toContain("SoftPaywallSheet");
     expect(catalog).toContain("!entitled");
+    expect(catalog).toContain("Abrir Dia 1");
+    expect(catalog).toContain("Prévia · Dia 1");
     expect(catalog).toContain("Em andamento");
     expect(catalog).toContain("journeyResumeHint");
+    expect(catalog).toContain("journeyShowsSoftPaywall");
     expect(catalog).not.toMatch(/grid-cols-3 divide-x/);
     expect(canUseReadingJourneys(null)).toBe(false);
     expect(canUseReadingJourneys("essencial")).toBe(false);
     expect(canUseReadingJourneys("caminho")).toBe(true);
+    expect(canAccessJourneyStep(null, 1)).toBe(true);
+    expect(canAccessJourneyStep("essencial", 1)).toBe(true);
+    expect(canAccessJourneyStep(null, 2)).toBe(false);
+    expect(canAccessJourneyStep("essencial", 2)).toBe(false);
+    expect(canAccessJourneyStep("caminho", 2)).toBe(true);
     expect(minimumPlanForResource("jornadas")).toBe("caminho");
     expect(getSoftPaywallCopy("jornadas").minimumPlanKey).toBe("caminho");
   });
 
-  it("locked slug/step show SoftPaywallSheet gate — never silent redirect on entitlement", () => {
+  it("Day 2+ SoftPaywallGate — Day 1 opens; never silent redirect on entitlement", () => {
     const slug = read("src", "app", "(platform)", "jornadas", "[slug]", "page.tsx");
     const step = read(
       "src",
@@ -127,8 +134,12 @@ describe("Wave 3B Caminhos / Jornadas V17", () => {
       "[step]",
       "page.tsx",
     );
-    expect(slug).toMatch(/if \(!canUseReadingJourneys[\s\S]*SoftPaywallGate/);
-    expect(step).toMatch(/if \(!canUseReadingJourneys[\s\S]*SoftPaywallGate/);
+    expect(slug).toContain("canAccessJourneyStep");
+    expect(slug).toContain("LockPill");
+    expect(slug).toContain("SoftPaywallSheet");
+    expect(slug).toContain("Abrir Dia 1");
+    expect(step).toMatch(/if \(!canAccessJourneyStep[\s\S]*SoftPaywallGate/);
+    expect(step).toContain('resource="jornadas"');
     expect(step).toContain("Contexto");
     expect(step).toContain("Passagem");
     expect(step).toContain("Fecho · Levo");

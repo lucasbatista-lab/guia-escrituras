@@ -72,3 +72,79 @@ describe("journey api-auth AppError contract", () => {
     });
   });
 });
+
+describe("journey preview day-one API exception", () => {
+  beforeEach(() => {
+    getAuthUserContext.mockReset();
+  });
+
+  it("allows FREE to start (day-one preview) without reading_journeys", async () => {
+    getAuthUserContext.mockResolvedValue({
+      userId: "syn-free",
+      email: "free@amemchat.test",
+      planKey: null,
+      spiritualProfile: { onboardingCompleted: true },
+      isAdmin: false,
+      demoMode: false,
+    });
+    const { requireJourneyPreviewStart } = await import(
+      "@/lib/journeys/api-auth"
+    );
+    await expect(requireJourneyPreviewStart()).resolves.toMatchObject({
+      userId: "syn-free",
+      planKey: null,
+    });
+  });
+
+  it("allows Essencial to complete step number 1 only", async () => {
+    getAuthUserContext.mockResolvedValue({
+      userId: "syn-essencial",
+      email: "essencial@amemchat.test",
+      planKey: "essencial",
+      spiritualProfile: { onboardingCompleted: true },
+      isAdmin: false,
+      demoMode: false,
+    });
+    const { requireJourneyEntitlementOrPreviewStep } = await import(
+      "@/lib/journeys/api-auth"
+    );
+    const { getAllJourneys } = await import("@/lib/journeys/registry");
+    const journey = getAllJourneys()[0]!;
+    const day1 = journey.steps[0]!;
+    const day2 = journey.steps[1]!;
+
+    await expect(
+      requireJourneyEntitlementOrPreviewStep({
+        journeySlug: journey.slug,
+        stepId: day1.id,
+      }),
+    ).resolves.toMatchObject({ planKey: "essencial" });
+
+    try {
+      await requireJourneyEntitlementOrPreviewStep({
+        journeySlug: journey.slug,
+        stepId: day2.id,
+      });
+      expect.unreachable("day 2 should stay entitled-only");
+    } catch (error) {
+      const client = toClientError(error);
+      expect(client.status).toBe(403);
+      expect(client.code).toBe("journeys_not_entitled");
+    }
+  });
+
+  it("still requires full entitlement for requireJourneyEntitlement", async () => {
+    getAuthUserContext.mockResolvedValue({
+      userId: "syn-free",
+      email: "free@amemchat.test",
+      planKey: null,
+      spiritualProfile: { onboardingCompleted: true },
+      isAdmin: false,
+      demoMode: false,
+    });
+    const { requireJourneyEntitlement } = await import(
+      "@/lib/journeys/api-auth"
+    );
+    await expect(requireJourneyEntitlement()).rejects.toBeInstanceOf(AppError);
+  });
+});

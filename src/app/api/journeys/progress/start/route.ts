@@ -6,7 +6,7 @@ import {
 import {
   getJourneyBySlug,
 } from "@/lib/journeys/registry";
-import { requireJourneyEntitlement } from "@/lib/journeys/api-auth";
+import { requireJourneyPreviewStart } from "@/lib/journeys/api-auth";
 import { logJourneyOperationalEvent } from "@/lib/journeys/events";
 import { toClientError } from "@/lib/safety";
 import { createRequestId } from "@/lib/utils";
@@ -18,7 +18,7 @@ const NO_STORE = { "Cache-Control": "no-store" } as const;
 export async function POST(request: Request) {
   const requestId = createRequestId();
   try {
-    const auth = await requireJourneyEntitlement();
+    const auth = await requireJourneyPreviewStart();
     const body = (await request.json()) as { journeySlug?: string };
     const journeySlug = body.journeySlug?.trim();
     if (!journeySlug) {

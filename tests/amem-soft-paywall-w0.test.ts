@@ -115,15 +115,12 @@ describe("W0 soft paywall foundation", () => {
     expect(proxy).not.toMatch(/SoftPaywallSheet/);
   });
 
-  it("jornadas FREE gate is page-level SoftPaywallGate (not a proxy comment contract)", () => {
+  it("jornadas FREE reaches Day 1 preview; Day 2+ SoftPaywallGate is page-level", () => {
     const jornadas = readSrc("src", "app", "(platform)", "jornadas", "page.tsx");
-    expect(jornadas).toContain("SoftPaywallGate");
-    expect(jornadas).toContain('resource="jornadas"');
+    expect(jornadas).toContain("SoftPaywallSheet");
     expect(jornadas).toContain("journeyShowsSoftPaywall");
-    // Soft gate return precedes the authenticated journey catalog render.
-    expect(jornadas).toMatch(
-      /journeyShowsSoftPaywall[\s\S]*SoftPaywallGate[\s\S]*resource="jornadas"/,
-    );
+    expect(jornadas).toContain("Abrir Dia 1");
+    expect(jornadas).toContain("!entitled");
 
     const slug = readSrc(
       "src",
@@ -133,9 +130,25 @@ describe("W0 soft paywall foundation", () => {
       "[slug]",
       "page.tsx",
     );
-    expect(slug).toContain("SoftPaywallGate");
-    expect(slug).toContain('resource="jornadas"');
+    expect(slug).toContain("SoftPaywallSheet");
     expect(slug).toContain("journeyShowsSoftPaywall");
+    expect(slug).toContain("canAccessJourneyStep");
+    expect(slug).toContain("Abrir Dia 1");
+
+    const step = readSrc(
+      "src",
+      "app",
+      "(platform)",
+      "jornadas",
+      "[slug]",
+      "[step]",
+      "page.tsx",
+    );
+    expect(step).toContain("SoftPaywallGate");
+    expect(step).toContain('resource="jornadas"');
+    expect(step).toMatch(
+      /if \(!canAccessJourneyStep[\s\S]*SoftPaywallGate/,
+    );
 
     // Jornadas entitlement gate lives on the page; proxy has no jornadas SoftPaywall coupling.
     const proxy = readSrc("src", "lib", "supabase", "proxy.ts");

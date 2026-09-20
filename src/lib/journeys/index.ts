@@ -4,7 +4,12 @@ export {
   validateJourneyStepContent,
   validateReadingJourney,
 } from "./content-safety";
-export { canUseReadingJourneys } from "./entitlement";
+export {
+  canUseReadingJourneys,
+  canAccessJourneyStep,
+  isJourneyPreviewStep,
+  JOURNEY_PREVIEW_STEP_NUMBER,
+} from "./entitlement";
 export { buildJourneyStepChatPrefill } from "./chat-prefill";
 export {
   logJourneyOperationalEvent,
@@ -28,4 +33,9 @@ export {
   loadJourneyProgress,
   loadJourneyProgressMap,
 } from "./server";
-export { requireJourneyEntitlement, requireJourneySession } from "./api-auth";
+export {
+  requireJourneyEntitlement,
+  requireJourneyEntitlementOrPreviewStep,
+  requireJourneyPreviewStart,
+  requireJourneySession,
+} from "./api-auth";

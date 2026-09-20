@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { JourneyStepNote } from "@/components/workspace/journey-step-note";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
-import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
+import {
+  canAccessJourneyStep,
+  canUseReadingJourneys,
+} from "@/lib/journeys/entitlement";
 import { journeyShowsSoftPaywall } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
@@ -54,10 +57,8 @@ export default async function JornadaStepPage({
   }
 
   const journeyState = await resolveUserJourneyState();
-  if (!journeyHasEffectiveAccess(journeyState.state)) {
-    if (journeyShowsSoftPaywall(journeyState.state)) {
-      return <SoftPaywallGate resource="jornadas" />;
-    }
+  const softFree = journeyShowsSoftPaywall(journeyState.state);
+  if (!journeyHasEffectiveAccess(journeyState.state) && !softFree) {
     redirect(getRequiredDestinationForState(journeyState.state));
   }
 
@@ -66,7 +67,8 @@ export default async function JornadaStepPage({
   const step = getJourneyStep(slug, stepSlug);
   if (!step) notFound();
 
-  if (!canUseReadingJourneys(auth.planKey)) {
+  // FREE/Essencial: interactive Day 1 only — never grant reading_journeys.
+  if (!canAccessJourneyStep(auth.planKey, step.number)) {
     return <SoftPaywallGate resource="jornadas" />;
   }
 
@@ -79,6 +81,14 @@ export default async function JornadaStepPage({
   const chatHref = `/conversar?jornada=${encodeURIComponent(journey.slug)}&etapa=${encodeURIComponent(step.slug)}`;
   const isLastStep = !nextSlug;
   const totalSteps = journey.steps.length;
+  const entitled = canUseReadingJourneys(auth.planKey);
+  const nextIsLockedPreview =
+    !entitled && nextSlug
+      ? !canAccessJourneyStep(
+          auth.planKey,
+          getJourneyStep(slug, nextSlug)?.number ?? 99,
+        )
+      : false;
 
   return (
     <article className="space-y-6 pb-36">
@@ -315,7 +325,7 @@ export default async function JornadaStepPage({
           {nextSlug ? (
             <Button asChild variant="ritual" className="min-h-11 flex-1">
               <Link href={`/jornadas/${journey.slug}/${nextSlug}`}>
-                Próximo dia
+                {nextIsLockedPreview ? "Continuar caminho" : "Próximo dia"}
               </Link>
             </Button>
           ) : (
