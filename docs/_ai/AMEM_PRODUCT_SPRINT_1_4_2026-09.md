@@ -49,12 +49,21 @@ Não repetir auditorias de `AMEM_PRODUCT_APPSTORE_AUDIT_2026-09.md` / `AMEM_PROD
 
 ## Lote 4
 
-Pendente.
+- `user_prayers`, `user_saved_items`, `user_private_entries` com RLS own-row.
+- `/espaco` (orações, salvos, diário); FREE e paid.
+- Dual-write de salvos diários → `user_saved_items`.
+- Momentos do mês a partir de interações reais (sem streak).
+- Export da conta inclui orações/salvos/diário.
+- Anotação opcional de jornada reusa `user_private_entries` (não vai ao chat).
+- Analytics só de ação; zero LLM.
 
 ## Migrations
 
 - `20260920000014_user_daily_interactions_and_product_events.sql`
+- `20260920000015_personal_spiritual_workspace.sql`
 
 ## Testes / riscos / backlog
 
-Preenchidos ao fechar cada lote.
+- Gates: daily, pastoral offline, journeys v2, workspace, auth/export, theology/crisis existentes.
+- P1: calendário editorial diário além de 7 fixtures; revisão pastoral de jornadas; account deletion Apple; Bible reader.
+- Rollback conceitual: drop policies + drop das tabelas novas (aditivas).

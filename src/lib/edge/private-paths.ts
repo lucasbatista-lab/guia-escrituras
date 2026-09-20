@@ -14,6 +14,7 @@ export const PRIVATE_PLATFORM_PREFIXES = [
   "/personalizar",
   "/assinar",
   "/assinatura",
+  "/espaco",
 ] as const;
 
 export const PRIVATE_ADMIN_PREFIXES = ["/admin"] as const;

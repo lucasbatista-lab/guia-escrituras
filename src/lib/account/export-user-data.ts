@@ -7,7 +7,10 @@ import {
   type UserDataExportConversation,
   type UserDataExportDocument,
   type UserDataExportMessage,
+  type UserDataExportPrivateEntry,
+  type UserDataExportPrayer,
   type UserDataExportReferral,
+  type UserDataExportSavedItem,
   type UserDataExportSubscription,
   type UserDataExportUsageSummary,
 } from "@/lib/account/export-types";
@@ -416,6 +419,66 @@ async function loadReferrals(userId: string): Promise<UserDataExportReferral> {
   }
 }
 
+async function loadWorkspaceForExport(userId: string): Promise<{
+  prayers: UserDataExportPrayer[];
+  savedItems: UserDataExportSavedItem[];
+  privateEntries: UserDataExportPrivateEntry[];
+}> {
+  const empty = { prayers: [], savedItems: [], privateEntries: [] };
+  try {
+    const supabase = await createClient();
+    if (!supabase) return empty;
+    const [prayersRes, savedRes, entriesRes] = await Promise.all([
+      supabase
+        .from("user_prayers")
+        .select("id, body, status, created_at, updated_at, answered_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("user_saved_items")
+        .select("id, item_type, item_key, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("user_private_entries")
+        .select(
+          "id, kind, body, local_date, journey_slug, step_id, created_at, updated_at",
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
+    ]);
+
+    return {
+      prayers: (prayersRes.data ?? []).map((row) => ({
+        id: row.id as string,
+        body: row.body as string,
+        status: row.status as string,
+        createdAt: row.created_at as string,
+        updatedAt: row.updated_at as string,
+        answeredAt: (row.answered_at as string | null) ?? null,
+      })),
+      savedItems: (savedRes.data ?? []).map((row) => ({
+        id: row.id as string,
+        itemType: row.item_type as string,
+        itemKey: row.item_key as string,
+        createdAt: row.created_at as string,
+      })),
+      privateEntries: (entriesRes.data ?? []).map((row) => ({
+        id: row.id as string,
+        kind: row.kind as string,
+        body: row.body as string,
+        localDate: (row.local_date as string | null) ?? null,
+        journeySlug: (row.journey_slug as string | null) ?? null,
+        stepId: (row.step_id as string | null) ?? null,
+        createdAt: row.created_at as string,
+        updatedAt: row.updated_at as string,
+      })),
+    };
+  } catch {
+    return empty;
+  }
+}
+
 export interface BuildUserDataExportInput {
   /** Must come from the authenticated session — never from client input. */
   userId: string;
@@ -456,6 +519,7 @@ export async function buildUserDataExport(
     usageSummary,
     journeyProgress,
     referrals,
+    workspace,
   ] = await Promise.all([
     loadProfileRow(userId),
     repos.spiritualProfiles.getForExport(userId),
@@ -466,6 +530,7 @@ export async function buildUserDataExport(
     loadUsageSummary(userId, repos, now),
     loadJourneyProgressForExport(userId),
     loadReferrals(userId),
+    loadWorkspaceForExport(userId),
   ]);
 
   const document: UserDataExportDocument = {
@@ -506,6 +571,9 @@ export async function buildUserDataExport(
     usageSummary,
     journeyProgress,
     referrals,
+    prayers: workspace.prayers,
+    savedItems: workspace.savedItems,
+    privateEntries: workspace.privateEntries,
     notes: [...USER_DATA_EXPORT_NOTES],
   };
 

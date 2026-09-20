@@ -227,14 +227,28 @@ function toCase(fixture: PastoralQualityFixture): PastoralLiveCase {
 }
 
 function toTurn(fixture: PastoralQualityFixture): PastoralLiveTurnResult {
+  const pastoralCase = toCase(fixture);
   return {
+    caseId: fixture.id,
+    traditionKey: fixture.traditionKey,
+    theme: fixture.theme,
+    bucket: pastoralCase.bucket,
+    criticalSafety: pastoralCase.criticalSafety,
+    model: "offline-fixture",
+    provider: "openai",
+    safetyMode: null,
+    latencyMs: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+    estimatedCostUsdMicros: 0,
+    estimatedCostBrlCents: 0,
     answer: fixture.answer,
     followUpQuestion: fixture.followUpQuestion ?? null,
+    interpretationNotice: null,
     biblicalReferences: [],
     allowedReferences: [],
-    interpretationNotice: "",
-    safetyMode: undefined,
     retrievedReferenceIds: [],
+    crisisCategory: null,
   };
 }
 

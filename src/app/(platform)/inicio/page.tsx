@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DailyHomeSection } from "@/components/daily/daily-home-section";
 import { JourneysInicioCard } from "@/components/journeys/journeys-inicio-card";
+import { PersonalSpaceCard } from "@/components/workspace/personal-space-card";
 import { ActivationSessionChecklist } from "@/components/platform/activation-session-checklist";
 import { PrimaryActionCard } from "@/components/platform/primary-action-card";
 import { PlatformPageHeader } from "@/components/platform/page-header";
@@ -259,6 +260,7 @@ export default async function InicioPage() {
           tone="emphasis"
         />
         <DailyHomeSection userId={auth.userId} allowsChat={false} />
+        <PersonalSpaceCard userId={auth.userId} />
       </div>
     );
   }
@@ -283,6 +285,7 @@ export default async function InicioPage() {
           tone="emphasis"
         />
         <DailyHomeSection userId={auth.userId} allowsChat={false} />
+        <PersonalSpaceCard userId={auth.userId} />
       </div>
     );
   }
@@ -303,6 +306,7 @@ export default async function InicioPage() {
           </p>
         </header>
         <DailyHomeSection userId={auth.userId} allowsChat={false} />
+        <PersonalSpaceCard userId={auth.userId} />
         <p className="text-sm text-ink-soft">
           Quando quiser aprofundar em conversa,{" "}
           <Link
@@ -370,6 +374,8 @@ export default async function InicioPage() {
             <Link href="/conversar">Começar uma reflexão</Link>
           </Button>
         </section>
+
+        <PersonalSpaceCard userId={auth.userId} />
 
         <QuickActions showPersonalize={!auth.spiritualProfile.onboardingCompleted} />
         <ActivationSessionChecklist planKey={auth.planKey} />
@@ -455,6 +461,8 @@ export default async function InicioPage() {
           </p>
         ) : null}
       </section>
+
+      <PersonalSpaceCard userId={auth.userId} />
 
       <QuickActions />
 

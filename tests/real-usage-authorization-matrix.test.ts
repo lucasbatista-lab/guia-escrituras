@@ -28,6 +28,8 @@ describe("real-usage: anonymous private gates", () => {
       "/jornadas",
       "/jornadas/ansiedade-confianca",
       "/conta",
+      "/espaco",
+      "/espaco/oracoes",
       "/admin",
       "/admin/usuarios",
     ]) {

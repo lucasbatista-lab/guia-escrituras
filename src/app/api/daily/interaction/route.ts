@@ -9,6 +9,7 @@ import { upsertDailyInteraction } from "@/lib/daily/interactions";
 import { persistProductEvent } from "@/lib/product-events";
 import { toClientError } from "@/lib/safety";
 import { createRequestId } from "@/lib/utils";
+import { saveItem } from "@/lib/workspace/saved";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -65,6 +66,10 @@ export async function POST(request: Request) {
         },
         { status: 503, headers: NO_STORE },
       );
+    }
+
+    if (body.saved) {
+      await saveItem(auth.userId, "daily", body.date).catch(() => null);
     }
 
     const eventId = body.eventId ?? requestId.replace(/-/g, "").slice(0, 24);

@@ -4,6 +4,7 @@ import { JourneyStepCompleteButton } from "@/components/journeys/journey-step-co
 import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { PlatformPageHeader } from "@/components/platform/page-header";
 import { Button } from "@/components/ui/button";
+import { JourneyStepNote } from "@/components/workspace/journey-step-note";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
@@ -30,6 +31,7 @@ import {
   buildJourneyResumePath,
   buildLoginHref,
 } from "@/lib/navigation/safe-next-path";
+import { loadJourneyStepNote } from "@/lib/workspace/entries";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +67,7 @@ export default async function JornadaStepPage({
   }
 
   const progress = await ensureJourneyStarted(auth.userId, journey.slug);
+  const personalNote = await loadJourneyStepNote(auth.userId, journey.slug, step.id);
   const stepCompleted = progress.completedStepIds.includes(step.id);
   const prevSlug = getPreviousStepSlug(slug, stepSlug);
   const nextSlug = getNextStepSlug(slug, stepSlug);
@@ -198,6 +201,12 @@ export default async function JornadaStepPage({
           </Button>
         </div>
       </section>
+
+      <JourneyStepNote
+        journeySlug={journey.slug}
+        stepId={step.id}
+        initial={personalNote}
+      />
 
       {step.safetyNote ? (
         <div className="rounded-xl border border-border/70 bg-sand-50/80 p-4">

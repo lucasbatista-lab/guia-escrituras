@@ -144,6 +144,33 @@ export interface UserDataExportReferral {
   }>;
 }
 
+export interface UserDataExportPrayer {
+  id: string;
+  body: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  answeredAt: string | null;
+}
+
+export interface UserDataExportSavedItem {
+  id: string;
+  itemType: string;
+  itemKey: string;
+  createdAt: string;
+}
+
+export interface UserDataExportPrivateEntry {
+  id: string;
+  kind: string;
+  body: string;
+  localDate: string | null;
+  journeySlug: string | null;
+  stepId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface UserDataExportDocument {
   exportVersion: UserDataExportVersion;
   generatedAt: string;
@@ -156,6 +183,9 @@ export interface UserDataExportDocument {
   usageSummary: UserDataExportUsageSummary;
   journeyProgress: UserDataExportJourneyProgress[];
   referrals: UserDataExportReferral;
+  prayers: UserDataExportPrayer[];
+  savedItems: UserDataExportSavedItem[];
+  privateEntries: UserDataExportPrivateEntry[];
   notes: string[];
 }
 
@@ -164,4 +194,5 @@ export const USER_DATA_EXPORT_NOTES: string[] = [
   "Alguns registros técnicos e de segurança (tokens, hashes, payloads de webhook, prompts internos e logs) não são incluídos.",
   "Informações de pagamento completas (cartão, método de pagamento e detalhes financeiros sensíveis) permanecem no provedor de pagamentos (Stripe) e não fazem parte deste arquivo.",
   "Baixar seus dados não exclui a conta nem apaga conversas. Para exclusão, use o suporte quando disponível.",
+  "Orações, diário, gratidão e itens salvos entram nesta exportação porque são dados da sua conta. Não são públicos nem enviados a modelos de linguagem.",
 ];

@@ -57,8 +57,8 @@ export async function runPastoralLiveTurn(
   const started = Date.now();
 
   const crisis = detectCrisisMessage(pastoralCase.userMessage);
-  if (crisis.isCrisis) {
-    const answer = buildCrisisAnswer(crisis);
+  if (crisis.matched) {
+    const answer = buildCrisisAnswer(crisis.category);
     return {
       caseId: pastoralCase.id,
       traditionKey: pastoralCase.traditionKey,
@@ -147,8 +147,8 @@ export async function runPastoralLiveTurn(
     estimatedCostUsdMicros: costs.estimatedCostUsdMicros,
     estimatedCostBrlCents: costs.estimatedCostBrlCents,
     answer: presented.answer,
-    followUpQuestion: presented.followUpQuestion,
-    interpretationNotice: presented.interpretationNotice,
+    followUpQuestion: presented.followUpQuestion ?? null,
+    interpretationNotice: presented.interpretationNotice ?? null,
     biblicalReferences: generated.biblicalReferences.map((ref) => ({
       book: ref.book,
       chapter: ref.chapter,
