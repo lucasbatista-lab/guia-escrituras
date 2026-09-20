@@ -1,6 +1,6 @@
 import { getCanonicalSiteUrl } from "@/lib/auth/app-url";
 import { DailyHistoryStrip } from "@/components/daily/daily-history";
-import { HojeComDeusCard } from "@/components/daily/hoje-com-deus-card";
+import { HojeRitual } from "@/components/daily/hoje-ritual";
 import {
   brtCalendarDate,
   buildDailyShareUrl,
@@ -12,7 +12,7 @@ import { loadDailyInteraction, loadDailyInteractionsForDates } from "@/lib/daily
 
 export async function DailyHomeSection({
   userId,
-  allowsChat,
+  allowsChat: _allowsChat,
 }: {
   userId: string;
   allowsChat: boolean;
@@ -27,12 +27,11 @@ export async function DailyHomeSection({
 
   return (
     <div className="space-y-6">
-      <HojeComDeusCard
+      <HojeRitual
         date={today}
         dateLabel={formatBrtLongDate(today)}
         content={content}
         initialInteraction={interaction}
-        allowsChat={allowsChat}
         shareUrl={shareUrl}
       />
       <DailyHistoryStrip
