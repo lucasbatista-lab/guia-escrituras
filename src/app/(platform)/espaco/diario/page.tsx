@@ -15,6 +15,10 @@ export default async function DiarioPage() {
   return (
     <div className="space-y-6">
       <WorkspaceSubnav current="/espaco/diario" />
+      <p className="text-sm leading-relaxed text-ink-soft">
+        Página íntima — não é formulário de administração. O conteúdo do diário
+        não entra em analytics nem IA.
+      </p>
       <JournalWorkspace initial={entries} today={brtCalendarDate()} />
     </div>
   );

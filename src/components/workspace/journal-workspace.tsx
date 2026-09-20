@@ -126,7 +126,7 @@ export function JournalWorkspace({
           rows={5}
           maxLength={JOURNAL_MAX_LEN}
           className="min-h-32 w-full rounded-2xl border border-border/70 bg-card px-3 py-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          placeholder="Isto permanece só na sua conta. Não enviamos para IA."
+          placeholder="Isto permanece só na sua conta. Não enviamos para IA, analytics nem modelos."
         />
         <Button type="submit" disabled={busy || !draft.trim()} className="min-h-11">
           Guardar
