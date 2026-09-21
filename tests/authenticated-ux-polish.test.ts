@@ -53,7 +53,7 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("pickPrimaryReturnTarget");
     expect(page).toContain("THEME_SHORTCUTS");
     expect(page).toContain("journeyAllowsChat");
-    expect(living).toContain("Prévia · plano Caminho");
+    expect(living).toContain("Dia 1 grátis");
     expect(living).toContain('journeyHref ?? "/jornadas"');
     expect(page).not.toMatch(JARGON);
     expect(publicCopy(page)).not.toMatch(/\bentitlements\b/i);

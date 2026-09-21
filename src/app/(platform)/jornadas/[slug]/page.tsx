@@ -194,13 +194,13 @@ export default async function JornadaDetailPage({
             href={nextHref}
             className="inline-flex items-center justify-center gap-2"
           >
-            {entitled && reallyCompleted ? "Rever Jornada" : cta}
+            {entitled && reallyCompleted ? "Rever caminho" : cta}
             <IconChevron className="size-4 opacity-90" />
           </Link>
         </Button>
         {reallyCompleted ? (
           <Button asChild variant="outline" className="min-h-11 w-full">
-            <Link href="/jornadas">Ver outras jornadas</Link>
+            <Link href="/jornadas">Ver outros caminhos</Link>
           </Button>
         ) : null}
       </div>

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { JourneyCoverArt } from "@/components/journeys/covers/journey-cover-art";
 import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { LockPill } from "@/components/commerce/lock-pill";
-import { Button } from "@/components/ui/button";
 import { IconChevron } from "@/components/brand/icons/archive-icons";
 import {
   journeyCtaLabel,
@@ -42,16 +41,20 @@ export function JourneyCatalogCard({
       : "Abrir Dia 1"
     : journeyCtaLabel(progress, { currentStepNumber: stepNumber });
   const status = preview
-    ? `Prévia · Dia 1${dayOneDone ? " · concluído" : ""}`
+    ? dayOneDone
+      ? "Dia 1 · feito"
+      : "Dia 1 grátis"
     : journeyStatusLabel(progress);
   const minutesPerStep =
     j.steps.length > 0 && estimatedMinutes
       ? Math.round(estimatedMinutes / j.steps.length)
       : null;
-  const duration = journeyDurationLabel({
-    stepCount: j.steps.length,
-    minutesPerStep,
-  });
+  const duration = preview
+    ? `Dia 1 grátis · ${j.steps.length} dias`
+    : journeyDurationLabel({
+        stepCount: j.steps.length,
+        minutesPerStep,
+      });
   const firstStep = j.steps[0];
   const continueHref = preview
     ? (previewHref ??
@@ -78,7 +81,8 @@ export function JourneyCatalogCard({
     >
       <Link
         href={continueHref}
-        className="relative block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="relative flex min-w-0 flex-1 flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-label={`${j.title}. ${promise}. ${cta}.`}
       >
         <div className="relative overflow-hidden rounded-t-[22px]">
           <JourneyCoverArt slug={j.slug} size={active ? "hero" : "compact"} />
@@ -90,7 +94,7 @@ export function JourneyCatalogCard({
             <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F0E6D0]/90">
                 {status}
-                {!preview ? ` · ${duration}` : null}
+                {` · ${duration}`}
               </p>
               <h2 className="mt-1 truncate font-display text-[22px] leading-tight text-[#FFF9F0]">
                 {j.title}
@@ -104,38 +108,34 @@ export function JourneyCatalogCard({
             </span>
           </div>
         </div>
-      </Link>
 
-      <div className="flex flex-1 flex-col gap-3 rounded-b-[22px] border border-t-0 border-border/60 bg-[color:var(--amem-surface)]/95 px-4 pb-4 pt-3.5">
-        <p className="text-sm leading-relaxed text-ink">{promise}</p>
-        {preview ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <LockPill label="Caminho" />
-          </div>
-        ) : null}
-        {progress && !preview ? (
-          <JourneyProgressBar
-            progress={progress}
-            totalSteps={j.steps.length}
-            journeySlug={j.slug}
-            labelId={`progress-${j.slug}`}
-          />
-        ) : null}
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button
-            asChild
-            variant={active || preview ? "ritual" : "outline"}
-            className="min-h-11 flex-1 sm:flex-none"
-          >
-            <Link href={continueHref}>{cta}</Link>
-          </Button>
+        <div className="flex flex-1 flex-col gap-3 rounded-b-[22px] border border-t-0 border-border/60 bg-[color:var(--amem-surface)]/95 px-4 pb-4 pt-3.5">
+          <p className="text-sm leading-relaxed text-ink">{promise}</p>
           {preview ? (
-            <Button asChild variant="outline" className="min-h-11">
-              <Link href={`/jornadas/${j.slug}`}>Ver caminho</Link>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <LockPill label="Caminho" />
+            </div>
           ) : null}
+          {progress && !preview ? (
+            <JourneyProgressBar
+              progress={progress}
+              totalSteps={j.steps.length}
+              journeySlug={j.slug}
+              labelId={`progress-${j.slug}`}
+            />
+          ) : null}
+          <span
+            className={cn(
+              "mt-auto inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-bold",
+              active || preview
+                ? "bg-wine text-[#FFF9F0]"
+                : "border border-border/70 text-ink",
+            )}
+          >
+            {cta}
+          </span>
         </div>
-      </div>
+      </Link>
     </li>
   );
 }

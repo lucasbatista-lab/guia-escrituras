@@ -4,8 +4,8 @@ import { PaperGrain } from "@/components/brand/paper-grain";
 import { Button } from "@/components/ui/button";
 import { PlanChip } from "@/components/inicio/plan-chip";
 import { InicioCheckinStrip } from "@/components/inicio/inicio-checkin-strip";
+import { AppScreenHeader } from "@/components/platform/app-screen-header";
 import {
-  MemoryStrip,
   loadRecentMemory,
 } from "@/components/inicio/memory-strip";
 import { JourneyCoverArt } from "@/components/journeys/covers/journey-cover-art";
@@ -82,75 +82,92 @@ export async function InicioLiving({
 
   const journeySlug = slugFromJourneyHref(journeyHref);
   const hasActiveJourney = Boolean(journeyTitle || journeyHref);
+  const memorySnip = memory[0]?.snip ?? null;
 
   return (
     <div className="relative space-y-5 overflow-hidden">
       <PresenceLight size="sm" />
       <PaperGrain />
 
-      <header className="relative z-10 flex items-end justify-between gap-3">
-        <h1 className="font-sans text-[30px] font-bold tracking-[-0.035em] text-ink">
-          Início
-        </h1>
-        {allowsChat ? (
-          <PlanChip variant="paid" label={planLabel ?? "Caminho"} />
-        ) : (
-          <PlanChip variant="free" label="Grátis" />
-        )}
-      </header>
+      <AppScreenHeader
+        title="Início"
+        trailing={
+          allowsChat ? (
+            <PlanChip variant="paid" label={planLabel ?? "Caminho"} />
+          ) : (
+            <PlanChip variant="free" label="Grátis" />
+          )
+        }
+      />
 
-      {/* Hoje dominates — hero scene + clear action */}
-      <section
-        className="amem-surface-dusk relative z-10 mx-0 overflow-hidden px-5 pb-6 pt-6"
-        aria-labelledby="inicio-hoje-heading"
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-[radial-gradient(circle,rgba(212,188,140,0.28),transparent_68%)]"
-        />
-        <p className="relative text-[10px] font-bold uppercase tracking-[0.16em] text-[rgba(212,188,140,0.92)]">
-          {completed || allowsChat
-            ? completed
-              ? `Presença · ${dateShort}`
-              : `Continuar · Hoje`
-            : `Hoje · ${dateShort}`}
-        </p>
-        <h2
-          id="inicio-hoje-heading"
-          className="relative mt-2.5 max-w-[16ch] text-[26px] font-bold leading-[1.12] tracking-[-0.02em] text-[#FFF9F0]"
+      {/* Hoje — next action dominates when incomplete; quieter when done */}
+      {completed ? (
+        <section
+          className="relative z-10 rounded-[22px] border border-border/60 bg-[color:var(--amem-surface)]/90 px-4 py-4"
+          aria-labelledby="inicio-hoje-heading"
         >
-          {completed
-            ? "Você esteve presente"
-            : allowsChat && !completed
-              ? "Escuto · passo 2"
-              : content.title}
-        </h2>
-        <p className="relative mt-2.5 max-w-[28ch] text-xs leading-relaxed text-[#FFFDFC]/70">
-          {completed
-            ? "Ritual concluído · sem cartão"
-            : allowsChat && !completed
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+            Presença · {dateShort}
+          </p>
+          <h2
+            id="inicio-hoje-heading"
+            className="mt-1.5 font-display text-[22px] leading-tight text-ink"
+          >
+            Você esteve presente
+          </h2>
+          <p className="mt-1 text-sm text-ink-soft">
+            Ritual concluído · sem cartão
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href="/hoje">Revisitar</Link>
+            </Button>
+            {allowsChat ? (
+              <Button asChild variant="soft" className="min-h-11">
+                <Link href="/conversar">Conversar</Link>
+              </Button>
+            ) : null}
+          </div>
+        </section>
+      ) : (
+        <section
+          className="amem-surface-dusk relative z-10 mx-0 overflow-hidden px-5 pb-6 pt-6"
+          aria-labelledby="inicio-hoje-heading"
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-[radial-gradient(circle,rgba(212,188,140,0.28),transparent_68%)]"
+          />
+          <p className="relative text-[10px] font-bold uppercase tracking-[0.16em] text-[rgba(212,188,140,0.92)]">
+            {allowsChat ? "Continuar · Hoje" : `Hoje · ${dateShort}`}
+          </p>
+          <h2
+            id="inicio-hoje-heading"
+            className="relative mt-2.5 max-w-[16ch] text-[26px] font-bold leading-[1.12] tracking-[-0.02em] text-[#FFF9F0]"
+          >
+            {allowsChat ? "Escuto · passo 2" : content.title}
+          </h2>
+          <p className="relative mt-2.5 max-w-[28ch] text-xs leading-relaxed text-[#FFFDFC]/70">
+            {allowsChat
               ? "Retome de onde parou · ~2 min"
               : "Ritual livre · ~4 min · sem cartão"}
-        </p>
-        <div className="relative mt-5">
-          <Button
-            asChild
-            variant="ritual"
-            className="min-h-[52px] w-full bg-[#FFF9F0] text-[15px] font-bold text-[color:var(--amem-wine-deep,#5A2232)] hover:bg-[#FFF9F0]/92"
-          >
-            <Link href="/hoje" className="inline-flex items-center justify-center gap-2">
-              {completed
-                ? "Revisitar ritual"
-                : allowsChat
-                  ? "Retomar Hoje"
-                  : "Entrar no Hoje"}
-              <IconChevron className="size-4" />
-            </Link>
-          </Button>
-        </div>
-      </section>
+          </p>
+          <div className="relative mt-5">
+            <Button
+              asChild
+              variant="ritual"
+              className="min-h-[52px] w-full bg-[#FFF9F0] text-[15px] font-bold text-[color:var(--amem-wine-deep,#5A2232)] hover:bg-[#FFF9F0]/92"
+            >
+              <Link href="/hoje" className="inline-flex items-center justify-center gap-2">
+                {allowsChat ? "Retomar Hoje" : "Entrar no Hoje"}
+                <IconChevron className="size-4" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}
 
-      {yesterdayCarry ? (
+      {yesterdayCarry && !completed ? (
         <div className="amem-surface-poco relative z-10">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
             Ontem você levou
@@ -168,14 +185,14 @@ export async function InicioLiving({
         </div>
       ) : null}
 
-      {/* Active / recommended Caminho — visual continuity, not equal module */}
+      {/* Caminho — personal continuity, elevated especially after Hoje done */}
       <section className="relative z-10" aria-labelledby="inicio-caminho-heading">
         <div className="mb-2 flex items-center justify-between gap-2 px-0.5">
           <p
             id="inicio-caminho-heading"
             className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine"
           >
-            Caminhos
+            {hasActiveJourney ? "Seu caminho" : "Caminhos"}
           </p>
           <Link
             href="/jornadas"
@@ -191,7 +208,7 @@ export async function InicioLiving({
         >
           <JourneyCoverArt
             slug={journeySlug ?? "ansiedade-confianca"}
-            size="compact"
+            size={completed || hasActiveJourney ? "hero" : "compact"}
           />
           <div
             aria-hidden
@@ -205,7 +222,7 @@ export async function InicioLiving({
                   ? hasActiveJourney
                     ? "Continuar"
                     : "Recomendado"
-                  : "Prévia · plano Caminho"}
+                  : "Dia 1 grátis"}
               </p>
               <p className="mt-1 truncate font-display text-[18px] leading-tight text-[#FFF9F0]">
                 {journeyTitle ?? "Ansiedade e confiança"}
@@ -227,7 +244,7 @@ export async function InicioLiving({
         </Link>
       </section>
 
-      {/* Secondary personal continuity — Espaço recedes */}
+      {/* Espaço — single memory entry (no duplicate “O que permanece” strip) */}
       <Link
         href="/espaco"
         className="amem-archive-row relative z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -239,12 +256,12 @@ export async function InicioLiving({
           <span className="block text-sm font-semibold tracking-[-0.01em] text-ink">
             Espaço
           </span>
-          <span className="mt-0.5 block text-[11px] leading-snug text-[color:var(--amem-mute)]">
-            {memory.length > 0
-              ? allowsChat
-                ? `Linha viva · ${memory.length} marcas`
-                : `${memory.length} memórias vivas`
-              : "Ainda em branco"}
+          <span className="mt-0.5 block truncate text-[11px] leading-snug text-[color:var(--amem-mute)]">
+            {memorySnip
+              ? memorySnip
+              : memory.length > 0
+                ? `${memory.length} memórias`
+                : "Ainda em branco"}
           </span>
         </span>
         <IconChevron className="size-4 shrink-0 text-ink-soft" />
@@ -256,7 +273,7 @@ export async function InicioLiving({
           className="amem-folha relative z-10 block px-[18px] py-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
-            Conversar · Essencial
+            Conversar
           </p>
           <p className="mt-2 font-display text-[17px] italic leading-snug text-ink">
             {chatPreview
@@ -264,11 +281,7 @@ export async function InicioLiving({
               : (chatTitle ?? "como orar quando estou seco?")}
           </p>
         </Link>
-      ) : (
-        <div className="relative z-10">
-          <MemoryStrip items={memory} />
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

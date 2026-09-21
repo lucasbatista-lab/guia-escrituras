@@ -257,21 +257,26 @@ export function SoftPaywallSheet({
               >
                 {copy.body}
               </p>
-              <div className="mt-3 flex items-center justify-between gap-2">
+              <ul className="mt-4 space-y-2">
+                {copy.benefits.map((item) => (
+                  <li
+                    key={item}
+                    className="flex gap-2 text-sm leading-snug text-ink"
+                  >
+                    <span aria-hidden className="mt-0.5 text-wine">
+                      ·
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 flex items-center justify-between gap-2">
                 <p className="text-xs text-[color:var(--amem-mute)]">
-                  Recurso:{" "}
-                  <span className="font-medium text-ink">{copy.resourceLabel}</span>
-                  {" · "}
-                  Plano mínimo:{" "}
+                  A partir do plano{" "}
                   <span className="font-medium text-ink">{copy.minimumPlanName}</span>
                 </p>
                 <PremiumBadge label={copy.badgeLabel} />
               </div>
-              <ul className="sr-only">
-                {copy.benefits.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
               <Button
                 asChild
                 variant="premium"

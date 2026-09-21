@@ -84,8 +84,8 @@ describe("journeys V1.1 step completion UX", () => {
       "page.tsx",
     );
     expect(detail).toContain("progress.isCompleted");
-    expect(detail).toContain("Ver outras jornadas");
-    expect(detail).toContain("Rever Jornada");
+    expect(detail).toContain("Ver outros caminhos");
+    expect(detail).toContain("Rever caminho");
     expect(detail).toContain("completedAt");
     expect(detail).toContain("o progresso fica salvo");
   });
@@ -122,9 +122,9 @@ describe("journeys V1.1 step completion UX", () => {
     );
     const display = read("src", "lib", "journeys", "display.ts");
     expect(display).toContain("getJourneyVisual");
-    expect(display).toContain("Começar Jornada");
-    expect(display).toContain("Continuar etapa");
-    expect(display).toContain("Rever Jornada");
+    expect(display).toContain("Começar caminho");
+    expect(display).toContain("Continuar dia");
+    expect(display).toContain("Rever caminho");
     expect(catalog).toContain("JourneyCatalogCard");
     expect(catalog).toContain("journeyCurrentStepNumber");
     expect(catalogCard).toContain("journeyDurationLabel");

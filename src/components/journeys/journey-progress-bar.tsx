@@ -31,7 +31,7 @@ export function JourneyProgressBar({
     <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between gap-2 text-sm">
         <span className="text-ink-soft" id={labelId}>
-          {done} de {totalSteps} etapas · {status}
+          {done} de {totalSteps} dias · {status}
         </span>
         <span className="font-medium text-ink" aria-hidden>
           {percent}%

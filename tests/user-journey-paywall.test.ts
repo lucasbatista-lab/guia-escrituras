@@ -350,8 +350,8 @@ describe("redirects and gates (source contracts)", () => {
     expect(page).toContain("allowsChat={false}");
     expect(page).not.toMatch(/confirmed_without_plan[\s\S]{0,200}redirect\(/);
     expect(living).toContain('journeyHref ?? "/jornadas"');
-    expect(living).toContain("Prévia · plano Caminho");
-    expect(living).toContain("Conversar · Essencial");
+    expect(living).toContain("Dia 1 grátis");
+    expect(living).toContain("Conversar");
     expect(living).toContain("allowsChat");
     const card = readSrc("src", "components", "daily", "hoje-com-deus-card.tsx");
     expect(card).toContain("Hoje com Deus");

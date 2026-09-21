@@ -66,7 +66,7 @@ const JOURNEY_PROMISE: Record<JourneySlug, string> = {
 export function journeyShortPromise(slug: string): string {
   return (
     JOURNEY_PROMISE[slug as JourneySlug] ??
-    "Sete dias com um tema — no seu ritmo."
+    "7 dias · presença guiada — no seu ritmo."
   );
 }
 
@@ -90,11 +90,11 @@ export function journeyCtaLabel(
   progress: JourneyProgressState | null | undefined,
   options?: { currentStepNumber?: number | null },
 ): string {
-  if (!progress?.isStarted) return "Começar Jornada";
-  if (progress.isCompleted) return "Rever Jornada";
+  if (!progress?.isStarted) return "Começar caminho";
+  if (progress.isCompleted) return "Rever caminho";
   const n = options?.currentStepNumber;
-  if (typeof n === "number" && n >= 1) return `Continuar etapa ${n}`;
-  return "Continuar Jornada";
+  if (typeof n === "number" && n >= 1) return `Continuar dia ${n}`;
+  return "Continuar caminho";
 }
 
 /** Honest duration line — prefers per-step estimate when available. */
@@ -103,12 +103,12 @@ export function journeyDurationLabel(options: {
   /** Typical minutes per step (average), when known from editorial estimates. */
   minutesPerStep?: number | null;
 }): string {
-  const steps = `${options.stepCount} etapas`;
+  const days = `${options.stepCount} dias`;
   const per = options.minutesPerStep;
   if (typeof per === "number" && per > 0) {
-    return `${steps} · ~${per} min por etapa`;
+    return `${days} · ~${per} min/dia`;
   }
-  return `${steps} · leitura curta por etapa`;
+  return `${days} · ~5 min/dia`;
 }
 
 export function journeyProgressPercent(

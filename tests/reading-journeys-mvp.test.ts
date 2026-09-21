@@ -68,7 +68,7 @@ describe("reading journeys commercial copy", () => {
       /jornadas de leitura/i,
     );
     expect(read("src", "lib", "entitlements", "reserved.ts")).not.toMatch(
-      /Jornadas de leitura guiadas/,
+      /Caminhos guiados de 7 dias/,
     );
     expect(getPlanByKey("essencial")?.priceMonthlyCents).toBe(3800);
     expect(getPlanByKey("caminho")?.priceMonthlyCents).toBe(5800);

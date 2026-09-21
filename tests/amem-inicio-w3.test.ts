@@ -20,7 +20,8 @@ describe("W3 / Wave 3A living /inicio V17", () => {
     const living = read("src", "components", "inicio", "inicio-living.tsx");
     expect(living).toContain("amem-surface-dusk");
     expect(living).toContain("amem-surface-poco");
-    expect(living).toContain("MemoryStrip");
+    expect(living).toContain("loadRecentMemory");
+    expect(living).toContain('href="/espaco"');
     expect(living).toContain('href="/hoje"');
     expect(living).toContain("Entrar no Hoje");
     expect(living).toContain("Caminhos");

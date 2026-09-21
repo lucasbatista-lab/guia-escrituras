@@ -67,14 +67,15 @@ export default async function JornadasPage() {
   return (
     <div className="space-y-7">
       <JourneyCatalogBeacon />
-      <header className="space-y-2">
-        <p className="amem-type-context text-wine">Caminhos</p>
-        <h1 className="amem-type-screen text-[28px] text-ink">
-          Sete dias com um tema
+      <header className="space-y-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+          Caminhos
+        </p>
+        <h1 className="font-sans text-[28px] font-bold tracking-[-0.035em] text-ink">
+          Escolha um tema
         </h1>
-        <p className="max-w-xl text-sm leading-relaxed text-ink-soft">
-          Trilhas editoriais sobre a vida real — no seu ritmo. Não substituem
-          terapia, aconselhamento profissional ou emergência.
+        <p className="max-w-xl text-sm leading-snug text-ink-soft">
+          7 dias · ~5 min/dia. No seu ritmo — não substitui terapia ou emergência.
         </p>
       </header>
 
@@ -88,9 +89,8 @@ export default async function JornadasPage() {
       {!entitled && !journeysDisabled ? (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-ink-soft">
-            Prévia aberta: viva o Dia 1 completo. Os dias seguintes — com
-            progresso salvo no caminho inteiro — pedem o plano Caminho. Essencial
-            continua com Conversar; a conta grátis mantém Hoje e Espaço.
+            Dia 1 grátis em cada caminho. Dias seguintes com progresso salvo no
+            plano Caminho. Conta grátis mantém Hoje e Espaço.
           </p>
           <SoftPaywallSheet copy={paywallCopy} defaultOpen={false} />
           <ul className="space-y-4">
@@ -133,7 +133,7 @@ export default async function JornadasPage() {
                 id="caminho-ativo-heading"
                 className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F0E6D0]/90"
               >
-                Em andamento
+                Agora · em andamento
               </p>
               <h2 className="mt-1.5 font-display text-[26px] leading-tight text-[#FFF9F0]">
                 {activeItem.journey.title}

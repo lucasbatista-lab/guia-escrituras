@@ -90,7 +90,7 @@ describe("Wave 3B Caminhos / Jornadas V17", () => {
       "page.tsx",
     );
     expect(catalog).toContain("Caminhos");
-    expect(catalog).toContain("Sete dias com um tema");
+    expect(catalog).toContain("Escolha um tema");
     expect(step).toContain("Caminhos");
     expect(step).toContain('href="/jornadas"');
     expect(BOTTOM_NAV_FREE.some((t) => t.label === "Caminhos" && t.href === "/jornadas")).toBe(
@@ -105,9 +105,9 @@ describe("Wave 3B Caminhos / Jornadas V17", () => {
     const catalog = read("src", "app", "(platform)", "jornadas", "page.tsx");
     expect(catalog).toContain("SoftPaywallSheet");
     expect(catalog).toContain("!entitled");
-    expect(catalog).toContain("Abrir Dia 1");
-    expect(catalog).toContain("Prévia · Dia 1");
-    expect(catalog).toContain("Em andamento");
+    expect(read("src", "components", "journeys", "journey-catalog-card.tsx")).toContain("Abrir Dia 1");
+    expect(catalog).toContain("Dia 1 grátis");
+    expect(catalog).toMatch(/em andamento/i);
     expect(catalog).toContain("journeyResumeHint");
     expect(catalog).toContain("journeyShowsSoftPaywall");
     expect(catalog).not.toMatch(/grid-cols-3 divide-x/);

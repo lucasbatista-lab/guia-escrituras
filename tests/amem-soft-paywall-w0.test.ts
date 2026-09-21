@@ -46,8 +46,8 @@ describe("W0 soft paywall foundation", () => {
     expect(copy.minimumPlanName).toBe("Essencial");
     expect(copy.badgeLabel).toBe("Essencial");
     expect(copy.resourceLabel).toBe("Conversar");
-    expect(copy.title).toBe("Essencial abre Conversar");
-    expect(copy.body).toMatch(/Hoje e Espaço continuam grátis/i);
+    expect(copy.title).toBe("Leve a conversa para o Essencial");
+    expect(copy.benefits.join(' ')).toMatch(/Hoje e Espaço continuam grátis/i);
     expect(copy.eyebrow).toBe("ACOMPANHAMENTO");
     expect(copy.eyebrow.toLowerCase()).not.toContain("aprofundar");
     expect(copy.dismissLabel).toBe("Ficar no grátis");
@@ -119,7 +119,7 @@ describe("W0 soft paywall foundation", () => {
     const jornadas = readSrc("src", "app", "(platform)", "jornadas", "page.tsx");
     expect(jornadas).toContain("SoftPaywallSheet");
     expect(jornadas).toContain("journeyShowsSoftPaywall");
-    expect(jornadas).toContain("Abrir Dia 1");
+    expect(readSrc("src", "components", "journeys", "journey-catalog-card.tsx")).toContain("Abrir Dia 1");
     expect(jornadas).toContain("!entitled");
 
     const slug = readSrc(
