@@ -134,11 +134,14 @@
     --amem-sh-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 
     --amem-ease-presence: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --amem-ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --amem-ease-settle: cubic-bezier(0.2, 0.8, 0.2, 1);
     --amem-dur-instant: 80ms;
-    --amem-dur-fast: 140ms;
-    --amem-dur-base: 220ms;
+    --amem-dur-fast: 160ms; /* FAST 120–180 */
+    --amem-dur-base: 260ms; /* NORMAL 220–320 */
+    --amem-dur-normal: 260ms;
     --amem-dur-slow: 380ms;
-    --amem-dur-ritual: 680ms;
+    --amem-dur-ritual: 420ms; /* RITUAL 350–500 */
     --amem-dur-page: 280ms;
   }
 }
@@ -282,6 +285,7 @@
     --amem-dur-instant: 1ms;
     --amem-dur-fast: 1ms;
     --amem-dur-base: 1ms;
+    --amem-dur-normal: 1ms;
     --amem-dur-slow: 1ms;
     --amem-dur-ritual: 1ms;
     --amem-dur-page: 1ms;
@@ -754,6 +758,277 @@
       animation: none !important;
       opacity: 1 !important;
       width: 64px !important;
+    }
+  }
+}
+
+
+/* ——— Amém Interaction System (feel) ——— */
+@layer utilities {
+  /* Type rhythm hierarchy */
+  .amem-type-context {
+    font-size: var(--amem-text-eyebrow);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amem-mute);
+  }
+  .amem-type-screen {
+    font-family: var(--amem-serif);
+    font-size: var(--amem-text-display-sm);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--amem-wine-deep);
+  }
+  .amem-type-moment {
+    font-family: var(--amem-serif);
+    font-size: var(--amem-text-section);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--amem-ink);
+  }
+  .amem-type-body {
+    font-size: var(--amem-text-body);
+    line-height: var(--amem-leading-body);
+    color: var(--amem-ink);
+  }
+  .amem-type-scripture {
+    font-family: var(--amem-serif);
+    font-size: var(--amem-text-verse);
+    line-height: var(--amem-leading-verse);
+    color: var(--amem-ink);
+  }
+  .amem-type-meta {
+    font-size: var(--amem-text-soft);
+    line-height: 1.4;
+    color: var(--amem-mute);
+  }
+  .amem-type-action {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  /* Surfaces — subtle elevation / pressed / selected / recessed / sheet */
+  .amem-surface-elevated {
+    background: var(--amem-surface);
+    box-shadow: 0 1px 0 var(--amem-hairline), 0 8px 24px var(--amem-shadow);
+  }
+  .amem-surface-soft {
+    background: rgba(255, 253, 252, 0.72);
+    box-shadow: inset 0 0 0 1px var(--amem-hairline);
+  }
+  .amem-surface-selected {
+    background: var(--amem-wine-060);
+    box-shadow: inset 0 0 0 1px var(--amem-hairline-wine);
+  }
+  .amem-surface-recessed {
+    background: rgba(235, 231, 225, 0.55);
+    box-shadow: inset 0 0 0 1px var(--amem-hairline);
+  }
+  .amem-surface-pressed {
+    transform: scale(0.975);
+  }
+  .amem-surface-sheet {
+    background: var(--amem-surface);
+    box-shadow: 0 -18px 48px rgba(25, 22, 19, 0.14);
+  }
+
+  /* Press settle — immediate, not exaggerated */
+  .amem-press {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition:
+      transform var(--amem-dur-fast) var(--amem-ease-settle),
+      opacity var(--amem-dur-fast) var(--amem-ease-soft),
+      box-shadow var(--amem-dur-fast) var(--amem-ease-soft),
+      background-color var(--amem-dur-fast) var(--amem-ease-soft);
+  }
+  .amem-press:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: scale(0.975);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .amem-press:hover:not(:disabled):not([aria-disabled="true"]) {
+      opacity: 0.96;
+    }
+  }
+
+  /* Enter / page / stage motion */
+  @keyframes amem-enter-soft {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes amem-enter-fast {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes amem-enter-ritual {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes amem-complete-material {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes amem-complete-title {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes amem-complete-actions {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes amem-highlight-once {
+    0% { background-color: transparent; }
+    35% { background-color: var(--amem-wine-060); }
+    100% { background-color: transparent; }
+  }
+  @keyframes amem-sheet-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes amem-remove-out {
+    to { opacity: 0; transform: translateY(-6px); max-height: 0; padding-top: 0; padding-bottom: 0; margin: 0; }
+  }
+
+  .amem-enter-soft {
+    animation: amem-enter-soft var(--amem-dur-base) var(--amem-ease-soft) both;
+  }
+  .amem-enter-fast {
+    animation: amem-enter-fast var(--amem-dur-fast) var(--amem-ease-soft) both;
+  }
+  .amem-enter-ritual {
+    animation: amem-enter-ritual var(--amem-dur-ritual) var(--amem-ease-presence) both;
+  }
+  .amem-page-enter {
+    animation: amem-enter-soft var(--amem-dur-page) var(--amem-ease-soft) both;
+  }
+  .amem-sheet-enter {
+    animation: amem-sheet-up var(--amem-dur-base) var(--amem-ease-soft) both;
+  }
+  .amem-highlight-once {
+    animation: amem-highlight-once var(--amem-dur-ritual) var(--amem-ease-soft) both;
+  }
+  .amem-remove-out {
+    animation: amem-remove-out var(--amem-dur-base) var(--amem-ease-soft) forwards;
+    overflow: hidden;
+  }
+
+  .amem-complete-material {
+    display: flex;
+    height: 88px;
+    width: 88px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: radial-gradient(circle at 40% 35%, #FFFDFC, #E8E2D8);
+    box-shadow: 0 12px 28px var(--amem-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+    animation: amem-complete-material var(--amem-dur-ritual) var(--amem-ease-presence) both;
+  }
+  .amem-complete-title {
+    animation: amem-complete-title var(--amem-dur-base) var(--amem-ease-soft) both;
+    animation-delay: calc(var(--amem-dur-fast) * 0.6);
+  }
+  .amem-complete-support {
+    animation: amem-complete-title var(--amem-dur-base) var(--amem-ease-soft) both;
+    animation-delay: calc(var(--amem-dur-fast) * 0.9);
+  }
+  .amem-complete-actions {
+    animation: amem-complete-actions var(--amem-dur-base) var(--amem-ease-soft) both;
+    animation-delay: calc(var(--amem-dur-ritual) * 0.55);
+  }
+
+  /* Trilho fill responds to progress */
+  .amem-ink-trail-fill {
+    transition: width var(--amem-dur-ritual) var(--amem-ease-presence);
+  }
+  .amem-stage-rail {
+    transition: background-color var(--amem-dur-fast) var(--amem-ease-soft),
+      opacity var(--amem-dur-fast) var(--amem-ease-soft);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .amem-stage-rail { transition: none; }
+  }
+
+  /* Bottom nav press */
+  .amem-bottom-nav a.amem-press:active,
+  .amem-bottom-nav button.amem-press:active {
+    transform: scale(0.94);
+  }
+  .amem-nav-active-pill {
+    transition: transform var(--amem-dur-fast) var(--amem-ease-settle),
+      box-shadow var(--amem-dur-fast) var(--amem-ease-soft);
+  }
+
+  /* Chat chips / send tactile */
+  .amem-lex-chip {
+    transition: transform var(--amem-dur-fast) var(--amem-ease-settle),
+      background-color var(--amem-dur-fast) var(--amem-ease-soft),
+      box-shadow var(--amem-dur-fast) var(--amem-ease-soft);
+  }
+  .amem-lex-chip:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  .amem-lex-send {
+    transition: transform var(--amem-dur-fast) var(--amem-ease-settle),
+      opacity var(--amem-dur-fast) var(--amem-ease-soft);
+  }
+  .amem-lex-send:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+  .amem-lex-composer:focus-within {
+    box-shadow: 0 8px 22px var(--amem-shadow), inset 0 0 0 1.5px var(--amem-hairline-wine);
+  }
+
+  .amem-app-section + .amem-app-section {
+    margin-top: var(--amem-s5);
+  }
+
+  /* Loading: reserve space, no layout jump */
+  .amem-btn-loading {
+    position: relative;
+    color: transparent !important;
+  }
+  .amem-btn-loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 999px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    color: inherit;
+    opacity: 0.85;
+    animation: amem-spin var(--amem-dur-ritual) linear infinite;
+  }
+  @keyframes amem-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .amem-enter-soft,
+    .amem-enter-fast,
+    .amem-enter-ritual,
+    .amem-page-enter,
+    .amem-sheet-enter,
+    .amem-highlight-once,
+    .amem-remove-out,
+    .amem-complete-material,
+    .amem-complete-title,
+    .amem-complete-support,
+    .amem-complete-actions,
+    .amem-btn-loading::after {
+      animation: none !important;
+    }
+    .amem-press:active:not(:disabled):not([aria-disabled="true"]),
+    .amem-lex-chip:active:not(:disabled),
+    .amem-lex-send:active:not(:disabled) {
+      transform: none;
+    }
+    .amem-ink-trail-fill {
+      transition: none;
     }
   }
 }
