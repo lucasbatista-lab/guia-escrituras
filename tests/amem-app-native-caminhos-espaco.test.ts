@@ -83,3 +83,48 @@ describe("APP-NATIVE Caminhos guided moments", () => {
     expect(hub).not.toMatch(/grid-cols-3/);
   });
 });
+
+describe("APP-NATIVE Espaço intimate archive", () => {
+  it("prayer is archive-first with sheet composer and overflow actions", () => {
+    const prayer = read("src", "components", "workspace", "prayer-workspace.tsx");
+    expect(prayer).toContain("IntimateSheet");
+    expect(prayer).toMatch(/Nova oração/i);
+    expect(prayer).toMatch(/respondida|answered/i);
+    expect(prayer).toMatch(/Excluir|excluir/);
+    expect(prayer).toContain("Confirmar exclusão");
+    expect(prayer).toContain("/api/workspace/prayers");
+    // No permanent top form as only surface — composer opens on demand.
+    expect(prayer).toContain("composerOpen");
+    expect(prayer).toContain("detailId");
+  });
+
+  it("journal create uses sheet; privacy copy preserved", () => {
+    const journal = read(
+      "src",
+      "components",
+      "workspace",
+      "journal-workspace.tsx",
+    );
+    expect(journal).toContain("IntimateSheet");
+    expect(journal).toMatch(/privado|privad/i);
+    expect(journal).toMatch(/IA|analytics/i);
+    expect(journal).toContain("/api/workspace/entries");
+    expect(journal).toContain("composerOpen");
+  });
+
+  it("subnav stays archive areas with stable URLs", () => {
+    const nav = read("src", "components", "workspace", "workspace-subnav.tsx");
+    expect(nav).toContain("/espaco");
+    expect(nav).toContain("/espaco/oracoes");
+    expect(nav).toContain("/espaco/diario");
+    expect(nav).toContain("/espaco/salvos");
+    expect(nav).toContain("Memória");
+  });
+
+  it("hub Linha viva + empty V17 preserved", () => {
+    const hub = read("src", "app", "(platform)", "espaco", "page.tsx");
+    expect(hub).toContain("Linha viva");
+    expect(hub).toContain("Este lugar vai guardar o que importa para você.");
+    expect(hub).toContain("Primeira oração");
+  });
+});
