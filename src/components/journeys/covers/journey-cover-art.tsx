@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { useId, type ReactElement } from "react";
 import type { JourneySlug } from "@/lib/journeys/types";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,12 @@ type CoverProps = {
   variant?: CoverVariant;
 };
 
+function useSvgIds(prefix: string) {
+  const raw = useId().replace(/:/g, "");
+  return (name: string) => `${raw}-${prefix}-${name}`;
+}
+
+
 function heightFor(size: "compact" | "hero", variant: CoverVariant): number {
   if (variant === "motif") return size === "hero" ? 48 : 28;
   if (variant === "fragment") return size === "hero" ? 120 : 72;
@@ -29,6 +35,7 @@ export function CoverAnsiedade({
   variant = "full",
 }: CoverProps) {
   const h = heightFor(size, variant);
+  const id = useSvgIds("ac");
   if (variant === "motif") {
     return (
       <svg
@@ -73,24 +80,24 @@ export function CoverAnsiedade({
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
-          <linearGradient id="ac-sky" x1="0" y1="0" x2="0.2" y2="1">
+          <linearGradient id={id("sky")} x1="0" y1="0" x2="0.2" y2="1">
             <stop offset="0%" stopColor="#3A2430" />
             <stop offset="45%" stopColor="#5A2232" />
             <stop offset="100%" stopColor="#2A1A22" />
           </linearGradient>
-          <linearGradient id="ac-haze" x1="0" y1="0.3" x2="1" y2="0.8">
+          <linearGradient id={id("haze")} x1="0" y1="0.3" x2="1" y2="0.8">
             <stop offset="0%" stopColor="#B8965A" stopOpacity="0.35" />
             <stop offset="55%" stopColor="#D4BC8C" stopOpacity="0.12" />
             <stop offset="100%" stopColor="#B8965A" stopOpacity="0" />
           </linearGradient>
-          <radialGradient id="ac-glow" cx="72%" cy="38%" r="35%">
+          <radialGradient id={id("glow")} cx="72%" cy="38%" r="35%">
             <stop offset="0%" stopColor="#F0E6D0" stopOpacity="0.55" />
             <stop offset="55%" stopColor="#B8965A" stopOpacity="0.2" />
             <stop offset="100%" stopColor="#B8965A" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <rect width="320" height="168" fill="url(#ac-sky)" />
-        <ellipse cx="230" cy="64" rx="90" ry="48" fill="url(#ac-glow)" />
+        <rect width="320" height="168" fill={`url(#${id("sky")})`} />
+        <ellipse cx="230" cy="64" rx="90" ry="48" fill={`url(#${id("glow")})`} />
         <path
           d="M0 118 C40 108 70 128 110 118 C150 108 180 126 220 116 C260 106 290 122 320 112 L320 168 L0 168 Z"
           fill="#241820"
@@ -103,7 +110,7 @@ export function CoverAnsiedade({
         <path
           d="M28 72 C60 58 88 66 108 54"
           fill="none"
-          stroke="url(#ac-haze)"
+          stroke={`url(#${id("haze")})`}
           strokeWidth="1.4"
           strokeLinecap="round"
         />
@@ -121,6 +128,7 @@ export function CoverPerdao({
   variant = "full",
 }: CoverProps) {
   const h = heightFor(size, variant);
+  const id = useSvgIds("pl");
   if (variant === "motif") {
     return (
       <svg
@@ -175,22 +183,22 @@ export function CoverPerdao({
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
-          <linearGradient id="pl-base" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id={id("base")} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#2C241C" />
             <stop offset="100%" stopColor="#1E1814" />
           </linearGradient>
-          <linearGradient id="pl-warm" x1="0" y1="0" x2="1" y2="0">
+          <linearGradient id={id("warm")} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#C6A05A" stopOpacity="0.55" />
             <stop offset="100%" stopColor="#C6A05A" stopOpacity="0.08" />
           </linearGradient>
-          <linearGradient id="pl-cool" x1="1" y1="0" x2="0" y2="1">
+          <linearGradient id={id("cool")} x1="1" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#6B2E3A" stopOpacity="0.45" />
             <stop offset="100%" stopColor="#6B2E3A" stopOpacity="0.05" />
           </linearGradient>
         </defs>
-        <rect width="320" height="168" fill="url(#pl-base)" />
-        <path d="M0 0 L168 0 L120 168 L0 168 Z" fill="url(#pl-warm)" />
-        <path d="M168 0 L320 0 L320 168 L120 168 Z" fill="url(#pl-cool)" />
+        <rect width="320" height="168" fill={`url(#${id("base")})`} />
+        <path d="M0 0 L168 0 L120 168 L0 168 Z" fill={`url(#${id("warm")})`} />
+        <path d="M168 0 L320 0 L320 168 L120 168 Z" fill={`url(#${id("cool")})`} />
         <line
           x1="168"
           y1="12"
@@ -240,6 +248,7 @@ export function CoverRecomeco({
   variant = "full",
 }: CoverProps) {
   const h = heightFor(size, variant);
+  const id = useSvgIds("rp");
   if (variant === "motif") {
     return (
       <svg
@@ -281,19 +290,19 @@ export function CoverRecomeco({
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
-          <linearGradient id="rp-sky" x1="0.5" y1="0" x2="0.5" y2="1">
+          <linearGradient id={id("sky")} x1="0.5" y1="0" x2="0.5" y2="1">
             <stop offset="0%" stopColor="#EDE6DA" />
             <stop offset="40%" stopColor="#D8CFC0" />
             <stop offset="100%" stopColor="#3A322C" />
           </linearGradient>
-          <radialGradient id="rp-dawn" cx="50%" cy="28%" r="42%">
+          <radialGradient id={id("dawn")} cx="50%" cy="28%" r="42%">
             <stop offset="0%" stopColor="#FFF8EC" stopOpacity="0.95" />
             <stop offset="40%" stopColor="#C6A05A" stopOpacity="0.35" />
             <stop offset="100%" stopColor="#C6A05A" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <rect width="320" height="168" fill="url(#rp-sky)" />
-        <ellipse cx="160" cy="48" rx="110" ry="56" fill="url(#rp-dawn)" />
+        <rect width="320" height="168" fill={`url(#${id("sky")})`} />
+        <ellipse cx="160" cy="48" rx="110" ry="56" fill={`url(#${id("dawn")})`} />
         <path
           d="M0 98 C70 88 110 108 160 96 C210 84 250 104 320 92 L320 168 L0 168 Z"
           fill="#2A2420"

@@ -64,7 +64,7 @@
     --amem-cta-premium: var(--amem-cta-ritual);
 
     --amem-nav-bg: rgba(255, 253, 252, 0.88);
-    --amem-nav-inactive: #8A8278;
+    --amem-nav-inactive: #6F6860;
     --amem-nav-active-pill: var(--amem-cta-ritual);
     --amem-nav-active-icon: var(--amem-brass);
 
@@ -592,7 +592,7 @@
     left: 14px;
     right: 14px;
     bottom: max(14px, var(--safe-bottom));
-    height: 64px;
+    height: 68px;
     padding-bottom: 0;
     border: none;
     border-radius: 22px;

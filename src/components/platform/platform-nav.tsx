@@ -210,22 +210,22 @@ export function PlatformNav({
                   aria-current={current ? "page" : undefined}
                   aria-label={tab.label}
                   className={cn(
-                    "amem-press relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                    "amem-press relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[12px] font-semibold tracking-[0.01em] leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                     current
                       ? "font-semibold text-wine"
-                      : "font-normal text-[color:var(--amem-nav-inactive,#8A8278)]",
+                      : "font-medium text-[color:var(--amem-nav-inactive,#6F6860)]",
                   )}
                 >
                   <span
                     aria-hidden
                     className={cn(
-                      "flex h-[30px] w-11 items-center justify-center rounded-[14px]",
+                      "flex h-8 w-11 items-center justify-center rounded-[14px]",
                       current && "amem-nav-active-pill",
                     )}
                   >
                     <Icon
                       className={cn(
-                        "size-[22px]",
+                        "size-6",
                         current ? "stroke-[1.65]" : "stroke-[1.65]",
                       )}
                     />
@@ -240,14 +240,14 @@ export function PlatformNav({
               aria-expanded={open}
               aria-controls={menuId}
               aria-label="Abrir menu"
-              className="amem-press flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] text-[color:var(--amem-nav-inactive,#8A8278)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              className="amem-press flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[12px] font-semibold tracking-[0.01em] leading-none text-[color:var(--amem-nav-inactive,#6F6860)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               onClick={() => setOpen(true)}
             >
               <span
                 aria-hidden
-                className="flex h-[30px] w-11 items-center justify-center rounded-[14px]"
+                className="flex h-8 w-11 items-center justify-center rounded-[14px]"
               >
-                <NavIconMenu className="size-[22px]" />
+                <NavIconMenu className="size-6" />
               </span>
               <span>Menu</span>
             </button>

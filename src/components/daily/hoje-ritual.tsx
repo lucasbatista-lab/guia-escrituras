@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { PresenceLight } from "@/components/brand/presence-light";
 import { PaperGrain } from "@/components/brand/paper-grain";
 import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
+import { AppScreenHeader } from "@/components/platform/app-screen-header";
 import { InkTrail } from "@/components/daily/ink-trail";
 import { Button } from "@/components/ui/button";
 import {
@@ -259,12 +260,11 @@ export function HojeRitual({
         <PresenceLight size="md" centered />
         <PaperGrain />
         <SoftEnter tone="ritual" className="relative z-10">
-          <header className="flex items-end justify-between gap-3 px-1">
-            <h1 className="font-display text-xl font-semibold text-[color:var(--amem-wine-deep)]">
-              Presença
-            </h1>
-            <p className="text-sm text-[color:var(--amem-mute)]">Levo</p>
-          </header>
+          <AppScreenHeader
+            title="Presença"
+            status={<p className="text-sm text-[color:var(--amem-mute)]">Levo</p>}
+            className="px-1"
+          />
           <InkTrail total={6} currentIndex={5} complete className="mt-3" />
 
           <CompletionFeedback
@@ -287,7 +287,7 @@ export function HojeRitual({
             </div>
             <div className="mt-4 flex flex-col gap-3">
               <p className="px-1 text-center text-sm leading-relaxed text-ink-soft">
-                Quer continuar esta reflexão em Conversar?
+                Próximo passo: Conversar sobre isso
               </p>
               {allowsChat ? (
                 <Button
@@ -307,34 +307,32 @@ export function HojeRitual({
                   Conversar sobre isso
                 </Button>
               )}
-              <div className="flex flex-col gap-1.5 sm:flex-row sm:justify-center">
-                <Button
+              <div className="flex justify-center gap-4 pt-1">
+                <button
                   type="button"
-                  variant="outline"
-                  className="min-h-11 w-full sm:flex-1"
+                  className="amem-press inline-flex min-h-11 items-center text-sm text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   disabled={busy}
                   onClick={() => void shareDay()}
                 >
                   Compartilhar
-                </Button>
+                </button>
                 {!saved ? (
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    className="min-h-11 w-full text-ink-soft sm:flex-1"
+                    className="amem-press inline-flex min-h-11 items-center text-sm text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     disabled={busy}
                     onClick={() => void saveDay()}
                   >
-                    Salvar no Espaço
-                  </Button>
+                    Salvar
+                  </button>
                 ) : null}
               </div>
               <p className="pt-1 text-center">
                 <Link
                   href="/inicio"
-                  className="amem-press inline-flex min-h-11 items-center justify-center px-3 text-sm text-ink-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="amem-press inline-flex min-h-10 items-center justify-center px-3 text-xs text-[color:var(--amem-mute)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Voltar ao Início
+                  Início
                 </Link>
               </p>
             </div>
@@ -366,26 +364,23 @@ export function HojeRitual({
         className="relative z-10 space-y-4"
         data-hoje-phase="start"
       >
-        <header className="flex items-end justify-between gap-3">
-          <h1
-            id="hoje-start-heading"
-            className="font-display text-xl font-semibold text-[color:var(--amem-wine-deep)]"
-          >
-            Presença
-          </h1>
-          <p className="text-sm text-[color:var(--amem-mute)]">
-            {phase === "start" ? "Chego · 1 de 6" : "Olho · 3 de 6"}
-          </p>
-        </header>
+        <AppScreenHeader
+          title="Presença"
+          status={
+            <p id="hoje-start-heading" className="text-sm text-[color:var(--amem-mute)]">
+              {phase === "start" ? "Chego · 1 de 6" : "Olho · 3 de 6"}
+            </p>
+          }
+        />
 
         {phase === "start" ? (
           <SoftEnter tone="normal" className="space-y-4">
             <InkTrail total={6} currentIndex={0} />
             <p className="text-base leading-relaxed text-ink-soft">
-              Como você chega agora? Nomear já é presença. · {dateLabel}
+              Como você chega agora?
             </p>
             <p className="text-sm text-[color:var(--amem-mute)]">
-              Cerca de 3–5 minutos.
+              ~4 min · {dateLabel}
             </p>
 
             <fieldset>

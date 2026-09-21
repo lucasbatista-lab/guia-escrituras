@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { PresenceLight } from "@/components/brand/presence-light";
 import { PaperGrain } from "@/components/brand/paper-grain";
 import { Button } from "@/components/ui/button";
+import { AppScreenHeader } from "@/components/platform/app-screen-header";
 import {
   IconChevron,
   IconCreate,
@@ -145,19 +146,15 @@ export default async function EspacoPage() {
       <PresenceLight size="sm" />
       <PaperGrain />
 
-      <header className="relative z-10 flex items-end justify-between gap-3">
-        <div>
-          <h1 className="font-sans text-[30px] font-bold tracking-[-0.035em] text-ink">
-            Espaço
-          </h1>
-          <p className="mt-1 text-sm text-[color:var(--amem-mute)]">
-            seu arquivo íntimo
-          </p>
-        </div>
-        {moments ? (
-          <p className="max-w-[40%] text-right text-xs text-ink-soft">{moments}</p>
-        ) : null}
-      </header>
+      <AppScreenHeader
+        title="Espaço"
+        subtitle="Seu arquivo íntimo"
+        trailing={
+          moments ? (
+            <p className="max-w-[9rem] text-right text-xs text-ink-soft">{moments}</p>
+          ) : null
+        }
+      />
 
       {/* Create always reachable */}
       <div className="relative z-10">
