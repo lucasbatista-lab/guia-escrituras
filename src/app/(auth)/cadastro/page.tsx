@@ -93,16 +93,16 @@ export default async function CadastroPage({
               </p>
             </div>
           ) : null}
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-wine">
-            Sua conta
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+            {plan ? "Conta · plano" : "Conta grátis"}
           </p>
-          <h1 className="mt-2 font-display text-3xl text-ink sm:text-4xl">
-            Criar conta
+          <h1 className="mt-2 font-sans text-[28px] font-bold tracking-[-0.03em] text-ink sm:text-4xl sm:font-display sm:tracking-tight">
+            {plan ? "Criar conta" : "Comece sem cartão"}
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
+          <p className="mt-2 max-w-xl text-sm leading-snug text-ink-soft sm:text-base">
             {plan
-              ? `Você escolheu o plano ${plan.name}. Informe seus dados uma única vez e siga para o pagamento seguro.`
-              : "Crie uma conta grátis. Sem cartão. Depois da confirmação do e-mail você entra em Hoje com Deus, orações e diário."}
+              ? `Plano ${plan.name}. Um formulário — depois o pagamento seguro.`
+              : "Confirme o e-mail e entre no Hoje. Espaço incluso. Sem cartão."}
           </p>
           <div className="mt-5 sm:mt-7">
             <SignUpForm
@@ -168,22 +168,21 @@ function NoPlanSupportCard() {
         Conta grátis
       </p>
       <h2 className="mt-2 font-display text-2xl text-ink">
-        Sem cartão para começar
+        O que é grátis
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-        Confirme o e-mail e use Hoje com Deus, orações, salvos e diário. Conversar
-        com Amém, memória e Jornadas continuam nos planos pagos.
+        Hoje, Espaço e Dia 1 dos Caminhos. Conversar e Caminhos completos só se você quiser.
       </p>
       <ul className="mt-5 space-y-2 text-sm text-ink-soft">
-        <li>· Sem cobrança nesta conta</li>
-        <li>· Plano só se você quiser conversar</li>
+        <li>· Sem cartão nesta conta</li>
+        <li>· Plano só quando fizer sentido</li>
         <li>· Privado por padrão</li>
       </ul>
       <TrackingLink
         href="/planos"
         className="mt-6 inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
       >
-        Ver o que é premium
+        Ver planos
       </TrackingLink>
     </div>
   );

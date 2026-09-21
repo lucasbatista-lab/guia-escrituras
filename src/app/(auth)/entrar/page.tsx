@@ -9,7 +9,7 @@ export default function EntrarPage() {
   return (
     <AuthShell
       title="Entrar"
-      subtitle="Acesse sua conta para continuar suas conversas e jornada."
+      subtitle="Continue de onde parou — Hoje, Espaço e o que já é seu."
     >
       <Suspense
         fallback={

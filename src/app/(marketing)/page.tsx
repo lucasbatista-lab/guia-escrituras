@@ -50,7 +50,7 @@ const ESSENCIAL_PRICE_LABEL = "R$ 38";
 const faq = [
   {
     q: "Preciso pagar para usar?",
-    a: "Não. A conta grátis inclui Hoje com Deus, check-in, salvos, orações e diário — sem IA. Conversar com Amém, memória, Jornadas e Aprofundar são dos planos pagos.",
+    a: "Não. A conta grátis inclui Hoje com Deus, Espaço (orações, diário, salvos) e o Dia 1 dos Caminhos — sem cartão. Conversar é do Essencial; Caminhos completos do plano Caminho; Aprofundar do Profundo.",
   },
   {
     q: "O Amém Chat diz falar em nome de Jesus?",
@@ -114,10 +114,10 @@ export default function HomePage() {
           <div className="relative mx-auto grid max-w-6xl items-center gap-7 px-4 pb-10 pt-3 sm:px-6 sm:pb-14 sm:pt-7 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-16 lg:pt-10">
             <div className="animate-fade-up">
               <h1 className="text-balance font-display text-[1.85rem] leading-[1.08] text-ink sm:text-4xl lg:text-[3.25rem]">
-                Quando algo estiver pesando, encontre clareza à luz das Escrituras.
+                Clareza à luz das Escrituras — comece grátis hoje.
               </h1>
               <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-ink-soft sm:mt-5 sm:text-lg">
-                Comece grátis com Hoje com Deus — presença diária, com IA e limites honestos quando quiser conversar.
+                Presença diária sem cartão. Acompanhar e conversar, quando fizer sentido.
               </p>
               <div className="mt-6 sm:mt-8">
                 <Button asChild size="lg" variant="ritual" className="amem-type-action min-h-12 w-full px-5 sm:w-auto">
@@ -125,7 +125,7 @@ export default function HomePage() {
                 </Button>
               </div>
               <p className="mt-3 text-xs text-ink-soft sm:text-sm">
-                Conta grátis, sem cartão
+                Sem cartão · Hoje e Espaço livres
               </p>
             </div>
             <div className="animate-fade-up-delayed">
@@ -142,18 +142,16 @@ export default function HomePage() {
           >
             <a href="#demonstracao" className="sr-only">Conhecer o Amém Chat</a>
             <p className="amem-type-context">
-              Veja na prática
+              Demonstração
             </p>
             <h2
               id="demo-heading"
               className="mt-2 font-display text-2xl text-ink sm:text-3xl"
             >
-              Conhecer o Amém Chat
+              Como é Conversar
             </h2>
             <p className="mt-2 max-w-xl text-sm text-ink-soft sm:text-base">
-              Escolha uma situação e veja o tipo de reflexão que o Amém Chat pode
-              oferecer — referências bíblicas, aplicação prática e próximos
-              passos.
+              Uma situação · Escrituras · próximo passo.
             </p>
             <p className="mt-3">
               <TrackingLink
@@ -198,11 +196,11 @@ export default function HomePage() {
               Escolha seu ritmo
             </p>
             <h2 className="mt-2 font-display text-3xl text-ink sm:text-4xl">
-              Um plano para a forma como você quer voltar
+              Quando quiser aprofundar o acompanhamento
             </h2>
             <p className="mt-3 max-w-2xl text-ink-soft">
-              Essencial para conversas e histórico. Caminho acrescenta Jornadas guiadas
-              e mais frequência. Profundo inclui Aprofundar sob demanda.
+              Essencial abre Conversar. Caminho completa os Caminhos de 7 dias.
+              Profundo acrescenta Aprofundar sob demanda.
             </p>
             <div className="mt-8">
               <PlanCards compact />
@@ -258,12 +256,11 @@ export default function HomePage() {
         <section className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6">
           <div className="rounded-3xl border border-wine/20 bg-gradient-to-br from-wine/[0.06] to-card px-6 py-10 text-center sm:px-10">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
-              Pronto para começar de graça?
+              Comece grátis — sem cartão
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-ink">
-              Crie uma conta sem cartão para Hoje com Deus, orações e diário.
-              Conversar com memória e Jornadas continua nos planos — a partir de{" "}
-              {ESSENCIAL_PRICE_LABEL}/mês.
+              Hoje e Espaço liberados na conta. Conversar e Caminhos completos
+              quando fizer sentido — a partir de {ESSENCIAL_PRICE_LABEL}/mês.
             </p>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               <Button

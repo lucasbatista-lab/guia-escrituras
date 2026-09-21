@@ -12,11 +12,10 @@ export function EcosystemShowcase() {
           O produto de verdade
         </p>
         <h2 className="mt-2 text-balance font-display text-3xl text-ink sm:text-4xl">
-          Presença diária, arquivo íntimo, caminhos e conversa
+          Quatro peças, uma presença
         </h2>
         <p className="mt-3 leading-relaxed text-ink-soft">
-          Comece grátis com Hoje e Espaço. Conversar e Caminhos completos entram
-          quando você quiser — com limites honestos.
+          Grátis: Hoje e Espaço. Acompanhar: Conversar e Caminhos.
         </p>
       </div>
 
@@ -32,11 +31,10 @@ export function EcosystemShowcase() {
               Hoje com Deus
             </p>
             <h3 className="relative mt-3 max-w-[14ch] font-display text-2xl text-[#FFF9F0] sm:text-3xl">
-              Um ritual curto, sem cartão
+              Ritual diário livre
             </h3>
             <p className="relative mt-3 max-w-sm text-sm text-[#FFFDFC]/72">
-              Presença diária com Escritura, reflexão e um passo possível —
-              livre na conta grátis.
+              Escritura · reflexão · um passo. Sem cartão.
             </p>
             <div className="relative mt-6 inline-flex rounded-full bg-[#FFF9F0] px-4 py-2 text-xs font-bold text-[#5A2232]">
               Entrar no Hoje
@@ -57,10 +55,10 @@ export function EcosystemShowcase() {
                 Caminhos
               </p>
               <h3 className="mt-1 font-display text-xl text-[#FFF9F0]">
-                Sete dias com um tema
+                7 dias · um tema
               </h3>
               <p className="mt-1 text-xs text-[#FFF9F0]/75">
-                Prévia do Dia 1 aberta · progresso no plano Caminho
+                Dia 1 grátis · completo no plano Caminho
               </p>
             </div>
           </div>
@@ -72,10 +70,10 @@ export function EcosystemShowcase() {
             Espaço
           </p>
           <h3 className="mt-2 font-display text-xl text-ink">
-            Arquivo íntimo vivo
+            Arquivo íntimo
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-            Orações, diário e salvos — com linha viva, não pastas frias.
+            Orações, diário e salvos — grátis.
           </p>
           <ul className="mt-4 space-y-2">
             {[
@@ -103,7 +101,7 @@ export function EcosystemShowcase() {
             Clareza à luz das Escrituras
           </h3>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-sand-200">
-            Traga a situação com suas palavras. Escolha tradição ecumênica, evangélica ou católica e ajuste a profundidade. A resposta conecta acolhimento, referências e um próximo passo — com IA e limites honestos.
+            Sua situação · Escrituras · próximo passo. Essencial.
           </p>
         </article>
       </div>

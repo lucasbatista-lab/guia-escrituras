@@ -13,9 +13,9 @@ describe("conversion copy — concrete plan differentiation", () => {
       join(root, "src", "app", "(marketing)", "page.tsx"),
       "utf8",
     );
-    expect(home).toContain("Jornadas guiadas");
+    expect(home).toMatch(/Caminhos|Conversar/);
     expect(home).toContain("Aprofundar sob");
-    expect(home).toContain("Essencial para conversas e histórico");
+    expect(home).toContain("Essencial abre Conversar");
     expect(home).not.toMatch(/plano inferior|só o básico inútil/i);
   });
 });

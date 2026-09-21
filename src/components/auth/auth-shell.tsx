@@ -32,11 +32,11 @@ export function AuthShell({
         className="relative mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 py-8 pb-[max(5.5rem,var(--safe-bottom))] outline-none sm:px-6 sm:pb-[max(6rem,var(--safe-bottom))] lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 lg:py-12 lg:pb-[max(6rem,var(--safe-bottom))]"
       >
         <section className="amem-enter-soft mx-auto w-full max-w-md rounded-3xl border border-border/70 bg-[color:var(--amem-surface)]/90 p-5 shadow-[0_16px_40px_var(--amem-shadow)] backdrop-blur-sm sm:p-8">
-          <p className="amem-type-context text-wine">
-            Sua conta Amém Chat
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+            Amém Chat
           </p>
-          <h1 className="amem-type-screen mt-2 font-display text-3xl text-ink">{title}</h1>
-          <p className="mt-2 text-sm leading-relaxed text-ink-soft">{subtitle}</p>
+          <h1 className="mt-2 font-sans text-[28px] font-bold tracking-[-0.03em] text-ink">{title}</h1>
+          <p className="mt-2 text-sm leading-snug text-ink-soft">{subtitle}</p>
           <div className="mt-7 space-y-1">{children}</div>
         </section>
 
@@ -45,17 +45,16 @@ export function AuthShell({
             Continue de onde parou
           </p>
           <h2 className="mt-2 max-w-xl text-balance font-display text-4xl leading-tight text-ink">
-            Conversas, Jornadas e histórico na mesma experiência
+            Continuidade no celular e no computador
           </h2>
           <p className="mt-4 max-w-lg leading-relaxed text-ink-soft">
-            Use a mesma conta no celular e no computador, com suas preferências e
-            sua assinatura.
+            Hoje, Espaço, Caminhos e Conversar na mesma conta — com seus limites honestos.
           </p>
           <div className="mt-7 grid max-w-xl gap-3 sm:grid-cols-3">
             {[
-              { icon: BookOpenText, label: "Referências e aplicação" },
-              { icon: History, label: "Continuidade pelo histórico" },
-              { icon: LockKeyhole, label: "Conversas não públicas" },
+              { icon: BookOpenText, label: "Hoje e Caminhos" },
+              { icon: History, label: "Espaço e histórico" },
+              { icon: LockKeyhole, label: "Privado por padrão" },
             ].map((item) => {
               const Icon = item.icon;
               return (

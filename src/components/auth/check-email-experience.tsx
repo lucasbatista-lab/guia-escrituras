@@ -138,24 +138,24 @@ export function CheckEmailExperience({
       <ol className="grid gap-2 text-sm text-ink-soft sm:grid-cols-3">
         <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
           <span className="font-display text-lg text-wine">1</span>
-          <span>Abra o e-mail que acabamos de enviar.</span>
+          <span>Abra a caixa de entrada (e o spam).</span>
         </li>
         <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
           <span className="font-display text-lg text-wine">2</span>
           <span>
             {isRecovery
-              ? "Abra o link seguro para criar uma nova senha."
-              : "Confirme sua conta pelo link seguro."}
+              ? "Toque no link seguro para nova senha."
+              : "Toque no link para confirmar."}
           </span>
         </li>
         <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
           <span className="font-display text-lg text-wine">3</span>
           <span>
             {isRecovery
-              ? "Depois, entre no Amém Chat com a nova senha."
+              ? "Entre com a nova senha."
               : planKey
-                ? "Conclua o pagamento para liberar sua experiência."
-                : "Escolha um plano e conclua o pagamento."}
+                ? "Conclua o pagamento seguro."
+                : "Entre e abra o Hoje — sem cartão."}
           </span>
         </li>
       </ol>
@@ -163,13 +163,12 @@ export function CheckEmailExperience({
       {!isRecovery ? (
         <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">
           {planKey
-            ? "A confirmação do e-mail libera seu acesso. Se o pagamento já foi concluído, não é necessário pagar de novo."
-            : "Nenhuma cobrança ocorreu ainda. Depois da confirmação, você escolhe o plano e conclui o pagamento no checkout seguro."}
+            ? "Confirmar o e-mail libera o acesso. Se já pagou, não pague de novo."
+            : "Nenhuma cobrança nesta conta. Depois de confirmar, você entra no Hoje."}
         </p>
       ) : (
         <p className="rounded-md border border-border/60 bg-sand-50/80 px-3 py-2 text-xs leading-relaxed text-ink-soft">
-          O link funciona neste ou em outro navegador. Se não usar, sua senha
-          atual permanece a mesma.
+          O link vale neste ou em outro navegador. Se não usar, a senha atual permanece.
         </p>
       )}
 
