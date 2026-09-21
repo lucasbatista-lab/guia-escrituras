@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { IntimateSheet } from "@/components/workspace/intimate-sheet";
 import {
@@ -29,6 +29,50 @@ function snip(text: string, max = 96): string {
   return `${clean.slice(0, max - 1).trimEnd()}…`;
 }
 
+function humanFallback(iso: string): string {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(iso));
+  } catch {
+    return "";
+  }
+}
+
+function groupLabel(entry: PrivateEntry): string {
+  if (entry.localDate) {
+    try {
+      const [y, m, d] = entry.localDate.split("-").map(Number);
+      if (y && m && d) {
+        return new Intl.DateTimeFormat("pt-BR", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(new Date(y, m - 1, d));
+      }
+    } catch {
+      /* fall through */
+    }
+    return entry.localDate;
+  }
+  return humanFallback(entry.createdAt) || "Outros";
+}
+
+function groupEntries(
+  entries: PrivateEntry[],
+): { label: string; items: PrivateEntry[] }[] {
+  const map = new Map<string, PrivateEntry[]>();
+  for (const e of entries) {
+    const key = groupLabel(e);
+    const list = map.get(key) ?? [];
+    list.push(e);
+    map.set(key, list);
+  }
+  return Array.from(map.entries()).map(([label, items]) => ({ label, items }));
+}
+
 export function JournalWorkspace({
   initial,
   today,
@@ -52,6 +96,8 @@ export function JournalWorkspace({
   const detail = detailId
     ? entries.find((e) => e.id === detailId) ?? null
     : null;
+
+  const groups = useMemo(() => groupEntries(entries), [entries]);
 
   async function create() {
     const body = draft.trim();
@@ -116,10 +162,13 @@ export function JournalWorkspace({
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-ink-soft">
-          Isto permanece só na sua conta. Não enviamos para IA, analytics nem
-          modelos.
-        </p>
+        <div className="min-w-0">
+          <p className="font-display text-lg text-ink">Diário</p>
+          <p className="mt-0.5 text-sm text-ink-soft">
+            Isto permanece só na sua conta. Não enviamos para IA, analytics nem
+            modelos.
+          </p>
+        </div>
         <Button
           type="button"
           variant="ritual"
@@ -160,34 +209,41 @@ export function JournalWorkspace({
           </Button>
         </div>
       ) : (
-        <ul className="divide-y divide-border/40" aria-label="Diário">
-          {entries.map((entry) => (
-            <li
-              key={entry.id}
-              className={cn(
-                removingId === entry.id && "amem-remove-out",
-                highlightId === entry.id && "amem-highlight-once rounded-xl",
-              )}
-            >
-              <button
-                type="button"
-                className="amem-press flex min-h-11 w-full flex-col py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                onClick={() => {
-                  setConfirmDeleteId(null);
-                  setDetailId(entry.id);
-                }}
-              >
-                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-soft">
-                  {kindLabel(entry.kind)}
-                  {entry.localDate ? ` · ${entry.localDate}` : ""}
-                </p>
-                <p className="mt-1 font-display text-[15px] italic leading-snug text-ink">
-                  {snip(entry.body)}
-                </p>
-              </button>
-            </li>
+        <div className="amem-archive-timeline" aria-label="Diário">
+          {groups.map((group) => (
+            <section key={group.label} className="amem-archive-group">
+              <h3 className="amem-archive-group-label">{group.label}</h3>
+              <ul className="amem-archive-list divide-y divide-border/30">
+                {group.items.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className={cn(
+                      "amem-archive-item",
+                      removingId === entry.id && "amem-remove-out",
+                      highlightId === entry.id && "amem-highlight-once",
+                    )}
+                  >
+                    <button
+                      type="button"
+                      className="amem-press flex min-h-11 w-full flex-col py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => {
+                        setConfirmDeleteId(null);
+                        setDetailId(entry.id);
+                      }}
+                    >
+                      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-soft">
+                        {kindLabel(entry.kind)}
+                      </p>
+                      <p className="mt-1 font-display text-[15px] italic leading-snug text-ink">
+                        {snip(entry.body)}
+                      </p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
 
       <IntimateSheet
@@ -331,16 +387,4 @@ export function JournalWorkspace({
       </IntimateSheet>
     </div>
   );
-}
-
-function humanFallback(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }).format(new Date(iso));
-  } catch {
-    return "";
-  }
 }

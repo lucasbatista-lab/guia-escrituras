@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { IntimateSheet } from "@/components/workspace/intimate-sheet";
 import { PRAYER_MAX_LEN, type UserPrayer } from "@/lib/workspace/types";
@@ -32,6 +32,29 @@ function humanWhen(iso: string): string {
   }
 }
 
+function groupKey(iso: string): string {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(iso));
+  } catch {
+    return "Outros";
+  }
+}
+
+function groupPrayers(prayers: UserPrayer[]): { label: string; items: UserPrayer[] }[] {
+  const map = new Map<string, UserPrayer[]>();
+  for (const p of prayers) {
+    const key = groupKey(p.updatedAt || p.createdAt);
+    const list = map.get(key) ?? [];
+    list.push(p);
+    map.set(key, list);
+  }
+  return Array.from(map.entries()).map(([label, items]) => ({ label, items }));
+}
+
 export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
   const [prayers, setPrayers] = useState(initial);
   const [draft, setDraft] = useState("");
@@ -39,7 +62,6 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
   const [status, setStatus] = useState<string | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [actionsId, setActionsId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -47,9 +69,8 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
   const detail = detailId
     ? prayers.find((p) => p.id === detailId) ?? null
     : null;
-  const actionsTarget = actionsId
-    ? prayers.find((p) => p.id === actionsId) ?? null
-    : null;
+
+  const groups = useMemo(() => groupPrayers(prayers), [prayers]);
 
   async function create() {
     const body = draft.trim();
@@ -98,7 +119,6 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
       setPrayers((current) =>
         current.map((item) => (item.id === id ? json.prayer : item)),
       );
-      setActionsId(null);
       if (payload.status === "answered") {
         setHighlightId(id);
         window.setTimeout(() => setHighlightId((cur) => (cur === id ? null : cur)), 900);
@@ -131,7 +151,6 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
       if (!res.ok) throw new Error("fail");
       setRemovingId(id);
       setConfirmDeleteId(null);
-      setActionsId(null);
       setDetailId(null);
       window.setTimeout(() => {
         setPrayers((current) => current.filter((item) => item.id !== id));
@@ -148,9 +167,12 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-ink-soft">
-          Arquivo íntimo. Nada disso vai para analytics ou IA.
-        </p>
+        <div className="min-w-0">
+          <p className="font-display text-lg text-ink">Orações</p>
+          <p className="mt-0.5 text-sm text-ink-soft">
+            Arquivo íntimo. Nada disso vai para analytics ou IA.
+          </p>
+        </div>
         <Button
           type="button"
           variant="ritual"
@@ -194,47 +216,46 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
           </Button>
         </div>
       ) : (
-        <ul className="divide-y divide-border/40" aria-label="Orações">
-          {prayers.map((prayer) => (
-            <li
-              key={prayer.id}
-              className={cn(
-                removingId === prayer.id && "amem-remove-out",
-                highlightId === prayer.id && "amem-highlight-once rounded-xl",
-                prayer.status === "answered" && "opacity-90",
-              )}
-            >
-              <div className="flex items-stretch gap-1 py-1">
-                <button
-                  type="button"
-                  className="amem-press min-h-11 flex-1 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() => setDetailId(prayer.id)}
-                >
-                  <p className="text-[11px] font-semibold text-[color:var(--amem-mute)]">
-                    {humanWhen(prayer.updatedAt || prayer.createdAt)}
-                    {" · "}
-                    {prayer.status === "answered"
-                      ? "✓ respondida"
-                      : "em oração"}
-                  </p>
-                  <p className="mt-1 font-display text-[15px] italic leading-snug text-ink">
-                    {snip(prayer.body)}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  className="amem-press inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label="Mais ações"
-                  onClick={() => setActionsId(prayer.id)}
-                >
-                  <span aria-hidden className="text-lg leading-none">
-                    ···
-                  </span>
-                </button>
-              </div>
-            </li>
+        <div className="amem-archive-timeline" aria-label="Orações">
+          {groups.map((group) => (
+            <section key={group.label} className="amem-archive-group">
+              <h3 className="amem-archive-group-label">{group.label}</h3>
+              <ul className="amem-archive-list divide-y divide-border/30">
+                {group.items.map((prayer) => (
+                  <li
+                    key={prayer.id}
+                    className={cn(
+                      "amem-archive-item",
+                      removingId === prayer.id && "amem-remove-out",
+                      highlightId === prayer.id && "amem-highlight-once",
+                      prayer.status === "answered" && "opacity-90",
+                    )}
+                  >
+                    <button
+                      type="button"
+                      className="amem-press flex min-h-11 w-full flex-col py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => {
+                        setConfirmDeleteId(null);
+                        setDetailId(prayer.id);
+                      }}
+                    >
+                      <p className="text-[11px] font-semibold text-[color:var(--amem-mute)]">
+                        {humanWhen(prayer.updatedAt || prayer.createdAt)}
+                        {" · "}
+                        {prayer.status === "answered"
+                          ? "✓ respondida"
+                          : "em oração"}
+                      </p>
+                      <p className="mt-1 font-display text-[15px] italic leading-snug text-ink">
+                        {snip(prayer.body)}
+                      </p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
 
       <IntimateSheet
@@ -290,7 +311,10 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
 
       <IntimateSheet
         open={Boolean(detail)}
-        onClose={() => setDetailId(null)}
+        onClose={() => {
+          setDetailId(null);
+          setConfirmDeleteId(null);
+        }}
         title="Oração"
       >
         {detail ? (
@@ -309,15 +333,55 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
               <Button
                 type="button"
                 variant="outline"
-                className="min-h-11"
+                className="min-h-11 w-full justify-start"
                 disabled={busy}
-                onClick={() => {
-                  setDetailId(null);
-                  setActionsId(detail.id);
-                }}
+                onClick={() =>
+                  void patch(detail.id, {
+                    status:
+                      detail.status === "answered" ? "open" : "answered",
+                  })
+                }
               >
-                Mais ações
+                {detail.status === "answered"
+                  ? "Desmarcar respondida"
+                  : "Marcar como respondida"}
               </Button>
+              {confirmDeleteId === detail.id ? (
+                <div className="space-y-2 rounded-2xl bg-[color:var(--amem-recess)]/50 p-3">
+                  <p className="text-sm text-ink">Excluir esta oração?</p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="min-h-11 flex-1 text-destructive"
+                      disabled={busy}
+                      aria-busy={busy}
+                      onClick={() => void remove(detail.id)}
+                    >
+                      Confirmar exclusão
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="min-h-11"
+                      disabled={busy}
+                      onClick={() => setConfirmDeleteId(null)}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className={cn("min-h-11 w-full justify-start text-destructive")}
+                  disabled={busy}
+                  onClick={() => setConfirmDeleteId(detail.id)}
+                >
+                  Excluir
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="ghost"
@@ -327,72 +391,6 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
                 Fechar
               </Button>
             </div>
-          </div>
-        ) : null}
-      </IntimateSheet>
-
-      <IntimateSheet
-        open={Boolean(actionsTarget)}
-        onClose={() => {
-          setActionsId(null);
-          setConfirmDeleteId(null);
-        }}
-        title="Ações"
-      >
-        {actionsTarget ? (
-          <div className="space-y-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11 w-full justify-start"
-              disabled={busy}
-              onClick={() =>
-                void patch(actionsTarget.id, {
-                  status:
-                    actionsTarget.status === "answered" ? "open" : "answered",
-                })
-              }
-            >
-              {actionsTarget.status === "answered"
-                ? "Desmarcar respondida"
-                : "Marcar como respondida"}
-            </Button>
-            {confirmDeleteId === actionsTarget.id ? (
-              <div className="space-y-2 rounded-2xl bg-[color:var(--amem-recess)]/50 p-3">
-                <p className="text-sm text-ink">Excluir esta oração?</p>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="min-h-11 flex-1 text-destructive"
-                    disabled={busy}
-                    aria-busy={busy}
-                    onClick={() => void remove(actionsTarget.id)}
-                  >
-                    Confirmar exclusão
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="min-h-11"
-                    disabled={busy}
-                    onClick={() => setConfirmDeleteId(null)}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="ghost"
-                className={cn("min-h-11 w-full justify-start text-destructive")}
-                disabled={busy}
-                onClick={() => setConfirmDeleteId(actionsTarget.id)}
-              >
-                Excluir
-              </Button>
-            )}
           </div>
         ) : null}
       </IntimateSheet>
