@@ -4,7 +4,6 @@ import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { JourneyResetButton } from "@/components/journeys/journey-reset-button";
 import { LockPill } from "@/components/commerce/lock-pill";
 import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
-import { PlatformPageHeader } from "@/components/platform/page-header";
 import { Button } from "@/components/ui/button";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
@@ -100,48 +99,49 @@ export default async function JornadaDetailPage({
   const reallyCompleted = Boolean(progress.completedAt && progress.isCompleted);
   const paywallCopy = getSoftPaywallCopy("jornadas");
 
+  const unlockedSteps = journey.steps.filter((s) =>
+    canAccessJourneyStep(auth.planKey, s.number),
+  );
+  const lockedCount = journey.steps.length - unlockedSteps.length;
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-start gap-3">
-        <span
-          className={cn(
-            "mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-display text-xl",
-            visual.markBgClass,
-            visual.markTextClass,
-          )}
-          aria-hidden
-        >
-          {visual.mark}
-        </span>
-        <PlatformPageHeader
-          className="min-w-0 flex-1"
-          title={journey.title}
-          description={journey.description}
-        />
-      </div>
+    <div className="space-y-7 pb-8">
+      <header className="space-y-3">
+        <div className="flex items-start gap-3">
+          <span
+            className={cn(
+              "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-display text-xl",
+              visual.markBgClass,
+              visual.markTextClass,
+            )}
+            aria-hidden
+          >
+            {visual.mark}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-[28px] leading-tight text-ink">
+              {journey.title}
+            </h1>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
+              {journeyIntro(journey)}
+            </p>
+          </div>
+        </div>
 
-      <p className="text-sm leading-relaxed text-ink-soft">
-        {journeyIntro(journey)}
-      </p>
-
-      <p className="text-sm text-ink-soft">
-        <span className="font-medium text-ink">Objetivo:</span>{" "}
-        {journey.objective}
-      </p>
-
-      <p className="text-sm text-ink-soft">
-        {journeyDurationLabel({
-          stepCount: journey.steps.length,
-          minutesPerStep,
-        })}
-        {entitled && stepNumber
-          ? ` · etapa ${stepNumber} de ${journey.steps.length}`
-          : entitled && reallyCompleted
-            ? ` · ${doneCount} de ${journey.steps.length} concluídas`
-            : !entitled
-              ? " · prévia: Dia 1 aberto"
-              : null}
-      </p>
+        <p className="text-sm text-ink-soft">
+          {journeyDurationLabel({
+            stepCount: journey.steps.length,
+            minutesPerStep,
+          })}
+          {entitled && stepNumber
+            ? ` · etapa ${stepNumber} de ${journey.steps.length}`
+            : entitled && reallyCompleted
+              ? ` · ${doneCount} de ${journey.steps.length} concluídas`
+              : !entitled
+                ? " · prévia: Dia 1 aberto"
+                : null}
+        </p>
+      </header>
 
       {entitled ? (
         <JourneyProgressBar
@@ -153,9 +153,7 @@ export default async function JornadaDetailPage({
       ) : null}
 
       {entitled ? (
-        <p className="text-sm text-ink">
-          {journeyResumeHint(progress, journey.steps)}
-        </p>
+        <p className="text-sm text-ink">{journeyResumeHint(progress, journey.steps)}</p>
       ) : (
         <p className="text-sm text-ink-soft">
           Viva o Dia 1 agora. Os dias seguintes pedem o plano Caminho — Essencial
@@ -183,18 +181,36 @@ export default async function JornadaDetailPage({
         </div>
       ) : null}
 
+      {/* Primary CTA — hub is Continuar/Começar first, not a course syllabus */}
+      <div className="flex flex-col gap-3">
+        <Button asChild variant="ritual" className="min-h-12 w-full text-base">
+          <Link href={nextHref}>
+            {entitled && reallyCompleted ? "Rever Jornada" : cta}
+          </Link>
+        </Button>
+        {reallyCompleted ? (
+          <Button asChild variant="outline" className="min-h-11 w-full">
+            <Link href="/jornadas">Ver outras jornadas</Link>
+          </Button>
+        ) : null}
+      </div>
+
       {entitled && currentStep && !reallyCompleted ? (
         <p className="text-sm text-ink">
-          <span className="font-medium">Etapa atual:</span> {currentStep.number}
-          . {currentStep.title}
+          <span className="font-medium">Próximo:</span> Dia {currentStep.number}
+          · {currentStep.title}
         </p>
       ) : null}
 
-      <section aria-labelledby="steps-heading">
-        <h2 id="steps-heading" className="font-display text-lg text-ink">
+      {/* Secondary: compact day list — completed/locked quieter */}
+      <section aria-labelledby="steps-heading" className="space-y-3">
+        <h2
+          id="steps-heading"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft"
+        >
           Dias do caminho
         </h2>
-        <ol className="mt-4 space-y-2">
+        <ol className="divide-y divide-border/40">
           {journey.steps.map((step) => {
             const done = progress.completedStepIds.includes(step.id);
             const isCurrent = progress.currentStepId === step.id;
@@ -203,13 +219,10 @@ export default async function JornadaDetailPage({
               return (
                 <li key={step.id}>
                   <div
-                    className="flex min-h-11 items-center gap-3 rounded-xl border border-border/60 bg-background/50 px-4 py-3 text-sm"
+                    className="flex min-h-11 items-center gap-3 py-3 text-sm opacity-70"
                     aria-disabled="true"
                   >
-                    <span
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-border/50 text-xs font-medium text-ink-soft"
-                      aria-hidden
-                    >
+                    <span className="w-6 text-center text-xs text-ink-soft">
                       {step.number}
                     </span>
                     <span className="flex-1 text-ink-soft">{step.title}</span>
@@ -223,54 +236,50 @@ export default async function JornadaDetailPage({
                 <Link
                   href={`/jornadas/${journey.slug}/${step.slug}`}
                   className={cn(
-                    "flex min-h-11 items-center gap-3 rounded-xl border bg-background/70 px-4 py-3 text-sm transition hover:border-wine/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                    isCurrent ? visual.borderClass : "border-border/60",
+                    "flex min-h-11 items-center gap-3 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isCurrent ? "text-ink" : "text-ink-soft",
                   )}
                   aria-current={isCurrent ? "step" : undefined}
                 >
                   <span
                     className={cn(
-                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-medium",
+                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
                       done
                         ? cn(visual.markBgClass, visual.markTextClass)
-                        : "bg-border/50 text-ink-soft",
+                        : "text-ink-soft",
                     )}
                     aria-hidden
                   >
                     {done ? "✓" : step.number}
                   </span>
-                  <span className="flex-1 text-ink">{step.title}</span>
-                  <span className="text-xs text-ink-soft">
-                    {done
-                      ? "Concluída"
-                      : isCurrent
-                        ? "Agora"
-                        : `Dia ${step.number}`}
-                    {" · "}
-                    {step.estimatedMinutes} min
+                  <span className={cn("flex-1", done ? "text-ink-soft" : "text-ink")}>
+                    {step.title}
+                  </span>
+                  <span className="text-[11px] text-ink-soft">
+                    {done ? "Feito" : isCurrent ? "Agora" : `${step.estimatedMinutes} min`}
                   </span>
                 </Link>
               </li>
             );
           })}
         </ol>
+        {lockedCount > 0 ? (
+          <p className="text-xs text-ink-soft">
+            {lockedCount}{" "}
+            {lockedCount === 1 ? "dia seguinte" : "dias seguintes"} no plano
+            Caminho.
+          </p>
+        ) : null}
       </section>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <Button asChild variant="ritual" className="min-h-11">
-          <Link href={nextHref}>
-            {entitled && reallyCompleted ? "Rever Jornada" : cta}
-          </Link>
-        </Button>
-        {reallyCompleted ? (
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href="/jornadas">Ver outras jornadas</Link>
-          </Button>
-        ) : null}
-      </div>
+      {/* Keep objective available without heavy module chrome */}
+      <p className="text-sm leading-relaxed text-ink-soft">
+        <span className="font-medium text-ink">Objetivo:</span>{" "}
+        {journey.objective}
+      </p>
 
       {entitled ? (
-        <div className="border-t border-border/50 pt-6">
+        <div className="border-t border-border/40 pt-6">
           <p className="mb-3 text-xs text-ink-soft">
             Precisa recomeçar do zero? O reset apaga o progresso desta jornada.
           </p>

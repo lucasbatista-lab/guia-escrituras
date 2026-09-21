@@ -18,13 +18,22 @@ describe("journeys V1.1 step completion UX", () => {
       "[step]",
       "page.tsx",
     );
+    const guided = read(
+      "src",
+      "components",
+      "journeys",
+      "journey-day-guided.tsx",
+    );
     expect(page).toContain("ensureJourneyStarted");
     expect(page).toContain("completedStepIds.includes");
-    expect(page).toContain("completed={stepCompleted}");
+    expect(page).toContain("JourneyDayGuided");
+    expect(page).toContain("stepCompleted={stepCompleted}");
     expect(page).toContain("nextStepHref");
     expect(page).toContain("isLastStep");
     expect(page).toContain("Voltar ao início");
     expect(page).toContain("Conversar sobre esta reflexão");
+    expect(guided).toContain("completed={stepCompleted}");
+    expect(guided).toContain("JourneyStepCompleteButton");
   });
 
   it("complete button shows concluded state with next action and a11y live", () => {
@@ -55,7 +64,14 @@ describe("journeys V1.1 step completion UX", () => {
       "[step]",
       "page.tsx",
     );
+    const guided = read(
+      "src",
+      "components",
+      "journeys",
+      "journey-day-guided.tsx",
+    );
     expect(page).toContain("journeyCompleted={progress.isCompleted}");
+    expect(guided).toContain("journeyCompleted={journeyCompleted}");
   });
 
   it("completed journey detail offers catalog return", () => {
