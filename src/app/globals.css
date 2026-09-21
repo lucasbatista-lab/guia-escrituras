@@ -834,20 +834,32 @@
     box-shadow: 0 -18px 48px rgba(25, 22, 19, 0.14);
   }
 
-  /* Journey moment scenes — atmosphere shifts with stage */
+  /* Journey moment scenes — atmosphere shifts with stage + slug DNA */
   .amem-moment-scene {
     position: relative;
     overflow: hidden;
   }
+  .amem-journey-wash {
+    background:
+      radial-gradient(ellipse 80% 55% at 78% 12%, var(--journey-glow, transparent), transparent 70%),
+      linear-gradient(165deg, var(--journey-wash, transparent), transparent 62%);
+    opacity: 0.95;
+  }
+  .amem-atmo-strong .amem-journey-wash { opacity: 1; }
+  .amem-atmo-present .amem-journey-wash { opacity: 0.75; }
+  .amem-atmo-quiet .amem-journey-wash { opacity: 0.45; }
+  .amem-atmo-whisper .amem-journey-wash { opacity: 0.2; }
+  .amem-atmo-return .amem-journey-wash { opacity: 0.85; }
+
   .amem-scene-contexto {
     background:
-      linear-gradient(165deg, rgba(255, 253, 252, 0.95) 0%, rgba(245, 241, 235, 0.92) 100%);
+      linear-gradient(165deg, rgba(255, 253, 252, 0.88) 0%, rgba(245, 241, 235, 0.9) 100%);
     box-shadow: 0 12px 32px var(--amem-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.85);
   }
   .amem-scene-escritura {
     background:
       linear-gradient(180deg, #FFFDFC 0%, #F7F1E8 100%);
-    box-shadow: inset 0 0 0 1px rgba(184, 150, 90, 0.22);
+    box-shadow: inset 0 0 0 1px var(--journey-line, rgba(184, 150, 90, 0.22));
   }
   .amem-scene-escritura::before {
     content: "";
@@ -857,11 +869,11 @@
     width: 55%;
     height: 70%;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(184, 150, 90, 0.14), transparent 68%);
+    background: radial-gradient(circle, var(--journey-tint, rgba(184, 150, 90, 0.14)), transparent 68%);
     pointer-events: none;
   }
   .amem-scene-reflexao {
-    background: rgba(235, 231, 225, 0.55);
+    background: rgba(235, 231, 225, 0.5);
     box-shadow: inset 0 0 0 1px var(--amem-hairline);
   }
   .amem-scene-pratico {
@@ -870,13 +882,25 @@
   }
   .amem-scene-oracao {
     background:
-      linear-gradient(160deg, rgba(90, 34, 50, 0.06) 0%, rgba(255, 253, 252, 0.95) 55%);
-    box-shadow: inset 0 0 0 1px rgba(107, 46, 58, 0.12);
+      linear-gradient(160deg, rgba(90, 34, 50, 0.1) 0%, var(--journey-wash, rgba(90, 34, 50, 0.06)) 28%, rgba(255, 253, 252, 0.96) 62%);
+    box-shadow: inset 0 0 0 1px rgba(107, 46, 58, 0.14);
   }
   .amem-scene-fecho {
     background:
       linear-gradient(180deg, #F7F5F1 0%, #EFEBE4 100%);
-    box-shadow: inset 0 0 0 1px rgba(184, 150, 90, 0.2);
+    box-shadow: inset 0 0 0 1px var(--journey-line, rgba(184, 150, 90, 0.2));
+  }
+
+  .amem-cover-fragment-clip,
+  .amem-art-fragment {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .amem-art-motif {
+    max-width: 100%;
+  }
+  .amem-stage-motif-fill {
+    min-width: 8%;
   }
 
   /* Journey cover frame */
@@ -884,6 +908,32 @@
     position: relative;
     overflow: hidden;
     border-radius: 22px;
+  }
+
+  /* Espaço archive timeline */
+  .amem-archive-timeline {
+    position: relative;
+  }
+  .amem-archive-group + .amem-archive-group {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--amem-hairline);
+  }
+  .amem-archive-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--amem-mute);
+    margin-bottom: 0.35rem;
+  }
+  .amem-archive-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .amem-archive-item {
+    border-radius: 12px;
+    padding-inline: 0.15rem;
   }
 
   /* Archive area row — unequivocal affordance */
