@@ -285,7 +285,7 @@ export function HojeRitual({
                   : "Pronto para guardar · sem cartão"}
               </p>
             </div>
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-4 flex flex-col gap-3">
               <p className="px-1 text-center text-sm leading-relaxed text-ink-soft">
                 Quer continuar esta reflexão em Conversar?
               </p>
@@ -307,29 +307,36 @@ export function HojeRitual({
                   Conversar sobre isso
                 </Button>
               )}
-              <Button
-                type="button"
-                variant="outline"
-                className="min-h-11 w-full"
-                disabled={busy}
-                onClick={() => void shareDay()}
-              >
-                Compartilhar
-              </Button>
-              {!saved ? (
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:justify-center">
                 <Button
                   type="button"
-                  variant="ghost"
-                  className="min-h-11 w-full"
+                  variant="outline"
+                  className="min-h-11 w-full sm:flex-1"
                   disabled={busy}
-                  onClick={() => void saveDay()}
+                  onClick={() => void shareDay()}
                 >
-                  Salvar no Espaço
+                  Compartilhar
                 </Button>
-              ) : null}
-              <Button asChild variant="ghost" className="min-h-11 w-full text-ink-soft">
-                <Link href="/inicio">Voltar ao Início</Link>
-              </Button>
+                {!saved ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="min-h-11 w-full text-ink-soft sm:flex-1"
+                    disabled={busy}
+                    onClick={() => void saveDay()}
+                  >
+                    Salvar no Espaço
+                  </Button>
+                ) : null}
+              </div>
+              <p className="pt-1 text-center">
+                <Link
+                  href="/inicio"
+                  className="amem-press inline-flex min-h-11 items-center justify-center px-3 text-sm text-ink-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Voltar ao Início
+                </Link>
+              </p>
             </div>
           </CompletionFeedback>
           {status ? (
