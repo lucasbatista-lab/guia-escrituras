@@ -210,7 +210,7 @@ export function PlatformNav({
                   aria-current={current ? "page" : undefined}
                   aria-label={tab.label}
                   className={cn(
-                    "relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                    "amem-press relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                     current
                       ? "font-semibold text-wine"
                       : "font-normal text-[color:var(--amem-nav-inactive,#8A8278)]",
@@ -240,7 +240,7 @@ export function PlatformNav({
               aria-expanded={open}
               aria-controls={menuId}
               aria-label="Abrir menu"
-              className="flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] text-[color:var(--amem-nav-inactive,#8A8278)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              className="amem-press flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[9px] font-semibold tracking-[0.01em] text-[color:var(--amem-nav-inactive,#8A8278)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               onClick={() => setOpen(true)}
             >
               <span
@@ -269,7 +269,7 @@ export function PlatformNav({
             role="dialog"
             aria-modal="true"
             aria-labelledby={`${menuId}-title`}
-            className="absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-3xl border-t border-border bg-card px-4 pb-[max(1rem,var(--safe-bottom))] pt-4 shadow-2xl"
+            className="amem-sheet-enter absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-3xl border-t border-border bg-card px-4 pb-[max(1rem,var(--safe-bottom))] pt-4 shadow-2xl"
           >
             <div className="flex items-center justify-between">
               <div>

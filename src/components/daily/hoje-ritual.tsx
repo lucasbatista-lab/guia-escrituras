@@ -7,6 +7,10 @@ import { PaperGrain } from "@/components/brand/paper-grain";
 import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
 import { InkTrail } from "@/components/daily/ink-trail";
 import { Button } from "@/components/ui/button";
+import {
+  CompletionFeedback,
+  SoftEnter,
+} from "@/components/interaction";
 import { getSoftPaywallCopy } from "@/lib/commerce/soft-paywall";
 import {
   DAILY_CHECKIN_LABELS,
@@ -254,7 +258,7 @@ export function HojeRitual({
       >
         <PresenceLight size="md" centered />
         <PaperGrain />
-        <div className="relative z-10">
+        <SoftEnter tone="ritual" className="relative z-10">
           <header className="flex items-end justify-between gap-3 px-1">
             <h1 className="font-display text-xl font-semibold text-[color:var(--amem-wine-deep)]">
               Presença
@@ -263,87 +267,71 @@ export function HojeRitual({
           </header>
           <InkTrail total={6} currentIndex={5} complete className="mt-3" />
 
-          <div className="mt-4 flex flex-col items-center px-3 text-center">
-            <div
-              className="flex h-[88px] w-[88px] items-center justify-center rounded-full shadow-[0_12px_28px_var(--amem-shadow)]"
-              style={{
-                background:
-                  "radial-gradient(circle at 40% 35%, #FFFDFC, #E8E2D8)",
-                boxShadow:
-                  "0 12px 28px var(--amem-shadow), inset 0 0 0 1px rgba(255,255,255,0.9)",
-              }}
-              aria-hidden
-            >
-              <span className="amem-ink-sig w-10" />
-            </div>
-            <h2
-              id="hoje-complete-heading"
-              className="mt-5 font-display text-[26px] font-semibold leading-tight text-ink"
-            >
-              Você esteve presente.
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
-              Leve isto: {content.title.toLowerCase()}.
-            </p>
+          <CompletionFeedback
+            headingId="hoje-complete-heading"
+            title="Você esteve presente."
+            support={"Leve isto: " + content.title.toLowerCase() + "."}
+            className="mt-4 px-3"
+          >
             <p className="sr-only">Amém.</p>
-          </div>
-
-          <div className="amem-folha mt-5 px-[18px] py-5 text-left">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
-              Para o Espaço
-            </p>
-            <p className="mt-2 font-display text-base italic leading-snug text-ink">
-              “{content.prayer.replace(/^"|"$/g, "")}”
-            </p>
-            <p className="mt-2 text-xs text-[color:var(--amem-mute)]">
-              {saved
-                ? "Salvo automaticamente · sem cartão"
-                : "Pronto para guardar · sem cartão"}
-            </p>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-2">
-            <p className="px-1 text-center text-sm leading-relaxed text-ink-soft">
-              Quer continuar esta reflexão em Conversar?
-            </p>
-            {allowsChat ? (
-              <Button asChild variant="soft" className="min-h-11 w-full">
-                <Link href={conversarHref}>Conversar sobre isso</Link>
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="soft"
-                className="min-h-11 w-full"
-                onClick={onTalkClick}
-              >
-                Conversar sobre isso
-              </Button>
-            )}
-            <Button asChild variant="ritual" className="min-h-[52px] w-full text-[15px] font-bold">
-              <Link href="/inicio">Voltar ao Início</Link>
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="min-h-11 w-full"
-              disabled={busy}
-              onClick={() => void shareDay()}
-            >
-              Compartilhar
-            </Button>
-            {!saved ? (
+            <div className="amem-folha mt-1 px-[18px] py-5 text-left">
+              <p className="amem-type-context text-wine">Para o Espaço</p>
+              <p className="mt-2 font-display text-base italic leading-snug text-ink">
+                “{content.prayer.replace(/^"|"$/g, "")}”
+              </p>
+              <p className="mt-2 amem-type-meta">
+                {saved
+                  ? "Salvo automaticamente · sem cartão"
+                  : "Pronto para guardar · sem cartão"}
+              </p>
+            </div>
+            <div className="mt-4 flex flex-col gap-2">
+              <p className="px-1 text-center text-sm leading-relaxed text-ink-soft">
+                Quer continuar esta reflexão em Conversar?
+              </p>
+              {allowsChat ? (
+                <Button
+                  asChild
+                  variant="ritual"
+                  className="amem-type-action min-h-[52px] w-full"
+                >
+                  <Link href={conversarHref}>Conversar sobre isso</Link>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ritual"
+                  className="amem-type-action min-h-[52px] w-full"
+                  onClick={onTalkClick}
+                >
+                  Conversar sobre isso
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="outline"
                 className="min-h-11 w-full"
                 disabled={busy}
-                onClick={() => void saveDay()}
+                onClick={() => void shareDay()}
               >
-                Salvar no Espaço
+                Compartilhar
               </Button>
-            ) : null}
-          </div>
+              {!saved ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="min-h-11 w-full"
+                  disabled={busy}
+                  onClick={() => void saveDay()}
+                >
+                  Salvar no Espaço
+                </Button>
+              ) : null}
+              <Button asChild variant="ghost" className="min-h-11 w-full text-ink-soft">
+                <Link href="/inicio">Voltar ao Início</Link>
+              </Button>
+            </div>
+          </CompletionFeedback>
           {status ? (
             <p className="mt-3 text-center text-sm text-ink-soft" aria-live="polite">
               {status}
@@ -356,7 +344,7 @@ export function HojeRitual({
               onDismiss={() => setPaywallOpen(false)}
             />
           ) : null}
-        </div>
+        </SoftEnter>
       </section>
     );
   }
@@ -384,7 +372,7 @@ export function HojeRitual({
         </header>
 
         {phase === "start" ? (
-          <>
+          <SoftEnter tone="normal" className="space-y-4">
             <InkTrail total={6} currentIndex={0} />
             <p className="text-base leading-relaxed text-ink-soft">
               Como você chega agora? Nomear já é presença. · {dateLabel}
@@ -405,9 +393,9 @@ export function HojeRitual({
                         disabled={busy}
                         aria-pressed={selected}
                         onClick={() => void selectCheckin(value)}
-                        className={`flex min-h-11 w-full items-center justify-center rounded-full border px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                        className={`amem-press flex min-h-11 w-full items-center justify-center rounded-full border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                           selected
-                            ? "border-wine/40 bg-wine/10 font-medium text-ink"
+                            ? "amem-surface-selected border-wine/40 font-medium text-ink"
                             : "border-border/70 bg-[color:var(--amem-surface)] text-ink-soft hover:border-wine/25"
                         }`}
                       >
@@ -430,12 +418,12 @@ export function HojeRitual({
             <Button
               type="button"
               variant="ritual"
-              className="min-h-[52px] w-full text-[15px] font-bold"
+              className="amem-type-action min-h-[52px] w-full"
               onClick={enterMid}
             >
               Continuar
             </Button>
-          </>
+          </SoftEnter>
         ) : null}
       </section>
 
@@ -446,6 +434,7 @@ export function HojeRitual({
           className="relative z-10 space-y-3"
           data-hoje-phase="mid"
         >
+          <SoftEnter tone="normal" className="space-y-3">
           <InkTrail total={6} currentIndex={2} />
 
           <div
@@ -545,8 +534,9 @@ export function HojeRitual({
           <Button
             type="button"
             variant="ritual"
-            className="min-h-[52px] w-full text-[15px] font-bold"
+            className="amem-type-action min-h-[52px] w-full"
             disabled={busy}
+            aria-busy={busy}
             onClick={() => void completeRitual()}
           >
             Continuar
@@ -554,7 +544,7 @@ export function HojeRitual({
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               className="min-h-11 flex-1"
               disabled={busy || saved}
               onClick={() => void saveDay()}
@@ -571,6 +561,7 @@ export function HojeRitual({
               Compartilhar
             </Button>
           </div>
+          </SoftEnter>
         </section>
       ) : null}
 

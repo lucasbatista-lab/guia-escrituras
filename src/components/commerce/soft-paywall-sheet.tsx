@@ -225,7 +225,7 @@ export function SoftPaywallSheet({
             className="fixed inset-x-0 bottom-0 z-[110] mx-auto max-w-lg outline-none"
           >
             <div
-              className="rounded-t-[28px] bg-[color:var(--amem-surface,#FFFDFC)] px-[22px] pb-[max(2.5rem,var(--safe-bottom))] pt-7 shadow-[0_-18px_48px_rgba(25,22,19,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
+              className="amem-sheet-enter rounded-t-[28px] bg-[color:var(--amem-surface,#FFFDFC)] px-[22px] pb-[max(2.5rem,var(--safe-bottom))] pt-7 shadow-[0_-18px_48px_rgba(25,22,19,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
               style={{
                 transition: `transform var(--amem-dur-base, 220ms) var(--amem-ease-presence, cubic-bezier(0.22, 0.61, 0.36, 1))`,
               }}
@@ -242,12 +242,12 @@ export function SoftPaywallSheet({
                     "linear-gradient(90deg, var(--amem-wine-deep), var(--amem-brass))",
                 }}
               />
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
+              <p className="amem-type-context text-wine">
                 {copy.eyebrow}
               </p>
               <h2
                 id={titleId}
-                className="mt-2 text-2xl font-bold tracking-[-0.025em] leading-tight text-ink"
+                className="amem-type-moment mt-2 text-2xl font-bold tracking-[-0.025em] leading-tight text-ink"
               >
                 {copy.title}
               </h2>
@@ -275,14 +275,14 @@ export function SoftPaywallSheet({
               <Button
                 asChild
                 variant="premium"
-                className="mt-[22px] min-h-[52px] w-full text-[15px] font-bold"
+                className="amem-type-action mt-[22px] min-h-[52px] w-full"
               >
                 <Link href={copy.ctaHref}>{copy.ctaLabel}</Link>
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                className="mt-2.5 min-h-[52px] w-full"
+                className="mt-2.5 min-h-11 w-full text-ink-soft"
                 onClick={dismiss}
               >
                 {copy.dismissLabel}

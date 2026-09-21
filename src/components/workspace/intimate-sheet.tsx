@@ -7,6 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import { IconAction } from "@/components/interaction";
 import { cn } from "@/lib/utils";
 
 const FOCUSABLE_SELECTOR =
@@ -159,22 +160,17 @@ export function IntimateSheet({
         )}
       >
         <div
-          className="max-h-[min(88vh,720px)] overflow-y-auto rounded-t-[28px] bg-[color:var(--amem-surface,#FFFDFC)] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_48px_rgba(25,22,19,0.14)]"
+          className="amem-sheet-enter amem-surface-sheet max-h-[min(88vh,720px)] overflow-y-auto rounded-t-[28px] bg-[color:var(--amem-surface,#FFFDFC)] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-5"
         >
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 id={titleId} className="font-display text-xl text-ink">
+            <h2 id={titleId} className="amem-type-screen font-display text-xl text-ink">
               {title}
             </h2>
-            <button
-              type="button"
-              onClick={dismiss}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Fechar"
-            >
+            <IconAction label="Fechar" onClick={dismiss}>
               <span aria-hidden className="text-lg">
                 ×
               </span>
-            </button>
+            </IconAction>
           </div>
           {children}
         </div>

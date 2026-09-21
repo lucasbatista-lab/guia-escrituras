@@ -18,6 +18,7 @@ import {
 } from "@/lib/journeys/guided/stages";
 import { journeyDayLabel, stepClosing, stepPrayer } from "@/lib/journeys/presentation";
 import type { ReadingJourneyStep } from "@/lib/journeys/types";
+import { SoftEnter, SoftSwap } from "@/components/interaction";
 import { cn } from "@/lib/utils";
 
 export type JourneyDayGuidedProps = {
@@ -151,12 +152,12 @@ function MomentBody({
             </Button>
           </section>
 
-          <div className="space-y-3 border-t border-border/50 pt-5">
+          <SoftEnter tone="ritual" className="space-y-3 border-t border-border/50 pt-5">
             {completeSlot}
             <p className="text-center text-xs text-ink-soft">
               Sem culpa se voltar depois — o próximo dia espera no seu ritmo.
             </p>
-          </div>
+          </SoftEnter>
         </div>
       );
     default:
@@ -254,7 +255,7 @@ export function JourneyDayGuided({
               <li key={m.kind} className="flex-1">
                 <span
                   className={cn(
-                    "block h-[3px] rounded-full transition-[background-color,opacity] duration-200 motion-reduce:transition-none",
+                    "amem-stage-rail block h-[3px] rounded-full",
                     i < stage
                       ? "bg-wine"
                       : i === stage
@@ -268,18 +269,20 @@ export function JourneyDayGuided({
         </div>
       </header>
 
-      <main className="flex-1 px-0.5" key={current.kind} aria-live="polite">
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
-          {current.label}
-        </p>
-        <MomentBody
-          kind={current.kind}
-          step={step}
-          noteSlot={noteSlot}
-          chatHref={chatHref}
-          conversarLabel={conversarLabel}
-          completeSlot={completeSlot}
-        />
+      <main className="flex-1 px-0.5" aria-live="polite">
+        <SoftSwap swapKey={current.kind} tone="normal" className="space-y-0">
+          <p className="mb-3 amem-type-context text-wine">
+            {current.label}
+          </p>
+          <MomentBody
+            kind={current.kind}
+            step={step}
+            noteSlot={noteSlot}
+            chatHref={chatHref}
+            conversarLabel={conversarLabel}
+            completeSlot={completeSlot}
+          />
+        </SoftSwap>
       </main>
 
       <nav
@@ -305,7 +308,7 @@ export function JourneyDayGuided({
             <Button
               type="button"
               variant="ritual"
-              className="min-h-11 flex-1"
+              className="amem-type-action min-h-11 flex-1"
               onClick={goNext}
             >
               Continuar

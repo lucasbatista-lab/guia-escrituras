@@ -41,6 +41,8 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [actionsId, setActionsId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const detail = detailId
     ? prayers.find((p) => p.id === detailId) ?? null
@@ -67,7 +69,9 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
       setPrayers((current) => [json.prayer, ...current]);
       setDraft("");
       setComposerOpen(false);
+      setHighlightId(json.prayer.id);
       setStatus("Oração guardada.");
+      window.setTimeout(() => setHighlightId((id) => (id === json.prayer.id ? null : id)), 900);
     } catch {
       setStatus("Não foi possível guardar agora. Tente de novo.");
     } finally {
@@ -95,6 +99,10 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
         current.map((item) => (item.id === id ? json.prayer : item)),
       );
       setActionsId(null);
+      if (payload.status === "answered") {
+        setHighlightId(id);
+        window.setTimeout(() => setHighlightId((cur) => (cur === id ? null : cur)), 900);
+      }
       setStatus(
         payload.status === "answered"
           ? "Marcada como respondida."
@@ -121,11 +129,15 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) throw new Error("fail");
-      setPrayers((current) => current.filter((item) => item.id !== id));
+      setRemovingId(id);
       setConfirmDeleteId(null);
       setActionsId(null);
       setDetailId(null);
-      setStatus("Oração excluída.");
+      window.setTimeout(() => {
+        setPrayers((current) => current.filter((item) => item.id !== id));
+        setRemovingId(null);
+        setStatus("Oração excluída.");
+      }, 220);
     } catch {
       setStatus("Não foi possível excluir agora.");
     } finally {
@@ -184,18 +196,25 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
       ) : (
         <ul className="divide-y divide-border/40" aria-label="Orações">
           {prayers.map((prayer) => (
-            <li key={prayer.id}>
+            <li
+              key={prayer.id}
+              className={cn(
+                removingId === prayer.id && "amem-remove-out",
+                highlightId === prayer.id && "amem-highlight-once rounded-xl",
+                prayer.status === "answered" && "opacity-90",
+              )}
+            >
               <div className="flex items-stretch gap-1 py-1">
                 <button
                   type="button"
-                  className="min-h-11 flex-1 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="amem-press min-h-11 flex-1 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => setDetailId(prayer.id)}
                 >
                   <p className="text-[11px] font-semibold text-[color:var(--amem-mute)]">
                     {humanWhen(prayer.updatedAt || prayer.createdAt)}
                     {" · "}
                     {prayer.status === "answered"
-                      ? "respondida"
+                      ? "✓ respondida"
                       : "em oração"}
                   </p>
                   <p className="mt-1 font-display text-[15px] italic leading-snug text-ink">
@@ -204,7 +223,7 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
                 </button>
                 <button
                   type="button"
-                  className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="amem-press inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Mais ações"
                   onClick={() => setActionsId(prayer.id)}
                 >
@@ -249,8 +268,9 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               type="submit"
+              variant="ritual"
               disabled={busy || !draft.trim()}
-              className="min-h-11 flex-1"
+              className="amem-type-action min-h-11 flex-1"
               aria-busy={busy}
             >
               {busy ? "Guardando…" : "Guardar oração"}
@@ -343,9 +363,10 @@ export function PrayerWorkspace({ initial }: { initial: UserPrayer[] }) {
                 <div className="flex gap-2">
                   <Button
                     type="button"
-                    variant="ritual"
-                    className="min-h-11 flex-1"
+                    variant="outline"
+                    className="min-h-11 flex-1 text-destructive"
                     disabled={busy}
+                    aria-busy={busy}
                     onClick={() => void remove(actionsTarget.id)}
                   >
                     Confirmar exclusão

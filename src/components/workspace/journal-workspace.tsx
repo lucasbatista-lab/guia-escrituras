@@ -46,6 +46,8 @@ export function JournalWorkspace({
   const [composerOpen, setComposerOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const detail = detailId
     ? entries.find((e) => e.id === detailId) ?? null
@@ -74,7 +76,9 @@ export function JournalWorkspace({
       setEntries((current) => [json.entry, ...current]);
       setDraft("");
       setComposerOpen(false);
+      setHighlightId(json.entry.id);
       setStatus("Guardado.");
+      window.setTimeout(() => setHighlightId((id) => (id === json.entry.id ? null : id)), 900);
     } catch {
       setStatus("Não foi possível guardar agora. Tente de novo.");
     } finally {
@@ -94,10 +98,14 @@ export function JournalWorkspace({
         body: JSON.stringify({ id }),
       });
       if (!res.ok) throw new Error("fail");
-      setEntries((current) => current.filter((item) => item.id !== id));
+      setRemovingId(id);
       setConfirmDeleteId(null);
       setDetailId(null);
-      setStatus("Excluído.");
+      window.setTimeout(() => {
+        setEntries((current) => current.filter((item) => item.id !== id));
+        setRemovingId(null);
+        setStatus("Excluído.");
+      }, 220);
     } catch {
       setStatus("Não foi possível excluir agora.");
     } finally {
@@ -154,10 +162,16 @@ export function JournalWorkspace({
       ) : (
         <ul className="divide-y divide-border/40" aria-label="Diário">
           {entries.map((entry) => (
-            <li key={entry.id}>
+            <li
+              key={entry.id}
+              className={cn(
+                removingId === entry.id && "amem-remove-out",
+                highlightId === entry.id && "amem-highlight-once rounded-xl",
+              )}
+            >
               <button
                 type="button"
-                className="flex min-h-11 w-full flex-col py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="amem-press flex min-h-11 w-full flex-col py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => {
                   setConfirmDeleteId(null);
                   setDetailId(entry.id);
@@ -203,9 +217,9 @@ export function JournalWorkspace({
                 type="button"
                 onClick={() => setKind(value)}
                 className={cn(
-                  "min-h-11 rounded-full border px-3.5 text-sm",
+                  "amem-press min-h-11 rounded-full border px-3.5 text-sm",
                   kind === value
-                    ? "border-wine/40 bg-wine/[0.08] text-ink"
+                    ? "amem-surface-selected border-wine/40 text-ink"
                     : "border-border/70 text-ink-soft",
                 )}
               >
@@ -230,8 +244,9 @@ export function JournalWorkspace({
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               type="submit"
+              variant="ritual"
               disabled={busy || !draft.trim()}
-              className="min-h-11 flex-1"
+              className="amem-type-action min-h-11 flex-1"
               aria-busy={busy}
             >
               {busy ? "Guardando…" : "Guardar"}
@@ -272,9 +287,10 @@ export function JournalWorkspace({
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant="ritual"
-                      className="min-h-11 flex-1"
+                      variant="outline"
+                      className="min-h-11 flex-1 text-destructive"
                       disabled={busy}
+                      aria-busy={busy}
                       onClick={() => void remove(detail.id)}
                     >
                       Confirmar exclusão
