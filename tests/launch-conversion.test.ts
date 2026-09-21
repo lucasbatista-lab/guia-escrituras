@@ -37,23 +37,29 @@ describe("launch conversion home", () => {
     expect(home).toContain("voz divina");
   });
 
-  it("makes product discovery the primary CTA and plans secondary", () => {
+  it("keeps a single primary CTA above the fold; discovery and plans below", () => {
     expect(home).toContain('href="#demonstracao"');
     expect(home).toContain("Conhecer o Amém Chat");
     expect(home).toContain("Ver planos");
     expect(home).toContain("TrackingLink");
     expect(home).toContain('href="/planos"');
     expect(home).toContain("R$ 38");
+    expect(home).toContain("Criar conta grátis");
     const heroSlice = home.slice(
-      home.indexOf("animate-fade-up"),
-      home.indexOf("demo-heading"),
+      home.indexOf("/* 1. Hero"),
+      home.indexOf("/* 2. Demonstração"),
     );
-    const primaryIdx = heroSlice.indexOf("Conhecer o Amém Chat");
-    const secondaryIdx = heroSlice.indexOf("Ver planos");
-    expect(primaryIdx).toBeGreaterThan(-1);
-    expect(secondaryIdx).toBeGreaterThan(primaryIdx);
+    expect(heroSlice).toContain("Criar conta grátis");
+    expect(heroSlice).not.toContain('href="#demonstracao"');
+    expect(heroSlice).not.toContain('href="/planos"');
     expect(heroSlice).not.toMatch(/Stripe/i);
     expect(heroSlice).not.toContain("brand.description");
+    const demoSlice = home.slice(
+      home.indexOf("/* 2. Demonstração"),
+      home.indexOf("<ChatDemo"),
+    );
+    expect(demoSlice).toContain("Conhecer o Amém Chat");
+    expect(demoSlice).toContain("Ver planos");
   });
 
   it("presents the ecosystem and continuity before plans", () => {

@@ -113,39 +113,20 @@ export default function HomePage() {
           />
           <div className="relative mx-auto grid max-w-6xl items-center gap-7 px-4 pb-10 pt-3 sm:px-6 sm:pb-14 sm:pt-7 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-16 lg:pt-10">
             <div className="animate-fade-up">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-gold/25 bg-card/70 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-ink-soft">
-                Reflexões cristãs para situações reais
-              </div>
               <h1 className="text-balance font-display text-[1.85rem] leading-[1.08] text-ink sm:text-4xl lg:text-[3.25rem]">
                 Quando algo estiver pesando, encontre clareza à luz das Escrituras.
               </h1>
-              <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-ink sm:mt-5 sm:text-lg">
-                Comece grátis com Hoje com Deus. Quando quiser conversar, há
-                referências bíblicas, aplicação prática e próximos passos — com
-                IA e limites honestos.
+              <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-ink-soft sm:mt-5 sm:text-lg">
+                Comece grátis com Hoje com Deus — presença diária, com IA e limites honestos quando quiser conversar.
               </p>
-              <div className="mt-4 flex gap-2 sm:mt-7 sm:flex-wrap sm:gap-3">
-                <Button asChild size="lg" className="min-h-12 flex-1 bg-wine px-5 hover:bg-wine-soft sm:flex-none">
+              <div className="mt-6 sm:mt-8">
+                <Button asChild size="lg" variant="ritual" className="amem-type-action min-h-12 w-full px-5 sm:w-auto">
                   <TrackingLink href="/cadastro">Criar conta grátis</TrackingLink>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="min-h-12 border-ink/20 px-5">
-                  <a href="#demonstracao">Conhecer o Amém Chat</a>
-                </Button>
               </div>
-              <p className="mt-3">
-                <TrackingLink
-                  href="/planos"
-                  conversionEvent="plans_cta_clicked"
-                  className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
-                >
-                  Ver planos
-                </TrackingLink>
+              <p className="mt-3 text-xs text-ink-soft sm:text-sm">
+                Conta grátis, sem cartão
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink sm:mt-4 sm:text-sm">
-                <span>Conta grátis, sem cartão</span>
-                <span aria-hidden>·</span>
-                <span>Planos a partir de {ESSENCIAL_PRICE_LABEL}/mês</span>
-              </div>
             </div>
             <div className="animate-fade-up-delayed">
               <ProductHeroPreview />
@@ -159,19 +140,32 @@ export default function HomePage() {
             id="demonstracao"
             className="mx-auto max-w-6xl scroll-mt-6 px-4 py-8 sm:scroll-mt-8 sm:px-6 sm:py-12 lg:py-14"
           >
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">
+            <p className="amem-type-context">
               Veja na prática
             </p>
             <h2
               id="demo-heading"
               className="mt-2 font-display text-2xl text-ink sm:text-3xl"
             >
-              Uma conversa de exemplo
+              Conhecer o Amém Chat
             </h2>
             <p className="mt-2 max-w-xl text-sm text-ink-soft sm:text-base">
               Escolha uma situação e veja o tipo de reflexão que o Amém Chat pode
-              oferecer.
+              oferecer — referências bíblicas, aplicação prática e próximos
+              passos.
             </p>
+            <p className="mt-3">
+              <TrackingLink
+                href="/planos"
+                conversionEvent="plans_cta_clicked"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
+              >
+                Ver planos — a partir de {ESSENCIAL_PRICE_LABEL}/mês
+              </TrackingLink>
+            </p>
+            <a href="#demonstracao" className="sr-only">
+              Conhecer o Amém Chat
+            </a>
             <div className="mt-5 max-w-2xl sm:mt-6">
               <ChatDemo />
             </div>

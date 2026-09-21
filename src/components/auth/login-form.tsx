@@ -179,7 +179,9 @@ export function LoginForm() {
       ) : null}
       <Button
         type="submit"
-        className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft"
+        variant="ritual"
+        size="lg"
+        className="amem-type-action w-full"
         disabled={loading || !hasSupabaseEnv()}
         aria-busy={loading}
       >
