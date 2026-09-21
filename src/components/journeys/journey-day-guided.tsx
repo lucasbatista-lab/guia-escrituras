@@ -38,6 +38,16 @@ export type JourneyDayGuidedProps = {
   conversarLabel?: string;
 };
 
+
+const SCENE_SURFACE: Record<GuidedMomentKind, string> = {
+  contexto: "amem-scene-contexto",
+  escritura: "amem-scene-escritura",
+  reflexao: "amem-scene-reflexao",
+  pratico: "amem-scene-pratico",
+  oracao: "amem-scene-oracao",
+  fecho: "amem-scene-fecho",
+};
+
 /**
  * Guided day UI. Stage index is ephemeral (resets on remount) — day progress
  * stays on the existing backend. No private text in client storage.
@@ -61,28 +71,30 @@ function MomentBody({
   switch (kind) {
     case "contexto":
       return (
-        <div className="space-y-4">
-          <p className="font-display text-[22px] leading-snug text-ink">
+        <div className="space-y-5">
+          <p className="amem-type-moment text-[24px] leading-snug text-ink">
             {step.objective}
           </p>
-          <p className="text-sm text-ink-soft">~{step.estimatedMinutes} min</p>
+          <p className="amem-type-meta">~{step.estimatedMinutes} min · um dia, sem pressa</p>
         </div>
       );
     case "escritura":
       return (
-        <div className="space-y-4">
-          <p className="font-display text-xl text-ink">{step.bibleReference}</p>
-          <p className="text-[15px] leading-relaxed text-ink-soft">
+        <div className="space-y-5">
+          <p className="amem-type-scripture text-[22px] text-ink">{step.bibleReference}</p>
+          <p className="amem-type-body text-[15px] leading-relaxed text-ink-soft">
             {step.paraphrase}
           </p>
-          <p className="text-[11px] uppercase tracking-[0.12em] text-ink-soft">
+          <p className="amem-type-context">
             Em outras palavras · não é citação inventada
           </p>
         </div>
       );
     case "reflexao":
       return (
-        <p className="text-[16px] leading-relaxed text-ink">{step.reflection}</p>
+        <p className="amem-type-body text-[16px] leading-relaxed text-ink">
+          {step.reflection}
+        </p>
       );
     case "pratico":
       return (
@@ -107,9 +119,9 @@ function MomentBody({
       );
     case "oracao":
       return (
-        <p className="font-display text-[19px] italic leading-snug text-ink">
+        <blockquote className="amem-type-scripture border-l-[2.5px] border-wine/35 pl-4 text-[19px] italic leading-snug text-ink">
           {stepPrayer(step)}
-        </p>
+        </blockquote>
       );
     case "fecho":
       return (
@@ -271,17 +283,24 @@ export function JourneyDayGuided({
 
       <main className="flex-1 px-0.5" aria-live="polite">
         <SoftSwap swapKey={current.kind} tone="normal" className="space-y-0">
-          <p className="mb-3 amem-type-context text-wine">
-            {current.label}
-          </p>
-          <MomentBody
-            kind={current.kind}
-            step={step}
-            noteSlot={noteSlot}
-            chatHref={chatHref}
-            conversarLabel={conversarLabel}
-            completeSlot={completeSlot}
-          />
+          <div
+            className={cn(
+              "amem-moment-scene rounded-[22px] px-4 py-5 sm:px-5",
+              SCENE_SURFACE[current.kind],
+            )}
+          >
+            <p className="mb-4 amem-type-context text-wine">
+              {current.label}
+            </p>
+            <MomentBody
+              kind={current.kind}
+              step={step}
+              noteSlot={noteSlot}
+              chatHref={chatHref}
+              conversarLabel={conversarLabel}
+              completeSlot={completeSlot}
+            />
+          </div>
         </SoftSwap>
       </main>
 

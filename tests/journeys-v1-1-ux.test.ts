@@ -114,14 +114,21 @@ describe("journeys V1.1 step completion UX", () => {
 
   it("catalog cards use distinct accents and contextual CTAs", () => {
     const catalog = read("src", "app", "(platform)", "jornadas", "page.tsx");
+    const catalogCard = read(
+      "src",
+      "components",
+      "journeys",
+      "journey-catalog-card.tsx",
+    );
     const display = read("src", "lib", "journeys", "display.ts");
     expect(display).toContain("getJourneyVisual");
     expect(display).toContain("Começar Jornada");
     expect(display).toContain("Continuar etapa");
     expect(display).toContain("Rever Jornada");
-    expect(catalog).toContain("getJourneyVisual");
-    expect(catalog).toContain("journeyDurationLabel");
+    expect(catalog).toContain("JourneyCatalogCard");
     expect(catalog).toContain("journeyCurrentStepNumber");
+    expect(catalogCard).toContain("journeyDurationLabel");
+    expect(catalogCard).toContain("journeyShortPromise");
   });
 
   it("reset button keeps explicit confirmation", () => {

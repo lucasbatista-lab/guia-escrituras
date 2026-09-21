@@ -140,6 +140,7 @@ export default function HomePage() {
             id="demonstracao"
             className="mx-auto max-w-6xl scroll-mt-6 px-4 py-8 sm:scroll-mt-8 sm:px-6 sm:py-12 lg:py-14"
           >
+            <a href="#demonstracao" className="sr-only">Conhecer o Amém Chat</a>
             <p className="amem-type-context">
               Veja na prática
             </p>
@@ -160,12 +161,9 @@ export default function HomePage() {
                 conversionEvent="plans_cta_clicked"
                 className="inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4"
               >
-                Ver planos — a partir de {ESSENCIAL_PRICE_LABEL}/mês
+                Ver planos a partir de {ESSENCIAL_PRICE_LABEL}/mês
               </TrackingLink>
             </p>
-            <a href="#demonstracao" className="sr-only">
-              Conhecer o Amém Chat
-            </a>
             <div className="mt-5 max-w-2xl sm:mt-6">
               <ChatDemo />
             </div>

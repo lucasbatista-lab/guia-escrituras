@@ -3,6 +3,13 @@ import { redirect } from "next/navigation";
 import { PresenceLight } from "@/components/brand/presence-light";
 import { PaperGrain } from "@/components/brand/paper-grain";
 import { Button } from "@/components/ui/button";
+import {
+  IconChevron,
+  IconCreate,
+  IconJournal,
+  IconPrayer,
+  IconSaved,
+} from "@/components/brand/icons/archive-icons";
 import { getAuthUserContext } from "@/lib/auth";
 import { listPrayers } from "@/lib/workspace/prayers";
 import { listPrivateEntries } from "@/lib/workspace/entries";
@@ -99,6 +106,40 @@ export default async function EspacoPage() {
   const empty = candidates.length === 0;
   const stack = candidates.slice(0, 3);
 
+  const areas = [
+    {
+      href: "/espaco/oracoes",
+      label: "Orações",
+      meta:
+        prayers.length > 0
+          ? `${prayers.length} ${prayers.length === 1 ? "pedido" : "pedidos"}`
+          : "Escrever a primeira",
+      Icon: IconPrayer,
+      createHref: "/espaco/oracoes",
+    },
+    {
+      href: "/espaco/diario",
+      label: "Diário",
+      meta:
+        entries.filter((e) => e.kind === "journal" || e.kind === "gratitude")
+          .length > 0
+          ? `${entries.filter((e) => e.kind === "journal" || e.kind === "gratitude").length} entradas`
+          : "Abrir página em branco",
+      Icon: IconJournal,
+      createHref: "/espaco/diario",
+    },
+    {
+      href: "/espaco/salvos",
+      label: "Salvos",
+      meta:
+        saved.length > 0
+          ? `${saved.length} ${saved.length === 1 ? "marca" : "marcas"}`
+          : "O que você guarda",
+      Icon: IconSaved,
+      createHref: "/espaco/salvos",
+    },
+  ] as const;
+
   return (
     <div className="relative space-y-5 overflow-hidden">
       <PresenceLight size="sm" />
@@ -118,9 +159,22 @@ export default async function EspacoPage() {
         ) : null}
       </header>
 
+      {/* Create always reachable */}
+      <div className="relative z-10">
+        <Button asChild variant="ritual" className="min-h-11 w-full font-bold">
+          <Link
+            href="/espaco/oracoes"
+            className="inline-flex items-center justify-center gap-2"
+          >
+            <IconCreate className="size-4" />
+            Nova oração
+          </Link>
+        </Button>
+      </div>
+
       {empty ? (
         <div
-          className="relative z-10 mx-1 mt-4 rounded-3xl px-5 py-9 text-center"
+          className="relative z-10 mx-1 mt-2 rounded-3xl px-5 py-9 text-center"
           style={{
             background: "rgba(235,231,225,0.45)",
             boxShadow: "inset 0 0 0 1px var(--amem-hairline)",
@@ -224,7 +278,7 @@ export default async function EspacoPage() {
                   />
                   <Link
                     href={item.href}
-                    className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <p className="text-[11px] font-semibold text-[color:var(--amem-mute)]">
                       {humanWhen(item.at)} · {item.kind.toLowerCase()}
@@ -237,37 +291,38 @@ export default async function EspacoPage() {
               ))}
             </ul>
           </div>
-
-          <nav aria-label="Áreas da memória" className="relative z-10 px-1 pt-2">
-            <ul className="flex flex-wrap gap-2 text-sm">
-              <li>
-                <Link
-                  href="/espaco/oracoes"
-                  className="inline-flex min-h-11 items-center rounded-full px-3 text-ink-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Orações
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/espaco/diario"
-                  className="inline-flex min-h-11 items-center rounded-full px-3 text-ink-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Diário
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/espaco/salvos"
-                  className="inline-flex min-h-11 items-center rounded-full px-3 text-ink-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Salvos
-                </Link>
-              </li>
-            </ul>
-          </nav>
         </>
       )}
+
+      {/* Areas with unequivocal affordance — icon + label + meta + chevron */}
+      <nav aria-label="Áreas da memória" className="relative z-10 space-y-2.5 px-0.5 pt-1">
+        <p className="px-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-soft">
+          Áreas
+        </p>
+        <ul className="space-y-2.5">
+          {areas.map(({ href, label, meta, Icon }) => (
+            <li key={href}>
+              <Link
+                href={href}
+                className="amem-archive-row focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-wine/[0.08] text-wine">
+                  <Icon className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-ink">
+                    {label}
+                  </span>
+                  <span className="mt-0.5 block text-[11px] text-[color:var(--amem-mute)]">
+                    {meta}
+                  </span>
+                </span>
+                <IconChevron className="size-4 shrink-0 text-ink-soft" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   );
 }

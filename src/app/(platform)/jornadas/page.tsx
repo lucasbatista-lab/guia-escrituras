@@ -1,22 +1,22 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { JourneyCatalogBeacon } from "@/components/journeys/journey-catalog-beacon";
+import { JourneyCatalogCard } from "@/components/journeys/journey-catalog-card";
 import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
-import { LockPill } from "@/components/commerce/lock-pill";
+import { JourneyCoverArt } from "@/components/journeys/covers/journey-cover-art";
 import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
 import { Button } from "@/components/ui/button";
 import { InlineNotice } from "@/components/platform/inline-notice";
+import { IconChevron } from "@/components/brand/icons/archive-icons";
 import { getAuthUserContext } from "@/lib/auth";
 import {
   getSoftPaywallCopy,
   journeyShowsSoftPaywall,
 } from "@/lib/commerce/soft-paywall";
 import {
-  getJourneyVisual,
   journeyCtaLabel,
   journeyCurrentStepNumber,
-  journeyDurationLabel,
-  journeyStatusLabel,
+  journeyShortPromise,
 } from "@/lib/journeys/display";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
 import {
@@ -27,7 +27,6 @@ import {
 import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { journeyResumeHint } from "@/lib/journeys/presentation";
-import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -69,10 +68,8 @@ export default async function JornadasPage() {
     <div className="space-y-7">
       <JourneyCatalogBeacon />
       <header className="space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
-          Caminhos
-        </p>
-        <h1 className="font-display text-[28px] leading-tight text-ink">
+        <p className="amem-type-context text-wine">Caminhos</p>
+        <h1 className="amem-type-screen text-[28px] text-ink">
           Sete dias com um tema
         </h1>
         <p className="max-w-xl text-sm leading-relaxed text-ink-soft">
@@ -96,9 +93,8 @@ export default async function JornadasPage() {
             continua com Conversar; a conta grátis mantém Hoje e Espaço.
           </p>
           <SoftPaywallSheet copy={paywallCopy} defaultOpen={false} />
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {items.map(({ journey: j, progress }) => {
-              const visual = getJourneyVisual(j.slug);
               const firstStep = j.steps[0];
               const dayOneDone = Boolean(
                 firstStep && progress?.completedStepIds.includes(firstStep.id),
@@ -107,51 +103,14 @@ export default async function JornadasPage() {
                 ? `/jornadas/${j.slug}/${firstStep.slug}`
                 : `/jornadas/${j.slug}`;
               return (
-                <li
+                <JourneyCatalogCard
                   key={j.slug}
-                  className={cn(
-                    "relative flex min-w-0 flex-col overflow-hidden rounded-[22px] border bg-[color:var(--amem-surface)]/90 p-5",
-                    visual.borderClass,
-                  )}
-                >
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span
-                      className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg",
-                        visual.markBgClass,
-                        visual.markTextClass,
-                      )}
-                      aria-hidden
-                    >
-                      {visual.mark}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="break-words font-display text-xl text-ink">
-                        {j.title}
-                      </h2>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-ink-soft">
-                        <span>
-                          Prévia · Dia 1
-                          {dayOneDone ? " · concluído" : ""}
-                        </span>
-                        <LockPill label="Caminho" />
-                      </div>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                        {j.objective}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <Button asChild variant="ritual" className="min-h-11">
-                      <Link href={previewHref}>
-                        {dayOneDone ? "Rever Dia 1" : "Abrir Dia 1"}
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="min-h-11">
-                      <Link href={`/jornadas/${j.slug}`}>Ver caminho</Link>
-                    </Button>
-                  </div>
-                </li>
+                  journey={j}
+                  progress={progress}
+                  preview
+                  dayOneDone={dayOneDone}
+                  previewHref={previewHref}
+                />
               );
             })}
           </ul>
@@ -161,136 +120,75 @@ export default async function JornadasPage() {
       {entitled && !journeysDisabled && activeItem ? (
         <section
           aria-labelledby="caminho-ativo-heading"
-          className="amem-surface-poco relative overflow-hidden p-5"
+          className="relative overflow-hidden rounded-[26px] shadow-[0_20px_48px_-28px_rgba(44,36,28,0.55)]"
         >
-          <p
-            id="caminho-ativo-heading"
-            className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine"
-          >
-            Em andamento
-          </p>
-          <h2 className="mt-2 font-display text-2xl text-ink">
-            {activeItem.journey.title}
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-            {journeyResumeHint(activeItem.progress, activeItem.journey.steps)}
-          </p>
-          <div className="mt-4">
+          <div className="relative">
+            <JourneyCoverArt slug={activeItem.journey.slug} size="hero" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
+            />
+            <div className="absolute inset-x-0 bottom-0 px-5 pb-5 pt-16">
+              <p
+                id="caminho-ativo-heading"
+                className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F0E6D0]/90"
+              >
+                Em andamento
+              </p>
+              <h2 className="mt-1.5 font-display text-[26px] leading-tight text-[#FFF9F0]">
+                {activeItem.journey.title}
+              </h2>
+              <p className="mt-1.5 text-sm text-[#FFF9F0]/75">
+                {journeyShortPromise(activeItem.journey.slug)}
+              </p>
+            </div>
+          </div>
+          <div className="space-y-4 border border-t-0 border-border/50 bg-[color:var(--amem-surface)] px-5 py-5">
+            <p className="text-sm leading-relaxed text-ink-soft">
+              {journeyResumeHint(activeItem.progress, activeItem.journey.steps)}
+            </p>
             <JourneyProgressBar
               progress={activeItem.progress}
               totalSteps={activeItem.journey.steps.length}
               journeySlug={activeItem.journey.slug}
               labelId={`progress-active-${activeItem.journey.slug}`}
             />
-          </div>
-          {(() => {
-            const j = activeItem.journey;
-            const progress = activeItem.progress;
-            const stepNumber = journeyCurrentStepNumber(progress, j.steps);
-            const cta = journeyCtaLabel(progress, {
-              currentStepNumber: stepNumber,
-            });
-            const firstStep = j.steps[0];
-            const continueHref =
-              progress?.currentStepId && !progress.isCompleted
-                ? `/jornadas/${j.slug}/${j.steps.find((s) => s.id === progress.currentStepId)?.slug ?? firstStep?.slug}`
-                : `/jornadas/${j.slug}`;
-            return (
-              <div className="mt-5">
-                <Button asChild variant="ritual" className="min-h-11 w-full sm:w-auto">
-                  <Link href={continueHref}>{cta}</Link>
-                </Button>
-              </div>
-            );
-          })()}
-        </section>
-      ) : null}
-
-      {entitled && !journeysDisabled ? (
-        <ul className="space-y-3">
-          {(activeItem ? restItems : orderedItems).map(
-            ({ journey: j, progress, estimatedMinutes }) => {
-              const visual = getJourneyVisual(j.slug);
-              const status = journeyStatusLabel(progress);
+            {(() => {
+              const j = activeItem.journey;
+              const progress = activeItem.progress;
               const stepNumber = journeyCurrentStepNumber(progress, j.steps);
               const cta = journeyCtaLabel(progress, {
                 currentStepNumber: stepNumber,
-              });
-              const minutesPerStep =
-                j.steps.length > 0
-                  ? Math.round(estimatedMinutes / j.steps.length)
-                  : null;
-              const duration = journeyDurationLabel({
-                stepCount: j.steps.length,
-                minutesPerStep,
               });
               const firstStep = j.steps[0];
               const continueHref =
                 progress?.currentStepId && !progress.isCompleted
                   ? `/jornadas/${j.slug}/${j.steps.find((s) => s.id === progress.currentStepId)?.slug ?? firstStep?.slug}`
-                  : progress?.isCompleted
-                    ? `/jornadas/${j.slug}/${firstStep?.slug}`
-                    : `/jornadas/${j.slug}`;
-
+                  : `/jornadas/${j.slug}`;
               return (
-                <li
-                  key={j.slug}
-                  className={cn(
-                    "relative flex min-w-0 flex-col overflow-hidden rounded-[22px] border bg-[color:var(--amem-surface)]/90 p-5",
-                    visual.borderClass,
-                  )}
-                >
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span
-                      className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg",
-                        visual.markBgClass,
-                        visual.markTextClass,
-                      )}
-                      aria-hidden
-                    >
-                      {visual.mark}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="break-words font-display text-xl text-ink">
-                        {j.title}
-                      </h2>
-                      <p className="mt-1 text-xs font-medium text-ink-soft">
-                        {status}
-                        {" · "}
-                        {duration}
-                      </p>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                        {j.objective}
-                      </p>
-                    </div>
-                  </div>
-                  {progress ? (
-                    <div className="mt-4">
-                      <JourneyProgressBar
-                        progress={progress}
-                        totalSteps={j.steps.length}
-                        journeySlug={j.slug}
-                        labelId={`progress-${j.slug}`}
-                      />
-                    </div>
-                  ) : null}
-                  <div className="mt-4">
-                    <Button
-                      asChild
-                      variant={
-                        progress?.isStarted && !progress.isCompleted
-                          ? "ritual"
-                          : "outline"
-                      }
-                      className="min-h-11"
-                    >
-                      <Link href={continueHref}>{cta}</Link>
-                    </Button>
-                  </div>
-                </li>
+                <Button asChild variant="ritual" className="min-h-12 w-full text-base">
+                  <Link href={continueHref} className="inline-flex items-center justify-center gap-2">
+                    {cta}
+                    <IconChevron className="size-4 opacity-90" />
+                  </Link>
+                </Button>
               );
-            },
+            })()}
+          </div>
+        </section>
+      ) : null}
+
+      {entitled && !journeysDisabled ? (
+        <ul className="space-y-4">
+          {(activeItem ? restItems : orderedItems).map(
+            ({ journey: j, progress, estimatedMinutes }) => (
+              <JourneyCatalogCard
+                key={j.slug}
+                journey={j}
+                progress={progress}
+                estimatedMinutes={estimatedMinutes}
+              />
+            ),
           )}
         </ul>
       ) : null}

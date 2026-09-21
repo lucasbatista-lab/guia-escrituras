@@ -91,8 +91,15 @@ describe("Caminhos FREE Day 1 interactive preview contract", () => {
       "start",
       "route.ts",
     );
-    expect(catalog).toContain("Abrir Dia 1");
+    const catalogCard = read(
+      "src",
+      "components",
+      "journeys",
+      "journey-catalog-card.tsx",
+    );
     expect(catalog).toContain("SoftPaywallSheet");
+    expect(catalog).toContain("JourneyCatalogCard");
+    expect(catalogCard).toContain("Abrir Dia 1");
     expect(slug).toContain("canAccessJourneyStep");
     expect(slug).toContain("Abrir Dia 1");
     expect(step).toMatch(/if \(!canAccessJourneyStep[\s\S]*SoftPaywallGate/);

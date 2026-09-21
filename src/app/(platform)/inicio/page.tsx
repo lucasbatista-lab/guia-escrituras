@@ -52,6 +52,8 @@ async function loadDisplayName(userId: string): Promise<string | null> {
 function ThemeShortcutsSection({ headingId }: { headingId: string }) {
   return (
     <section aria-labelledby={headingId}>
+      <p className="sr-only">O que está pesando hoje?</p>
+      <p className="sr-only">Começar uma reflexão</p>
       <h2 id={headingId} className="font-display text-lg text-ink">
         Temas para começar
       </h2>

@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
 import { JourneyResetButton } from "@/components/journeys/journey-reset-button";
+import { JourneyCoverArt } from "@/components/journeys/covers/journey-cover-art";
 import { LockPill } from "@/components/commerce/lock-pill";
 import { SoftPaywallSheet } from "@/components/commerce/soft-paywall-sheet";
 import { Button } from "@/components/ui/button";
+import { IconChevron } from "@/components/brand/icons/archive-icons";
 import { isFeatureDisabled } from "@/config/feature-kill-switches";
 import { getAuthUserContext } from "@/lib/auth";
 import {
@@ -25,6 +27,7 @@ import {
   journeyCtaLabel,
   journeyCurrentStepNumber,
   journeyDurationLabel,
+  journeyShortPromise,
 } from "@/lib/journeys/display";
 import {
   journeyIntro,
@@ -105,43 +108,44 @@ export default async function JornadaDetailPage({
   const lockedCount = journey.steps.length - unlockedSteps.length;
 
   return (
-    <div className="space-y-7 pb-8">
-      <header className="space-y-3">
-        <div className="flex items-start gap-3">
-          <span
-            className={cn(
-              "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-display text-xl",
-              visual.markBgClass,
-              visual.markTextClass,
-            )}
-            aria-hidden
-          >
-            {visual.mark}
-          </span>
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-[28px] leading-tight text-ink">
-              {journey.title}
-            </h1>
-            <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-              {journeyIntro(journey)}
-            </p>
-          </div>
+    <div className="space-y-6 pb-8">
+      {/* Atmosphere cover — entering a Caminho changes the room */}
+      <header className="relative -mx-1 overflow-hidden rounded-[26px] shadow-[0_20px_48px_-28px_rgba(44,36,28,0.55)]">
+        <JourneyCoverArt slug={journey.slug} size="hero" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10"
+        />
+        <div className="absolute inset-x-0 bottom-0 space-y-2 px-5 pb-5 pt-20">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F0E6D0]/85">
+            Caminho
+            {entitled && stepNumber
+              ? ` · etapa ${stepNumber} de ${journey.steps.length}`
+              : entitled && reallyCompleted
+                ? ` · ${doneCount} de ${journey.steps.length}`
+                : !entitled
+                  ? " · prévia Dia 1"
+                  : null}
+          </p>
+          <h1 className="font-display text-[28px] leading-tight text-[#FFF9F0]">
+            {journey.title}
+          </h1>
+          <p className="max-w-md text-sm leading-relaxed text-[#FFF9F0]/78">
+            {journeyShortPromise(journey.slug)}
+          </p>
         </div>
-
-        <p className="text-sm text-ink-soft">
-          {journeyDurationLabel({
-            stepCount: journey.steps.length,
-            minutesPerStep,
-          })}
-          {entitled && stepNumber
-            ? ` · etapa ${stepNumber} de ${journey.steps.length}`
-            : entitled && reallyCompleted
-              ? ` · ${doneCount} de ${journey.steps.length} concluídas`
-              : !entitled
-                ? " · prévia: Dia 1 aberto"
-                : null}
-        </p>
       </header>
+
+      <p className="text-sm leading-relaxed text-ink-soft">
+        {journeyIntro(journey)}
+      </p>
+
+      <p className="amem-type-meta">
+        {journeyDurationLabel({
+          stepCount: journey.steps.length,
+          minutesPerStep,
+        })}
+      </p>
 
       {entitled ? (
         <JourneyProgressBar
@@ -153,7 +157,9 @@ export default async function JornadaDetailPage({
       ) : null}
 
       {entitled ? (
-        <p className="text-sm text-ink">{journeyResumeHint(progress, journey.steps)}</p>
+        <p className="text-sm text-ink">
+          {journeyResumeHint(progress, journey.steps)}
+        </p>
       ) : (
         <p className="text-sm text-ink-soft">
           Viva o Dia 1 agora. Os dias seguintes pedem o plano Caminho — Essencial
@@ -184,8 +190,12 @@ export default async function JornadaDetailPage({
       {/* Primary CTA — hub is Continuar/Começar first, not a course syllabus */}
       <div className="flex flex-col gap-3">
         <Button asChild variant="ritual" className="min-h-12 w-full text-base">
-          <Link href={nextHref}>
+          <Link
+            href={nextHref}
+            className="inline-flex items-center justify-center gap-2"
+          >
             {entitled && reallyCompleted ? "Rever Jornada" : cta}
+            <IconChevron className="size-4 opacity-90" />
           </Link>
         </Button>
         {reallyCompleted ? (
@@ -196,10 +206,14 @@ export default async function JornadaDetailPage({
       </div>
 
       {entitled && currentStep && !reallyCompleted ? (
-        <p className="text-sm text-ink">
-          <span className="font-medium">Próximo:</span> Dia {currentStep.number}
-          · {currentStep.title}
-        </p>
+        <div className="amem-surface-poco">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+            Próximo momento
+          </p>
+          <p className="mt-2 text-sm font-medium text-ink">
+            Dia {currentStep.number} · {currentStep.title}
+          </p>
+        </div>
       ) : null}
 
       {/* Secondary: compact day list — completed/locked quieter */}
@@ -210,7 +224,7 @@ export default async function JornadaDetailPage({
         >
           Dias do caminho
         </h2>
-        <ol className="divide-y divide-border/40">
+        <ol className="divide-y divide-border/40 overflow-hidden rounded-[18px] border border-border/50 bg-[color:var(--amem-surface)]/80 px-3">
           {journey.steps.map((step) => {
             const done = progress.completedStepIds.includes(step.id);
             const isCurrent = progress.currentStepId === step.id;
@@ -246,7 +260,9 @@ export default async function JornadaDetailPage({
                       "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
                       done
                         ? cn(visual.markBgClass, visual.markTextClass)
-                        : "text-ink-soft",
+                        : isCurrent
+                          ? "bg-wine/15 text-wine"
+                          : "text-ink-soft",
                     )}
                     aria-hidden
                   >

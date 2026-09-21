@@ -55,6 +55,21 @@ const DEFAULT_VISUAL: JourneyVisualIdentity = {
   barClass: "bg-wine/70",
 };
 
+
+/** Catalog one-liner — presentation only, not editorial rewrite. */
+const JOURNEY_PROMISE: Record<JourneySlug, string> = {
+  "ansiedade-confianca": "Nomear o medo. Confiança sem negação.",
+  "perdao-limites": "Perdoar sem se apagar. Limites com dignidade.",
+  "recomeco-proposito": "Recomeçar com propósito. Passos pequenos.",
+};
+
+export function journeyShortPromise(slug: string): string {
+  return (
+    JOURNEY_PROMISE[slug as JourneySlug] ??
+    "Sete dias com um tema — no seu ritmo."
+  );
+}
+
 export function getJourneyVisual(slug: string): JourneyVisualIdentity {
   return JOURNEY_VISUAL[slug as JourneySlug] ?? DEFAULT_VISUAL;
 }
