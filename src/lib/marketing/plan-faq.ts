@@ -12,7 +12,7 @@ export const APROFUNDAR_FAQ = {
 
 export const JOURNEYS_PLANS_FAQ = {
   q: "Quais planos incluem Jornadas?",
-    a: "Caminho, Profundo e Particular. O Essencial mantém o chat completo; as Jornadas fazem parte dos planos para quem quer voltar com mais constância.",
+  a: "Dia 1 de cada Caminho é grátis (também no Essencial). Os 7 dias completos ficam no Caminho, Profundo e Particular. O Essencial mantém o chat completo.",
 } as const;
 
 /** Must stay aligned across home, planos, and ajuda (commercial honesty). */

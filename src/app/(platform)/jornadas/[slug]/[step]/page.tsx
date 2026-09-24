@@ -65,7 +65,7 @@ export default async function JornadaStepPage({
 
   // FREE/Essencial: interactive Day 1 only — never grant reading_journeys.
   if (!canAccessJourneyStep(auth.planKey, step.number)) {
-    return <SoftPaywallGate resource="jornadas" />;
+    return <SoftPaywallGate resource="jornadas" planKey={auth.planKey} />;
   }
 
   const progress = await ensureJourneyStarted(auth.userId, journey.slug);

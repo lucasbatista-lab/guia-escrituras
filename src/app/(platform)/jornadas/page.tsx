@@ -12,6 +12,7 @@ import { getAuthUserContext } from "@/lib/auth";
 import {
   getSoftPaywallCopy,
   journeyShowsSoftPaywall,
+  softPaywallViewerFromPlanKey,
 } from "@/lib/commerce/soft-paywall";
 import {
   journeyCtaLabel,
@@ -62,7 +63,11 @@ export default async function JornadasPage() {
     (item) => item.progress?.isStarted && !item.progress.isCompleted,
   );
   const restItems = orderedItems.filter((item) => item !== activeItem);
-  const paywallCopy = getSoftPaywallCopy("jornadas");
+  const paywallCopy = getSoftPaywallCopy(
+    "jornadas",
+    softPaywallViewerFromPlanKey(auth.planKey),
+  );
+  const isEssencialPreview = auth.planKey === "essencial";
 
   return (
     <div className="space-y-7">
@@ -90,7 +95,10 @@ export default async function JornadasPage() {
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-ink-soft">
             Dia 1 grátis em cada caminho. Dias seguintes com progresso salvo no
-            plano Caminho. Conta grátis mantém Hoje e Espaço.
+            plano Caminho.
+            {isEssencialPreview
+              ? " Seu Essencial continua com Conversar, Hoje e Espaço."
+              : " Conta grátis mantém Hoje e Espaço."}
           </p>
           <SoftPaywallSheet copy={paywallCopy} defaultOpen={false} />
           <ul className="space-y-4">

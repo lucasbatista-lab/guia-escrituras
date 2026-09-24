@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { JourneyCoverArt } from "@/components/journeys/covers/journey-cover-art";
 import { JourneyProgressBar } from "@/components/journeys/journey-progress-bar";
-import { LockPill } from "@/components/commerce/lock-pill";
 import { IconChevron } from "@/components/brand/icons/archive-icons";
 import {
   journeyCtaLabel,
@@ -112,9 +111,9 @@ export function JourneyCatalogCard({
         <div className="flex flex-1 flex-col gap-3 rounded-b-[22px] border border-t-0 border-border/60 bg-[color:var(--amem-surface)]/95 px-4 pb-4 pt-3.5">
           <p className="text-sm leading-relaxed text-ink">{promise}</p>
           {preview ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <LockPill label="Caminho" />
-            </div>
+            <p className="text-xs text-[color:var(--amem-mute)]">
+              Completo no plano Caminho
+            </p>
           ) : null}
           {progress && !preview ? (
             <JourneyProgressBar

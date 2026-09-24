@@ -57,8 +57,8 @@ export default async function PlanosPage() {
                 Escolha quanto espaço você quer para voltar
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-ink sm:text-lg">
-                A conta grátis cobre o dia a dia: Hoje com Deus, orações e diário.
-                Os planos abrem conversa personalizada, histórico, Jornadas e
+                Conta grátis: Hoje, Espaço e Dia 1 dos Caminhos. Essencial abre
+                Conversar. Caminho completa os 7 dias. Profundo acrescenta
                 Aprofundar.
               </p>
               <div className="mt-5 flex flex-wrap gap-2 text-xs text-ink-soft">

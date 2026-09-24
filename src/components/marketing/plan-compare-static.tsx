@@ -27,11 +27,11 @@ const COMPARE_ROWS: {
     },
   },
   {
-    label: "Jornadas (7 etapas)",
+    label: "Caminhos",
     values: {
-      essencial: "Não incluso",
-      caminho: "Incluído",
-      profundo: "Incluído",
+      essencial: "Dia 1 grátis · completo no Caminho",
+      caminho: "Completos (7 dias)",
+      profundo: "Completos (7 dias)",
     },
   },
   {
@@ -82,7 +82,7 @@ export function PlanCompareStatic({
         Comparação detalhada
       </h2>
       <p className="mt-3 max-w-2xl text-ink-soft">
-        Abra cada plano para ver o que muda entre uso pontual, Jornadas e
+        Abra cada plano para ver o que muda entre Conversar, Caminhos e
         Aprofundar.
       </p>
 

@@ -42,7 +42,7 @@ export default async function ConversasPage({
   const journey = await resolveUserJourneyState();
   if (!journeyAllowsChat(journey.state)) {
     if (journeyShowsSoftPaywall(journey.state)) {
-      return <SoftPaywallGate resource="conversar" />;
+      return <SoftPaywallGate resource="conversar" planKey={auth.planKey} />;
     }
     redirect(getRequiredDestinationForState(journey.state));
   }

@@ -16,6 +16,7 @@ import {
 import {
   getSoftPaywallCopy,
   journeyShowsSoftPaywall,
+  softPaywallViewerFromPlanKey,
 } from "@/lib/commerce/soft-paywall";
 import {
   getRequiredDestinationForState,
@@ -100,7 +101,10 @@ export default async function JornadaDetailPage({
       : "Abrir Dia 1";
   const doneCount = progress.completedStepIds.length;
   const reallyCompleted = Boolean(progress.completedAt && progress.isCompleted);
-  const paywallCopy = getSoftPaywallCopy("jornadas");
+  const paywallCopy = getSoftPaywallCopy(
+    "jornadas",
+    softPaywallViewerFromPlanKey(auth.planKey),
+  );
 
   const unlockedSteps = journey.steps.filter((s) =>
     canAccessJourneyStep(auth.planKey, s.number),

@@ -186,7 +186,6 @@ export function HojeRitual({
   function onTalkClick() {
     if (allowsChat) return;
     setPaywallOpen(true);
-    void postProductEvent("premium_prompt_viewed", "/hoje");
   }
 
   async function shareDay() {
@@ -344,7 +343,7 @@ export function HojeRitual({
           ) : null}
           {paywallOpen ? (
             <SoftPaywallSheet
-              copy={getSoftPaywallCopy("conversar")}
+              copy={getSoftPaywallCopy("conversar", { kind: "free" })}
               defaultOpen
               onDismiss={() => setPaywallOpen(false)}
             />
@@ -543,25 +542,23 @@ export function HojeRitual({
           >
             Continuar
           </Button>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button
+          <div className="flex justify-center gap-4 pt-1">
+            <button
               type="button"
-              variant="ghost"
-              className="min-h-11 flex-1"
+              className="amem-press inline-flex min-h-11 items-center text-sm text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               disabled={busy || saved}
               onClick={() => void saveDay()}
             >
               {saved ? "Dia salvo" : "Salvar"}
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              variant="outline"
-              className="min-h-11 flex-1"
+              className="amem-press inline-flex min-h-11 items-center text-sm text-ink-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               disabled={busy}
               onClick={() => void shareDay()}
             >
               Compartilhar
-            </Button>
+            </button>
           </div>
           </SoftEnter>
         </section>
