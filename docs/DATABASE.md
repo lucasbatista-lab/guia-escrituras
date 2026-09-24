@@ -82,6 +82,23 @@ Pacote: `docs/_ai/AMEM_MIG004_DECISION_AND_VALIDATION_PACK_2026-07-22.md`.
 11. `20260712000011_journey_progress_role_least_privilege.sql` — privilégio mínimo tabela (**aplicada**; não reaplicar; não editar 008–010)
 12. `20260712000012_journey_progress_complete_rpc_runtime_fix.sql` — reescrita runtime complete (**aplicada 2026-07-27**; não reaplicar; não editar 008–011)
 13. `20260904000013_public_conversion_events.sql` — eventos first-party do funil (**aplicada**; apply/rollback em `docs/ACQUISITION_EVENTS.md`)
+14. `20260920000014_user_daily_interactions_and_product_events.sql` — interações diárias + product_events (**schema presente em produção**; ledger CLI pode estar desalinhado — **não** reaplicar)
+15. `20260920000015_personal_spiritual_workspace.sql` — Espaço espiritual (**schema presente em produção**; ledger CLI pode estar desalinhado — **não** reaplicar)
+16. `20260920000016_harden_authenticated_grants_private_tables.sql` — grants privados (**equivalente aplicado manualmente em produção**; **não** `db push`)
+17. `20260924000017_apple_billing_foundation.sql` — foundation Apple IAP (**aplicada em produção**; não configurar APPLE_* live nesta wave)
+18. `20260924000018_public_conversion_signup_email_sent.sql` — allowlist `signup_email_sent` (**aditiva**; aplicar **somente** este SQL se necessário)
+
+## Migration ledger vs schema (ops — 2026-09-24 EXECUTION B)
+
+| Migration | Ledger remoto (CLI) | Schema / equivalente | Ação |
+|-----------|---------------------|----------------------|------|
+| 014 | Pode constar local-not-remote | **SCHEMA PRESENT** (product/daily) | Não reaplicar |
+| 015 | Pode constar local-not-remote | **SCHEMA PRESENT** (workspace) | Não reaplicar |
+| 016 | Histórico discrepante | **MANUAL EQUIVALENT PRESENT** | Não `db push` |
+| 017 | Aplicada | **SCHEMA PRESENT** (Apple foundation) | Não tocar |
+| 018 | Nova (esta wave) | CHECK allowlist + `signup_email_sent` | Aplicar **somente** SQL 018 se ainda ausente |
+
+**Nunca** use `supabase db push` para “consertar” 008–017. Distinga **migration ledger** de **schema realmente presente**. Não inserir rows no histórico remoto só para estética.
 
 ## Migration 004 (resumo — aplicada)
 

@@ -5,7 +5,7 @@ Endpoint: `POST /api/acquisition/events` (já existente; agora também grava em 
 
 ## O que é medido
 
-Beacons first-party do funil público (`paid_landing_*`, `signup_started`, etc.):
+Beacons first-party do funil público (`paid_landing_*`, `signup_started`, `signup_email_sent`, etc.):
 
 | Campo persistido | Notas |
 |------------------|-------|
@@ -18,6 +18,18 @@ Beacons first-party do funil público (`paid_landing_*`, `signup_started`, etc.)
 | `session_key` | Opaco por **aba** (`sessionStorage`) — ver limitações abaixo |
 
 **Não** persiste: e-mail, tokens, conteúdo de conversa, URL completa, `fbclid`, IP, User-Agent, `plan` (aceito no POST só para log estruturado).
+
+### Funil signup (visibilidade)
+
+| Etapa | Evento | Onde |
+|-------|--------|------|
+| Abriu cadastro | `signup_started` | `/cadastro` (beacon cliente) |
+| Supabase aceitou signup novo + confirmação necessária | `signup_email_sent` | server action (uma vez; `event_id=ses_${requestId}`) |
+| E-mail confirmado (conta free) | `free_account_created` | product-events em `/email-confirmado` |
+
+`signup_email_sent` **não** dispara em falha de signup nem em soft “e-mail já existe”. Resend de confirmação **não** reemite `free_account_created`.
+
+Migration allowlist: `20260924000018_public_conversion_signup_email_sent.sql` (aditiva; aplicar só este SQL).
 
 ### Resposta HTTP
 

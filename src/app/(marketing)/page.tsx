@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { brand } from "@/config/brand";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
-import { ChatDemo } from "@/components/marketing/chat-demo";
 import { DeepenComparisonStatic } from "@/components/marketing/deepen-comparison-static";
 import { EcosystemShowcase } from "@/components/marketing/ecosystem-showcase";
 import { JourneyPreviewStatic } from "@/components/marketing/journey-preview-static";
@@ -19,6 +18,21 @@ import {
 } from "@/lib/seo";
 import { buildVisitorShareUrl } from "@/lib/share/resolve-server";
 import { Button } from "@/components/ui/button";
+
+const ChatDemo = dynamic(
+  () =>
+    import("@/components/marketing/chat-demo").then((m) => m.ChatDemo),
+  {
+    ssr: true,
+    loading: () => (
+      <div
+        className="min-h-[280px] rounded-[1.75rem] border border-ink/10 bg-card/60"
+        role="status"
+        aria-label="Carregando demonstração"
+      />
+    ),
+  },
+);
 
 const ShareInvite = dynamic(
   () =>
