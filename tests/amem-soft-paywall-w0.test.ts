@@ -46,14 +46,15 @@ describe("W0 soft paywall foundation", () => {
     expect(copy.minimumPlanName).toBe("Essencial");
     expect(copy.badgeLabel).toBe("Essencial");
     expect(copy.resourceLabel).toBe("Conversar");
-    expect(copy.title).toBe("Leve a conversa para o Essencial");
-    expect(copy.benefits.join(' ')).toMatch(/Hoje e Espaço continuam grátis/i);
+    expect(copy.title).toMatch(/Conversar/i);
+    expect(copy.benefits.join(" ")).toMatch(/Hoje e Espaço continuam grátis/i);
     expect(copy.eyebrow).toBe("ACOMPANHAMENTO");
     expect(copy.eyebrow.toLowerCase()).not.toContain("aprofundar");
     expect(copy.dismissLabel).toBe("Ficar no grátis");
     expect(copy.leaveLabel).toBe("Voltar ao Hoje");
     expect(copy.dismissHref).toBe("/inicio");
     expect(copy.footerNote).toMatch(/Conta grátis continua/i);
+    expect(copy.teaserBody).toMatch(/conta grátis/i);
     expect(resolveEntitlements({ planKey: "essencial" }).has("chat_standard")).toBe(
       true,
     );
@@ -76,6 +77,16 @@ describe("W0 soft paywall foundation", () => {
     expect(canUseReadingJourneys(null)).toBe(false);
   });
 
+  it("Essencial Caminhos paywall never uses conta grátis language", () => {
+    const copy = getSoftPaywallCopy("jornadas", {
+      kind: "plan",
+      planKey: "essencial",
+    });
+    expect(copy.dismissLabel).not.toMatch(/grátis/i);
+    expect(copy.footerNote).not.toMatch(/Conta grátis/i);
+    expect(copy.teaserBody).not.toMatch(/conta grátis/i);
+  });
+
   it("conta free copy is honest about Conta grátis ativa", () => {
     const page = readSrc("src", "app", "(platform)", "conta", "page.tsx");
     expect(page).toContain("FREE_ACCOUNT_STATUS_LABEL");
@@ -87,6 +98,7 @@ describe("W0 soft paywall foundation", () => {
       "Orações",
       "Diário",
       "Salvos",
+      "Dia 1 dos Caminhos",
     ]);
   });
 
@@ -180,6 +192,10 @@ describe("W0 soft paywall foundation", () => {
     expect(sheet).toMatch(
       /<Button[\s\S]*?variant="premium"[\s\S]*?<Link href=\{copy\.ctaHref\}/,
     );
+    expect(sheet).toContain("premium_prompt_clicked");
+    expect(sheet).toContain("trackPrimaryClick");
+    expect(sheet).toContain("copy.teaserBody");
+    expect(sheet).not.toContain("Sua conta grátis permanece");
     expect(sheet).not.toMatch(
       /<Button[^>]*variant="premium"[^>]*style=/,
     );

@@ -25,6 +25,7 @@ export const PRODUCT_EVENT_PATHS = [
   "/email-confirmado",
   "/conversar",
   "/planos",
+  "/jornadas",
   "/espaco",
   "/espaco/oracoes",
   "/espaco/salvos",

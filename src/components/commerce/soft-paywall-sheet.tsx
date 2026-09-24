@@ -27,6 +27,27 @@ function listFocusable(root: HTMLElement | null): HTMLElement[] {
   );
 }
 
+function newEventId(prefix: string): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `${prefix}_${crypto.randomUUID().replace(/-/g, "").slice(0, 18)}`;
+  }
+  return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+}
+
+async function postProductEvent(event: string, path: string) {
+  await fetch("/api/product-events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      event,
+      event_id: newEventId(event.slice(0, 12)),
+      path,
+    }),
+  }).catch(() => undefined);
+}
+
 type ScrollLockSnapshot = {
   bodyOverflow: string;
   bodyPosition: string;
@@ -54,6 +75,9 @@ export function SoftPaywallSheet({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const wasOpen = useRef(false);
+  const viewedSentRef = useRef(false);
+  const clickedSentRef = useRef(false);
+
   const dismiss = useCallback(() => {
     setOpen(false);
     onDismiss?.();
@@ -64,6 +88,20 @@ export function SoftPaywallSheet({
       (document.activeElement as HTMLElement | null) ?? triggerRef.current;
     setOpen(true);
   }, []);
+
+  const trackPrimaryClick = useCallback(() => {
+    if (clickedSentRef.current) return;
+    clickedSentRef.current = true;
+    void postProductEvent("premium_prompt_clicked", copy.analyticsPath);
+  }, [copy.analyticsPath]);
+
+  // Emit viewed once per open session (sheet visible) — not on teaser-only.
+  useEffect(() => {
+    if (!open) return;
+    if (viewedSentRef.current) return;
+    viewedSentRef.current = true;
+    void postProductEvent("premium_prompt_viewed", copy.analyticsPath);
+  }, [open, copy.analyticsPath]);
 
   // Focus restore to trigger (or prior activeElement) when sheet closes.
   useEffect(() => {
@@ -182,8 +220,7 @@ export function SoftPaywallSheet({
             </p>
             <h1 className="mt-2 font-display text-2xl text-ink">{copy.title}</h1>
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              Disponível a partir do plano {copy.minimumPlanName}. Sua conta
-              grátis permanece com Hoje com Deus, Orações, Diário e Salvos.
+              {copy.teaserBody}
             </p>
           </div>
           <LockPill label={copy.minimumPlanName} />
@@ -282,7 +319,9 @@ export function SoftPaywallSheet({
                 variant="premium"
                 className="amem-type-action mt-[22px] min-h-[52px] w-full"
               >
-                <Link href={copy.ctaHref}>{copy.ctaLabel}</Link>
+                <Link href={copy.ctaHref} onClick={trackPrimaryClick}>
+                  {copy.ctaLabel}
+                </Link>
               </Button>
               <Button
                 type="button"
