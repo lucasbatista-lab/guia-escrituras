@@ -76,3 +76,29 @@ export {
   type CheckoutBlockReason,
   type CheckoutEligibility,
 } from "./checkout-guard";
+export {
+  deriveBillingProvider,
+  planAccessRank,
+  type BillingProvider,
+} from "./providers";
+export {
+  getEffectiveAccessForUser,
+  resolveEffectiveAccess,
+  resolveEffectiveAccessFromSubscriptions,
+  resolveEffectiveAccessMultiSource,
+  subscriptionCandidateToAccess,
+  type AccessCandidate,
+  type EffectiveAccess,
+} from "./access";
+export {
+  APPLE_SUBSCRIPTION_GROUP_RECOMMENDATION,
+  getAppleProductEnvName,
+  getConfiguredAppleProductId,
+  planKeyFromAppleProductId,
+} from "./apple-products";
+export {
+  appleRecurringBillingStopStub,
+  composeRecurringBillingStops,
+  type RecurringBillingStopPort,
+  type RecurringBillingStopResult,
+} from "./recurring-billing-stop";

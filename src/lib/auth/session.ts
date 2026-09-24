@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasSupabasePublicEnv } from "@/lib/supabase/keys";
 import type { SpiritualProfilePrefs } from "@/lib/theology";
 import { AppError } from "@/lib/safety";
-import { getEffectiveSubscriptionForUser } from "@/lib/billing/subscription-lookup";
+import { getEffectiveAccessForUser } from "@/lib/billing/access";
 
 export interface AuthUserContext {
   userId: string;
@@ -95,13 +95,13 @@ export const getAuthUserContext = cache(async function getAuthUserContext(): Pro
   if (!user) return null;
 
   // Parallelize independent lookups — sequential round-trips dominated pre-stream TTFB.
-  const [spiritualResult, effective, adminRoleResult] = await Promise.all([
+  const [spiritualResult, access, adminRoleResult] = await Promise.all([
     supabase
       .from("spiritual_profiles")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle(),
-    getEffectiveSubscriptionForUser(user.id),
+    getEffectiveAccessForUser(user.id),
     supabase
       .from("admin_roles")
       .select("role")
@@ -130,13 +130,11 @@ export const getAuthUserContext = cache(async function getAuthUserContext(): Pro
     userId: user.id,
     email: user.email ?? null,
     spiritualProfile,
-    planKey: effective?.subscription.planKey ?? null,
-    subscriptionStatus: effective?.subscription.status ?? null,
-    subscriptionPeriodEnd: effective?.subscription.currentPeriodEnd ?? null,
-    hasStripeSubscription: Boolean(
-      effective?.subscription.stripeSubscriptionId,
-    ),
-    hasDuplicateSubscriptions: effective?.hasDuplicates ?? false,
+    planKey: access.planKey,
+    subscriptionStatus: access.status,
+    subscriptionPeriodEnd: access.currentPeriodEnd,
+    hasStripeSubscription: access.accessSource === "stripe",
+    hasDuplicateSubscriptions: access.hasDuplicates,
     isAdmin: Boolean(adminRole),
     demoMode: false,
   };
