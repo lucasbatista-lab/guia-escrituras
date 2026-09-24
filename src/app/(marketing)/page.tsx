@@ -101,11 +101,15 @@ export default function HomePage() {
           />
           <div className="relative mx-auto grid max-w-6xl items-center gap-7 px-4 pb-10 pt-3 sm:px-6 sm:pb-14 sm:pt-7 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-16 lg:pt-10">
             <div className="animate-fade-up">
-              <h1 className="text-balance font-display text-[1.85rem] leading-[1.08] text-ink sm:text-4xl lg:text-[3.25rem]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
+                Presença diária · conversa com Escrituras
+              </p>
+              <h1 className="mt-3 text-balance font-display text-[1.85rem] leading-[1.08] text-ink sm:text-4xl lg:text-[3.25rem]">
                 Clareza à luz das Escrituras — comece grátis hoje.
               </h1>
               <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-ink-soft sm:mt-5 sm:text-lg">
-                Presença diária sem cartão. Acompanhar e conversar, quando fizer sentido.
+                Ritual diário sem cartão. Quando fizer sentido, Conversar
+                acompanha a situação com Escrituras e um próximo passo.
               </p>
               <div className="mt-6 sm:mt-8">
                 <Button asChild size="lg" variant="ritual" className="amem-type-action min-h-12 w-full px-5 sm:w-auto">
@@ -113,7 +117,7 @@ export default function HomePage() {
                 </Button>
               </div>
               <p className="mt-3 text-xs text-ink-soft sm:text-sm">
-                Sem cartão · Hoje e Espaço livres
+                Sem cartão · Hoje e Espaço livres · Dia 1 dos Caminhos
               </p>
             </div>
             <div className="animate-fade-up-delayed">
@@ -139,7 +143,7 @@ export default function HomePage() {
               Como é Conversar
             </h2>
             <p className="mt-2 max-w-xl text-sm text-ink-soft sm:text-base">
-              Uma situação · Escrituras · próximo passo.
+              Situação humana → acolhimento → Escrituras → próximo passo.
             </p>
             <p className="mt-3">
               <TrackingLink
@@ -184,11 +188,11 @@ export default function HomePage() {
               Escolha seu ritmo
             </p>
             <h2 className="mt-2 font-display text-3xl text-ink sm:text-4xl">
-              Quando quiser aprofundar o acompanhamento
+              Presença · companhia · continuidade
             </h2>
             <p className="mt-3 max-w-2xl text-ink-soft">
-              Essencial abre Conversar. Caminho completa os Caminhos de 7 dias.
-              Profundo acrescenta Aprofundar sob demanda.
+              Grátis: ritual e arquivo. Essencial: Conversar. Caminho: 7 dias
+              guiados. Profundo: Aprofundar sob demanda.
             </p>
             <div className="mt-8">
               <PlanCards compact />
@@ -216,14 +220,14 @@ export default function HomePage() {
           </div>
         </SectionShell>
 
-        {/* 11. FAQ */}
+        {/* 11. FAQ — compressed; commercial detail on /planos */}
         <SectionShell tone="sand">
           <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
             <h2 className="font-display text-3xl text-ink sm:text-4xl">
               Perguntas frequentes
             </h2>
             <div className="mt-6 space-y-2">
-              {faq.map((item) => (
+              {faq.slice(0, 5).map((item) => (
                 <details
                   key={item.q}
                   className="rounded-xl border border-border/60 bg-card/70 px-4 py-3"
@@ -237,6 +241,17 @@ export default function HomePage() {
                 </details>
               ))}
             </div>
+            <p className="mt-4 text-sm text-ink-soft">
+              Detalhes de planos, uso justo e cancelamento em{" "}
+              <TrackingLink
+                href="/planos"
+                conversionEvent="plans_cta_clicked"
+                className="font-medium text-ink underline underline-offset-4"
+              >
+                Planos
+              </TrackingLink>
+              .
+            </p>
           </div>
         </SectionShell>
 

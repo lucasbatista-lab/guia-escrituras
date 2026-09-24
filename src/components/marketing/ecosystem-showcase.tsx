@@ -12,10 +12,10 @@ export function EcosystemShowcase() {
           O produto de verdade
         </p>
         <h2 className="mt-2 text-balance font-display text-3xl text-ink sm:text-4xl">
-          Quatro peças, uma presença
+          Uma presença em quatro movimentos
         </h2>
         <p className="mt-3 leading-relaxed text-ink-soft">
-          Grátis: Hoje e Espaço. Acompanhar: Conversar e Caminhos.
+          Hoje e Espaço grátis. Conversar e Caminhos quando você quiser acompanhar.
         </p>
       </div>
 

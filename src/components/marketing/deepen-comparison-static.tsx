@@ -68,9 +68,9 @@ export function DeepenComparisonStatic({
           Normal versus Aprofundar
         </h2>
         <p className="mt-3 text-ink-soft">
-          Aprofundar não é “mais espiritualidade”. É uma segunda passagem sob
-          demanda — mais contexto, tensões e passos — disponível no plano
-          Profundo.
+          No Essencial, a resposta já acolhe e aponta direção. No Profundo,
+          Aprofundar acrescenta uma segunda passagem sob demanda — mais contexto,
+          tensões e passos — só quando você pedir.
         </p>
       </div>
 
