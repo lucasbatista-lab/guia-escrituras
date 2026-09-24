@@ -3,11 +3,16 @@ import { notFound } from "next/navigation";
 import { brand } from "@/config/brand";
 import {
   getDailyContentForDate,
+  isFutureCalendarDate,
   isIsoCalendarDate,
   publicDailyShareFields,
 } from "@/lib/daily";
 
-export const dynamic = "force-static";
+/**
+ * Public editorial permalink / share — no auth, no private user state, no writes.
+ * URL contract: /hoje/[date] (distinct from authenticated /hoje?dia= revisit).
+ */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -15,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ date: string }>;
 }): Promise<Metadata> {
   const { date } = await params;
-  if (!isIsoCalendarDate(date)) {
+  if (!isIsoCalendarDate(date) || isFutureCalendarDate(date)) {
     return { title: brand.name, robots: { index: false, follow: false } };
   }
   const content = getDailyContentForDate(date);
@@ -33,6 +38,10 @@ export default async function PublicHojePage({
 }) {
   const { date } = await params;
   if (!isIsoCalendarDate(date)) notFound();
+  // Do not expose cycled “future” editorial via URL tampering.
+  if (isFutureCalendarDate(date)) {
+    notFound();
+  }
   const content = getDailyContentForDate(date);
   const share = publicDailyShareFields(content);
 

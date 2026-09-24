@@ -2,6 +2,7 @@ import "server-only";
 
 import type { PlanKey } from "@/lib/entitlements";
 import { getPlanByKey } from "@/lib/entitlements";
+import { brtCalendarDate } from "@/lib/daily";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AppError } from "@/lib/safety";
 import {
@@ -1612,7 +1613,7 @@ export async function exportAdminUsersCsv(
     );
   }
 
-  const day = new Date().toISOString().slice(0, 10);
+  const day = brtCalendarDate();
   return {
     csv: `${lines.join("\n")}\n`,
     rowCount: result.rows.length,

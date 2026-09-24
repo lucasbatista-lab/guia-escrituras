@@ -8,6 +8,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Authenticated Hoje:
+ * - /hoje → interactive ritual for today (BRT)
+ * - /hoje?dia=YYYY-MM-DD → read-only revisit of a past civil day
+ * Public share lives at /hoje/[date] (marketing route), not here.
+ */
 export default async function HojePage({
   searchParams,
 }: {

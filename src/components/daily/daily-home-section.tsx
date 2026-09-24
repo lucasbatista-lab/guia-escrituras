@@ -8,9 +8,13 @@ import {
   formatBrtLongDate,
   getDailyContentForDate,
   isIsoCalendarDate,
+  isPastCalendarDate,
   listRecentCalendarDates,
 } from "@/lib/daily";
-import { loadDailyInteraction, loadDailyInteractionsForDates } from "@/lib/daily/interactions";
+import {
+  loadDailyInteraction,
+  loadDailyInteractionsForDates,
+} from "@/lib/daily/interactions";
 
 export async function DailyHomeSection({
   userId,
@@ -23,11 +27,11 @@ export async function DailyHomeSection({
   revisitDate?: string | null;
 }) {
   const today = brtCalendarDate();
+  // Authenticated revisit: only a valid past civil day (never future, never today-as-query).
   const safeRevisit =
     revisitDate &&
     isIsoCalendarDate(revisitDate) &&
-    revisitDate !== today &&
-    revisitDate <= today
+    isPastCalendarDate(revisitDate)
       ? revisitDate
       : null;
 
