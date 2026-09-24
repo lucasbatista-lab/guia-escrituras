@@ -35,7 +35,7 @@ describe("W4 / Wave 3A Hoje presence ritual V17", () => {
     expect(ritual).toContain("completed: true");
     // SoftPaywall is only for the Conversar bridge (FREE), never for ritual APIs.
     expect(ritual).toContain("SoftPaywallSheet");
-    expect(ritual).toContain("getSoftPaywallCopy(\"conversar\")");
+    expect(ritual).toContain('getSoftPaywallCopy("conversar"');
     expect(ritual).toContain("allowsChat");
     expect(ritual).toContain("/conversar?hoje=");
     expect(ritual).not.toContain("openai");
@@ -55,7 +55,7 @@ describe("W4 / Wave 3A Hoje presence ritual V17", () => {
     const ritual = read("src", "components", "daily", "hoje-ritual.tsx");
     expect(ritual).toContain('href="/inicio"');
     expect(ritual).toContain("Compartilhar");
-    expect(ritual).toContain("Voltar ao Início");
+    expect(ritual).toMatch(/>\s*Início\s*</);
     expect(ritual).toContain("Para o Espaço");
   });
 

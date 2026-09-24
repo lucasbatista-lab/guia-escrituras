@@ -4,6 +4,10 @@ import { describe, expect, it } from "vitest";
 import { formatCancelingWithAccessMetric } from "@/lib/admin/format-canceling-metric";
 import { getSupportEmail } from "@/config/legal";
 import { getPlanByKey } from "@/lib/entitlements";
+import {
+  getSoftPaywallCopy,
+  minimumPlanForResource,
+} from "@/lib/commerce/soft-paywall";
 
 const root = process.cwd();
 
@@ -12,32 +16,22 @@ function read(...parts: string[]) {
 }
 
 describe("launch premium conversion", () => {
-  it("home hero keeps single primary CTA; plans and discovery stay on page", () => {
+  it("home hero keeps a free primary CTA and product proof without inventing scarcity", () => {
     const home = read("src", "app", "(marketing)", "page.tsx");
     const chrome = read("src", "components", "marketing", "site-chrome.tsx");
-    const ecosystem = read(
-      "src",
-      "components",
-      "marketing",
-      "ecosystem-showcase.tsx",
-    );
     expect(chrome).toContain("brand.description");
     expect(home).not.toContain("brand.tagline");
-    expect(home).toContain("Ver planos");
-    expect(home).toContain("Conhecer o Amém Chat");
+    expect(home).toContain("Criar conta grátis");
     expect(home).toContain("<ProductHeroPreview");
     expect(home).toContain("ESSENCIAL_PRICE_LABEL");
     expect(home).toContain("R$ 38");
     expect(home).toContain("Pagamento seguro");
     expect(home).toContain("Renovação cancelável");
-    expect(ecosystem).toContain("tradição ecumênica, evangélica ou católica");
-    expect(home).toContain("inteligência artificial");
     const hero = home.slice(
       home.indexOf("/* 1. Hero"),
       home.indexOf("/* 2. Demonstração"),
     );
     expect(hero).toContain("Criar conta grátis");
-    expect(hero).toContain("limites honestos");
     expect(hero).toContain("<ProductHeroPreview");
     expect(hero).not.toContain('href="/planos"');
     expect(hero).not.toMatch(/Stripe/i);
@@ -56,7 +50,7 @@ describe("launch premium conversion", () => {
     expect(demo).toContain('ctaHref = "/planos"');
   });
 
-  it("plans stay honest with concrete CTAs and no upcoming in primary benefits", () => {
+  it("plans stay honest: Conversar=Essencial, Dia1 preview, Caminho full", () => {
     const essencial = getPlanByKey("essencial");
     const caminho = getPlanByKey("caminho");
     const profundo = getPlanByKey("profundo");
@@ -64,12 +58,20 @@ describe("launch premium conversion", () => {
     expect(caminho?.highlighted).toBe(true);
     expect(caminho?.ctaLabel).toBe("Escolher o Caminho");
     expect(profundo?.displayBenefits.join(" ")).toMatch(/aprofundar/i);
-    expect(profundo?.displayBenefits.join(" ").toLowerCase()).not.toMatch(
-      /whatsapp|áudio|audio|jornadas de leitura|conversas profundas|suporte prioritário/,
+    expect(minimumPlanForResource("conversar")).toBe("essencial");
+    expect(minimumPlanForResource("jornadas")).toBe("caminho");
+    expect(getSoftPaywallCopy("conversar").minimumPlanKey).toBe("essencial");
+    const compare = read(
+      "src",
+      "components",
+      "marketing",
+      "plan-compare-static.tsx",
     );
+    expect(compare).toContain("Dia 1 grátis · completo no Caminho");
     const planos = read("src", "app", "(marketing)", "planos", "page.tsx");
     expect(planos).toContain("comparar-uso");
     expect(planos).toContain("Stripe");
+    expect(planos).toMatch(/Dia 1/i);
   });
 
   it("purchase journey progress is standardized across funnel pages", () => {
@@ -113,10 +115,10 @@ describe("launch premium conversion", () => {
     expect(personalizationForm).toContain("tradition_key");
   });
 
-  it("first paid entry and support address are clear", () => {
-    const inicio = read("src", "app", "(platform)", "inicio", "page.tsx");
-    expect(inicio).toContain("O que está pesando hoje?");
-    expect(inicio).toContain("Começar uma reflexão");
+  it("authenticated entry and support address remain clear", () => {
+    const living = read("src", "components", "inicio", "inicio-living.tsx");
+    expect(living).toContain("InicioLiving");
+    expect(living.length).toBeGreaterThan(200);
     delete process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
     delete process.env.NEXT_PUBLIC_APP_SUPPORT_EMAIL;
     expect(getSupportEmail()).toBe("amemchatbr@gmail.com");

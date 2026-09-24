@@ -131,15 +131,15 @@ describe("interior atmosphere — hoje complete hierarchy", () => {
     expect(complete).toContain('variant="ritual"');
     expect(complete).toContain("Conversar sobre isso");
     expect(complete).toContain("Compartilhar");
-    expect(complete).toContain("Voltar ao Início");
+    expect(complete).toMatch(/>\s*Início\s*</);
     expect(complete).toContain('href="/inicio"');
     const conversarRitual = complete.indexOf('variant="ritual"');
-    const voltar = complete.indexOf("Voltar ao Início");
+    const voltar = complete.indexOf('href="/inicio"');
     expect(voltar).toBeGreaterThan(conversarRitual);
     // Back is a text Link, not a full-width ritual/outline Button
     const voltarSlice = complete.slice(
       Math.max(0, voltar - 320),
-      voltar + 40,
+      voltar + 80,
     );
     expect(voltarSlice).toContain("<Link");
     expect(voltarSlice).not.toContain('variant="ritual"');
