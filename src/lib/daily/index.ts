@@ -22,6 +22,7 @@ export {
   DAILY_CONTENT_SEED,
   getDailyContentForDate,
   getDailyContentById,
+  getTomorrowTeaser,
   listPublishedDailyContent,
   listDatedPublishedDailyContent,
 } from "./content";

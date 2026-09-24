@@ -71,26 +71,33 @@ function MomentBody({
 
   switch (kind) {
     case "contexto":
-      // 3A CHEGO — entered the path; objective hero; metadata secondary
+      // 3A CHEGO — entered the path; breathing room + objective hero
       return (
-        <div className="space-y-4">
+        <div className="space-y-5 py-2">
           <p className="amem-type-context text-wine">Chego</p>
-          <p className="amem-type-moment text-[24px] leading-snug text-ink">
+          <p className="amem-type-moment max-w-[18ch] text-[26px] leading-snug text-ink">
             {step.objective}
           </p>
           <p className="amem-type-meta text-[color:var(--journey-ink-soft,var(--amem-mute))]">
             ~{step.estimatedMinutes} min · um dia, sem pressa
           </p>
+          <div
+            aria-hidden
+            className="h-px w-16 bg-[color:var(--journey-highlight,var(--amem-wine))]/35"
+          />
         </div>
       );
     case "escritura":
-      // 3B ESCUTO — typography as hero; quiet motif already in atmosphere
+      // 3B ESCUTO — Scripture as visual focus, not article
       return (
-        <div className="space-y-5">
-          <p className="amem-type-scripture text-[24px] leading-snug text-ink">
+        <div className="space-y-5 rounded-[20px] border border-[color:var(--journey-line,rgba(184,150,90,0.28))] bg-[color:var(--amem-surface,#FFFDFC)]/75 px-5 py-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine/80">
+            Escuto
+          </p>
+          <p className="amem-type-scripture text-[26px] leading-snug text-ink">
             {step.bibleReference}
           </p>
-          <p className="amem-type-body text-[16px] leading-relaxed text-ink">
+          <p className="amem-type-body max-w-[36ch] text-[16px] leading-relaxed text-ink">
             {step.paraphrase}
           </p>
           <p className="amem-type-context opacity-70">
@@ -146,9 +153,9 @@ function MomentBody({
     case "oracao":
       // 3E FALO — quiet prayer scene; prayer as main type
       return (
-        <div className="space-y-3">
-          <p className="amem-type-context text-wine/80">Oração</p>
-          <blockquote className="amem-type-scripture border-none pl-0 text-[20px] italic leading-snug text-ink">
+        <div className="space-y-4 rounded-[22px] bg-[color:var(--amem-surface,#FFFDFC)]/90 px-5 py-7 shadow-[0_16px_40px_-28px_rgba(90,34,50,0.4)]">
+          <p className="amem-type-context text-wine/80">Falo · oração</p>
+          <blockquote className="amem-type-scripture border-none pl-0 text-[21px] italic leading-snug text-ink">
             {stepPrayer(step)}
           </blockquote>
         </div>
@@ -157,7 +164,10 @@ function MomentBody({
       // 3F LEVO — DNA returns via atmosphere; one dominant next action
       return (
         <div className="space-y-5">
-          <p className="amem-type-moment text-[18px] leading-snug text-ink">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-wine">
+            Levo
+          </p>
+          <p className="amem-type-moment text-[20px] leading-snug text-ink">
             {stepClosing(step)}
           </p>
 
@@ -314,6 +324,8 @@ export function JourneyDayGuided({
       journeyHref={`/jornadas/${journeySlug}`}
       isLastStep={isLastStep}
       journeyCompleted={journeyCompleted}
+      dayNumber={step.number}
+      totalDays={totalSteps}
     />
   );
 

@@ -1,5 +1,9 @@
 import importedCatalog from "./editorial/imported.json";
-import { calendarDayIndex, isIsoCalendarDate } from "./timezone";
+import {
+  addCalendarDays,
+  calendarDayIndex,
+  isIsoCalendarDate,
+} from "./timezone";
 import type { DailyContent } from "./types";
 
 /**
@@ -182,6 +186,22 @@ export function getDailyContentForDate(isoDate: string): DailyContent {
   const index = calendarDayIndex(date) % DAILY_CONTENT_SEED.length;
   const cycled = DAILY_CONTENT_SEED.at(index) ?? DAILY_CONTENT_SEED[0]!;
   return { ...cycled, publishDate: date };
+}
+
+/**
+ * Gentle next-day anticipation — title + theme only.
+ * Never exposes prayer, paraphrase, or full editorial body.
+ */
+export function getTomorrowTeaser(isoDate: string): {
+  title: string;
+  theme: string;
+} {
+  const tomorrow = addCalendarDays(
+    isIsoCalendarDate(isoDate) ? isoDate : DAILY_CONTENT_SEED[0]!.publishDate!,
+    1,
+  );
+  const next = getDailyContentForDate(tomorrow);
+  return { title: next.title, theme: next.theme };
 }
 
 export function getDailyContentById(id: string): DailyContent | null {
