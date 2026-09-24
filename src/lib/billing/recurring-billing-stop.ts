@@ -1,15 +1,16 @@
 import "server-only";
 
+import { loadAppleSubscriptionsForUser } from "@/lib/apple/persistence";
+import { appleAccessStatusGrantsAccess } from "@/lib/apple/status";
+import { logger } from "@/lib/logging/logger";
+import { maskUserId } from "@/lib/logging/mask";
+
 /**
  * Provider-composable billing stop for account deletion.
  *
- * ACCESS vs BILLING:
- * - Stopping a provider's renewal is a billing action.
- * - Entitlement/access is resolved separately via getEffectiveAccessForUser.
- *
- * Stripe today: cancel_at_period_end (see ensureRecurringBillingStoppedForDeletion).
- * Apple future: cannot mirror Stripe server cancel; detect auto-renew, guide user
- * to Apple subscription management, then allow Auth delete per product policy.
+ * Stripe: cancel_at_period_end (see ensureRecurringBillingStoppedForDeletion).
+ * Apple: server cannot cancel auto-renew like Stripe — detect granting rows,
+ * log explicitly, and do NOT pretend they were cancelled.
  */
 
 export type RecurringBillingStopResult =
@@ -26,7 +27,7 @@ export type RecurringBillingStopPort = {
 
 /**
  * Run every registered billing-stop port before Auth wipe.
- * Any failure aborts — never delete Auth with orphan recurring charges.
+ * Any failure aborts — never delete Auth with orphan recurring Stripe charges.
  */
 export async function composeRecurringBillingStops(
   userId: string,
@@ -46,11 +47,34 @@ export async function composeRecurringBillingStops(
 }
 
 /**
- * Placeholder Apple port — not wired. Returns ok with zero stops until
- * App Store Server API integration exists. Must not invent fake cancels.
+ * Apple deletion port — does not cancel StoreKit auto-renew.
+ * Counts granting rows for observability (alreadyStoppedCount).
  */
-export const appleRecurringBillingStopStub: RecurringBillingStopPort = {
-  async stopForUser() {
-    return { ok: true, stoppedCount: 0, alreadyStoppedCount: 0 };
+export const appleRecurringBillingStopPort: RecurringBillingStopPort = {
+  async stopForUser(userId: string) {
+    try {
+      const rows = await loadAppleSubscriptionsForUser(userId);
+      const granting = rows.filter((row) =>
+        appleAccessStatusGrantsAccess(row.accessStatus),
+      );
+      if (granting.length > 0) {
+        logger.info("apple_account_deletion_auto_renew_note", {
+          userId: maskUserId(userId),
+          grantingCount: granting.length,
+          note: "Apple auto-renew cannot be cancelled server-side; manage via App Store.",
+        });
+      }
+      return {
+        ok: true,
+        stoppedCount: 0,
+        alreadyStoppedCount: granting.length,
+      };
+    } catch {
+      // Table may be absent pre-migration — do not block Stripe deletion path.
+      return { ok: true, stoppedCount: 0, alreadyStoppedCount: 0 };
+    }
   },
 };
+
+/** @deprecated alias */
+export const appleRecurringBillingStopStub = appleRecurringBillingStopPort;

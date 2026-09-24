@@ -13,6 +13,12 @@ import {
   planAccessRank,
   type BillingProvider,
 } from "@/lib/billing/providers";
+import {
+  getAppleIapConfig,
+  isAppleIapConfigured,
+} from "@/lib/apple/config";
+import { loadAppleSubscriptionsForUser } from "@/lib/apple/persistence";
+import { appleAccessStatusToResolverStatus } from "@/lib/apple/status";
 
 /**
  * Provider-neutral grant that can feed access resolution.
@@ -150,15 +156,48 @@ export function resolveEffectiveAccessFromSubscriptions(
 
 /**
  * Canonical server entry for "what can this user access?"
- * Today: Stripe/manual DB rows only. Apple candidates join after IAP persistence.
- * Stripe-only resolution remains identical to resolveEffectiveSubscription.
+ * Stripe rows + bound Apple subscriptions (configured environment only).
+ * Stripe-only users keep historical resolveEffectiveSubscription semantics.
  */
 export async function getEffectiveAccessForUser(
   userId: string,
   options?: { useAdmin?: boolean },
 ): Promise<EffectiveAccess> {
   const rows = await loadUserSubscriptions(userId, options);
-  return resolveEffectiveAccessFromSubscriptions(rows);
+
+  if (!isAppleIapConfigured()) {
+    return resolveEffectiveAccessFromSubscriptions(rows);
+  }
+
+  let appleEnv: "sandbox" | "production";
+  try {
+    appleEnv = getAppleIapConfig().environment;
+  } catch {
+    return resolveEffectiveAccessFromSubscriptions(rows);
+  }
+
+  const appleRows = (await loadAppleSubscriptionsForUser(userId)).filter(
+    (row) => row.environment === appleEnv,
+  );
+
+  if (appleRows.length === 0) {
+    return resolveEffectiveAccessFromSubscriptions(rows);
+  }
+
+  const stripeCandidates = rows.map(subscriptionCandidateToAccess);
+  const appleCandidates: AccessCandidate[] = appleRows.map((row) => ({
+    provider: "apple" as const,
+    planKey: row.planKey,
+    status: appleAccessStatusToResolverStatus(row.accessStatus),
+    currentPeriodEnd: row.expiresAt,
+    externalSubscriptionId: row.originalTransactionId,
+    createdAt: row.createdAt,
+  }));
+
+  return resolveEffectiveAccessMultiSource([
+    ...stripeCandidates,
+    ...appleCandidates,
+  ]);
 }
 
 /**

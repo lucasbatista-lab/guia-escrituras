@@ -8,6 +8,7 @@ import { assertStripeConfigured, StripeConfigError } from "@/lib/stripe/config";
 import { getStripeClient } from "@/lib/stripe/client";
 import { ACCOUNT_DELETE_CONFIRMATION } from "@/lib/account/account-deletion-constants";
 import {
+  appleRecurringBillingStopPort,
   composeRecurringBillingStops,
   type RecurringBillingStopPort,
 } from "@/lib/billing/recurring-billing-stop";
@@ -278,8 +279,11 @@ export async function deleteAuthenticatedAccount(input: {
   const stripePort: RecurringBillingStopPort = {
     stopForUser: ensureRecurringBillingStoppedForDeletion,
   };
-  // Future: append Apple port that detects auto-renew and applies Apple policy.
-  const billing = await composeRecurringBillingStops(userId, [stripePort]);
+  // Apple port: detects grants; does not pretend StoreKit cancel == Stripe cancel.
+  const billing = await composeRecurringBillingStops(userId, [
+    stripePort,
+    appleRecurringBillingStopPort,
+  ]);
   if (!billing.ok) {
     logger.warn("account_delete_blocked_billing", {
       requestId,

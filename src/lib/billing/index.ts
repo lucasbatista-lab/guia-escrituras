@@ -97,6 +97,7 @@ export {
   planKeyFromAppleProductId,
 } from "./apple-products";
 export {
+  appleRecurringBillingStopPort,
   appleRecurringBillingStopStub,
   composeRecurringBillingStops,
   type RecurringBillingStopPort,
