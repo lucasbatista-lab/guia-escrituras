@@ -124,7 +124,7 @@ export default async function JornadaDetailPage({
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F0E6D0]/85">
             Caminho
             {entitled && stepNumber
-              ? ` · etapa ${stepNumber} de ${journey.steps.length}`
+              ? ` · dia ${stepNumber} de ${journey.steps.length}`
               : entitled && reallyCompleted
                 ? ` · ${doneCount} de ${journey.steps.length}`
                 : !entitled
@@ -167,7 +167,7 @@ export default async function JornadaDetailPage({
       ) : (
         <p className="text-sm text-ink-soft">
           Viva o Dia 1 agora. Os dias seguintes pedem o plano Caminho — Essencial
-          não inclui jornadas completas.
+          não inclui caminhos completos.
         </p>
       )}
 
@@ -184,9 +184,9 @@ export default async function JornadaDetailPage({
           className="rounded-xl border border-wine/25 bg-wine/[0.04] px-4 py-3.5"
           role="status"
         >
-          <p className="text-sm font-medium text-ink">Jornada concluída</p>
+          <p className="text-sm font-medium text-ink">Caminho concluído</p>
           <p className="mt-1 text-sm text-ink-soft">
-            Você pode rever as etapas no seu ritmo ou escolher outra jornada.
+            Você pode rever os dias no seu ritmo ou escolher outro caminho.
           </p>
         </div>
       ) : null}
@@ -301,7 +301,7 @@ export default async function JornadaDetailPage({
       {entitled ? (
         <div className="border-t border-border/40 pt-6">
           <p className="mb-3 text-xs text-ink-soft">
-            Precisa recomeçar do zero? O reset apaga o progresso desta jornada.
+            Precisa recomeçar do zero? O reset apaga o progresso deste caminho.
           </p>
           <JourneyResetButton journeySlug={journey.slug} />
         </div>

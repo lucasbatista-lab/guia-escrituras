@@ -7,11 +7,11 @@ export const PLAN_CHANGE_FAQ = {
 
 export const APROFUNDAR_FAQ = {
   q: "O que é Aprofundar?",
-  a: "É um modo opcional por mensagem no plano Profundo: pede uma análise mais extensa da situação, com mais contexto, conexões bíblicas e próximos passos. Você aciona quando quiser. Não é revelação nem orientação profissional.",
+  a: "Modo opcional por mensagem no plano Profundo: uma análise mais extensa da situação, com mais contexto e conexões bíblicas. Você aciona quando quiser. Não é revelação nem orientação profissional.",
 } as const;
 
 export const JOURNEYS_PLANS_FAQ = {
-  q: "Quais planos incluem Jornadas?",
+  q: "Quais planos incluem Caminhos?",
   a: "Dia 1 de cada Caminho é grátis (também no Essencial). Os 7 dias completos ficam no Caminho, Profundo e Particular. O Essencial mantém o chat completo.",
 } as const;
 
@@ -22,48 +22,25 @@ export const CROSS_SURFACE_COMMERCIAL_FAQ = [
   JOURNEYS_PLANS_FAQ,
 ] as const;
 
+/** Concise commercial FAQ for /planos — high-intent only. */
 export const PLAN_COMMERCIAL_FAQ = [
   {
     q: "Qual plano escolher?",
-    a: "Essencial serve para começar e usar em situações pontuais. Caminho é a escolha natural se você quer voltar várias vezes por semana. Profundo combina uso intenso com Aprofundar — uma análise mais extensa sob demanda, quando você quiser.",
+    a: "Essencial para situações pontuais com Conversar. Caminho se você quer voltar na semana com os 7 dias. Profundo acrescenta Aprofundar sob demanda.",
   },
   {
-    q: "O Essencial tem acesso ao chat completo?",
-    a: "Sim. O Essencial inclui chat com reflexões personalizadas, histórico e personalização do perfil. O Caminho acrescenta Jornadas guiadas. O Profundo inclui tudo do Caminho e o recurso Aprofundar sob demanda.",
+    q: "O Essencial inclui Conversar?",
+    a: "Sim — chat personalizado, histórico e perfil. Caminho completa os Caminhos de 7 dias. Profundo inclui tudo do Caminho e Aprofundar.",
   },
   APROFUNDAR_FAQ,
   {
     q: "Posso cancelar quando quiser?",
-    a: "Sim. Você cancela a renovação automática na sua conta e mantém acesso até o fim do período já pago.",
+    a: "Sim. Cancele a renovação na Conta e mantenha acesso até o fim do período já pago.",
   },
   PLAN_CHANGE_FAQ,
   {
-    q: "O que acontece quando atinjo o limite de uso?",
-    a: "Não há cota rígida de mensagens. Se o espaço do plano no período acabar, novas reflexões pausam até o próximo ciclo. Um dia muito intenso pode pedir espera até amanhã; várias mensagens seguidas pedem uma breve pausa. Histórico, conta e ajuda continuam acessíveis.",
-  },
-  {
-    q: "O Amém Chat fala literalmente em nome de Jesus?",
-    a: "Não. O Amém Chat oferece reflexão cristã baseada nas Escrituras, com transparência sobre o uso de IA. Não afirma ser Jesus, não substitui igreja, aconselhamento profissional ou emergência.",
-  },
-  {
-    q: "O que são as Jornadas de leitura?",
-    a: "São trilhas editoriais de sete etapas sobre temas reais — ansiedade, perdão, recomeço e outros. Cada etapa traz paráfrase bíblica, reflexão e uma ação prática. Não substituem terapia nem aconselhamento profissional.",
-  },
-  {
-    q: "Preciso completar uma etapa por dia?",
-    a: "Não. Você avança no seu ritmo. Não há sequência diária obrigatória nem penalidade por pausar.",
-  },
-  {
-    q: "As Jornadas substituem terapia ou aconselhamento?",
-    a: "Não. São material de reflexão espiritual. Se você precisa de apoio clínico, jurídico ou de emergência, procure ajuda humana qualificada.",
-  },
-  {
-    q: "Posso conversar sobre uma etapa no chat?",
-    a: "Sim. Em cada etapa há um atalho que preenche o campo de mensagem com um texto sugerido — você pode editar antes de enviar.",
-  },
-  {
-    q: "O progresso fica salvo?",
-    a: "Sim, para assinantes com acesso às Jornadas. Etapas concluídas e o ponto atual ficam na sua conta e podem ser exportados em Baixar meus dados.",
+    q: "O que acontece no limite de uso?",
+    a: "Não há cota rígida de mensagens. Se o espaço do plano acabar no período, novas reflexões pausam até o próximo ciclo. Histórico, conta e ajuda continuam acessíveis.",
   },
   JOURNEYS_PLANS_FAQ,
 ] as const;

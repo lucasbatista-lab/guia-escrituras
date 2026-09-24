@@ -40,22 +40,22 @@ export function JourneyPreviewStatic({
           id={headingId}
           className="mt-2 font-display text-3xl text-ink sm:text-4xl"
         >
-          Como uma Jornada aparece na prática
+          Como um Caminho aparece na prática
         </h2>
         <p className="mt-3 text-ink-soft">
           Exemplo ilustrativo com conteúdo editorial real — sem conta e sem
-          dados de usuário. O progresso fica salvo para quem tem acesso às
-          Jornadas.
+          dados de usuário. O progresso fica salvo para quem tem acesso aos
+          Caminhos.
         </p>
       </div>
 
       <article
         className="mt-8 min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-sm"
-        aria-label={`Prévia da jornada ${journey.title}`}
+        aria-label={`Prévia do caminho ${journey.title}`}
       >
         <div className="border-b border-border/70 bg-sand-100/50 px-5 py-5 sm:px-6">
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-wine">
-            Jornada · {totalSteps} etapas
+            Caminho · {totalSteps} dias
           </p>
           <h3 className="mt-2 font-display text-2xl text-ink">{journey.title}</h3>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
@@ -65,7 +65,7 @@ export function JourneyPreviewStatic({
           <div className="mt-5 space-y-2">
             <div className="flex items-center justify-between gap-2 text-sm">
               <span className="text-ink-soft">
-                {PREVIEW_COMPLETED} de {totalSteps} etapas · em andamento
+                {PREVIEW_COMPLETED} de {totalSteps} dias · em andamento
               </span>
               <span className="font-medium text-ink" aria-hidden>
                 {percent}%
@@ -77,7 +77,7 @@ export function JourneyPreviewStatic({
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={percent}
-              aria-label={`Progresso ilustrativo: ${PREVIEW_COMPLETED} de ${totalSteps} etapas`}
+              aria-label={`Progresso ilustrativo: ${PREVIEW_COMPLETED} de ${totalSteps} dias`}
             >
               <div
                 className="h-full rounded-full bg-wine/70"
@@ -90,7 +90,7 @@ export function JourneyPreviewStatic({
         <div className="space-y-5 px-5 py-5 sm:px-6 sm:py-6">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
-              Etapa {step.number} de {totalSteps}
+              Dia {step.number} de {totalSteps}
             </p>
             <h4 className="mt-1 font-display text-xl text-ink">{step.title}</h4>
           </div>

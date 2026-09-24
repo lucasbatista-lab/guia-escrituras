@@ -84,7 +84,7 @@ export function journeyStatusLabel(
 
 /**
  * Contextual catalog/detail CTA.
- * Prefer “Continuar etapa X” when the current step number is known.
+ * Prefer “Continuar dia X” when the current step number is known.
  */
 export function journeyCtaLabel(
   progress: JourneyProgressState | null | undefined,

@@ -50,31 +50,19 @@ const ESSENCIAL_PRICE_LABEL = "R$ 38";
 const faq = [
   {
     q: "Preciso pagar para usar?",
-    a: "Não. A conta grátis inclui Hoje com Deus, Espaço (orações, diário, salvos) e o Dia 1 dos Caminhos — sem cartão. Conversar é do Essencial; Caminhos completos do plano Caminho; Aprofundar do Profundo.",
+    a: "Não. A conta grátis inclui Hoje, Espaço e o Dia 1 dos Caminhos — sem cartão. Conversar é do Essencial; Caminhos completos do plano Caminho; Aprofundar do Profundo.",
   },
   {
-    q: "O Amém Chat diz falar em nome de Jesus?",
-    a: "Não. É inteligência artificial baseada nas Escrituras — nunca apresentada como voz divina ou revelação. Detalhes em Transparência sobre IA.",
+    q: "O Amém Chat fala em nome de Jesus?",
+    a: "Não. É inteligência artificial baseada nas Escrituras — nunca apresentada como voz divina. Detalhes em Transparência sobre IA.",
   },
   {
-    q: "Como as respostas são criadas?",
-    a: "A partir da sua mensagem, referências selecionadas ao tema, da tradição que você escolhe e de um formato de reflexão com passos práticos. Não é aconselhamento pastoral ao vivo.",
-  },
-  {
-    q: "Posso falar sobre dinheiro, trabalho e relacionamentos?",
-    a: "Sim. São temas comuns. Em saúde mental grave, direito ou emergência, busque profissionais adequados — a ferramenta não substitui isso.",
-  },
-  {
-    q: "Qual a diferença entre as profundidades?",
-    a: "Breve, Equilibrada e Profunda no perfil definem o estilo das respostas comuns. Separadamente, o plano Profundo oferece “Aprofundar esta resposta” sob demanda — uma análise mais desenvolvida só naquela mensagem, sem alterar sua preferência salva.",
-  },
-  {
-    q: "Posso cancelar?",
-    a: "Sim. A renovação automática pode ser cancelada pela sua conta no Amém Chat, com acesso até o fim do período já pago.",
+    q: "Como funcionam Conversar e Caminhos?",
+    a: "Conversar é o chat personalizado (Essencial). Caminhos são trilhas de 7 dias sobre temas reais — Dia 1 grátis; os demais no plano Caminho.",
   },
   {
     q: "Minhas conversas ficam públicas?",
-    a: "Não. O uso das conversas segue a Política de Privacidade — não há publicação pública do seu diálogo na plataforma.",
+    a: "Não. O uso segue a Política de Privacidade — não há publicação pública do seu diálogo.",
   },
   ...CROSS_SURFACE_COMMERCIAL_FAQ,
 ];

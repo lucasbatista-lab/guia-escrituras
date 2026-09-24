@@ -88,34 +88,34 @@ export function JourneyStepCompleteButton({
       >
         <p className="text-sm font-medium text-ink">
           {journeyFinished
-            ? "Jornada concluída"
+            ? "Caminho concluído"
             : isLastStep
-              ? "Última etapa marcada"
-              : "Etapa concluída"}
+              ? "Último dia marcado"
+              : "Dia concluído"}
         </p>
         <p className="text-sm text-ink-soft">
           {journeyFinished
-            ? "Você pode revisar as etapas ou escolher outra jornada quando quiser."
+            ? "Você pode rever os dias ou escolher outro caminho quando quiser."
             : isLastStep
-              ? "Progresso salvo. Se ainda houver etapas anteriores sem marcar, a jornada continua em andamento no catálogo."
-              : "Seu progresso foi salvo. Siga para a próxima etapa ou volte depois."}
+              ? "Progresso salvo. Se ainda houver dias anteriores sem marcar, o caminho continua em andamento."
+              : "Seu progresso foi salvo. Siga para o próximo dia ou volte depois."}
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           {nextStepHref ? (
             <Button asChild className="min-h-11">
               <Link href={nextStepHref}>
-                {nextStepLabel ? `Próxima: ${nextStepLabel}` : "Próxima etapa"}
+                {nextStepLabel ? `Próximo: ${nextStepLabel}` : "Próximo dia"}
               </Link>
             </Button>
           ) : null}
           <Button asChild variant="outline" className="min-h-11">
             <Link href={backHref}>
-              {journeyFinished ? "Ver jornada" : "Voltar à jornada"}
+              {journeyFinished ? "Ver caminho" : "Voltar ao caminho"}
             </Link>
           </Button>
           {journeyFinished ? (
             <Button asChild className="min-h-11">
-              <Link href="/jornadas">Ver outras jornadas</Link>
+              <Link href="/jornadas">Ver outros caminhos</Link>
             </Button>
           ) : null}
           <Button asChild variant="ghost" className="min-h-11">
@@ -135,7 +135,7 @@ export function JourneyStepCompleteButton({
         aria-busy={loading}
         onClick={() => void handleComplete()}
       >
-        {loading ? "Salvando…" : "Marcar como concluída"}
+        {loading ? "Salvando…" : "Concluir o dia"}
       </Button>
       {error ? (
         <p className="mt-2 text-sm text-destructive" role="alert">

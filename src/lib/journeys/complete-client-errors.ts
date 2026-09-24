@@ -20,13 +20,13 @@ export function mapJourneyCompleteError(
     input.code === "journeys_not_entitled" ||
     input.code === "forbidden"
   ) {
-    return "Seu plano atual não inclui Jornadas completas. Compare os planos para continuar.";
+    return "Seu plano atual não inclui Caminhos completos. Compare os planos para continuar.";
   }
   if (input.status === 404 || input.code === "not_found") {
-    return "Esta etapa não foi encontrada. Atualize a página e tente de novo.";
+    return "Este dia não foi encontrado. Atualize a página e tente de novo.";
   }
   if (input.status === 409) {
-    return "O progresso já estava salvo. Atualize a página se a etapa ainda parecer aberta.";
+    return "O progresso já estava salvo. Atualize a página se o dia ainda parecer aberto.";
   }
   if (
     typeof input.message === "string" &&

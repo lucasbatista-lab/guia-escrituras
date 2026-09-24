@@ -192,8 +192,8 @@ function MomentBody({
               Para conversar
             </h2>
             <p className="text-xs leading-relaxed text-ink-soft">
-              Se quiser continuar, o chat recebe só o contexto editorial desta
-              etapa — não envia anotações pessoais.
+              Se quiser continuar, o chat recebe só o contexto editorial deste
+              dia — não envia anotações pessoais.
             </p>
             <Button asChild variant="ghost" className="min-h-11 w-full text-ink-soft">
               <Link href={chatHref}>{conversarLabel}</Link>

@@ -4,7 +4,7 @@ import type { JourneyProgressState } from "./progress";
 export function journeyIntro(journey: ReadingJourney): string {
   return (
     journey.intro ??
-    `${journey.description} São sete etapas, no seu ritmo. Não é prova de fé nem cobrança por pausar. O progresso fica salvo na sua conta.`
+    `${journey.description} São sete dias, no seu ritmo. Não é prova de fé nem cobrança por pausar. O progresso fica salvo na sua conta.`
   );
 }
 
@@ -37,12 +37,12 @@ export function journeyResumeHint(
     return "Você ainda não começou. O dia 1 espera quando quiser.";
   }
   if (progress.isCompleted) {
-    return `Concluída: ${steps.length} de ${steps.length} etapas. Você pode rever quando quiser.`;
+    return `Concluído: ${steps.length} de ${steps.length} dias. Você pode rever quando quiser.`;
   }
   const current = steps.find((s) => s.id === progress.currentStepId);
   const done = progress.completedStepIds.length;
   if (current) {
     return `Você está no dia ${current.number}: ${current.title}. ${done} de ${steps.length} concluídos.`;
   }
-  return `${done} de ${steps.length} etapas concluídas. Retome quando puder.`;
+  return `${done} de ${steps.length} dias concluídos. Retome quando puder.`;
 }
