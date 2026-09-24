@@ -616,15 +616,29 @@ export function ChatPanel({
         ) : null}
 
         {showEmptyState ? (
-          <div className="mx-auto max-w-[40rem] space-y-4 py-2 sm:py-5">
+          <div className="mx-auto max-w-[40rem] space-y-5 py-2 sm:py-5">
+            {(traditionLabel || depthLabel) && (
+              <p className="text-[11px] font-medium tracking-wide text-wine/80">
+                {[traditionLabel, depthLabel].filter(Boolean).join(" · ")}
+              </p>
+            )}
             <h2 className="font-display text-xl text-ink sm:text-2xl">
               Escreva com honestidade
             </h2>
-            <p className="text-sm leading-relaxed text-ink-soft">
-              Não precisa organizar tudo antes. Conte a situação com suas
-              próprias palavras — o Amém ajuda a refletir à luz das Escrituras,
-              sem fingir a voz de Deus.
+            <p className="max-w-[34ch] text-sm leading-relaxed text-ink-soft">
+              Conte a situação com suas palavras. A resposta organiza acolhimento,
+              Escrituras úteis e um próximo passo — sem fingir a voz de Deus.
             </p>
+            <div className="rounded-[16px] border border-border/50 bg-[color:var(--amem-recess)]/50 px-4 py-3.5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-wine">
+                O que você recebe
+              </p>
+              <ul className="mt-2 space-y-1.5 text-[13px] leading-snug text-ink">
+                <li>Acolhimento sem sermão</li>
+                <li>Referências bíblicas recuperadas — não inventadas</li>
+                <li>Um passo concreto para hoje</li>
+              </ul>
+            </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
                 Comece por uma situação
@@ -752,11 +766,24 @@ export function ChatPanel({
         {showPreparingStatus ? (
           <div className="amem-lex-group" role="status" aria-live="polite" aria-busy="true">
             <div className="amem-lex-label">Resposta</div>
-            <p className="amem-lex-body animate-soft-pulse text-ink-soft">
-              {sendingDeep
-                ? "Preparando uma reflexão aprofundada…"
-                : "Preparando uma reflexão…"}
-            </p>
+            <div className="space-y-2 px-0.5 py-1">
+              <p className="text-sm font-medium text-ink">
+                {sendingDeep
+                  ? "Organizando uma reflexão aprofundada…"
+                  : "Organizando uma reflexão…"}
+              </p>
+              <p className="text-xs leading-relaxed text-ink-soft">
+                Acolhimento · Escrituras · próximo passo
+              </p>
+              <div
+                aria-hidden
+                className="flex gap-1.5 pt-1"
+              >
+                <span className="amem-ink-sig h-0.5 w-8 animate-soft-pulse rounded-full bg-wine/50" />
+                <span className="h-0.5 w-5 animate-soft-pulse rounded-full bg-wine/25 [animation-delay:120ms]" />
+                <span className="h-0.5 w-3 animate-soft-pulse rounded-full bg-wine/15 [animation-delay:240ms]" />
+              </div>
+            </div>
           </div>
         ) : null}
         <div ref={bottomRef} />

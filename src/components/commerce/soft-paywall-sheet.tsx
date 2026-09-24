@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ConversarProofMini } from "@/components/commerce/conversar-proof-mini";
 import { PremiumBadge } from "@/components/commerce/premium-badge";
 import { LockPill } from "@/components/commerce/lock-pill";
 import { Button } from "@/components/ui/button";
@@ -294,6 +295,9 @@ export function SoftPaywallSheet({
               >
                 {copy.body}
               </p>
+              {copy.showConversarProof ? (
+                <ConversarProofMini className="mt-4" />
+              ) : null}
               <ul className="mt-4 space-y-2">
                 {copy.benefits.map((item) => (
                   <li

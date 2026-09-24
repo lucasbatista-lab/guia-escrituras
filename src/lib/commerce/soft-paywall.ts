@@ -60,6 +60,8 @@ export type SoftPaywallCopy = {
   footerNote: string;
   /** Surface path for product_events (allowlisted). */
   analyticsPath: "/conversar" | "/hoje" | "/planos" | "/jornadas";
+  /** Optional static proof block (Conversar SoftPaywall). */
+  showConversarProof?: boolean;
 };
 
 function isPaidViewer(viewer: SoftPaywallViewer): boolean {
@@ -86,8 +88,8 @@ export function getSoftPaywallCopy(
         ? `Disponível a partir do plano ${minimumPlanName}. Seu plano atual não inclui Conversar.`
         : `Disponível a partir do plano ${minimumPlanName}. Hoje e Espaço continuam na conta grátis.`,
       benefits: [
-        "Conversa personalizada com referências bíblicas",
-        "Histórico privado para retomar",
+        "Sua situação · Escrituras úteis · um próximo passo",
+        "Histórico privado para retomar quando quiser",
         paid
           ? "Hoje e Espaço continuam na mesma conta"
           : "Hoje e Espaço continuam grátis, sem cartão",
@@ -104,6 +106,7 @@ export function getSoftPaywallCopy(
         ? "Sua conta permanece · você escolhe quando conversar"
         : "Conta grátis continua · ritual diário intacto",
       analyticsPath: "/conversar",
+      showConversarProof: true,
     };
   }
 
@@ -124,11 +127,11 @@ export function getSoftPaywallCopy(
         ? `Disponível no plano ${minimumPlanName}.`
         : `Disponível no plano ${minimumPlanName}. Dia 1 continua aberto na conta grátis.`,
     benefits: [
-      "Caminhos guiados de 7 dias",
+      "Continue os próximos dias no seu ritmo",
       "Progresso salvo na conta",
       essencialViewer
-        ? "Tudo do Essencial, com mais espaço para voltar"
-        : "Tudo do Essencial, com mais espaço para voltar",
+        ? "Dia 1 continua aberto no Essencial"
+        : "Dia 1 continua aberto · sem cartão",
     ],
     minimumPlanKey,
     minimumPlanName,
