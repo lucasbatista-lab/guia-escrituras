@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MAIN_CONTENT_ID } from "@/components/a11y/main-content-id";
 import { PlatformNav } from "@/components/platform/platform-nav";
+import { ConnectionNotice } from "@/components/platform/connection-notice";
 import { AmemSplashHost } from "@/components/brand/amem-splash-host";
 import {
   getBottomNavPlan,
@@ -9,6 +10,11 @@ import {
 } from "@/lib/journey";
 import { privateRobotsMetadata } from "@/lib/seo";
 
+/**
+ * force-dynamic is REQUIRED: platform shell resolves auth journey state +
+ * plan morph for bottom nav. Do not convert to static without a session-aware
+ * alternative — incorrect caching would leak or stale entitlements.
+ */
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -34,6 +40,7 @@ export default async function PlatformLayout({
         tabIndex={-1}
         className="platform-main mx-auto w-full max-w-6xl px-4 pb-28 pt-4 outline-none sm:px-6 sm:pt-6 md:ml-60 md:w-[calc(100%-15rem)] md:px-8 md:pb-10 md:pt-8"
       >
+        <ConnectionNotice className="mb-4" />
         {children}
       </main>
     </div>

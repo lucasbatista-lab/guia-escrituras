@@ -769,8 +769,8 @@ export function ChatPanel({
             <div className="space-y-2 px-0.5 py-1">
               <p className="text-sm font-medium text-ink">
                 {sendingDeep
-                  ? "Organizando uma reflexão aprofundada…"
-                  : "Organizando uma reflexão…"}
+                  ? "Preparando uma resposta aprofundada com cuidado…"
+                  : "Preparando uma resposta com cuidado…"}
               </p>
               <p className="text-xs leading-relaxed text-ink-soft">
                 Acolhimento · Escrituras · próximo passo

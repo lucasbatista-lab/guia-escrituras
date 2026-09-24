@@ -163,7 +163,7 @@ export function resolveChatClientError(
       kind: "unavailable",
       message:
         serverMessage ||
-        "O serviço está temporariamente indisponível. Sua mensagem foi mantida — tente novamente em instantes.",
+        "Não consegui responder agora. Sua mensagem continua aqui — tente de novo em instantes.",
       keepPendingRequest: true,
       clearDeepPreference: false,
     };
@@ -173,7 +173,7 @@ export function resolveChatClientError(
     kind: "retryable",
     message:
       serverMessage ||
-      "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
+      "Não consegui responder agora. Sua mensagem continua aqui.",
     keepPendingRequest: true,
     clearDeepPreference: false,
   };
