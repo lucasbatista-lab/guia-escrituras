@@ -210,7 +210,7 @@ export function PlatformNav({
                   aria-current={current ? "page" : undefined}
                   aria-label={tab.label}
                   className={cn(
-                    "amem-press relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[12px] font-semibold tracking-[0.01em] leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                    "amem-press relative flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[13px] font-semibold tracking-[0.01em] leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                     current
                       ? "font-semibold text-wine"
                       : "font-medium text-[color:var(--amem-nav-inactive,#6F6860)]",
@@ -240,7 +240,7 @@ export function PlatformNav({
               aria-expanded={open}
               aria-controls={menuId}
               aria-label="Abrir menu"
-              className="amem-press flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[12px] font-semibold tracking-[0.01em] leading-none text-[color:var(--amem-nav-inactive,#6F6860)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              className="amem-press flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-0.5 text-[13px] font-semibold tracking-[0.01em] leading-none text-[color:var(--amem-nav-inactive,#6F6860)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               onClick={() => setOpen(true)}
             >
               <span

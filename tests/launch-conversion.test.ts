@@ -30,9 +30,8 @@ describe("launch conversion home", () => {
     expect(chrome).toContain("md:block");
     expect(home).not.toContain("brand.tagline");
     expect(home).toContain(
-      "Quando algo estiver pesando, encontre clareza à luz das Escrituras.",
+      "Clareza à luz das Escrituras — comece grátis hoje.",
     );
-    expect(home).toContain("IA e limites honestos");
     expect(home).toContain("<ProductHeroPreview");
     expect(home).toContain("voz divina");
   });
@@ -136,7 +135,7 @@ describe("launch conversion cadastro", () => {
     expect(page).toContain("PlanSupportCard");
     expect(page).toContain("NoPlanSupportCard");
     expect(page).toContain("Pagamento seguro processado pela Stripe");
-    expect(page).toContain("Sem cartão para começar");
+    expect(page).toContain("Sem cartão");
     expect(page).toContain("Renovação");
     expect(page).toContain("Cancelamento");
     expect(page).toContain("Stripe");

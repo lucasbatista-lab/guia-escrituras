@@ -275,7 +275,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-soft-pulse,
-  .animate-fade-up {
+  .animate-fade-up,
+  .animate-fade-up-delayed {
     animation: none !important;
   }
 }
