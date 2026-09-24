@@ -128,8 +128,10 @@ describe("daily content BRT", () => {
   it("validates calendar dates and 7-day history", () => {
     expect(isIsoCalendarDate("2026-09-20")).toBe(true);
     expect(isIsoCalendarDate("2026-13-01")).toBe(false);
+    expect(isIsoCalendarDate("2026-02-31")).toBe(false);
     expect(addCalendarDays("2026-09-20", -1)).toBe("2026-09-19");
     expect(listRecentCalendarDates("2026-09-20", 7)).toHaveLength(7);
+    expect(listRecentCalendarDates("2026-09-20", 7)[0]).toBe("2026-09-20");
   });
 });
 
@@ -224,7 +226,8 @@ describe("daily has zero LLM runtime", () => {
       ["src", "lib", "daily", "interactions.ts"],
       ["src", "lib", "daily", "share.ts"],
       ["src", "app", "api", "daily", "route.ts"],
-      ["src", "components", "daily", "hoje-com-deus-card.tsx"],
+      ["src", "components", "daily", "hoje-ritual.tsx"],
+      ["src", "components", "daily", "hoje-revisit.tsx"],
     ];
     for (const parts of files) {
       const src = readSrc(...parts);
