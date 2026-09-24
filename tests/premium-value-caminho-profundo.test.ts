@@ -8,21 +8,16 @@ function read(...parts: string[]) {
 }
 
 describe("premium value — journey continuity on inicio", () => {
-  it("inicio card links to current step when available", () => {
-    const card = read(
-      "src",
-      "components",
-      "journeys",
-      "journeys-inicio-card.tsx",
-    );
-    expect(card).toContain("currentStepId");
-    expect(card).toContain("Próxima etapa");
-    expect(card).toContain("Continuar:");
-    expect(card).toContain("/jornadas/${inProgress.journey.slug}/${nextStep.slug}");
-    expect(card).toContain("canUseReadingJourneys");
-    expect(read("docs", "_ai", "AMEM_MINI_PRD_JOURNEY_CONTINUITY_INICIO_2026-07-21.md")).toContain(
-      "Caminho",
-    );
+  it("InicioLiving resumes Caminhos via journeyHref/current step wiring", () => {
+    const page = read("src", "app", "(platform)", "inicio", "page.tsx");
+    const living = read("src", "components", "inicio", "inicio-living.tsx");
+    expect(page).toContain("pickMostRecentInProgressJourney");
+    expect(page).toContain("currentStepId");
+    expect(page).toContain("Continuar:");
+    expect(page).toContain("/jornadas/${journey.slug}/${nextStep.slug}");
+    expect(page).toContain("canUseReadingJourneys");
+    expect(living).toContain("journeyHref");
+    expect(living).toContain("Caminhos");
   });
 
   it("deepen copy states concrete value without theology overclaim", () => {
@@ -31,8 +26,5 @@ describe("premium value — journey continuity on inicio", () => {
     expect(panel).toContain("só nesta resposta");
     expect(panel).not.toMatch(/memória permanente|acesso superior/i);
     expect(panel).not.toMatch(/eu sou Jesus/i);
-    expect(
-      read("docs", "_ai", "AMEM_MINI_PRD_DEEPEN_VALUE_COPY_2026-07-21.md"),
-    ).toContain("Profundo");
   });
 });

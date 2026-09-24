@@ -43,13 +43,13 @@ describe("journeys V1.1 step completion UX", () => {
       "journeys",
       "journey-step-complete-button.tsx",
     );
-    expect(button).toContain("Etapa concluída");
-    expect(button).toContain("Jornada concluída");
+    expect(button).toContain("Dia concluído");
+    expect(button).toContain("Caminho concluído");
     expect(button).toContain("journeyFinished");
-    expect(button).toContain("Última etapa marcada");
-    expect(button).toContain("Ver outras jornadas");
-    expect(button).toContain("Próxima:");
-    expect(button).toContain("Marcar como concluída");
+    expect(button).toContain("Último dia marcado");
+    expect(button).toContain("Ver outros caminhos");
+    expect(button).toContain("Próximo:");
+    expect(button).toContain("Concluir o dia");
     expect(button).toContain("setJustCompleted(true)");
     expect(button).toContain("data.progress?.completedAt");
   });

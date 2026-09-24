@@ -30,11 +30,10 @@ describe("W3 / Wave 3A living /inicio V17", () => {
     expect(living).not.toMatch(/streak|confetti|dias seguidos/i);
   });
 
-  it("empty memory is editorial and points to Hoje", () => {
+  it("memory loader remains for Início continuity", () => {
     const strip = read("src", "components", "inicio", "memory-strip.tsx");
     expect(strip).toContain("loadRecentMemory");
-    expect(strip).toContain("Ainda em branco");
-    expect(strip).toContain('href="/hoje"');
+    expect(strip).not.toContain("export function MemoryStrip");
     expect(strip).not.toMatch(/mock|fake|lorem/i);
   });
 

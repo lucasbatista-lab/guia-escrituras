@@ -24,7 +24,7 @@ describe("marketing product proof components", () => {
     expect(src).toContain("ansiedade-confianca");
     expect(src).toContain("PREVIEW_COMPLETED = 2");
     expect(src).toContain("PREVIEW_STEP_NUMBER = 3");
-    expect(src).toContain(" de {totalSteps} etapas");
+    expect(src).toContain(" de {totalSteps} dias");
     expect(src).toContain("progresso fica salvo");
 
     const step3 = ANSIEDADE_CONFIANCA_JOURNEY.steps.find((s) => s.number === 3);

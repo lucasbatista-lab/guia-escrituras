@@ -117,29 +117,15 @@ describe("pickMostRecentInProgressJourney", () => {
 });
 
 describe("retention V4 wiring", () => {
-  it("inicio uses return priority and keeps theme shortcuts off the resume path", () => {
+  it("inicio uses return priority without dead ThemeShortcuts helpers", () => {
     const page = readFileSync(
       join(process.cwd(), "src/app/(platform)/inicio/page.tsx"),
       "utf8",
     );
     expect(page).toContain("pickPrimaryReturnTarget");
     expect(page).toContain("returnSelection");
-    expect(page).toContain("primary.cta");
-    expect(page).toContain("Última atividade");
-    // Theme shortcuts stay on the empty/first-reflection branch only.
-    const afterResumeHeading = page.slice(page.indexOf('id="resume-heading"'));
-    expect(afterResumeHeading).not.toContain("ThemeShortcutsSection");
-    expect(page).toContain("ThemeShortcutsSection");
-  });
-
-  it("journeys inicio card picks most recent in-progress journey", () => {
-    const card = readFileSync(
-      join(
-        process.cwd(),
-        "src/components/journeys/journeys-inicio-card.tsx",
-      ),
-      "utf8",
-    );
-    expect(card).toContain("pickMostRecentInProgressJourney");
+    expect(page).toContain("InicioLiving");
+    expect(page).not.toContain("ThemeShortcutsSection");
+    expect(page).not.toContain("QuickActions");
   });
 });

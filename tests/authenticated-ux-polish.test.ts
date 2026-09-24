@@ -34,13 +34,8 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("InicioLiving");
     expect(page).toMatch(/confirmed_without_plan[\s\S]*InicioLiving/);
     expect(page).toContain("allowsChat={false}");
-    const card = read("src", "components", "daily", "hoje-com-deus-card.tsx");
-    expect(card).toContain("Hoje com Deus");
-    expect(card).toContain("Ver planos");
     expect(page).toContain("Personalizar minha experiência");
     expect(page).toContain("Seu plano está ativo");
-    expect(page).toContain("Nova reflexão");
-    expect(page).toContain("Acesso rápido");
     expect(living).toContain("Hoje");
     expect(page).toContain("ProgressSteps");
     expect(page).toContain("Plano");
@@ -51,7 +46,8 @@ describe("authenticated UX polish", () => {
     expect(page).toContain("Continue de onde parou");
     expect(page).toContain("resumeReturnCopy");
     expect(page).toContain("pickPrimaryReturnTarget");
-    expect(page).toContain("THEME_SHORTCUTS");
+    expect(page).not.toContain("ThemeShortcutsSection");
+    expect(page).not.toContain("QuickActions");
     expect(page).toContain("journeyAllowsChat");
     expect(living).toContain("Dia 1 grátis");
     expect(living).toContain('journeyHref ?? "/jornadas"');
@@ -69,8 +65,8 @@ describe("authenticated UX polish", () => {
   it("personalizar avoids internal keys and uses guided copy", () => {
     const page = read("src", "app", "(platform)", "personalizar", "page.tsx");
     const form = read("src", "components", "auth", "onboarding-form.tsx");
-    expect(page).toContain("Personalize sua experiência");
-    expect(page).toContain("tradição");
+    expect(page).toContain('title="Personalizar"');
+    expect(page.toLowerCase()).toContain("tradição");
     expect(form).toContain("Salvar e começar");
     expect(form).toContain("Ajustar estilo e profundidade");
     expect(form).not.toContain("ProgressSteps");

@@ -31,7 +31,10 @@ describe("journeys V2 experience", () => {
   it("presents intro, day label, prayer, closing without rewriting corpus", () => {
     const journey = getAllJourneys()[0]!;
     const step = journey.steps[0]!;
-    expect(journeyIntro(journey).toLowerCase()).toContain("sete etapas");
+    expect(journeyIntro({ ...journey, intro: undefined }).toLowerCase()).toContain(
+      "sete dias",
+    );
+    expect(journeyIntro(journey).length).toBeGreaterThan(20);
     expect(journeyDayLabel(3, 7)).toBe("Dia 3 de 7");
     expect(step.prayer).toBeTruthy();
     expect(step.closing).toBeTruthy();

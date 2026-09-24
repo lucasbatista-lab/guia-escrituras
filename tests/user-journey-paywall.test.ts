@@ -266,12 +266,10 @@ describe("Portuguese personalization labels", () => {
       "personalizar",
       "page.tsx",
     );
-    expect(page).toContain("Personalize sua experiência");
+    expect(page).toContain('title="Personalizar"');
     expect(page).toContain("Escolha sua tradição para começar");
-    expect(page).toContain(
-      "Estilo e profundidade já têm padrões seguros",
-    );
-    expect(page).not.toContain("tradição, estilo e profundidade");
+    expect(page).toContain("Estilo e profundidade já têm padrões seguros");
+    expect(page).toContain("PersonalizationForm");
   });
 });
 
@@ -353,11 +351,8 @@ describe("redirects and gates (source contracts)", () => {
     expect(living).toContain("Dia 1 grátis");
     expect(living).toContain("Conversar");
     expect(living).toContain("allowsChat");
-    const card = readSrc("src", "components", "daily", "hoje-com-deus-card.tsx");
-    expect(card).toContain("Hoje com Deus");
-    expect(card).toContain("Conversar é um recurso dos planos pagos");
-    expect(card).toContain("Ver planos");
     expect(page).toContain("Continuar para pagamento");
+    expect(page).not.toContain("HojeComDeusCard");
   });
 
   it("platform layout passes journey-derived nav", () => {

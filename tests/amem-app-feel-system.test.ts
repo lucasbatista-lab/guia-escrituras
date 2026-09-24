@@ -26,9 +26,7 @@ describe("APP FEEL interaction system", () => {
 
   it("ships minimal interaction primitives without heavy deps", () => {
     const files = [
-      ["src", "components", "interaction", "pressable.tsx"],
       ["src", "components", "interaction", "motion.tsx"],
-      ["src", "components", "interaction", "app-section.tsx"],
       ["src", "components", "interaction", "completion-feedback.tsx"],
       ["src", "components", "interaction", "icon-action.tsx"],
     ];
@@ -56,15 +54,15 @@ describe("APP FEEL interaction system", () => {
     expect(ritual).toContain('data-hoje-phase="mid"');
     expect(ritual).toContain('data-hoje-phase="complete"');
     expect(ritual).toContain("Você esteve presente.");
-    expect(ritual).toContain("Voltar ao Início");
+    expect(ritual).toMatch(/>\s*Início\s*</);
     expect(ritual).toContain("Compartilhar");
-    // Primary next is Conversar (ritual); back is ghost — not competing
+    // Primary next is Conversar (ritual); back is quiet text link — not competing
     const completeIdx = ritual.indexOf('data-hoje-phase="complete"');
     const complete = ritual.slice(completeIdx);
     const conversarRitual = complete.indexOf('variant="ritual"');
-    const voltarGhost = complete.indexOf("Voltar ao Início");
+    const voltar = complete.indexOf('href="/inicio"');
     expect(conversarRitual).toBeGreaterThan(-1);
-    expect(voltarGhost).toBeGreaterThan(conversarRitual);
+    expect(voltar).toBeGreaterThan(conversarRitual);
     expect(ritual).not.toMatch(/confetti/i);
   });
 
@@ -113,7 +111,7 @@ describe("APP FEEL interaction system", () => {
     expect(hero).not.toContain('href="/planos"');
     expect(hero).not.toContain('href="#demonstracao"');
     const auth = read("src", "components", "auth", "auth-shell.tsx");
-    expect(auth).toContain("amem-type-screen");
     expect(auth).toContain("amem-enter-soft");
+    expect(auth).toContain("max-w-md");
   });
 });

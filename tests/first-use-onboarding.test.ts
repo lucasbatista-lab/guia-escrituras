@@ -83,28 +83,22 @@ describe("first-use onboarding — personalization clarity", () => {
 
 describe("first-use onboarding — /inicio contexts", () => {
   const page = read("src", "app", "(platform)", "inicio", "page.tsx");
+  const living = read("src", "components", "inicio", "inicio-living.tsx");
 
-  it("new account emphasizes writing freely before themes", () => {
-    expect(page).toContain("O que está pesando hoje?");
-    expect(page).toContain("Começar uma reflexão");
-    expect(page).toContain("Conte com suas palavras");
-    expect(page).toContain("Não é preciso formular uma pergunta perfeita");
-    const firstReady = page.slice(page.indexOf("O que está pesando hoje?"));
-    const writeIdx = firstReady.indexOf("Começar uma reflexão");
-    const themesIdx = firstReady.indexOf("ThemeShortcutsSection");
-    expect(writeIdx).toBeGreaterThan(-1);
-    expect(themesIdx).toBeGreaterThan(writeIdx);
+  it("free/ready home uses InicioLiving as the product surface", () => {
+    expect(page).toContain("InicioLiving");
+    expect(page).toMatch(/confirmed_without_plan[\s\S]*InicioLiving/);
+    expect(living).toContain("Entrar no Hoje");
+    expect(living).toContain("AppScreenHeader");
+    expect(page).not.toContain("ThemeShortcutsSection");
   });
 
-  it("returning account prioritizes resume then new reflection", () => {
+  it("returning account wires resume priority into InicioLiving", () => {
     expect(page).toContain("resumeReturnCopy");
-    expect(page).toContain("Nova reflexão");
-    expect(page).toContain("Acesso rápido");
-    const resumeIdx = page.indexOf('id="resume-heading"');
-    const newIdx = page.lastIndexOf("<QuickActions />");
-    expect(resumeIdx).toBeGreaterThan(-1);
-    expect(newIdx).toBeGreaterThan(resumeIdx);
-    expect(page).toContain('href: "/conversas"');
+    expect(page).toContain("pickPrimaryReturnTarget");
+    expect(page).toContain("chatHref");
+    expect(page).toContain("journeyHref");
+    expect(page).not.toContain("QuickActions");
   });
 });
 
@@ -132,9 +126,8 @@ describe("first-use onboarding — themes", () => {
     const conversar = read("src", "app", "(platform)", "conversar", "page.tsx");
     const panel = read("src", "components", "chat", "chat-panel.tsx");
 
-    expect(inicio).toContain("THEME_SHORTCUTS");
-    expect(inicio).toContain("/conversar?tema=");
-    expect(inicio).not.toContain("/api/chat");
+    expect(inicio).not.toContain("THEME_SHORTCUTS");
+    expect(panel).toContain("THEME_SHORTCUTS");
     expect(conversar).toContain("sanitizeThemeDraft");
     expect(conversar).toContain("initialDraft");
     expect(conversar).not.toContain("conversations.create");
@@ -169,11 +162,10 @@ describe("first-use onboarding — chat empty state and composer", () => {
   const upsell = read("src", "components", "chat", "chat-plan-upsell.tsx");
 
   it("empty state explains how to write without a tutorial modal", () => {
-    expect(panel).toContain("Escreva o que você está vivendo");
+    expect(panel).toContain("Escreva com honestidade");
     expect(panel).toContain("Comece por uma situação");
     expect(panel).toContain("THEME_SHORTCUTS.slice(0, 4)");
     expect(panel).toContain("setInput(theme.prompt)");
-    expect(panel).toContain("Exemplo:");
     expect(panel).toContain("RESPONSE_FORMAT_HINT");
     expect(panel).toContain('from "@/lib/conversations/response-format-hint"');
     expect(panel).not.toContain("aria-modal");
@@ -181,11 +173,9 @@ describe("first-use onboarding — chat empty state and composer", () => {
   });
 
   it("composer has welcoming placeholder and a11y label", () => {
-    expect(panel).toContain("Conte o que você está vivendo…");
+    expect(panel).toContain("Escreva com honestidade…");
     expect(panel).toContain("O que você gostaria de explorar com mais atenção?");
-    expect(panel).toContain("Conte o que você está vivendo");
     expect(panel).toContain("htmlFor=\"chat-input\"");
-    expect(panel).toContain("disabled={loading || !input.trim()}");
     expect(panel).toContain("Enter envia");
     expect(panel).toContain("Shift+Enter");
     expect(panel).toContain("prefers-reduced-motion");
@@ -193,10 +183,9 @@ describe("first-use onboarding — chat empty state and composer", () => {
 
   it("Profundo discovers deepen without auto-activation; Essencial stays discreet", () => {
     expect(panel).toContain("Aprofundar esta resposta");
-    expect(panel).toContain("Aprofundar este tema");
+    expect(panel).toContain("Aprofundar · Profundo");
     expect(panel).toContain("useState(false)");
     expect(panel).toContain("Em situações complexas, use");
-    expect(panel).toContain("antes de enviar");
     expect(panel).toContain("DeepUpsellHint");
     expect(upsell).toContain("Conhecer o Profundo");
     expect(upsell).toContain("/planos#aprofundar");

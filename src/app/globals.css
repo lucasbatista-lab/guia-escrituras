@@ -1106,10 +1106,6 @@
     box-shadow: 0 8px 22px var(--amem-shadow), inset 0 0 0 1.5px var(--amem-hairline-wine);
   }
 
-  .amem-app-section + .amem-app-section {
-    margin-top: var(--amem-s5);
-  }
-
   /* Loading: reserve space, no layout jump */
   .amem-btn-loading {
     position: relative;
