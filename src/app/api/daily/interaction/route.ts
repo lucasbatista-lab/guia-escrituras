@@ -4,6 +4,7 @@ import { getAuthUserContext } from "@/lib/auth";
 import {
   DAILY_CHECKIN_VALUES,
   isIsoCalendarDate,
+  isWritableDailyInteractionDate,
 } from "@/lib/daily";
 import { upsertDailyInteraction } from "@/lib/daily/interactions";
 import { persistProductEvent } from "@/lib/product-events";
@@ -48,6 +49,18 @@ export async function POST(request: Request) {
     }
 
     const body = parsed.data;
+    // Server-side BRT guard: never trust client local_date for historical/future writes.
+    if (!isWritableDailyInteractionDate(body.date)) {
+      return NextResponse.json(
+        {
+          code: "date_not_today",
+          message: "Só é possível registrar o dia de hoje.",
+          requestId,
+        },
+        { status: 400, headers: NO_STORE },
+      );
+    }
+
     const interaction = await upsertDailyInteraction(auth.userId, {
       localDate: body.date,
       viewed: body.viewed ?? true,
