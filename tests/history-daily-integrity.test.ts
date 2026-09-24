@@ -13,6 +13,11 @@ import {
   listRecentCalendarDates,
   PRODUCT_TIMEZONE,
 } from "@/lib/daily";
+import {
+  isPrivateAppPath,
+  isPublicDailySharePath,
+  matchesPrivatePlatformPath,
+} from "@/lib/edge/private-paths";
 
 const root = process.cwd();
 function read(...parts: string[]) {
@@ -163,6 +168,18 @@ describe("URL architecture contracts", () => {
   it("share helpers point at /hoje/[date] permalink", () => {
     const share = read("src", "lib", "daily", "share.ts");
     expect(share).toContain("`/hoje/${isoDate}`");
+  });
+
+  it("edge gate keeps /hoje private but /hoje/[date] public", () => {
+    const paths = read("src", "lib", "edge", "private-paths.ts");
+    expect(paths).toContain("isPublicDailySharePath");
+    expect(paths).toContain("matchesPrivatePlatformPath");
+    expect(isPublicDailySharePath("/hoje/2026-09-20")).toBe(true);
+    expect(isPublicDailySharePath("/hoje")).toBe(false);
+    expect(matchesPrivatePlatformPath("/hoje")).toBe(true);
+    expect(matchesPrivatePlatformPath("/hoje/2026-09-20")).toBe(false);
+    expect(isPrivateAppPath("/hoje/2026-09-20")).toBe(false);
+    expect(isPrivateAppPath("/hoje")).toBe(true);
   });
 });
 

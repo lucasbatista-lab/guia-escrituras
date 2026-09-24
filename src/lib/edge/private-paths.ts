@@ -1,6 +1,9 @@
 /**
  * Private app surfaces that anonymous visitors must not render.
  * Keep in sync with src/lib/supabase/proxy.ts gate prefixes.
+ *
+ * Exception: /hoje/YYYY-MM-DD (and other single-segment /hoje/*) is the
+ * public editorial share permalink — not the authenticated ritual.
  */
 
 export const PRIVATE_PLATFORM_PREFIXES = [
@@ -20,6 +23,14 @@ export const PRIVATE_PLATFORM_PREFIXES = [
 
 export const PRIVATE_ADMIN_PREFIXES = ["/admin"] as const;
 
+/**
+ * Public daily share / permalink under the marketing route.
+ * /hoje stays private; /hoje/<segment> is public editorial.
+ */
+export function isPublicDailySharePath(pathname: string): boolean {
+  return /^\/hoje\/[^/]+$/.test(pathname);
+}
+
 export function matchesPathPrefix(
   pathname: string,
   prefixes: readonly string[],
@@ -29,9 +40,15 @@ export function matchesPathPrefix(
   );
 }
 
+/** Platform private gate with public Hoje share carve-out. */
+export function matchesPrivatePlatformPath(pathname: string): boolean {
+  if (isPublicDailySharePath(pathname)) return false;
+  return matchesPathPrefix(pathname, PRIVATE_PLATFORM_PREFIXES);
+}
+
 export function isPrivateAppPath(pathname: string): boolean {
   return (
-    matchesPathPrefix(pathname, PRIVATE_PLATFORM_PREFIXES) ||
+    matchesPrivatePlatformPath(pathname) ||
     matchesPathPrefix(pathname, PRIVATE_ADMIN_PREFIXES)
   );
 }

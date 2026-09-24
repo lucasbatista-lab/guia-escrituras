@@ -4,8 +4,8 @@ import { allowsMocks } from "@/config/runtime";
 import {
   isApiPath,
   matchesPathPrefix,
+  matchesPrivatePlatformPath,
   PRIVATE_ADMIN_PREFIXES,
-  PRIVATE_PLATFORM_PREFIXES,
 } from "@/lib/edge/private-paths";
 import { hasLikelySupabaseSessionCookie } from "@/lib/edge/session-cookie";
 import { safeNextPath } from "@/lib/navigation/safe-next-path";
@@ -29,7 +29,6 @@ const AUTH_BOUNCE_PAGES = ["/entrar", "/cadastro"];
 /** Signed-in-only auth surfaces that must keep the recovery session. */
 const RECOVERY_SESSION_PAGES = ["/redefinir-senha"];
 
-const PLATFORM_PREFIXES = [...PRIVATE_PLATFORM_PREFIXES];
 const ADMIN_PREFIXES = [...PRIVATE_ADMIN_PREFIXES];
 
 /** Routes that must not be bounce-redirected into chat paywall loops. */
@@ -48,6 +47,10 @@ const PAYWALL_SAFE_PREFIXES = [
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
   return matchesPathPrefix(pathname, prefixes);
+}
+
+function matchesPrivatePlatform(pathname: string): boolean {
+  return matchesPrivatePlatformPath(pathname);
 }
 
 /** Copy refreshed auth cookies onto a redirect so the session is not dropped. */
@@ -215,7 +218,8 @@ export async function updateSession(request: NextRequest) {
     if (
       !apiRequest &&
       !allowsMocks() &&
-      matchesPrefix(pathname, [...PLATFORM_PREFIXES, ...ADMIN_PREFIXES])
+      matchesPrivatePlatform(pathname) ||
+      matchesPrefix(pathname, ADMIN_PREFIXES)
     ) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
@@ -229,7 +233,8 @@ export async function updateSession(request: NextRequest) {
   if (
     !apiRequest &&
     !hasLikelySupabaseSessionCookie(request) &&
-    matchesPrefix(pathname, [...PLATFORM_PREFIXES, ...ADMIN_PREFIXES])
+    (matchesPrivatePlatform(pathname) ||
+      matchesPrefix(pathname, ADMIN_PREFIXES))
   ) {
     maybePreserveCheckoutReturnCookie(request, supabaseResponse, cookieOptions);
     const nextPath = matchesPrefix(pathname, ADMIN_PREFIXES)
@@ -268,7 +273,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!apiRequest && !user && matchesPrefix(pathname, PLATFORM_PREFIXES)) {
+  if (!apiRequest && !user && matchesPrivatePlatform(pathname)) {
     maybePreserveCheckoutReturnCookie(request, supabaseResponse, cookieOptions);
     return redirectAnonymousToLogin(
       request,
