@@ -5,6 +5,10 @@ import { maskEmail } from "@/lib/auth/sign-up-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isActiveSubscription } from "@/lib/billing";
 import {
+  resolveFirstPremiumPath,
+  type CheckoutSuccessNextPath,
+} from "@/lib/billing/first-premium-path";
+import {
   isStripeCheckoutSessionId,
   readCheckoutReturnCookie,
   setCheckoutReturnCookie,
@@ -12,6 +16,9 @@ import {
 } from "@/lib/billing/checkout-return-cookie";
 import { getStripeClient } from "@/lib/stripe/client";
 import { assertStripeConfigured } from "@/lib/stripe/config";
+
+export type { CheckoutSuccessNextPath };
+export { resolveFirstPremiumPath };
 
 export type CheckoutSuccessView =
   | { kind: "unauthenticated"; resumePath: string }
@@ -21,7 +28,7 @@ export type CheckoutSuccessView =
   | { kind: "sync_error" }
   | {
       kind: "active";
-      nextPath: "/personalizar" | "/inicio";
+      nextPath: CheckoutSuccessNextPath;
       emailConfirmed: boolean;
       emailMasked: string | null;
     };
@@ -142,9 +149,10 @@ async function activeSuccessView(
     auth.userId,
     auth.email,
   );
-  const nextPath = auth.spiritualProfile.onboardingCompleted
-    ? "/inicio"
-    : "/personalizar";
+  const nextPath = resolveFirstPremiumPath(
+    auth.planKey,
+    auth.spiritualProfile.onboardingCompleted,
+  );
   return { kind: "active", nextPath, ...emailState };
 }
 
@@ -157,7 +165,7 @@ export async function getCheckoutSuccessPollPayload(): Promise<{
     | "forbidden"
     | "unauthenticated"
     | "sync_error";
-  nextPath?: "/personalizar" | "/inicio";
+  nextPath?: CheckoutSuccessNextPath;
   emailConfirmed?: boolean;
   emailMasked?: string | null;
 }> {

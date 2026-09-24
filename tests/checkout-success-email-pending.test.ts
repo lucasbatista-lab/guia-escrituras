@@ -54,7 +54,7 @@ describe("checkout success — paid + email pending states", () => {
       "Estamos ativando a assinatura na sua conta",
     );
     expect(clientText).toContain(
-      "Sua assinatura está ativa. Personalize seu Amém Chat para começar.",
+      "Sua assinatura está ativa. Personalize em um minuto para liberar Conversar e Caminhos.",
     );
     expect(client).not.toMatch(/checkout\.sessions\.create|createCheckout/i);
   });

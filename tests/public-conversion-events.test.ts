@@ -83,6 +83,7 @@ describe("public conversion events", () => {
       "plans_cta_clicked",
       "plan_selected",
       "signup_started",
+      "signup_email_sent",
       "paid_landing_viewed",
       "paid_landing_primary_cta_clicked",
       "paid_landing_demo_clicked",
@@ -269,6 +270,22 @@ describe("public conversion events", () => {
     expect(demo).toContain("product_demo_topic_selected");
     expect(plans).toContain('conversionEvent="plan_selected"');
     expect(signup).toContain('event="signup_started"');
+
+    const recordSes = readFileSync(
+      join(root, "src", "lib", "acquisition", "record-signup-email-sent.ts"),
+      "utf8",
+    );
+    expect(recordSes).toContain('event: "signup_email_sent"');
+    expect(recordSes).toContain("ses_");
+    expect(recordSes.toLowerCase()).not.toContain("password");
+    expect(recordSes).not.toMatch(/\bemailMasked\b|\bnormalizedEmail\b/);
+
+    const signUpAction = readFileSync(
+      join(root, "src", "lib", "auth", "sign-up-action.ts"),
+      "utf8",
+    );
+    expect(signUpAction).toContain("recordSignupEmailSent");
+    expect(signUpAction).toContain("needsEmailConfirmation");
 
     const paidLandingPage = readFileSync(
       join(root, "src", "app", "(marketing)", "comece", "page.tsx"),

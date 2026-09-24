@@ -78,7 +78,11 @@ export function CheckEmailExperience({
       : "/cadastro";
 
   return (
-    <div className="space-y-7 rounded-3xl border border-border/70 bg-card/90 p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.65)] sm:p-8">
+    <div className="relative space-y-7 overflow-hidden rounded-[28px] border border-border/60 bg-[color:var(--amem-surface,#FFFDFC)] p-5 shadow-[0_24px_70px_-42px_rgba(44,36,28,0.55)] sm:p-8">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--amem-wine-deep),var(--amem-brass))]"
+      />
       <div className="flex flex-col items-center text-center">
         <div
           className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-wine/10 text-wine"
@@ -98,10 +102,13 @@ export function CheckEmailExperience({
             />
           </svg>
         </div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-wine">
+          Quase lá
+        </p>
         <h1
           ref={titleRef}
           tabIndex={-1}
-          className="font-display text-3xl text-ink outline-none"
+          className="mt-2 font-display text-3xl text-ink outline-none"
         >
           Confira seu e-mail
         </h1>
@@ -135,27 +142,33 @@ export function CheckEmailExperience({
         ) : null}
       </div>
 
-      <ol className="grid gap-2 text-sm text-ink-soft sm:grid-cols-3">
-        <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
-          <span className="font-display text-lg text-wine">1</span>
+      <ol className="grid gap-2 text-sm text-ink-soft sm:grid-cols-3" aria-label="Próximos passos">
+        <li className="flex gap-3 rounded-xl bg-[color:var(--amem-recess,#F3EFE8)]/70 p-3">
+          <span className="font-display text-lg text-wine" aria-hidden>
+            1
+          </span>
           <span>Abra a caixa de entrada (e o spam).</span>
         </li>
-        <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
-          <span className="font-display text-lg text-wine">2</span>
+        <li className="flex gap-3 rounded-xl bg-[color:var(--amem-recess,#F3EFE8)]/70 p-3">
+          <span className="font-display text-lg text-wine" aria-hidden>
+            2
+          </span>
           <span>
             {isRecovery
               ? "Toque no link seguro para nova senha."
               : "Toque no link para confirmar."}
           </span>
         </li>
-        <li className="flex gap-3 rounded-xl bg-sand-100/60 p-3">
-          <span className="font-display text-lg text-wine">3</span>
+        <li className="flex gap-3 rounded-xl bg-[color:var(--amem-recess,#F3EFE8)]/70 p-3">
+          <span className="font-display text-lg text-wine" aria-hidden>
+            3
+          </span>
           <span>
             {isRecovery
               ? "Entre com a nova senha."
               : planKey
                 ? "Conclua o pagamento seguro."
-                : "Entre e abra o Hoje — sem cartão."}
+                : "Volte e comece pelo Hoje — sem cartão."}
           </span>
         </li>
       </ol>

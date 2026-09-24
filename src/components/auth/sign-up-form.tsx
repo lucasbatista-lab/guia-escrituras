@@ -118,6 +118,14 @@ export function SignUpForm({
       }
 
       const adsContext = isPaidFunnel ? collectAdsCheckoutContext() : null;
+      const viewportClass =
+        typeof window !== "undefined"
+          ? window.innerWidth < 768
+            ? "mobile"
+            : window.innerWidth < 1024
+              ? "tablet"
+              : "desktop"
+          : null;
 
       const result = await signUpAction({
         displayName,
@@ -126,6 +134,7 @@ export function SignUpForm({
         planKey,
         termsAccepted,
         tracking,
+        viewportClass,
         adsContext,
       });
 

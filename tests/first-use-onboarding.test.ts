@@ -204,8 +204,8 @@ describe("first-use onboarding — chat empty state and composer", () => {
     expect(clientErrors).toContain(
       "Sua sessão expirou. Entre novamente para continuar.",
     );
-    expect(panel).toContain(
-      "Não foi possível concluir esta reflexão agora. Sua mensagem continua aqui para você tentar novamente.",
+    expect(clientErrors).toContain(
+      "Não consegui responder agora. Sua mensagem continua aqui.",
     );
   });
 });

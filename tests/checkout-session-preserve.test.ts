@@ -105,11 +105,14 @@ describe("checkout return — session preservation", () => {
     const success = read("src", "lib", "billing", "checkout-success.ts");
     expect(success).toContain("resolveCheckoutSuccessState");
     expect(success).toContain("subscriptions");
-    expect(success).toContain("personalizar");
+    expect(success).toContain("resolveFirstPremiumPath");
     expect(success).toContain("Never creates a Supabase session");
     expect(success).toContain("forbidden");
     expect(success).toContain("processing");
     expect(success).toContain("unauthenticated");
+    expect(read("src", "lib", "billing", "first-premium-path.ts")).toContain(
+      "personalizar",
+    );
 
     const route = read(
       "src",
@@ -164,9 +167,13 @@ describe("checkout return — session preservation", () => {
 describe("checkout success state helpers", () => {
   it("maps active users who still need personalization to /personalizar", async () => {
     const src = read("src", "lib", "billing", "checkout-success.ts");
-    expect(src).toContain('"/personalizar"');
-    expect(src).toContain('"/inicio"');
-    expect(src).toContain("onboardingCompleted");
+    const premium = read("src", "lib", "billing", "first-premium-path.ts");
+    expect(src).toContain("resolveFirstPremiumPath");
+    expect(src).toContain("first-premium-path");
+    expect(premium).toContain('"/personalizar"');
+    expect(premium).toContain('"/conversar"');
+    expect(premium).toContain('"/jornadas"');
+    expect(premium).toContain("onboardingCompleted");
     expect(src).toContain("sessionUserId !== auth.userId");
   });
 });

@@ -322,8 +322,10 @@ describe("redirects and gates (source contracts)", () => {
 
   it("success page directs active users to personalizar", () => {
     const logic = readSrc("src", "lib", "billing", "checkout-success.ts");
-    expect(logic).toContain('"/personalizar"');
-    expect(logic).toContain("onboardingCompleted");
+    const premium = readSrc("src", "lib", "billing", "first-premium-path.ts");
+    expect(logic).toContain("resolveFirstPremiumPath");
+    expect(premium).toContain('"/personalizar"');
+    expect(premium).toContain("onboardingCompleted");
     expect(logic).not.toContain('"/onboarding"');
     const page = readSrc(
       "src",

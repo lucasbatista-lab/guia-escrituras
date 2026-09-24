@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { FocusPageTitle } from "@/components/a11y/focus-page-title";
 import { Button } from "@/components/ui/button";
 import { brand } from "@/config/brand";
+import type { CheckoutSuccessNextPath } from "@/lib/billing/first-premium-path";
 
 type PollStatus =
   | "processing"
@@ -40,6 +41,39 @@ const COPY: Record<
   },
 };
 
+function activeCta(nextPath: CheckoutSuccessNextPath): {
+  href: CheckoutSuccessNextPath;
+  label: string;
+  body: string;
+} {
+  switch (nextPath) {
+    case "/personalizar":
+      return {
+        href: "/personalizar",
+        label: "Personalizar meu Amém Chat",
+        body: "Sua assinatura está ativa. Personalize em um minuto para liberar Conversar e Caminhos.",
+      };
+    case "/conversar":
+      return {
+        href: "/conversar",
+        label: "Começar a Conversar",
+        body: "Sua assinatura está ativa. Conversar já está liberado.",
+      };
+    case "/jornadas":
+      return {
+        href: "/jornadas",
+        label: "Abrir Caminhos",
+        body: "Sua assinatura está ativa. Os Caminhos completos já estão liberados.",
+      };
+    default:
+      return {
+        href: "/inicio",
+        label: "Ir para o Início",
+        body: "Sua assinatura está ativa. Você já pode usar o Amém Chat.",
+      };
+  }
+}
+
 export function CheckoutSuccessClient({
   initialStatus,
   initialNextPath = null,
@@ -52,14 +86,16 @@ export function CheckoutSuccessClient({
     | "sync_error"
     | "forbidden"
     | "active";
-  initialNextPath?: "/personalizar" | "/inicio" | null;
+  initialNextPath?: CheckoutSuccessNextPath | null;
   initialEmailConfirmed?: boolean;
   initialEmailMasked?: string | null;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<PollStatus>(initialStatus);
   const [polls, setPolls] = useState(0);
-  const [nextPath, setNextPath] = useState<string | null>(initialNextPath);
+  const [nextPath, setNextPath] = useState<CheckoutSuccessNextPath | null>(
+    initialNextPath,
+  );
   const [emailConfirmed, setEmailConfirmed] = useState(initialEmailConfirmed);
   const [emailMasked, setEmailMasked] = useState<string | null>(
     initialEmailMasked,
@@ -88,7 +124,7 @@ export function CheckoutSuccessClient({
         });
         const data = (await res.json()) as {
           status?: PollStatus;
-          nextPath?: string;
+          nextPath?: CheckoutSuccessNextPath;
           emailConfirmed?: boolean;
           emailMasked?: string | null;
         };
@@ -157,6 +193,7 @@ export function CheckoutSuccessClient({
 
   if (status === "active" && nextPath) {
     if (emailConfirmed) {
+      const cta = activeCta(nextPath);
       return (
         <div className="space-y-6">
           <FocusPageTitle className="font-display text-3xl text-ink">
@@ -167,13 +204,13 @@ export function CheckoutSuccessClient({
             aria-live="polite"
             role="status"
           >
-            Sua assinatura está ativa. Personalize seu Amém Chat para começar.
+            {cta.body}
           </p>
           <Button
             asChild
             className="min-h-11 w-full bg-ink hover:bg-ink/90 sm:w-auto sm:min-w-[16rem]"
           >
-            <Link href={nextPath}>Personalizar meu Amém Chat</Link>
+            <Link href={cta.href}>{cta.label}</Link>
           </Button>
           <p className="text-sm text-ink-soft">
             <Link

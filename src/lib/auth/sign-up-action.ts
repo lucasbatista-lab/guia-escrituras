@@ -25,6 +25,8 @@ import {
 } from "@/lib/signup-intents";
 import { setSignupIntentCookie } from "@/lib/signup-intents/continuity-cookie";
 import { resolveTrackingForSignupIntent } from "@/lib/acquisition";
+import { recordSignupEmailSent } from "@/lib/acquisition/record-signup-email-sent";
+import type { ViewportClass } from "@/lib/acquisition/public-event-types";
 import { createSubscriptionCheckoutForActor } from "@/lib/stripe/checkout";
 import { checkoutFailureMessage } from "@/lib/stripe/checkout-errors";
 import { createClient } from "@/lib/supabase/server";
@@ -52,6 +54,7 @@ const signUpSchema = z.object({
       utmTerm: z.string().nullable().optional(),
     })
     .optional(),
+  viewportClass: z.enum(["mobile", "tablet", "desktop"]).optional().nullable(),
   adsContext: z
     .object({
       advertisingConsent: z.boolean(),
@@ -259,6 +262,7 @@ export async function signUpAction(input: {
   planKey?: string | null;
   termsAccepted?: boolean;
   tracking?: SignupTrackingParams;
+  viewportClass?: ViewportClass | null;
   adsContext?: AdsCheckoutContext | null;
 }): Promise<SignUpActionResult> {
   const requestId = createRequestId();
@@ -275,6 +279,7 @@ export async function signUpAction(input: {
   const parsed = signUpSchema.safeParse({
     ...input,
     termsAccepted: input.termsAccepted ?? false,
+    viewportClass: input.viewportClass ?? null,
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -472,6 +477,14 @@ export async function signUpAction(input: {
   if (intentId && intentToken && selectedPlanKey) {
     await setSignupIntentCookie(intentToken);
 
+    if (needsEmailConfirmation) {
+      void recordSignupEmailSent({
+        requestId,
+        tracking: parsed.data.tracking ?? null,
+        viewportClass: parsed.data.viewportClass ?? null,
+      });
+    }
+
     return attemptPaidCheckout({
       userId: data.user.id,
       email: userEmail,
@@ -492,6 +505,11 @@ export async function signUpAction(input: {
   });
 
   if (needsEmailConfirmation) {
+    void recordSignupEmailSent({
+      requestId,
+      tracking: parsed.data.tracking ?? null,
+      viewportClass: parsed.data.viewportClass ?? null,
+    });
     const emailMasked = maskEmail(normalizedEmail);
     return {
       ok: true,

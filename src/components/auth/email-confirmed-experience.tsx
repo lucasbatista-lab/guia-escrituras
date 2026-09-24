@@ -84,17 +84,25 @@ export function EmailConfirmedExperience({
       </div>
 
       <Button asChild className="min-h-12 w-full rounded-xl bg-wine text-base hover:bg-wine-soft">
-        <Link href={continueHref}>
-          {hasPlan ? "Continuar para pagamento" : "Ir para o Início"}
+        <Link href={hasPlan ? continueHref : "/hoje"}>
+          {hasPlan ? "Continuar para pagamento" : "Começar pelo Hoje"}
         </Link>
       </Button>
 
-      <Button asChild variant="outline" className="min-h-12 w-full rounded-xl">
-        <Link href="/entrar">Entrar no Amém Chat</Link>
-      </Button>
+      {!hasPlan ? (
+        <Button asChild variant="outline" className="min-h-12 w-full rounded-xl">
+          <Link href="/inicio">Ir para o Início</Link>
+        </Button>
+      ) : (
+        <Button asChild variant="outline" className="min-h-12 w-full rounded-xl">
+          <Link href="/entrar">Entrar no Amém Chat</Link>
+        </Button>
+      )}
 
       <p className="text-center text-sm text-ink-soft">
-        Abriu em outro aparelho? Use o mesmo e-mail e senha para continuar.
+        {hasPlan
+          ? "Abriu em outro aparelho? Use o mesmo e-mail e senha para continuar."
+          : "Sem cartão. O ritual de hoje leva cerca de 4 minutos."}
       </p>
     </div>
   );
