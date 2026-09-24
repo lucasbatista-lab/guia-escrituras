@@ -7,6 +7,10 @@ import { logger } from "@/lib/logging/logger";
 import { assertStripeConfigured, StripeConfigError } from "@/lib/stripe/config";
 import { getStripeClient } from "@/lib/stripe/client";
 import { ACCOUNT_DELETE_CONFIRMATION } from "@/lib/account/account-deletion-constants";
+import {
+  composeRecurringBillingStops,
+  type RecurringBillingStopPort,
+} from "@/lib/billing/recurring-billing-stop";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createRequestId } from "@/lib/utils";
 
@@ -271,7 +275,11 @@ export async function deleteAuthenticatedAccount(input: {
 
   const userId = input.userId;
 
-  const billing = await ensureRecurringBillingStoppedForDeletion(userId);
+  const stripePort: RecurringBillingStopPort = {
+    stopForUser: ensureRecurringBillingStoppedForDeletion,
+  };
+  // Future: append Apple port that detects auto-renew and applies Apple policy.
+  const billing = await composeRecurringBillingStops(userId, [stripePort]);
   if (!billing.ok) {
     logger.warn("account_delete_blocked_billing", {
       requestId,
