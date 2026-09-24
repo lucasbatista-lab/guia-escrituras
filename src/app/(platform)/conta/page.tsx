@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  AccountDeletionPanel,
+  type AccountDeletionBillingHint,
+} from "@/components/account/account-deletion-panel";
 import { DataExportPanel } from "@/components/account/data-export-panel";
 import { InstallAppPanel } from "@/components/account/install-app-panel";
 import { SubscriptionManagementPanel } from "@/components/account/subscription-management-panel";
@@ -107,6 +111,17 @@ export default async function ContaPage() {
     (sum, i) => sum + (i.progress?.completedStepIds.length ?? 0),
     0,
   );
+
+  let deletionBillingHint: AccountDeletionBillingHint = "none";
+  if (billing?.isManualOnly) {
+    deletionBillingHint = "manual";
+  } else if (billing?.hasStripeManagedSubscription) {
+    if (billing.renewsAutomatically) {
+      deletionBillingHint = "renews";
+    } else if (billing.cancelAtPeriodEnd) {
+      deletionBillingHint = "canceling";
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -425,7 +440,9 @@ export default async function ContaPage() {
         title="Seus dados"
         description="Baixe uma cópia das informações associadas à sua conta, incluindo perfil, preferências, consentimentos e conversas."
       >
-        <DataExportPanel />
+        <div id="exportar-dados">
+          <DataExportPanel />
+        </div>
       </PlatformSection>
 
       <PlatformSection
@@ -435,6 +452,13 @@ export default async function ContaPage() {
         <Button asChild variant="outline" className="min-h-11">
           <Link href="/recuperar-senha">Redefinir senha</Link>
         </Button>
+      </PlatformSection>
+
+      <PlatformSection
+        title="Excluir conta"
+        description="Remove permanentemente sua conta e os dados pessoais associados. Esta ação não pode ser desfeita."
+      >
+        <AccountDeletionPanel billingHint={deletionBillingHint} />
       </PlatformSection>
 
       {supportEmail ? (
