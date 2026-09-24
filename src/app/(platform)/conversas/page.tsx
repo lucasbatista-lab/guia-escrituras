@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ConversationHistoryList } from "@/components/conversations/conversation-history-list";
 import { EmptyState } from "@/components/platform/empty-state";
 import { InlineNotice } from "@/components/platform/inline-notice";
-import { PlatformPageHeader } from "@/components/platform/page-header";
+import { AppScreenHeader } from "@/components/platform/app-screen-header";
 import { RefreshPageButton } from "@/components/platform/refresh-page-button";
 import { Button } from "@/components/ui/button";
 import { getAuthUserContext } from "@/lib/auth";
@@ -104,12 +104,10 @@ export default async function ConversasPage({
 
   return (
     <div className="space-y-6">
-      <PlatformPageHeader
-        eyebrow="Histórico"
-        title="Suas conversas"
-        description="Retome uma reflexão sem precisar recomeçar."
-        actions={
-          <Button asChild className="min-h-11 bg-ink hover:bg-ink/90">
+      <AppScreenHeader
+        title="Conversas"
+        trailing={
+          <Button asChild variant="soft" className="min-h-11">
             <Link href="/conversar">Nova reflexão</Link>
           </Button>
         }
@@ -138,7 +136,7 @@ export default async function ConversasPage({
         <div className="space-y-4">
           <EmptyState
             title="Nenhuma conversa ainda"
-            description="Quando você iniciar uma reflexão, ela ficará disponível aqui para retomar com calma — sem precisar recomeçar do zero."
+            description="Quando você iniciar uma reflexão, ela fica aqui para retomar com calma."
             actionHref="/conversar"
             actionLabel="Começar uma reflexão"
           />
@@ -146,11 +144,10 @@ export default async function ConversasPage({
             <div className="rounded-2xl border border-border/70 bg-card/60 px-4 py-4 sm:px-5">
               <p className="font-medium text-ink">Prefere um caminho guiado?</p>
               <p className="mt-1 text-sm text-ink-soft">
-                As Jornadas de leitura ajudam a manter continuidade com etapas
-                claras — no seu ritmo.
+                Caminhos de 7 dias sobre temas reais — no seu ritmo.
               </p>
               <Button asChild variant="outline" className="mt-3 min-h-11">
-                <Link href="/jornadas">Ver Jornadas</Link>
+                <Link href="/jornadas">Ver Caminhos</Link>
               </Button>
             </div>
           ) : null}

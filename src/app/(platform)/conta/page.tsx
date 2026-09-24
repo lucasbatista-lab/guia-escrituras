@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { DataExportPanel } from "@/components/account/data-export-panel";
 import { InstallAppPanel } from "@/components/account/install-app-panel";
 import { SubscriptionManagementPanel } from "@/components/account/subscription-management-panel";
+import { AppScreenHeader } from "@/components/platform/app-screen-header";
 import { InlineNotice } from "@/components/platform/inline-notice";
-import { PlatformPageHeader } from "@/components/platform/page-header";
 import { PlatformSection } from "@/components/platform/section";
 import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
 import { ShareInvite } from "@/components/share/share-invite";
@@ -110,10 +110,9 @@ export default async function ContaPage() {
 
   return (
     <div className="space-y-6">
-      <PlatformPageHeader
-        eyebrow="Seu espaço"
-        title="Conta e suporte"
-        description="Preferências, acesso, privacidade e ajuda em um só lugar."
+      <AppScreenHeader
+        title="Conta"
+        subtitle="Preferências, plano e privacidade"
       />
 
       <nav
@@ -128,7 +127,7 @@ export default async function ContaPage() {
           <Link
             key={item.href}
             href={item.href}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border/70 bg-card/60 px-2 text-center text-sm text-ink transition hover:border-wine/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="amem-press inline-flex min-h-11 items-center justify-center rounded-xl border border-border/70 bg-card/60 px-2 text-center text-sm text-ink transition hover:border-wine/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {item.label}
           </Link>
@@ -245,42 +244,42 @@ export default async function ContaPage() {
       </PlatformSection>
 
       <PlatformSection
-        title="Jornadas de leitura"
+        title="Caminhos"
         description={
           hasJourneys
-            ? "Trilhas editoriais incluídas no seu plano — progresso salvo na sua conta."
-            : "Trilhas guiadas sobre temas reais da vida — disponíveis no Caminho e planos superiores."
+            ? "Caminhos do seu plano — progresso salvo na conta."
+            : "Caminhos de 7 dias — disponíveis no plano Caminho e acima."
         }
       >
         {hasJourneys ? (
           <>
             <dl className="grid gap-4 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-ink-soft">Iniciadas</dt>
+                <dt className="text-ink-soft">Iniciados</dt>
                 <dd className="mt-0.5 text-base text-ink">{journeysStarted}</dd>
               </div>
               <div>
-                <dt className="text-ink-soft">Concluídas</dt>
+                <dt className="text-ink-soft">Concluídos</dt>
                 <dd className="mt-0.5 text-base text-ink">{journeysCompleted}</dd>
               </div>
               <div>
-                <dt className="text-ink-soft">Etapas concluídas</dt>
+                <dt className="text-ink-soft">Dias concluídos</dt>
                 <dd className="mt-0.5 text-base text-ink">{journeyStepsDone}</dd>
               </div>
             </dl>
             <Button asChild variant="outline" className="mt-5 min-h-11">
-              <Link href="/jornadas">Abrir jornadas</Link>
+              <Link href="/jornadas">Abrir Caminhos</Link>
             </Button>
           </>
         ) : (
           <p className="text-sm text-ink-soft">
             <Link
               href="/planos#comparar-uso"
-              className="text-ink underline underline-offset-4"
+              className="font-medium text-ink underline-offset-4 hover:underline"
             >
-              Comparar planos
+              Ver planos
             </Link>{" "}
-            para ver como incluir Jornadas no seu acesso.
+            para incluir Caminhos completos no seu acesso.
           </p>
         )}
       </PlatformSection>
@@ -346,7 +345,7 @@ export default async function ContaPage() {
             ) : null}
             {hasJourneys ? (
               <p className="mt-2 text-sm text-ink-soft">
-                Inclui Jornadas de leitura com progresso salvo na conta.
+                Inclui Caminhos com progresso salvo na conta.
               </p>
             ) : null}
             {level !== "normal" ? (

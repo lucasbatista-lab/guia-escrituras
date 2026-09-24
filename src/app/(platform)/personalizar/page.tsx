@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { PersonalizationForm } from "@/components/auth/onboarding-form";
-import { PlatformPageHeader } from "@/components/platform/page-header";
+import { AppScreenHeader } from "@/components/platform/app-screen-header";
 import { getAuthUserContext } from "@/lib/auth";
 import { safeNextPath } from "@/lib/navigation/safe-next-path";
 import { journeyCanPersonalize } from "@/lib/daily/access";
@@ -33,10 +33,9 @@ export default async function PersonalizarPage({
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <PlatformPageHeader
-        eyebrow="Seu espaço, do seu jeito"
-        title="Personalize sua experiência"
-        description="Escolha sua tradição para começar. Estilo e profundidade já têm padrões seguros e podem ser ajustados agora ou depois na Conta."
+      <AppScreenHeader
+        title="Personalizar"
+        subtitle="Escolha sua tradição para começar. Estilo e profundidade já têm padrões seguros."
       />
       <PersonalizationForm completionHref={completionHref} />
     </div>

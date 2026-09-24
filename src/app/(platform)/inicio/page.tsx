@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DailyHomeSection } from "@/components/daily/daily-home-section";
 import { InicioLiving } from "@/components/inicio/inicio-living";
 import { PersonalSpaceCard } from "@/components/workspace/personal-space-card";
 import { PrimaryActionCard } from "@/components/platform/primary-action-card";
-import { PlatformPageHeader } from "@/components/platform/page-header";
+import { AppScreenHeader } from "@/components/platform/app-screen-header";
 import { PlanStatusBadge } from "@/components/platform/plan-status-badge";
 import { ProgressSteps } from "@/components/platform/progress-steps";
 import { StatusCard } from "@/components/platform/status-card";
@@ -19,14 +18,12 @@ import {
   resumeReturnCopy,
   resumeReturnTone,
 } from "@/lib/conversations/resume";
-import { RESPONSE_FORMAT_HINT } from "@/lib/conversations/response-format-hint";
 import { getPlanByKey } from "@/lib/entitlements";
 import {
   firstNameFromDisplayName,
   journeyAllowsChat,
   resolveUserJourneyState,
 } from "@/lib/journey";
-import { THEME_SHORTCUTS } from "@/lib/journey/theme-shortcuts";
 import { canUseReadingJourneys } from "@/lib/journeys/entitlement";
 import { getJourneyBySlug } from "@/lib/journeys/registry";
 import { buildCatalogItems, loadJourneyProgressMap } from "@/lib/journeys/server";
@@ -47,82 +44,6 @@ async function loadDisplayName(userId: string): Promise<string | null> {
   } catch {
     return null;
   }
-}
-
-function ThemeShortcutsSection({ headingId }: { headingId: string }) {
-  return (
-    <section aria-labelledby={headingId}>
-      <p className="sr-only">O que está pesando hoje?</p>
-      <p className="sr-only">Começar uma reflexão</p>
-      <h2 id={headingId} className="font-display text-lg text-ink">
-        Temas para começar
-      </h2>
-      <p className="mt-1 text-sm text-ink-soft">
-        Escolha um tema para preencher o campo — você pode editar o texto antes
-        de enviar.
-      </p>
-      <ul className="mt-4 flex flex-wrap gap-2">
-        {THEME_SHORTCUTS.map((theme) => (
-          <li key={theme.label}>
-            <Link
-              href={`/conversar?tema=${encodeURIComponent(theme.prompt)}`}
-              className="inline-flex min-h-11 items-center rounded-full border border-border/70 bg-card/70 px-3.5 py-2 text-sm text-ink transition hover:border-wine/30 hover:bg-wine/[0.04] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              {theme.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-4 text-xs leading-relaxed text-ink-soft">
-        {RESPONSE_FORMAT_HINT}
-      </p>
-    </section>
-  );
-}
-
-function QuickActions({ showPersonalize = false }: { showPersonalize?: boolean }) {
-  const actions = [
-    {
-      href: "/conversar",
-      label: "Nova reflexão",
-      description: "Traga outro tema",
-    },
-    {
-      href: "/conversas",
-      label: "Histórico",
-      description: "Retome conversas",
-    },
-    {
-      href: showPersonalize ? "/personalizar" : "/jornadas",
-      label: showPersonalize ? "Personalizar" : "Jornadas",
-      description: showPersonalize ? "Ajuste preferências" : "Siga uma trilha",
-    },
-  ];
-
-  return (
-    <section aria-labelledby="quick-actions-heading">
-      <div className="flex items-center justify-between gap-3">
-        <h2 id="quick-actions-heading" className="font-display text-lg text-ink">
-          Acesso rápido
-        </h2>
-      </div>
-      <ul className="mt-3 grid grid-cols-3 gap-2">
-        {actions.map((action) => (
-          <li key={action.href}>
-            <Link
-              href={action.href}
-              className="flex min-h-[5.5rem] flex-col justify-between rounded-2xl border border-border/70 bg-card/70 p-3 transition hover:border-wine/25 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span className="text-sm font-medium text-ink">{action.label}</span>
-              <span className="text-xs leading-tight text-ink-soft">
-                {action.description}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
 }
 
 export default async function InicioPage() {
@@ -169,14 +90,14 @@ export default async function InicioPage() {
             updatedAt: latestJourney.updatedAt,
             title: journey.title,
             subtitle: nextStep
-              ? `Próxima etapa: ${nextStep.title}`
+              ? `Continuar: ${nextStep.title}`
               : "Continuar no seu ritmo",
             href: nextStep
               ? `/jornadas/${journey.slug}/${nextStep.slug}`
               : `/jornadas/${journey.slug}`,
             cta: nextStep
               ? `Continuar: ${nextStep.title}`
-              : "Continuar jornada",
+              : "Continuar caminho",
           };
         }
       }
@@ -188,9 +109,9 @@ export default async function InicioPage() {
   if (state === "payment_pending" || state === "payment_processing") {
     return (
       <div className="space-y-8">
-        <PlatformPageHeader
+        <AppScreenHeader
           title={greeting}
-          description="Falta concluir o pagamento para liberar suas reflexões."
+          subtitle="Falta concluir o pagamento para liberar suas reflexões."
         />
 
         {plan ? (
@@ -231,9 +152,9 @@ export default async function InicioPage() {
   if (state === "active_needs_personalization") {
     return (
       <div className="space-y-8">
-        <PlatformPageHeader
+        <AppScreenHeader
           title={greeting}
-          description="Seu plano está ativo. Falta só personalizar como você prefere receber as reflexões."
+          subtitle="Seu plano está ativo. Falta personalizar como você prefere receber as reflexões."
         />
         <StatusCard
           tone="success"
@@ -267,9 +188,9 @@ export default async function InicioPage() {
   if (state === "past_due") {
     return (
       <div className="space-y-8">
-        <PlatformPageHeader
+        <AppScreenHeader
           title={greeting}
-          description="Há um problema com o pagamento da sua assinatura. O conteúdo de hoje continua aqui."
+          subtitle="Há um problema com o pagamento. O conteúdo de hoje continua aqui."
         />
         <StatusCard
           tone="warning"
