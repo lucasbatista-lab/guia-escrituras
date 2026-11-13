@@ -17,6 +17,8 @@ export const WHATSAPP_ENV_KEYS = {
   appSecret: "WHATSAPP_APP_SECRET",
   accessToken: "WHATSAPP_ACCESS_TOKEN",
   phoneNumberId: "WHATSAPP_PHONE_NUMBER_ID",
+  linkTokenSecret: "WHATSAPP_LINK_TOKEN_SECRET",
+  workerSecret: "WHATSAPP_WORKER_SECRET",
 } as const;
 
 /** Inbound text hard cap (aligns with chat message max). */
@@ -83,4 +85,22 @@ export function resolveWhatsAppDebounceMs(
     WHATSAPP_DEBOUNCE_MS_MAX,
     Math.max(WHATSAPP_DEBOUNCE_MS_MIN, Math.floor(n)),
   );
+}
+
+/** Link-token HMAC secret — fail closed if missing or too short. */
+export function getWhatsAppLinkTokenSecret(
+  env: Record<string, string | undefined> = process.env,
+): string | null {
+  const raw = env[WHATSAPP_ENV_KEYS.linkTokenSecret]?.trim();
+  if (!raw || raw.length < 32) return null;
+  return raw;
+}
+
+/** Internal worker auth secret — fail closed if missing or too short. */
+export function getWhatsAppWorkerSecret(
+  env: Record<string, string | undefined> = process.env,
+): string | null {
+  const raw = env[WHATSAPP_ENV_KEYS.workerSecret]?.trim();
+  if (!raw || raw.length < 32) return null;
+  return raw;
 }

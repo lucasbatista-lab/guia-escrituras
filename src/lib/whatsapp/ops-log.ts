@@ -16,7 +16,19 @@ export type WhatsAppOpsEvent =
   | "processing_failed"
   | "channel_disabled"
   | "verify_failed"
-  | "verify_ok";
+  | "verify_ok"
+  | "identity_link_code_created"
+  | "identity_linked"
+  | "identity_link_conflict"
+  | "identity_revoked"
+  | "bundle_claimed"
+  | "bundle_completed"
+  | "bundle_retried"
+  | "bundle_failed"
+  | "outbox_created"
+  | "access_required"
+  | "worker_unauthorized"
+  | "worker_disabled";
 
 export function logWhatsAppOps(
   event: WhatsAppOpsEvent,
