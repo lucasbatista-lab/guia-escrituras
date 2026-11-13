@@ -18,14 +18,15 @@ Parte do HEAD da Execution 1 (`13718b3`). Não reauditora.
 ## 2. HEAD inicial / final
 
 Inicial: `13718b3`  
-Final: (após commits desta execução — ver seção 3)
+Final: tip of `cursor/whatsapp-channel-foundation` after the commits below (`git rev-parse HEAD`)
 
 ## 3. Commits
 
-1. `feat(whatsapp): add secure channel identity linking`
-2. `feat(whatsapp): add durable bundle worker and outbox`
-3. `test(whatsapp): cover identity worker and delivery safety`
-4. `docs(whatsapp): document identity worker execution`
+1. `fbecc04` feat(whatsapp): add secure channel identity linking
+2. `8c09607` feat(whatsapp): add durable bundle worker and outbox
+3. `bbcdc8e` test(whatsapp): cover identity worker and delivery safety
+4. `f711b3b` docs(whatsapp): document identity worker execution
+5. docs tip — record final identity worker HEAD (this file)
 
 Sem push. Sem PR. Sem deploy.
 
