@@ -377,8 +377,7 @@ begin
       attempt_count = e.attempt_count + 1,
       updated_at = v_now
   from picked
-  where e.id = picked.id
-  returning e.id into v_ids;
+  where e.id = picked.id;
 
   select coalesce(array_agg(e.id order by e.received_at, e.provider_message_id), '{}')
   into v_ids
