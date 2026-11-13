@@ -10,7 +10,10 @@ export type OutboundStatus =
   | "pending"
   | "sending"
   | "sent"
+  | "delivered"
+  | "read"
   | "retry"
+  | "delivery_unknown"
   | "failed"
   | "cancelled";
 

@@ -28,7 +28,17 @@ export type WhatsAppOpsEvent =
   | "outbox_created"
   | "access_required"
   | "worker_unauthorized"
-  | "worker_disabled";
+  | "worker_disabled"
+  | "outbound_batch_started"
+  | "outbound_claimed"
+  | "outbound_sent"
+  | "outbound_retry_scheduled"
+  | "outbound_failed"
+  | "outbound_delivery_unknown"
+  | "outbound_cancelled"
+  | "delivery_status_applied"
+  | "delivery_status_ignored"
+  | "meta_configuration_error";
 
 export function logWhatsAppOps(
   event: WhatsAppOpsEvent,
