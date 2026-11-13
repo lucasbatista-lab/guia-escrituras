@@ -16,7 +16,8 @@ export type WhatsAppInboundStatus =
   | "processed"
   | "ignored"
   | "failed"
-  | "pending_identity";
+  | "pending_identity"
+  | "retry";
 
 export type WhatsAppInboundRow = {
   id: string;
