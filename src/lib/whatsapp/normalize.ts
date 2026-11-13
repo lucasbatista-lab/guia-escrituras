@@ -79,10 +79,8 @@ export function normalizeWhatsAppWebhookPayload(
       const value = asRecord(changeObj.value);
       if (!value) continue;
 
-      // Status / delivery receipts — ignore.
-      if (Array.isArray(value.statuses) && value.statuses.length > 0) {
-        continue;
-      }
+      // Delivery statuses are handled by delivery-status.ts — do not debounce them.
+      // Continue extracting text messages from the same value when present.
 
       const messages = Array.isArray(value.messages) ? value.messages : [];
       for (const msg of messages) {

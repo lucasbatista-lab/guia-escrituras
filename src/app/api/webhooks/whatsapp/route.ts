@@ -99,6 +99,8 @@ export async function POST(request: Request) {
       accepted: result.accepted,
       duplicates: result.duplicates,
       pendingIdentity: result.pendingIdentity,
+      statusesApplied: result.statusesApplied,
+      statusesIgnored: result.statusesIgnored,
     });
   } catch {
     logWhatsAppOps("processing_failed", { reason: "unhandled" });

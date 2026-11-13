@@ -5,6 +5,10 @@ import {
   resolveWhatsAppDebounceMs,
 } from "@/lib/whatsapp/config";
 import {
+  applyNormalizedDeliveryStatuses,
+  normalizeWhatsAppDeliveryStatuses,
+} from "@/lib/whatsapp/delivery-status";
+import {
   insertWhatsAppInboundEvent,
   markWhatsAppInboundStatus,
 } from "@/lib/whatsapp/inbound-events";
@@ -13,14 +17,15 @@ import { logWhatsAppOps } from "@/lib/whatsapp/ops-log";
 
 /**
  * Persist normalized inbound text after signature verification.
- * Identity resolution and VINCULAR handling happen in the durable worker.
- * Events are stored as pending so unlinked senders can still link via code.
+ * Also applies delivery status updates (monotonic) without debounce/IA.
  */
 
 export type ReceiveWhatsAppResult = {
   accepted: number;
   duplicates: number;
   pendingIdentity: number;
+  statusesApplied: number;
+  statusesIgnored: number;
   ignored: boolean;
   ignoreReason?: string;
 };
@@ -37,20 +42,47 @@ export async function receiveWhatsAppWebhookPayload(input: {
       accepted: 0,
       duplicates: 0,
       pendingIdentity: 0,
+      statusesApplied: 0,
+      statusesIgnored: 0,
       ignored: true,
       ignoreReason: "channel_disabled",
     };
+  }
+
+  // Statuses may be applied even when outbound send flag is off
+  // (channel flag already required above).
+  const statusNorm = normalizeWhatsAppDeliveryStatuses(input.payload, {
+    now: input.now,
+  });
+  let statusesApplied = 0;
+  let statusesIgnored = 0;
+  if (statusNorm.kind === "statuses") {
+    const applied = await applyNormalizedDeliveryStatuses(statusNorm.statuses);
+    statusesApplied = applied.applied;
+    statusesIgnored = applied.ignored;
   }
 
   const normalized = normalizeWhatsAppWebhookPayload(input.payload, {
     now: input.now,
   });
   if (normalized.kind === "ignored") {
+    if (statusesApplied > 0 || statusesIgnored > 0) {
+      return {
+        accepted: 0,
+        duplicates: 0,
+        pendingIdentity: 0,
+        statusesApplied,
+        statusesIgnored,
+        ignored: false,
+      };
+    }
     logWhatsAppOps("event_ignored", { reason: normalized.reason });
     return {
       accepted: 0,
       duplicates: 0,
       pendingIdentity: 0,
+      statusesApplied,
+      statusesIgnored,
       ignored: true,
       ignoreReason: normalized.reason,
     };
@@ -95,6 +127,8 @@ export async function receiveWhatsAppWebhookPayload(input: {
     accepted,
     duplicates,
     pendingIdentity: 0,
+    statusesApplied,
+    statusesIgnored,
     ignored: false,
   };
 }
